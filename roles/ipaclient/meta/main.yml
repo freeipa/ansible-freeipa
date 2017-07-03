@@ -1,0 +1,24 @@
+galaxy_info:
+  author: Florence Blanc-Renaud
+  description: A role to join a machine to an IPA domain
+  company: Red Hat, Inc
+
+  # issue_tracker_url: http://example.com/issue/tracker
+
+  license: GPLv3
+
+  min_ansible_version: 2.0
+
+  #github_branch:
+
+  platforms:
+  - name: Fedora
+    versions:
+    - 25
+  - name: rhel
+    versions:
+    - 7
+
+  galaxy_tags: [ 'identity', 'ipa']
+
+dependencies: []

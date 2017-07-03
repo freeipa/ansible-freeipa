@@ -1,0 +1,19 @@
+---
+# tasks file for ipaclient
+
+- name: Install - Install IPA client package
+  package:
+    name: "{{ ipaclient_package }}"
+    state: present
+
+- name: Install - Configure IPA client
+  ipaclient:
+    state: present
+    domain: "{{ ipaclient_domain }}"
+    realm: "{{ ipaclient_realm }}"
+    server: "{{ ipaclient_server }}"
+    principal: "{{ ipaclient_principal }}"
+    password: "{{ ipaclient_password }}"
+    keytab: "{{ ipaclient_keytab }}"
+    otp: "{{ ipaclient_otp }}"
+    extra_args: "{{ ipaclient_extraargs }}"

@@ -1,0 +1,11 @@
+---
+# tasks to uninstall IPA client
+
+- name: Uninstall - Uninstall IPA client
+  ipaclient:
+    state: absent
+
+#- name: Remove IPA client package
+#  package:
+#    name: "{{ ipaclient_package }}"
+#    state: absent

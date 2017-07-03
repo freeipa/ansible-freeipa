@@ -1,0 +1,16 @@
+---
+# tasks file for ipaclient
+
+- name: Import variables specific to distribution
+  include_vars: "{{ item }}"
+  with_first_found:
+    - vars/{{ ansible_distribution }}.yml
+    - vars/default.yml
+
+- name: Install IPA client
+  include: tasks/install.yml
+  when: state|default('present') == 'present'
+
+- name: Uninstall IPA client
+  include: tasks/uninstall.yml
+  when: state|default('present') == 'absent'

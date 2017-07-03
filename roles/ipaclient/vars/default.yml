@@ -1,0 +1,3 @@
+# defaults file for ipaclient
+# defaults/fedora.yml
+ipaclient_package: freeipa-client

@@ -1,0 +1,12 @@
+---
+# defaults file for ipaclient
+
+ipaclient_domain:
+ipaclient_realm:
+ipaclient_server:
+
+ipaclient_principal:
+ipaclient_password:
+ipaclient_keytab:
+ipaclient_otp:
+ipaclient_extraargs: []

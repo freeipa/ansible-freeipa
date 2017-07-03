@@ -1,0 +1,15 @@
+[ipaclients]
+ipaclient.ipadomain.com
+
+[ipaservers]
+ipaserver.ipadomain.com
+
+[ipaclients:vars]
+ipaclient_domain=ipadomain.com
+ipaclient_realm=IPADOMAIN.COM
+ipaclient_server=ipaserver.ipadomain.com
+ipaclient_extraargs=[ '--kinit-attempts=3', '--mkhomedir']
+
+[ipaservers:vars]
+ipa_admin=admin
+ipa_password=MySecretPassword123
