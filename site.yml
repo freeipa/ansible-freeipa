@@ -3,17 +3,6 @@
   hosts: ipaclients
   become: true
 
-  pre_tasks:
-
-  - name: For OTP client registration, add client and get OTP
-    ipahost:
-      keytab: files/admin.keytab
-      fqdn: "{{ ansible_fqdn }}"
-      random: True
-    register: ipahost
-    delegate_to: "{{ groups.ipaservers[0] }}"
-
   roles:
   - role: ipaclient
     state: present
-    ipaclient_otp: "{{ ipahost.host.randompassword }}"

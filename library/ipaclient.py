@@ -151,7 +151,10 @@ def get_ipa_conf():
     parser.read(paths.IPA_DEFAULT_CONF)
     result = dict()
     for item in ['basedn', 'realm', 'domain', 'server', 'host', 'xmlrpc_uri']:
-        value = parser.get('global', item)
+        if parser.has_option('global', item):
+	    value = parser.get('global', item)
+        else:
+            value = None
         if value:
             result[item] = value
 
@@ -251,6 +254,7 @@ def ensure_ipa_client(module):
     if keytab:
         cmd.append("--keytab")
         cmd.append(keytab)
+        cmd.append("-d")
     if otp:
         cmd.append("--password")
         cmd.append(otp)

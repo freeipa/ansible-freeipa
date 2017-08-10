@@ -36,7 +36,7 @@ description:
 options:
   principal:
     description: Kerberos principal used to manage the host
-    required: false
+    required: true
     default: admin
   password:
     description: Password for the kerberos principal
@@ -44,6 +44,10 @@ options:
   keytab:
     description: Keytab file containing the Kerberos principal and encrypted key
     required: false
+  lifetime:
+    description: Sets the default lifetime for initial ticket requests
+    required: false
+    default: 1h
   fqdn:
     description: the fully-qualified hostname of the host to add/modify/remove
     required: true
@@ -251,9 +255,10 @@ def main():
     """
     module = AnsibleModule(
         argument_spec=dict(
-            keytab = dict(required=False, type='path'),
+            #keytab = dict(required=False, type='path'),
             principal = dict(default='admin'),
-            password = dict(required=False, no_log=True),
+            #password = dict(required=False, no_log=True),
+            ccache = dict(required=False, type='path'),
             fqdn = dict(required=True),
             certificates = dict(required=False, type='list'),
             sshpubkey= dict(required=False),
@@ -261,27 +266,21 @@ def main():
             random = dict(default=False, type='bool'),
             state = dict(default='present', choices=[ 'present', 'absent' ]),
         ),
-        required_one_of=[ [ 'password', 'keytab'], ],
-        mutually_exclusive=[ [ 'password', 'keytab' ], ],
+        #mutually_exclusive=[['password','keytab']],
+        #required_one_of=[['[password','keytab']],
         supports_check_mode=True,
     )
 
     principal = module.params.get('principal', 'admin')
     password = module.params.get('password')
     keytab = module.params.get('keytab')
+    ccache = module.params.get('ccache')
     fqdn = unicode(module.params.get('fqdn'))
     state = module.params.get('state')
 
     try:
-        ccache_dir = tempfile.mkdtemp(prefix='krbcc')
-        ccache_name = os.path.join(ccache_dir, 'ccache')
+        os.environ['KRB5CCNAME']=ccache
 
-        if keytab:
-            kinit_keytab(principal, keytab, ccache_name)
-        elif password:
-            kinit_password(principal, password, ccache_name)
-
-        os.environ['KRB5CCNAME'] = ccache_name
         cfg = dict(
             context='ansible_module',
             confdir=paths.ETC_IPA,

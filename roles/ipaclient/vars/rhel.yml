@@ -1,4 +1,4 @@
 # defaults file for ipaclient
-# defaults/rhel.yml
+# vars/rhel.yml
 ipaclient_package: ipa-client
 

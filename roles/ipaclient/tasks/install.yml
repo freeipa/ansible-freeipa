@@ -1,6 +1,32 @@
 ---
 # tasks file for ipaclient
 
+# The following block is executed when using OTP to enroll IPA client
+# ie when neither ipaclient_password not ipaclient_keytab is set
+# It connects to ipaserver and add the host with --random option in order
+# to create a OneTime Password
+- block:
+  - name: Install - Get a One-Time Password for client enrollment
+    ipahost:
+      state: present
+      principal: "{{ ipaserver_principal | default('admin') }}"
+      password: "{{ ipaserver_password | default(omit) }}"
+      keytab: "{{ ipaserver_keytab | default(omit) }}"
+      fqdn: "{{ ansible_fqdn }}"
+      lifetime: "{{ ipaserver_lifetime | default(omit) }}"
+      random: True
+    register: ipahost_output
+    # If the host is already enrolled, this command will exit on error
+    # The error can be ignored
+    failed_when: ipahost_output|failed and "Password cannot be set on enrolled host" not in ipahost_output.msg
+    delegate_to: "{{ groups.ipaservers[0] }}"
+
+  - name: Install - Store the previously obtained OTP
+    set_fact:
+      ipaclient_otp: "{{ipahost_output.host.randompassword if ipahost_output.host is defined else 'dummyotp' }}"
+
+  when: ipaclient_password is not defined and ipaclient_keytab is not defined
+
 - name: Install - Install IPA client package
   package:
     name: "{{ ipaclient_package }}"
@@ -9,11 +35,11 @@
 - name: Install - Configure IPA client
   ipaclient:
     state: present
-    domain: "{{ ipaclient_domain }}"
-    realm: "{{ ipaclient_realm }}"
-    server: "{{ ipaclient_server }}"
-    principal: "{{ ipaclient_principal }}"
-    password: "{{ ipaclient_password }}"
-    keytab: "{{ ipaclient_keytab }}"
-    otp: "{{ ipaclient_otp }}"
-    extra_args: "{{ ipaclient_extraargs }}"
+    domain: "{{ ipaclient_domain | default(omit) }}"
+    realm: "{{ ipaclient_realm | default(omit) }}"
+    server: "{{ ipaclient_server | default(omit) }}"
+    principal: "{{ ipaclient_principal | default(omit) }}"
+    password: "{{ ipaclient_password | default(omit) }}"
+    keytab: "{{ ipaclient_keytab | default(omit) }}"
+    otp: "{{ ipaclient_otp | default(omit) }}"
+    extra_args: "{{ ipaclient_extraargs | default(omit) }}"
