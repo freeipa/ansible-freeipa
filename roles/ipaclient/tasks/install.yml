@@ -42,4 +42,8 @@
     password: "{{ ipaclient_password | default(omit) }}"
     keytab: "{{ ipaclient_keytab | default(omit) }}"
     otp: "{{ ipaclient_otp | default(omit) }}"
+    force_join: "{{ ipaclient_force_join | default(omit) }}"
+    kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
+    ntp: "{{ ipaclient_ntp | default(omit) }}"
+    mkhomedir: "{{ ipaclient_mkhomedir | default(omit) }}"
     extra_args: "{{ ipaclient_extraargs | default(omit) }}"

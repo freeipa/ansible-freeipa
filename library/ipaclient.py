@@ -63,12 +63,29 @@ options:
   otp:
     description: The One-Time-Password used to join the IPA realm.
     required: false
+  force_join:
+    description: Set force_join to yes to join the host even if it is already enrolled.
+    required: false
+    choices: [ "yes", "force" ]
+    default: yes
+  kinit_attempts:
+    description: Repeat the request for host Kerberos ticket X times.
+    required: false
+  ntp:
+    description: Set to no to not configure and enable NTP
+    required: false
+    default: yes
+  mkhomedir:
+    description: Set to yes to configure PAM to create a users home directory if it does not exist.
+    required: false
+    default: no
   extr_args:
     description: The list of extra arguments to provide to ipa-client-install.
     required: false
     type: list
 author:
     - Florence Blanc-Renaud
+    - Thomas Woerner
 '''
 
 EXAMPLES = '''
@@ -81,7 +98,8 @@ EXAMPLES = '''
 - ipaclient:
     principal: admin
     password: MySecretPassword
-    extraargs: [ '--no-ntp', '--kinit-attempts=5']
+    ntp: no
+    kinit_attempts: 5
 
 # Enroll client using admin credentials, with specified domain and
 # autodiscovery of the IPA server
@@ -89,7 +107,8 @@ EXAMPLES = '''
     principal: admin
     password: MySecretPassword
     domain: ipa.domain.com
-    extraargs: [ '--no-ntp', '--kinit-attempts=5']
+    ntp: no
+    kinit_attempts: 5
 
 # Enroll client using admin credentials, with specified server
 - ipaclient:
@@ -97,7 +116,8 @@ EXAMPLES = '''
     password: MySecretPassword
     domain: ipa.domain.com
     server: ipaserver.ipa.domain.com
-    extraargs: [ '--no-ntp', '--kinit-attempts=5']
+    ntp: no
+    kinit_attempts: 5
 
 # Enroll client using One-Time-Password, with specified domain and realm
 - ipaclient:
@@ -207,6 +227,10 @@ def ensure_ipa_client(module):
     password = module.params.get('password')
     keytab = module.params.get('keytab')
     otp = module.params.get('otp')
+    force_join = module.params.get('force_join')
+    kinit_attempts = module.params.get('kinit_attempts')
+    ntp = module.params.get('ntp')
+    mkhomedir = module.params.get('mkhomedir')
     extra_args = module.params.get('extra_args')
 
     # Ensure that at least one auth method is specified
@@ -258,6 +282,15 @@ def ensure_ipa_client(module):
     if otp:
         cmd.append("--password")
         cmd.append(otp)
+    if force_join:
+        cmd.append("--force-join")
+    if kinit_attempts:
+        cmd.append("--kinit-attempts")
+        cmd.append(str(kinit_attempts))
+    if not ntp:
+        cmd.append("--no-ntp")
+    if mkhomedir:
+        cmd.append("--mkhomedir")
     if extra_args:
         for extra_arg in extra_args:
             cmd.append(extra_arg)
@@ -286,6 +319,10 @@ def main():
             password=dict(required=False, no_log=True),
             keytab=dict(required=False, type='path'),
             otp=dict(required=False),
+            force_join=dict(required=False, type='bool', default=False),
+            kinit_attempts=dict(required=False, type='int'),
+            ntp=dict(required=False, type='bool', default=True),
+            mkhomedir=dict(required=False, type='bool', default=False),
             extra_args=dict(default=None, type='list')
             ),
         )

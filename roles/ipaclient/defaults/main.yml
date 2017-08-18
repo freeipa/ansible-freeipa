@@ -9,4 +9,8 @@ ipaclient_principal:
 ipaclient_password:
 ipaclient_keytab:
 ipaclient_otp:
+ipaclient_force_join: no
+ipaclient_kinit_attempts:
+ipaclient_ntp: yes
+ipaclient_mkhomedir: no
 ipaclient_extraargs: []
