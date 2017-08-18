@@ -40,7 +40,7 @@ options:
     description: the client state
     required: false
     default: present
-    choices: [ "present", "absent"]
+    choices: [ "present", "absent" ]
   domain:
     description: The primary DNS domain of an existing IPA deployment.
     required: false
@@ -58,7 +58,7 @@ options:
     description: The password for the kerberos principal.
     required: false
   keytab:
-    description: The pathto a backed-up host keytab from previous enrollment.
+    description: The path to a backed-up host keytab from previous enrollment.
     required: false
   otp:
     description: The One-Time-Password used to join the IPA realm.
