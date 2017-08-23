@@ -1,6 +1,14 @@
 ---
 # tasks file for ipaclient
 
+- name: Install - IPA discovery
+  ipadiscovery:
+    domain: "{{ ipaclient_domain | default(omit) }}"
+    servers: "{{ groups.ipaservers | default(omit) }}"
+    realm: "{{ ipaclient_realm | default(omit) }}"
+    hostname: "{{ ansible_fqdn }}"
+  register: ipadiscovery
+
 # The following block is executed when using OTP to enroll IPA client
 # ie when neither ipaclient_password not ipaclient_keytab is set
 # It connects to ipaserver and add the host with --random option in order
@@ -19,7 +27,7 @@
     # If the host is already enrolled, this command will exit on error
     # The error can be ignored
     failed_when: ipahost_output|failed and "Password cannot be set on enrolled host" not in ipahost_output.msg
-    delegate_to: "{{ groups.ipaservers[0] }}"
+    delegate_to: "{{ ipadiscovery.servers[0] }}"
 
   - name: Install - Store the previously obtained OTP
     set_fact:
