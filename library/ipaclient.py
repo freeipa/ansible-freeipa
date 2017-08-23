@@ -47,8 +47,8 @@ options:
   realm:
     description:  The Kerberos realm of an existing IPA deployment.
     required: false
-  server:
-    description: The FQDN of the IPA server to connect to.
+  servers:
+    description: The FQDN of the IPA servers to connect to.
     required: false
   principal:
     description: The authorized kerberos principal used to join the IPA realm.
@@ -115,7 +115,7 @@ EXAMPLES = '''
     principal: admin
     password: MySecretPassword
     domain: ipa.domain.com
-    server: ipaserver.ipa.domain.com
+    servers: ipaserver.ipa.domain.com
     ntp: no
     kinit_attempts: 5
 
@@ -222,7 +222,7 @@ def ensure_ipa_client(module):
 
     domain = module.params.get('domain')
     realm = module.params.get('realm')
-    server = module.params.get('server')
+    servers = module.params.get('servers')
     principal = module.params.get('principal')
     password = module.params.get('password')
     keytab = module.params.get('keytab')
@@ -267,9 +267,10 @@ def ensure_ipa_client(module):
     if realm:
         cmd.append("--realm")
         cmd.append(realm)
-    if server:
-        cmd.append("--server")
-        cmd.append(server)
+    if servers:
+        for server in servers:
+            cmd.append("--server")
+            cmd.append(server)
     if password:
         cmd.append("--password")
         cmd.append(password)
@@ -314,7 +315,7 @@ def main():
             state=dict(default='present', choices=['present', 'absent']),
             domain=dict(required=False),
             realm=dict(required=False),
-            server=dict(required=False),
+            servers=dict(required=False, type='list'),
             principal=dict(default='admin'),
             password=dict(required=False, no_log=True),
             keytab=dict(required=False, type='path'),
