@@ -1,0 +1,20 @@
+---
+- name: Install {{ krb5_packages }}
+  package: name="{{ item }}" state=present
+  with_items: "{{ krb5_packages }}"
+
+# No backup in ipa-client-install mode
+#- name: Backup {{ krb5_conf }}
+#  copy:
+#    src: "{{ krb5_conf }}"
+#    dest: "{{ krb5_conf }}.bkp"
+#    force: no
+
+- name: Template krb5.conf
+  template:
+    src: krb5.conf.j2
+    dest: /etc/krb5.conf
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
