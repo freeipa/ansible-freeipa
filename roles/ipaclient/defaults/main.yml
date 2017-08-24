@@ -3,7 +3,6 @@
 
 ipaclient_domain:
 ipaclient_realm:
-ipaclient_servers:
 
 ipaclient_principal:
 ipaclient_password:
