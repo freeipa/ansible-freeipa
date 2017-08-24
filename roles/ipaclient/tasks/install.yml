@@ -55,6 +55,30 @@
     #ca_certs_file: "{{ ipaclient_ca_certs_file | default(omit) }}"
     kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
 
+#- name: Configure krb5
+#  include_role:
+#    name: krb5
+#  vars:
+#    krb5_realm: "{{ ipadiscovery.realm }}"
+#    krb5_servers: "{{ ipadiscovery.servers }}"
+#    krb5_dns_lookup_realm: "false"
+#    krb5_dns_lookup_kdc: "false"
+
+#- name: Configure SSSD
+#  include_role:
+#    name: sssd
+#  vars:
+#    sssd_domains: "{{ ipaclient_domain }}"
+#    sssd_id_provider: ipa
+#    sssd_auth_provider: ipa
+#    sssd_access_provider: ipa
+#    sssd_chpass_provider: ipa
+#    sssd_ipa_servers: "{{ ipadiscovery.servers }}"
+#    sssd_cache_credentials: True
+#    sssd_krb5_store_password_if_offline: True
+#    sssd_services: nss, sudo, pam, ssh
+#    sssd_on_master: "false"
+
 - name: Install - Configure IPA client
   ipaclient:
     state: present
