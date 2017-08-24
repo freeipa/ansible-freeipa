@@ -43,16 +43,32 @@ options:
     description: The Kerberos realm of an existing IPA deployment.
     required: true
   kdc:
-    description:
+    description: The name or address of the host running the KDC.
     required: true
   hostname:
     description: The hostname of the machine to join (FQDN).
     required: false
+  domain:
+    description: The primary DNS domain of an existing IPA deployment.
+    required: false
   force_join:
     description: Force enrolling the host even if host entry exists.
     required: false
+  principal:
+    description: The authorized kerberos principal used to join the IPA realm.
+    required: false
+    default: admin
   password:
     description: The password to use if not using Kerberos to authenticate.
+    required: false
+  keytab:
+    description: The path to a backed-up host keytab from previous enrollment.
+    required: false
+  ca_cert_file:
+    description: A CA certificate to use. Do not acquire the IPA CA certificate via automated means.
+    required: false
+  kinit_attempts:
+    description: Repeat the request for host Kerberos ticket X times.
     required: false
 author:
     - Thomas Woerner
@@ -92,7 +108,7 @@ def main():
             principal=dict(required=False),
             password=dict(required=False),
             keytab=dict(required=False),
-            ca_certs_file=dict(required=False),
+            ca_cert_file=dict(required=False),
             kinit_attempts=dict(required=False, type='int'),
         ),
         # required_one_of = ( [ '', '' ] ),
@@ -110,7 +126,7 @@ def main():
     principal = module.params.get('principal')
     password = module.params.get('password')
     keytab = module.params.get('keytab')
-    ca_certs_file = module.params.get('ca_certs_file')
+    ca_cert_file = module.params.get('ca_cert_file')
     kinit_attempts = module.params.get('kinit_attempts')
 
     client_domain = hostname[hostname.find(".")+1:]
@@ -123,7 +139,7 @@ def main():
     class Object(object):
         pass
     options = Object()
-    options.ca_cert_file = ca_certs_file
+    options.ca_cert_file = ca_cert_file
     options.unattended = True
     options.principal = principal
     options.password = password

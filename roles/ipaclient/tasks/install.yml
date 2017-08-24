@@ -52,7 +52,7 @@
     principal: "{{ ipaclient_principal | default(omit) }}"
     password: "{{ ipaclient_password | default(omit) }}"
     keytab: "{{ ipaclient_keytab | default(omit) }}"
-    #ca_certs_file: "{{ ipaclient_ca_certs_file | default(omit) }}"
+    #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
     kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
 
 #- name: Configure krb5
