@@ -1,0 +1,12 @@
+---
+sssd_conf: /etc/sssd/sssd.conf
+sssd_packages: sssd
+sssd_domains:
+sssd_id_provider:
+sssd_auth_provider:
+sssd_access_provider:
+sssd_chpass_provider:
+sssd_cache_credentials: False
+sssd_krb5_store_password_if_offline: False
+sssd_ipa_servers:
+sssd_services:

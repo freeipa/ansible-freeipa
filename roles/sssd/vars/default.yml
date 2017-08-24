@@ -1,0 +1,4 @@
+sssd_packages:
+ - sssd
+ - sssd-ipa
+ - sssd-krb5
