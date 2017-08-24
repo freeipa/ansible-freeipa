@@ -1,6 +1,11 @@
 ---
 # tasks file for ipaclient
 
+- name: Install - Install IPA client package
+  package:
+    name: "{{ ipaclient_package }}"
+    state: present
+
 - name: Install - IPA discovery
   ipadiscovery:
     domain: "{{ ipaclient_domain | default(omit) }}"
@@ -35,10 +40,6 @@
 
   when: ipaclient_password is not defined and ipaclient_keytab is not defined
 
-- name: Install - Install IPA client package
-  package:
-    name: "{{ ipaclient_package }}"
-    state: present
 
 - name: Install - Configure IPA client
   ipaclient:
