@@ -276,7 +276,7 @@ def main():
             break
 
     module.exit_json(changed=True,
-                     dnsok=dnsok, domain=cli_domain, server=cli_server,
+                     dnsok=dnsok, domain=cli_domain, servers=cli_server,
                      subject_base=subject_base, realm=cli_realm,
                      kdc=cli_kdc, client_domain=client_domain,
                      basedn=cli_basedn, hostname=hostname)
