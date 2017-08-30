@@ -13,8 +13,9 @@
 - name: Template krb5.conf
   template:
     src: krb5.conf.j2
-    dest: /etc/krb5.conf
-    backup: yes
+    dest: "{{ krb5_conf }}"
+    backup: no
     owner: root
     group: root
     mode: 0644
+    force: yes

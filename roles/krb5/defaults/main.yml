@@ -8,6 +8,7 @@ krb5_realm:
 krb5_servers:
 krb5_dns_lookup_realm: "false"
 krb5_dns_lookup_kdc: "false"
+krb5_no_default_domain: "false"
 krb5_default_ccache_name: KEYRING:persistent:%{uid}
 
 krb5_pkinit_anchors: FILE:/var/lib/ipa-client/pki/kdc-ca-bundle.pem
