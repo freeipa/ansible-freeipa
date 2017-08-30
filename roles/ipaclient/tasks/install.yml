@@ -12,6 +12,7 @@
     servers: "{{ groups.ipaservers | default(omit) }}"
     realm: "{{ ipaclient_realm | default(omit) }}"
     hostname: "{{ ansible_fqdn }}"
+    check: yes
   register: ipadiscovery
 
 # The following block is executed when using OTP to enroll IPA client
@@ -42,12 +43,12 @@
 
 - name: Install - Join IPA
   ipajoin:
-    servers: "{{ ipadiscovery.servers | default(omit) }}"
-    basedn: "{{ ipadiscovery.basedn | default(omit) }}"
-    realm: "{{ ipadiscovery.realm | default(omit) }}"
-    kdc: "{{ ipadiscovery.kdc | default(omit) }}"
+    servers: "{{ ipadiscovery.servers }}"
+    domain: "{{ ipadiscovery.domain }}"
+    realm: "{{ ipadiscovery.realm }}"
+    kdc: "{{ ipadiscovery.kdc }}"
+    basedn: "{{ ipadiscovery.basedn }}"
     hostname: "{{ ipadiscovery.hostname }}"
-    domain: "{{ ipadiscovery.domain | default(omit) }}"
     force_join: "{{ ipaclient_force_join | default(omit) }}"
     principal: "{{ ipaclient_principal | default(omit) }}"
     password: "{{ ipaclient_password | default(omit) }}"
@@ -55,42 +56,75 @@
     #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
     kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
 
-#- name: Configure krb5
-#  include_role:
-#    name: krb5
-#  vars:
-#    krb5_realm: "{{ ipadiscovery.realm }}"
-#    krb5_servers: "{{ ipadiscovery.servers }}"
-#    krb5_dns_lookup_realm: "false"
-#    krb5_dns_lookup_kdc: "false"
+- name: Install - Configure IPA default.conf
+  include_role:
+    name: ipaconf
+  vars:
+    ipaconf_server: "{{ ipadiscovery.servers[0] }}"
+    ipaconf_domain: "{{ ipadiscovery.domain }}"
+    ipaconf_realm: "{{ ipadiscovery.realm }}"
+    ipaconf_hostname: "{{ ipadiscovery.hostname }}"
+    ipaconf_basedn: "{{ ipadiscovery.basedn }}"
 
-#- name: Configure SSSD
-#  include_role:
-#    name: sssd
-#  vars:
-#    sssd_domains: "{{ ipaclient_domain }}"
-#    sssd_id_provider: ipa
-#    sssd_auth_provider: ipa
-#    sssd_access_provider: ipa
-#    sssd_chpass_provider: ipa
-#    sssd_ipa_servers: "{{ ipadiscovery.servers }}"
-#    sssd_cache_credentials: True
-#    sssd_krb5_store_password_if_offline: True
-#    sssd_services: nss, sudo, pam, ssh
-#    sssd_on_master: "false"
+- name: Install - Configure SSSD
+  sssd:
+    servers: "{{ ipadiscovery.servers }}"
+    domain: "{{ ipadiscovery.domain }}"
+    realm: "{{ ipadiscovery.realm }}"
+    hostname: "{{ ipadiscovery.hostname }}"
+    services: ["ssh", "sudo"]
+    krb5_offline_passwords: yes
+    #on_master: no
+    #primary: no
+    #permit: no
+    #dns_updates: no
+    #all_ip_addresses: no
 
-- name: Install - Configure IPA client
-  ipaclient:
-    state: present
-    domain: "{{ ipaclient_domain | default(omit) }}"
-    realm: "{{ ipaclient_realm | default(omit) }}"
-    servers: "{{ groups.ipaservers | default(omit) }}"
+- name: Install - Configure krb5 for IPA realm "{{ ipadiscovery.realm }}"
+  include_role:
+    name: krb5
+  vars:
+    krb5_servers: "{{ [ ] if ipadiscovery.dnsok else ipadiscovery.servers }}"
+    krb5_realm: "{{ ipadiscovery.realm }}"
+    krb5_dns_lookup_realm: "{{ 'true' if ipadiscovery.dnsok else 'false' }}"
+    krb5_dns_lookup_kdc: "{{ 'true' if ipadiscovery.dnsok else 'false' }}"
+    krb5_no_default_domain: "{{ 'true' if ipadiscovery.domain != ipadiscovery.client_domain else 'false' }}"
+
+- name: Install - IPA API calls for remaining enrollment parts
+  ipaapi:
+    servers: "{{ ipadiscovery.servers }}"
+    realm: "{{ ipadiscovery.realm }}"
+    hostname: "{{ ipadiscovery.hostname }}"
+    #debug: yes
+  register: ipaapi
+
+- name: Install - Create IPA NSS database
+  ipanss:
+    servers: "{{ ipadiscovery.servers }}"
+    domain: "{{ ipadiscovery.domain }}"
+    realm: "{{ ipadiscovery.realm }}"
+    basedn: "{{ ipadiscovery.basedn }}"
+    hostname: "{{ ipadiscovery.hostname }}"
+    subject_base: "{{ ipadiscovery.subject_base }}"
     principal: "{{ ipaclient_principal | default(omit) }}"
-    password: "{{ ipaclient_password | default(omit) }}"
-    keytab: "{{ ipaclient_keytab | default(omit) }}"
-    otp: "{{ ipaclient_otp | default(omit) }}"
-    force_join: "{{ ipaclient_force_join | default(omit) }}"
-    kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
-    ntp: "{{ ipaclient_ntp | default(omit) }}"
     mkhomedir: "{{ ipaclient_mkhomedir | default(omit) }}"
-    extra_args: "{{ ipaclient_extraargs | default(omit) }}"
+    ca_enabled: "{{ ipaapi.ca_enabled | default(omit) }}"
+    #on_master: no
+
+- name: Install - IPA extras configuration
+  ipaextras:
+    servers: "{{ ipadiscovery.servers }}"
+    domain: "{{ ipadiscovery.domain }}"
+    ntp_servers: "{{ ipadiscovery.ntp_servers }}"
+    ntp: "{{ ipaclient_ntp | default(omit) }}"
+    #force_ntpd: no
+    #sssd: yes
+    #ssh: yes"
+    #trust_sshfp: yes
+    #sshd: yes
+    #automount_location:
+    #firefox: no
+    #firefox_dir:
+    #no_nisdomain: no
+    #nisdomain:
+    #on_master: no
