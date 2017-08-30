@@ -13,14 +13,15 @@
 - name: Template sssd.conf
   template:
     src: sssd.conf.j2
-    dest: /etc/sssd/sssd.conf
-    backup: yes
+    dest: "{{ sssd_conf }}"
+    backup: no
     owner: root
     group: root
     mode: 0600
+    force: yes
 
-- name: Enable and start sssd
-  service:
-    name: sssd
-    state: restarted
-    enabled: yes
+#- name: Enable and start sssd
+#  service:
+#    name: sssd
+#    state: restarted
+#    enabled: yes
