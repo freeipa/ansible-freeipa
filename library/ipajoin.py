@@ -22,9 +22,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
+ANSIBLE_METADATA = {
+    'metadata_version': '1.0',
+    'supported_by': 'community',
+    'status': ['preview'],
+}
 
 DOCUMENTATION = '''
 ---
@@ -36,28 +38,24 @@ options:
   servers:
     description: The FQDN of the IPA servers to connect to.
     required: false
-  basedn:
-    description: The basedn of the IPA server (of the form dc=example,dc=com).
+  domain:
+    description: The primary DNS domain of an existing IPA deployment.
     required: false
   realm:
     description: The Kerberos realm of an existing IPA deployment.
     required: true
+  hostname:
+    description: The hostname of the machine to join (FQDN).
+    required: true
   kdc:
     description: The name or address of the host running the KDC.
     required: true
-  hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: false
-  domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: false
-  force_join:
-    description: Force enrolling the host even if host entry exists.
-    required: false
+  basedn:
+    description: The basedn of the IPA server (of the form dc=example,dc=com).
+    required: true
   principal:
     description: The authorized kerberos principal used to join the IPA realm.
     required: false
-    default: admin
   password:
     description: The password to use if not using Kerberos to authenticate.
     required: false
@@ -67,14 +65,45 @@ options:
   ca_cert_file:
     description: A CA certificate to use. Do not acquire the IPA CA certificate via automated means.
     required: false
+  force_join:
+    description: Force enrolling the host even if host entry exists.
+    required: false
   kinit_attempts:
     description: Repeat the request for host Kerberos ticket X times.
+    required: false
+  debug:
+    description: Enable debug mode.
     required: false
 author:
     - Thomas Woerner
 '''
 
 EXAMPLES = '''
+# Join IPA to get the keytab
+- name: Join IPA in force mode with maximum 5 kinit attempts
+  ipajoin:
+    servers: ["server1.example.com","server2.example.com"]
+    domain: example.com
+    realm: EXAMPLE.COM
+    kdc: server1.example.com
+    basedn: dc=example,dc=com
+    hostname: client1.example.com
+    principal: admin
+    password: MySecretPassword
+    force_join: yes
+    kinit_attempts: 5
+
+# Join IPA to get the keytab using ipadiscovery return values
+- name: Join IPA
+  ipajoin:
+    servers: "{{ ipadiscovery.servers }}"
+    domain: "{{ ipadiscovery.domain }}"
+    realm: "{{ ipadiscovery.realm }}"
+    kdc: "{{ ipadiscovery.kdc }}"
+    basedn: "{{ ipadiscovery.basedn }}"
+    hostname: "{{ ipadiscovery.hostname }}"
+    principal: admin
+    password: MySecretPassword
 '''
 
 RETURN = '''
@@ -99,35 +128,38 @@ def main():
     module = AnsibleModule(
         argument_spec = dict(
             servers=dict(required=True, type='list'),
-            basedn=dict(required=True),
-            realm=dict(required=True),
-            kdc=dict(required=True),
-            hostname=dict(required=True),
             domain=dict(required=True),
-            force_join=dict(required=False, type='bool'),
+            realm=dict(required=True),
+            hostname=dict(required=True),
+            kdc=dict(required=True),
+            basedn=dict(required=True),            
             principal=dict(required=False),
-            password=dict(required=False),
+            password=dict(required=False, no_log=True),
             keytab=dict(required=False),
             ca_cert_file=dict(required=False),
+            force_join=dict(required=False, type='bool'),
             kinit_attempts=dict(required=False, type='int'),
+            debug=dict(required=False, type='bool'),
         ),
-        # required_one_of = ( [ '', '' ] ),
+        required_one_of = (['principal', 'keytab'],
+                           ['password', 'keytab']),
         supports_check_mode = True,
     )
 
     module._ansible_debug = True
     servers = module.params.get('servers')
-    basedn = module.params.get('basedn')
+    domain = module.params.get('domain')
     realm = module.params.get('realm')
-    kdc = module.params.get('kdc')
     hostname = module.params.get('hostname')
-    domain = module.params.get('hostname')
+    basedn = module.params.get('basedn')
+    kdc = module.params.get('kdc')
     force_join = module.params.get('force_join')
     principal = module.params.get('principal')
     password = module.params.get('password')
     keytab = module.params.get('keytab')
     ca_cert_file = module.params.get('ca_cert_file')
     kinit_attempts = module.params.get('kinit_attempts')
+    debug = module.params.get('debug')
 
     client_domain = hostname[hostname.find(".")+1:]
     nolog = tuple()
@@ -142,8 +174,8 @@ def main():
     options.ca_cert_file = ca_cert_file
     options.unattended = True
     options.principal = principal
-    options.password = password
     options.force = False
+    options.password = password
 
     try:
         (krb_fd, krb_name) = tempfile.mkstemp()
@@ -166,10 +198,12 @@ def main():
                      "-s", servers[0],
                      "-b", str(realm_to_suffix(realm)),
                      "-h", hostname]
+        if debug:
+            join_args.append("-d")
+            env['XMLRPC_TRACE_CURL'] = 'yes'
         if force_join:
             join_args.append("-f")
         if principal:
-            module.log("before kinit_password")
             if principal.find('@') == -1:
                 principal = '%s@%s' % (principal, realm)
             try:
@@ -195,9 +229,9 @@ def main():
                     msg="Keytab file could not be found: {}".format(keytab))
 
         elif password:
-            nolog = (password,)
             join_args.append("-w")
             join_args.append(password)
+            nolog = (password,)
 
         env['KRB5CCNAME'] = os.environ['KRB5CCNAME'] = ccache_name
         # Get the CA certificate
@@ -228,6 +262,9 @@ def main():
             subject_base = subject_base.strip()
             subject_base = DN(subject_base)
 
+        if principal:
+            run(["kdestroy"], raiseonerr=False, env=env)
+
         # Obtain the TGT. We do it with the temporary krb5.conf, so that
         # only the KDC we're installing under is contacted.
         # Other KDCs might not have replicated the principal yet.
@@ -256,7 +293,7 @@ def main():
         except OSError:
             module.fail_json(msg="Could not remove %s.ipabkp" % krb_name)
 
-    module.exit_json(changed=True),
+    module.exit_json(changed=True)
 
 if __name__ == '__main__':
     main()
