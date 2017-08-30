@@ -106,4 +106,5 @@ Authors
 -------
 
 Florence Blanc-Renaud
+
 Thomas Woerner
