@@ -1,21 +1,17 @@
 [ipaclients]
 ipaclient.ipadomain.com
 
-[ipaservers]
-ipaserver.ipadomain.com
+# Disabled for auto detection
+#[ipaservers]
+#ipaserver.ipadomain.com
 
 [ipaclients:vars]
-ipaclient_domain=ipadomain.com
-ipaclient_realm=IPADOMAIN.COM
-ipaclient_server=ipaserver.ipadomain.com
-ipaclient_extraargs=[ '--kinit-attempts=3', '--mkhomedir']
 # if neither ipaclient_password nor ipaclient_keytab is defined,
 # the enrollement will create a OneTime Password and enroll with this OTP
 # In this case ipaserver_password or ipaserver_keytab is required
 #ipaclient_principal=admin
 #ipaclient_password=SecretPassword123
 #ipaclient_keytab=/tmp/krb5.keytab
-ipaserver_principal=admin
-#ipaserver_password=SecretPassword123
-ipaserver_keytab=files/admin.keytab
-
+ipaclient_principal=admin
+#ipaclient_password=SecretPassword123
+ipaclient_keytab=files/admin.keytab
