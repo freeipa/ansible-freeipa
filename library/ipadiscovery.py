@@ -22,9 +22,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-ANSIBLE_METADATA = {'metadata_version': '1.0',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
+ANSIBLE_METADATA = {
+    'metadata_version': '1.0',
+    'supported_by': 'community',
+    'status': ['preview'],
+}
 
 DOCUMENTATION = '''
 ---
@@ -33,11 +35,12 @@ short description: Tries to discover IPA server
 description:
   Tries to discover IPA server using DNS or host name
 options:
-  domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: false
   servers:
     description: The FQDN of the IPA servers to connect to.
+    required: false
+    type: list
+  domain:
+    description: The primary DNS domain of an existing IPA deployment.
     required: false
   realm:
     description:  The Kerberos realm of an existing IPA deployment.
@@ -45,36 +48,147 @@ options:
   hostname:
     description: The authorized kerberos principal used to join the IPA realm.
     required: false
-    default: admin
+  check:
+    description: Check if IPA client is installed and matching.
+    required: false
+    default: false
 author:
     - Thomas Woerner
 '''
 
 EXAMPLES = '''
-# Example from Ansible Playbooks
-# Complete autodiscovery
-- ipadiscovery:
+# Complete autodiscovery, register return values as ipadiscovery
+- name: IPA discovery
+  ipadiscovery:
+  register: ipadiscovery
 
-# Discovery using hostname
-- ipadiscovery:
+# Discovery using servers, register return values as ipadiscovery
+- name: IPA discovery
+  ipadiscovery:
+    servers: server1.domain.com,server2.domain.com
+  register: ipadiscovery
+
+# Discovery using domain name, register return values as ipadiscovery
+- name: IPA discovery
+  ipadiscovery:
+    domain: domain.com
+  register: ipadiscovery
+
+# Discovery using realm, register return values as ipadiscovery
+- name: IPA discovery
+  ipadiscovery:
+    realm: DOMAIN.COM
+  register: ipadiscovery
+
+# Discovery using hostname, register return values as ipadiscovery
+- name: IPA discovery
+  ipadiscovery:
     hostname: host.domain.com
+  register: ipadiscovery
 '''
 
 RETURN = '''
+servers:
+  description: The list of detected or passed in IPA servers.
+  returned: always
+  type: list
+  sample: ["server1.example.com","server2.example.com"]
+domain:
+  description: The DNS domain of the detected or passed in IPA deployment.
+  returned: always
+  type: string
+  sample: example.com
+realm:
+  description: The Kerberos realm of the detected or passed in IPA deployment.
+  returned: always
+  type: string
+  sample: EXAMPLE.COM
+kdc:
+  description: The detected KDC server name.
+  returned: always
+  type: string
+  sample: server1.example.com
+basedn:
+  description: The basedn of the detected IPA server.
+  returned: always
+  type: string
+  sample: dc=example,dc=com
+hostname:
+  description: The detected or passed in FQDN hostname of the client.
+  returned: always
+  type: string
+  sample: client1.example.com
+client_domain:
+  description: The domain name of the client.
+  returned: always
+  type: string
+  sample: example.com
+dnsok:
+  description: True if DNS discovery worked and not passed in any servers.
+  returned: always
+  type: bool
+subject_base:
+  description: The subject base, needed for certmonger
+  returned: always
+  type: string
+  sample: O=EXAMPLE.COM
+ntp_servers:
+  description: The list of detected NTP servers.
+  returned: always
+  type: list
+  sample: ["ntp.example.com"]
 '''
 
 import os, socket
+from six.moves.configparser import RawConfigParser
 from ansible.module_utils.basic import AnsibleModule
 from ipapython.dn import DN
 from ipaclient.install import ipadiscovery
+from ipalib.install.sysrestore import SYSRESTORE_STATEFILE
+from ipaplatform.paths import paths
+
+def is_client_configured():
+    """
+    Check if ipa client is configured.
+
+    IPA client is configured when /etc/ipa/default.conf exists and
+    /var/lib/ipa-client/sysrestore/sysrestore.state exists.
+
+    :returns: boolean
+    """
+
+    return (os.path.isfile(paths.IPA_DEFAULT_CONF) and
+            os.path.isfile(os.path.join(paths.IPA_CLIENT_SYSRESTORE,
+                                        SYSRESTORE_STATEFILE)))
+
+def get_ipa_conf():
+    """
+    Return IPA configuration read from /etc/ipa/default.conf
+
+    :returns: dict containing key,value
+    """
+
+    parser = RawConfigParser()
+    parser.read(paths.IPA_DEFAULT_CONF)
+    result = dict()
+    for item in ['basedn', 'realm', 'domain', 'server', 'host', 'xmlrpc_uri']:
+        if parser.has_option('global', item):
+            value = parser.get('global', item)
+        else:
+            value = None
+        if value:
+            result[item] = value
+
+    return result
 
 def main():
     module = AnsibleModule(
         argument_spec = dict(
-            domain=dict(required=False),
             servers=dict(required=False, type='list', default=[]),
+            domain=dict(required=False),
             realm=dict(required=False),
             hostname=dict(required=False),
+            check=dict(required=False, type='bool', default=False),
         ),
         # required_one_of = ( [ '', '' ] ),
         supports_check_mode = True,
@@ -85,6 +199,7 @@ def main():
     opt_servers = module.params.get('servers')
     opt_realm = module.params.get('realm')
     opt_hostname = module.params.get('hostname')
+    opt_check = module.params.get('check')
 
     hostname = None
     hostname_source = None
@@ -104,10 +219,12 @@ def main():
         hostname = socket.getfqdn()
         hostname_source = "Machine's FQDN"
     if hostname != hostname.lower():
-        module.fail_json(msg="Invalid hostname '{}', must be lower-case.".format(hostname))
+        module.fail_json(
+            msg="Invalid hostname '%s', must be lower-case." % hostname)
 
     if (hostname == 'localhost') or (hostname == 'localhost.localdomain'):
-        module.fail_json(msg="Invalid hostname, '{}' must not be used.".format(hostname))
+        module.fail_json(
+            msg="Invalid hostname, '%s' must not be used." % hostname)
 
     # Create the discovery instance
     ds = ipadiscovery.IPADiscovery()
@@ -129,7 +246,7 @@ def main():
     if ret == ipadiscovery.BAD_HOST_CONFIG:
         module.fail_json(msg="Can't get the fully qualified name of this host")
     if ret == ipadiscovery.NOT_FQDN:
-        module.fail_json(msg="{} is not a fully-qualified hostname".format(hostname))
+        module.fail_json(msg="%s is not a fully-qualified hostname" % hostname)
     if ret in (ipadiscovery.NO_LDAP_SERVER, ipadiscovery.NOT_IPA_SERVER) \
             or not ds.domain:
         if ret == ipadiscovery.NO_LDAP_SERVER:
@@ -148,7 +265,8 @@ def main():
             cli_domain = opt_domain
             cli_domain_source = 'Provided as option'
         else:
-            module.fail_json(msg="Unable to discover domain, not provided on command line")
+            module.fail_json(
+                msg="Unable to discover domain, not provided on command line")
 
         ret = ds.search(
             domain=cli_domain,
@@ -275,11 +393,34 @@ def main():
                 "installation may fail.")
             break
 
+    # Detect NTP servers
+    ds = ipadiscovery.IPADiscovery()
+    ntp_servers = ds.ipadns_search_srv(cli_domain, '_ntp._udp',
+                                       None, break_on_first=False)
+
+    # Check if ipa client is already configured
+    if is_client_configured():
+        # Check that realm and domain match
+        current_config = get_ipa_conf()
+        if cli_domain != current_config.get('domain'):
+            return module.fail_json(msg="IPA client already installed "
+                                        "with a conflicting domain")
+        if cli_realm != current_config.get('realm'):
+            return module.fail_json(msg="IPA client already installed "
+                                        "with a conflicting realm")
+
+    # Done
     module.exit_json(changed=True,
-                     dnsok=dnsok, domain=cli_domain, servers=cli_server,
-                     subject_base=subject_base, realm=cli_realm,
-                     kdc=cli_kdc, client_domain=client_domain,
-                     basedn=cli_basedn, hostname=hostname)
+                     servers=cli_server,
+                     domain=cli_domain,
+                     realm=cli_realm,
+                     kdc=cli_kdc,
+                     basedn=cli_basedn,
+                     hostname=hostname,
+                     client_domain=client_domain,
+                     dnsok=dnsok,
+                     subject_base=subject_base,
+                     ntp_servers=ntp_servers)
 
 if __name__ == '__main__':
     main()
