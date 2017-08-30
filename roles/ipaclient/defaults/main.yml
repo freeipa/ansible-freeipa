@@ -10,6 +10,6 @@ ipaclient_keytab:
 ipaclient_otp:
 ipaclient_force_join: no
 ipaclient_kinit_attempts:
-ipaclient_ntp: yes
+ipaclient_ntp: no
 ipaclient_mkhomedir: no
-ipaclient_extraargs: []
+ipaclient_extraargs: [ ]
