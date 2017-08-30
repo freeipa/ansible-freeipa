@@ -1,0 +1,8 @@
+---
+ipaconf_default_conf: /etc/ipa/default.conf
+
+ipaconf_basedn:
+ipaconf_realm:
+ipaconf_domain:
+ipaconf_server:
+ipaconf_hostname:

@@ -1,0 +1,8 @@
+[global]
+basedn = {{ ipaconf_basedn }}
+realm = {{ ipaconf_realm }}
+domain = {{ ipaconf_domain }}
+server = {{ ipaconf_server }}
+host = {{ ipaconf_hostname }}
+xmlrpc_uri = {{ 'https://' + ipaconf_server + '/ipa/xml' }}
+enable_ra = True
