@@ -3,12 +3,9 @@
   package: name="{{ item }}" state=present
   with_items: "{{ krb5_packages }}"
 
-# No backup in ipa-client-install mode
-#- name: Backup {{ krb5_conf }}
-#  copy:
-#    src: "{{ krb5_conf }}"
-#    dest: "{{ krb5_conf }}.bkp"
-#    force: no
+- name: Install - Backup krb5.conf
+  fstore:
+    backup: "{{ krb5_conf }}"
 
 - name: Template krb5.conf
   template:
