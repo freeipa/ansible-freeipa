@@ -37,10 +37,10 @@ description:
 options:
   servers:
     description: The FQDN of the IPA servers to connect to.
-    required: false
+    required: true
   domain:
     description: The primary DNS domain of an existing IPA deployment.
-    required: false
+    required: true
   realm:
     description: The Kerberos realm of an existing IPA deployment.
     required: true
