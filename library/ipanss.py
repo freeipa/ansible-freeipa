@@ -52,7 +52,7 @@ options:
     required: true
   principal:
     description: The authorized kerberos principal used to join the IPA realm.
-    required: true
+    required: false
   subject_base:
     description: The subject base, needed for certmonger
     required: true
@@ -115,7 +115,7 @@ def main():
             realm=dict(required=True),
             hostname=dict(required=True),
             basedn=dict(required=True),
-            principal=dict(required=True),
+            principal=dict(required=False),
             subject_base=dict(required=True),
             ca_enabled=dict(required=True, type='bool'),
             mkhomedir=dict(required=False),
@@ -137,9 +137,9 @@ def main():
     mkhomedir = module.params.get('mkhomedir')
     on_master = module.params.get('on_master')
 
-    ###########################################################################
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
+
     ###########################################################################
 
     os.environ['KRB5CCNAME'] = CCACHE_FILE
