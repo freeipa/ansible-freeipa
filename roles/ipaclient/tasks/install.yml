@@ -23,11 +23,11 @@
   - name: Install - Get a One-Time Password for client enrollment
     ipahost:
       state: present
-      principal: "{{ ipaserver_principal | default('admin') }}"
-      password: "{{ ipaserver_password | default(omit) }}"
-      keytab: "{{ ipaserver_keytab | default(omit) }}"
+      principal: "{{ ipaclient_principal | default('admin') }}"
+      password: "{{ ipaclient_password | default(omit) }}"
+      keytab: "{{ ipaclient_keytab | default(omit) }}"
       fqdn: "{{ ansible_fqdn }}"
-      lifetime: "{{ ipaserver_lifetime | default(omit) }}"
+      lifetime: "{{ ipaclient_lifetime | default(omit) }}"
       random: True
     register: ipahost_output
     # If the host is already enrolled, this command will exit on error
