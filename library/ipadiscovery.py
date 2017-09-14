@@ -162,9 +162,16 @@ if NUM_VERSION < 30201:
 else:
     IPA_PYTHON_VERSION = NUM_VERSION
 from ipapython.dn import DN
-from ipaclient.install import ipadiscovery
-from ipalib.install.sysrestore import SYSRESTORE_STATEFILE
 from ipaplatform.paths import paths
+try:
+    from ipaclient.install import ipadiscovery
+except ImportError:
+    from ipaclient import ipadiscovery
+try:
+    from ipalib.install.sysrestore import SYSRESTORE_STATEFILE
+except ImportError:
+    from ipapython.sysrestore import SYSRESTORE_STATEFILE
+
 
 def get_cert_path(cert_path):
     """
