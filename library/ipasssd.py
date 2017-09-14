@@ -91,14 +91,45 @@ RETURN = '''
 '''
 
 import os
+import sys
+import tempfile
 import SSSDConfig
+
 from ansible.module_utils.basic import AnsibleModule
-from ipalib.install import sysrestore
+try:
+    from ipalib.install import sysrestore
+except ImportError:
+    from ipapython import sysrestore
 from ipaplatform.paths import paths
 from ipapython.ipautil import file_exists
-from ipaclient.install.client import get_server_connection_interface, \
-    configure_nsswitch_database
+try:
+    from ipaclient.install.client import get_server_connection_interface, \
+        configure_nsswitch_database
+except ImportError:
+    # Create temporary copy of ipa-client-install script (as
+    # ipa_client_install.py) to be able to import the script easily and also
+    # to remove the global finally clause in which the generated ccache file
+    # gets removed. The ccache file will be needed in the next step.
+    # This is done in a temporary directory that gets removed right after
+    # ipa_client_install has been imported.
+    import shutil
+    temp_dir = tempfile.mkdtemp(dir="/tmp")
+    sys.path.append(temp_dir)
+    temp_file = "%s/ipa_client_install.py" % temp_dir
 
+    with open("/usr/sbin/ipa-client-install", "r") as f_in:
+        with open(temp_file, "w") as f_out:
+            for line in f_in:
+                if line.startswith("finally:"):
+                    break
+                f_out.write(line)
+    import ipa_client_install
+
+    shutil.rmtree(temp_dir, ignore_errors=True)
+    sys.path.remove(temp_dir)
+
+    get_server_connection_interface = ipa_client_install.get_server_connection_interface
+    configure_nsswitch_database = ipa_client_install.configure_nsswitch_database
 
 def sssd_enable_service(module, sssdconfig, service):
     try:
