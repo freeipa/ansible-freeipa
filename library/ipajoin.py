@@ -109,17 +109,77 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
+class Object(object):
+    pass
+options = Object()
+
 import os
-import tempfile
+import sys
 import gssapi
+import tempfile
+import inspect
+
 from ansible.module_utils.basic import AnsibleModule
+from ipapython.version import NUM_VERSION, VERSION
+if NUM_VERSION < 40400:
+    raise Exception, "freeipa version '%s' is too old" % VERSION
 from ipalib import errors
-from ipaplatform.paths import paths
 from ipapython.dn import DN
-from ipalib.install import sysrestore
-from ipalib.install.kinit import kinit_keytab, kinit_password
-from ipaclient.install.client import configure_krb5_conf, get_ca_certs, SECURE_PATH, CCACHE_FILE
+from ipaplatform.paths import paths
+try:
+    from ipalib.install import sysrestore
+except ImportError:
+    from ipapython import sysrestore
+try:
+    from ipalib.install.kinit import kinit_keytab, kinit_password
+except ImportError:
+    from ipapython.ipautil import kinit_keytab, kinit_password
+try:
+    from ipaclient.install.client import configure_krb5_conf, get_ca_certs, SECURE_PATH
+except ImportError:
+    # Create temporary copy of ipa-client-install script (as
+    # ipa_client_install.py) to be able to import the script easily and also
+    # to remove the global finally clause in which the generated ccache file
+    # gets removed. The ccache file will be needed in the next step.
+    # This is done in a temporary directory that gets removed right after
+    # ipa_client_install has been imported.
+    import shutil
+    temp_dir = tempfile.mkdtemp(dir="/tmp")
+    sys.path.append(temp_dir)
+    temp_file = "%s/ipa_client_install.py" % temp_dir
+
+    with open("/usr/sbin/ipa-client-install", "r") as f_in:
+        with open(temp_file, "w") as f_out:
+            for line in f_in:
+                if line.startswith("finally:"):
+                    break
+                f_out.write(line)
+    import ipa_client_install
+
+    shutil.rmtree(temp_dir, ignore_errors=True)
+    sys.path.remove(temp_dir)
+
+    argspec = inspect.getargspec(ipa_client_install.configure_krb5_conf)
+    if argspec.keywords is None:
+        def configure_krb5_conf(
+                cli_realm, cli_domain, cli_server, cli_kdc, dnsok,
+                filename, client_domain, client_hostname, force,
+                configure_sssd):
+            global options
+            options.force = force
+            options.sssd = configure_sssd
+            return ipa_client_install.configure_krb5_conf(
+                cli_realm, cli_domain, cli_server, cli_kdc, dnsok, options,
+                filename, client_domain, client_hostname)
+    else:
+        configure_krb5_conf = ipa_client_install.configure_krb5_conf
+    if NUM_VERSION < 40100:
+        get_ca_cert = ipa_client_install.get_ca_cert
+    else:
+        get_ca_certs = ipa_client_install.get_ca_certs
+    SECURE_PATH = ("/bin:/sbin:/usr/kerberos/bin:/usr/kerberos/sbin:/usr/bin:/usr/sbin")
 from ipapython.ipautil import realm_to_suffix, run
+
 
 import logging
 logger = logging.getLogger("ipa-client-install")
@@ -168,15 +228,13 @@ def main():
     host_principal = 'host/%s@%s' % (hostname, realm)
     sssd = True
 
-    class Object(object):
-        pass
-    options = Object()
     options.ca_cert_file = ca_cert_file
     options.unattended = True
     options.principal = principal
     options.force = False
     options.password = password
 
+    ccache_dir = None
     try:
         (krb_fd, krb_name) = tempfile.mkstemp()
         os.close(krb_fd)
@@ -237,7 +295,10 @@ def main():
         # Get the CA certificate
         try:
             os.environ['KRB5_CONFIG'] = env['KRB5_CONFIG']
-            get_ca_certs(fstore, options, servers[0], basedn, realm)
+            if NUM_VERSION < 40100:
+                get_ca_cert(fstore, options, servers[0], basedn)
+            else:
+                get_ca_certs(fstore, options, servers[0], basedn, realm)
             del os.environ['KRB5_CONFIG']
         except errors.FileError as e:
             module.fail_json(msg='%s' % e)
@@ -270,10 +331,11 @@ def main():
         # Other KDCs might not have replicated the principal yet.
         # Once we have the TGT, it's usable on any server.
         try:
-            kinit_keytab(host_principal, paths.KRB5_KEYTAB, CCACHE_FILE,
+            kinit_keytab(host_principal, paths.KRB5_KEYTAB,
+                         paths.IPA_DNS_CCACHE,
                          config=krb_name,
                          attempts=kinit_attempts)
-            env['KRB5CCNAME'] = os.environ['KRB5CCNAME'] = CCACHE_FILE
+            env['KRB5CCNAME'] = os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
         except gssapi.exceptions.GSSError as e:
             # failure to get ticket makes it impossible to login and bind
             # from sssd to LDAP, abort installation and rollback changes
@@ -284,14 +346,16 @@ def main():
             os.remove(krb_name)
         except OSError:
             module.fail_json(msg="Could not remove %s" % krb_name)
-        try:
-            os.rmdir(ccache_dir)
-        except OSError:
-            pass
-        try:
-            os.remove(krb_name + ".ipabkp")
-        except OSError:
-            module.fail_json(msg="Could not remove %s.ipabkp" % krb_name)
+        if ccache_dir is not None:
+            try:
+                os.rmdir(ccache_dir)
+            except OSError:
+                pass
+        if os.path.exists(krb_name + ".ipabkp"):
+            try:
+                os.remove(krb_name + ".ipabkp")
+            except OSError:
+                module.fail_json(msg="Could not remove %s.ipabkp" % krb_name)
 
     module.exit_json(changed=True)
 
