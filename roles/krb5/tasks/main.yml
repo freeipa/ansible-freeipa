@@ -4,7 +4,7 @@
   with_items: "{{ krb5_packages }}"
 
 - name: Install - Backup krb5.conf
-  fstore:
+  ipafstore:
     backup: "{{ krb5_conf }}"
 
 - name: Template krb5.conf
