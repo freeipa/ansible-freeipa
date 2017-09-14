@@ -68,7 +68,7 @@
     ipaconf_basedn: "{{ ipadiscovery.basedn }}"
 
 - name: Install - Configure SSSD
-  sssd:
+  ipasssd:
     servers: "{{ ipadiscovery.servers }}"
     domain: "{{ ipadiscovery.domain }}"
     realm: "{{ ipadiscovery.realm }}"
