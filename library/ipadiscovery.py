@@ -226,6 +226,10 @@ def main():
         module.fail_json(
             msg="Invalid hostname, '%s' must not be used." % hostname)
 
+    # Get domain from first server if domain is not set, but there are servers
+    if opt_domain is None and len(opt_servers) > 0:
+        opt_domain = opt_servers[0][opt_servers[0].find(".")+1:]
+
     # Create the discovery instance
     ds = ipadiscovery.IPADiscovery()
 
