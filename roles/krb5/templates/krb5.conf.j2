@@ -6,7 +6,9 @@ includedir {{ krb5_include_d }}
   dns_lookup_realm = {{ krb5_dns_lookup_realm }}
   dns_lookup_kdc = {{ krb5_dns_lookup_kdc }}
   rdns = false
-  dns_canonicalize_hostname = false
+{% if krb5_dns_canonicalize_hostname is defined %}
+  dns_canonicalize_hostname = {{ krb5_dns_canonicalize_hostname }}
+{% endif %}
   ticket_lifetime = 24h
   forwardable = true
   udp_preference_limit = 0
@@ -23,8 +25,12 @@ includedir {{ krb5_include_d }}
 {% if krb5_no_default_domain | bool %}
     default_domain = {{ krb5_realm | lower }}
 {% endif %}
+{% if krb5_pkinit_anchors is defined %}
     pkinit_anchors = {{ krb5_pkinit_anchors }}
+{% endif %}
+{% if krb5_pkinit_pool is defined %}
     pkinit_pool = {{ krb5_pkinit_pool }}
+{% endif %}
   }
 
 [domain_realm]
