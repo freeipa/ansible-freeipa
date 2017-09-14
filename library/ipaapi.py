@@ -66,17 +66,57 @@ ca_enabled:
 '''
 
 import os
+import sys
 import time
 import gssapi
+import tempfile
+import inspect
 
 from ansible.module_utils.basic import AnsibleModule
-from ipalib import api, errors, x509
-from ipalib.install import sysrestore
-from ipalib.rpc import delete_persistent_client_session_data
+from ipapython.version import NUM_VERSION, VERSION
+if NUM_VERSION < 40400:
+    raise Exception, "freeipa version '%s' is too old" % VERSION
 from ipaplatform.paths import paths
+if NUM_VERSION >= 40500 and NUM_VERSION < 40590:
+    from cryptography.hazmat.primitives import serialization
+from ipalib import api, errors, x509
+try:
+    from ipalib.install import sysrestore
+except ImportError:
+    from ipapython import sysrestore
+from ipalib.rpc import delete_persistent_client_session_data
 from ipapython import certdb
-from ipapython.ipautil import CalledProcessError
-from ipaclient.install.client import SECURE_PATH, CCACHE_FILE, disable_ra
+from ipapython.ipautil import CalledProcessError, write_tmp_file, \
+    ipa_generate_password
+ipa_client_install = None
+try:
+    from ipaclient.install.client import SECURE_PATH, disable_ra
+except ImportError:
+    # Create temporary copy of ipa-client-install script (as
+    # ipa_client_install.py) to be able to import the script easily and also
+    # to remove the global finally clause in which the generated ccache file
+    # gets removed. The ccache file will be needed in the next step.
+    # This is done in a temporary directory that gets removed right after
+    # ipa_client_install has been imported.
+    import shutil
+    temp_dir = tempfile.mkdtemp(dir="/tmp")
+    sys.path.append(temp_dir)
+    temp_file = "%s/ipa_client_install.py" % temp_dir
+
+    with open("/usr/sbin/ipa-client-install", "r") as f_in:
+        with open(temp_file, "w") as f_out:
+            for line in f_in:
+                if line.startswith("finally:"):
+                    break
+                f_out.write(line)
+    import ipa_client_install
+
+    shutil.rmtree(temp_dir, ignore_errors=True)
+    sys.path.remove(temp_dir)
+
+    SECURE_PATH = ("/bin:/sbin:/usr/kerberos/bin:/usr/kerberos/sbin:/usr/bin:/usr/sbin")
+    disable_ra = ipa_client_install.disable_ra
+
 
 def main():
     module = AnsibleModule(
@@ -99,14 +139,22 @@ def main():
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
     host_principal = 'host/%s@%s' % (hostname, realm)
-    os.environ['KRB5CCNAME'] = CCACHE_FILE
+    os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
     
+    ca_certs = x509.load_certificate_list_from_file(paths.IPA_CA_CRT)
+    if NUM_VERSION >= 40500 and NUM_VERSION < 40590:
+        ca_certs = [ cert.public_bytes(serialization.Encoding.DER)
+                     for cert in ca_certs ]
+    elif NUM_VERSION < 40500:
+        ca_certs = [ cert.der_data for cert in ca_certs ]
+
     with certdb.NSSDatabase() as tmp_db:
         api.bootstrap(context='cli_installer',
                       confdir=paths.ETC_IPA,
                       debug=debug,
                       delegate=False,
                       nss_dir=tmp_db.secdir)
+
         if 'config_loaded' not in api.env:
             module.fail_json(msg="Failed to initialize IPA API.")
 
@@ -117,15 +165,22 @@ def main():
             pass
 
         # Add CA certs to a temporary NSS database
-        ca_certs = x509.load_certificate_list_from_file(paths.IPA_CA_CRT)
+        argspec = inspect.getargspec(tmp_db.create_db)
         try:
-            tmp_db.create_db()
+            if NUM_VERSION > 40400:
+                tmp_db.create_db()
 
-            for i, cert in enumerate(ca_certs):
-                tmp_db.add_cert(cert,
-                                'CA certificate %d' % (i + 1),
-                                certdb.EXTERNAL_CA_TRUST_FLAGS)
-        except CalledProcessError:
+                for i, cert in enumerate(ca_certs):
+                    tmp_db.add_cert(cert,
+                                    'CA certificate %d' % (i + 1),
+                                    certdb.EXTERNAL_CA_TRUST_FLAGS)
+            else:
+                pwd_file = write_tmp_file(ipa_generate_password())
+                tmp_db.create_db(pwd_file.name)
+
+                for i, cert in enumerate(ca_certs):
+                    tmp_db.add_cert(cert, 'CA certificate %d' % (i + 1), 'C,,')
+        except CalledProcessError as e:
             module.fail_json(msg="Failed to add CA to temporary NSS database.")
 
         api.finalize()
