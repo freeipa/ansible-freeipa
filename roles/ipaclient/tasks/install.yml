@@ -12,6 +12,7 @@
     servers: "{{ groups.ipaservers | default(omit) }}"
     realm: "{{ ipaclient_realm | default(omit) }}"
     hostname: "{{ ansible_fqdn }}"
+    #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
     check: yes
   register: ipadiscovery
 

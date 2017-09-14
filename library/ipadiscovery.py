@@ -48,6 +48,9 @@ options:
   hostname:
     description: The authorized kerberos principal used to join the IPA realm.
     required: false
+  ca_cert_file:
+    description: A CA certificate to use.
+    required: false
   check:
     description: Check if IPA client is installed and matching.
     required: false
@@ -147,6 +150,22 @@ from ipaclient.install import ipadiscovery
 from ipalib.install.sysrestore import SYSRESTORE_STATEFILE
 from ipaplatform.paths import paths
 
+def get_cert_path(cert_path):
+    """
+    If a CA certificate is passed in on the command line, use that.
+
+    Else if a CA file exists in paths.IPA_CA_CRT then use that.
+
+    Otherwise return None.
+    """
+    if cert_path is not None:
+        return cert_path
+
+    if os.path.exists(paths.IPA_CA_CRT):
+        return paths.IPA_CA_CRT
+
+    return None
+
 def is_client_configured():
     """
     Check if ipa client is configured.
@@ -188,6 +207,7 @@ def main():
             domain=dict(required=False),
             realm=dict(required=False),
             hostname=dict(required=False),
+            ca_cert_file=dict(required=False),
             check=dict(required=False, type='bool', default=False),
         ),
         # required_one_of = ( [ '', '' ] ),
@@ -199,6 +219,7 @@ def main():
     opt_servers = module.params.get('servers')
     opt_realm = module.params.get('realm')
     opt_hostname = module.params.get('hostname')
+    opt_ca_cert_file = module.params.get('ca_cert_file')
     opt_check = module.params.get('check')
 
     hostname = None
@@ -238,7 +259,7 @@ def main():
         servers=opt_servers,
         realm=opt_realm,
         hostname=hostname,
-        ca_cert_path=None)
+        ca_cert_path=get_cert_path(opt_ca_cert_file))
 
     if opt_servers and ret != 0:
         # There is no point to continue with installation as server list was
@@ -276,7 +297,7 @@ def main():
             domain=cli_domain,
             servers=opt_servers,
             hostname=hostname,
-            ca_cert_path=None)
+            ca_cert_path=get_cert_path(opt_ca_cert_file))
 
     if not cli_domain:
         if ds.domain:
@@ -299,7 +320,7 @@ def main():
             domain=cli_domain,
             servers=cli_server,
             hostname=hostname,
-            ca_cert_path=None)
+            ca_cert_path=get_cert_path(opt_ca_cert_file))
 
     else:
         # Only set dnsok to True if we were not passed in one or more servers
