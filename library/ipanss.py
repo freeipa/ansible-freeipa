@@ -86,14 +86,33 @@ RETURN = '''
 '''
 
 import os
+import sys
 import time
 import gssapi
+import tempfile
+import inspect
 
-#from six.moves.configparser import RawConfigParser
 from ansible.module_utils.basic import AnsibleModule
+from ipapython.version import NUM_VERSION, VERSION
+if NUM_VERSION < 40400:
+    raise Exception, "freeipa version '%s' is too old" % VERSION
 from ipalib import api, errors, x509
-from ipalib.install import certmonger, certstore, service, sysrestore
-from ipalib.install.kinit import kinit_keytab, kinit_password
+try:
+    from ipalib.install import certmonger
+except ImportError:
+    from ipapython import certmonger
+try:
+    from ipalib.install import certstore
+except ImportError:
+    from ipalib import certstore
+try:
+    from ipalib.install import sysrestore
+except ImportError:
+    from ipapython import sysrestore
+try:
+    from ipalib.install.kinit import kinit_keytab, kinit_password
+except ImportError:
+    from ipapython.ipautil import kinit_keytab, kinit_password
 from ipalib.rpc import delete_persistent_client_session_data
 from ipapython.dn import DN
 from ipaplatform import services
@@ -102,10 +121,42 @@ from ipaplatform.tasks import tasks
 from ipapython import certdb, ipautil
 from ipapython.ipautil import CalledProcessError
 
-from ipaclient.install.client import SECURE_PATH, CCACHE_FILE, client_dns, configure_certmonger, update_ssh_keys, configure_openldap_conf, hardcode_ldap_server, get_certs_from_ldap, save_state, configure_sssd_conf, configure_krb5_conf
+try:
+    from ipaclient.install.client import CCACHE_FILE, client_dns, configure_certmonger, update_ssh_keys, configure_openldap_conf, hardcode_ldap_server, get_certs_from_ldap, save_state, disable_ra, create_ipa_nssdb
+except ImportError:
+    # Create temporary copy of ipa-client-install script (as
+    # ipa_client_install.py) to be able to import the script easily and also
+    # to remove the global finally clause in which the generated ccache file
+    # gets removed. The ccache file will be needed in the next step.
+    # This is done in a temporary directory that gets removed right after
+    # ipa_client_install has been imported.
+    import shutil
+    temp_dir = tempfile.mkdtemp(dir="/tmp")
+    sys.path.append(temp_dir)
+    temp_file = "%s/ipa_client_install.py" % temp_dir
 
-from ipaclient.install.client import disable_ra
-from ipaclient.install.client import create_ipa_nssdb
+    with open("/usr/sbin/ipa-client-install", "r") as f_in:
+        with open(temp_file, "w") as f_out:
+            for line in f_in:
+                if line.startswith("finally:"):
+                    break
+                f_out.write(line)
+    import ipa_client_install
+
+    shutil.rmtree(temp_dir, ignore_errors=True)
+    sys.path.remove(temp_dir)
+
+    CCACHE_FILE = paths.IPA_DNS_CCACHE
+    client_dns = ipa_client_install.client_dns
+    configure_certmonger = ipa_client_install.configure_certmonger
+    update_ssh_keys = ipa_client_install.update_ssh_keys
+    configure_openldap_conf = ipa_client_install.configure_openldap_conf
+    hardcode_ldap_server = ipa_client_install.hardcode_ldap_server
+    get_certs_from_ldap = ipa_client_install.get_certs_from_ldap
+    save_state = ipa_client_install.save_state
+    disable_ra = ipa_client_install.disable_ra
+
+    from ipapython.certdb import create_ipa_nssdb
 
 def main():
     module = AnsibleModule(
@@ -184,12 +235,14 @@ def main():
     ca_certs_trust = [(c, n, certstore.key_policy_to_trust_flags(t, True, u))
                       for (c, n, t, u) in ca_certs]
 
-    x509.write_certificate_list(
-        [c for c, n, t, u in ca_certs if t is not False],
-        paths.KDC_CA_BUNDLE_PEM)
-    x509.write_certificate_list(
-        [c for c, n, t, u in ca_certs if t is not False],
-        paths.CA_BUNDLE_PEM)
+    if hasattr(paths, "KDC_CA_BUNDLE_PEM"):
+        x509.write_certificate_list(
+            [c for c, n, t, u in ca_certs if t is not False],
+            paths.KDC_CA_BUNDLE_PEM)
+    if hasattr(paths, "CA_BUNDLE_PEM"):
+        x509.write_certificate_list(
+            [c for c, n, t, u in ca_certs if t is not False],
+            paths.CA_BUNDLE_PEM)
 
     # Add the CA certificates to the IPA NSS database
     module.debug("Adding CA certificates to the IPA NSS database.")
@@ -208,7 +261,11 @@ def main():
         configure_certmonger(fstore, subject_base, realm, hostname,
                              options, ca_enabled)
 
-    update_ssh_keys(hostname, paths.SSH_CONFIG_DIR, options.create_sshfp)
+    if hasattr(paths, "SSH_CONFIG_DIR"):
+        ssh_config_dir = paths.SSH_CONFIG_DIR
+    else:
+        ssh_config_dir = services.knownservices.sshd.get_config_dir()
+    update_ssh_keys(hostname, ssh_config_dir, options.create_sshfp)
 
     try:
         os.remove(CCACHE_FILE)
@@ -251,7 +308,11 @@ def main():
 
     module.log("SSSD enabled")
 
-    sssd = services.service('sssd', api)
+    argspec = inspect.getargspec(services.service)
+    if len(argspec.args) > 1:
+        sssd = services.service('sssd', api)
+    else:
+        sssd = services.service('sssd')
     try:
         sssd.restart()
     except CalledProcessError:
