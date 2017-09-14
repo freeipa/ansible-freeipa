@@ -140,11 +140,27 @@ ntp_servers:
   returned: always
   type: list
   sample: ["ntp.example.com"]
+ipa_python_version:
+  description: The IPA python version as a number: <major version>*10000+<minor version>*100+<release>
+  returned: always
+  type: int
+  sample: 040400
 '''
 
-import os, socket
+import os
+import socket
+
 from six.moves.configparser import RawConfigParser
 from ansible.module_utils.basic import AnsibleModule
+from ipapython.version import NUM_VERSION, VERSION
+if NUM_VERSION < 40400:
+    raise Exception, "freeipa version '%s' is too old" % VERSION
+if NUM_VERSION < 30201:
+    # See ipapython/version.py
+    IPA_MAJOR,IPA_MINOR,IPA_RELEASE = [ int(x) for x in VERSION.split(".", 2) ]
+    IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
+else:
+    IPA_PYTHON_VERSION = NUM_VERSION
 from ipapython.dn import DN
 from ipaclient.install import ipadiscovery
 from ipalib.install.sysrestore import SYSRESTORE_STATEFILE
@@ -445,7 +461,8 @@ def main():
                      client_domain=client_domain,
                      dnsok=dnsok,
                      subject_base=subject_base,
-                     ntp_servers=ntp_servers)
+                     ntp_servers=ntp_servers,
+                     ipa_python_version=IPA_PYTHON_VERSION)
 
 if __name__ == '__main__':
     main()
