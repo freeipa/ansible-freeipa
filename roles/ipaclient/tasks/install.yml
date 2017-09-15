@@ -16,10 +16,10 @@
     check: yes
   register: ipadiscovery
 
-- name: Install - Set default principal if no keytab is given and no OTP usage
+- name: Install - Set default principal if no keytab is given
   set_fact:
     ipaclient_principal: admin
-  when: ipaclient_principal is undefined and ipaclient_keytab is undefined and not ipaclient_use_otp | bool
+  when: ipaclient_principal is undefined and ipaclient_keytab is undefined
 
 # The following block is executed when using OTP to enroll IPA client
 # ie when ipaclient_use_otp is set.
@@ -55,7 +55,7 @@
 
 - name: Install - Check if one of password and keytab are set
   fail: msg="At least one of password or keytab must be specified"
-  when: ipaclient_password is undefined and ipaclient_keytab is undefined or ipaclient_password == "" or ipaclient_keytab == ""
+  when: (ipaclient_password is undefined or ipaclient_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
 
 - name: Install - Join IPA
   ipajoin:
@@ -129,11 +129,6 @@
     hostname: "{{ ipadiscovery.hostname }}"
     #debug: yes
   register: ipaapi
-
-- name: Install - Set default principal after OTP usage
-  set_fact:
-    ipaclient_principal: admin
-  when: ipaclient_principal is undefined and ipaclient_keytab is undefined and ipaclient_use_otp | bool
 
 - name: Install - Create IPA NSS database
   ipanss:
