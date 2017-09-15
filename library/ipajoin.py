@@ -71,6 +71,7 @@ options:
   kinit_attempts:
     description: Repeat the request for host Kerberos ticket X times.
     required: false
+    default: 5
   debug:
     description: Enable debug mode.
     required: false
@@ -198,7 +199,7 @@ def main():
             keytab=dict(required=False),
             ca_cert_file=dict(required=False),
             force_join=dict(required=False, type='bool'),
-            kinit_attempts=dict(required=False, type='int'),
+            kinit_attempts=dict(required=False, type='int', default=5),
             debug=dict(required=False, type='bool'),
         ),
         mutually_exclusive = [['password','keytab']],

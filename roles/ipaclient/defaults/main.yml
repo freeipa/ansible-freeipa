@@ -4,3 +4,4 @@
 ipaclient_force_join: no
 ipaclient_ntp: no
 ipaclient_mkhomedir: no
+ipaclient_kinit_attempts: 5
