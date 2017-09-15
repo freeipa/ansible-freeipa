@@ -55,7 +55,7 @@
 
 - name: Install - Check if one of password and keytab are set
   fail: msg="At least one of password or keytab must be specified"
-  when: ipaclient_password is undefined and ipaclient_keytab is undefined
+  when: ipaclient_password is undefined and ipaclient_keytab is undefined or ipaclient_password == "" or ipaclient_keytab == ""
 
 - name: Install - Join IPA
   ipajoin:
@@ -66,7 +66,7 @@
     basedn: "{{ ipadiscovery.basedn }}"
     hostname: "{{ ipadiscovery.hostname }}"
     force_join: "{{ ipaclient_force_join | default(omit) }}"
-    principal: "{{ ipaclient_principal | default(omit) }}"
+    principal: "{{ ipaclient_principal if not ipaclient_use_otp | bool else '' }}"
     password: "{{ ipaclient_password | default(omit) }}"
     keytab: "{{ ipaclient_keytab | default(omit) }}"
     #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"

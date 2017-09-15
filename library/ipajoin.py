@@ -231,7 +231,7 @@ def main():
 
     options.ca_cert_file = ca_cert_file
     options.unattended = True
-    options.principal = principal
+    options.principal = principal if principal != "" else None
     options.force = False
     options.password = password
 
