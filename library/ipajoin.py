@@ -201,8 +201,8 @@ def main():
             kinit_attempts=dict(required=False, type='int'),
             debug=dict(required=False, type='bool'),
         ),
-        required_one_of = (['principal', 'keytab'],
-                           ['password', 'keytab']),
+        mutually_exclusive = [['password','keytab']],
+        required_one_of = [['password', 'keytab']],
         supports_check_mode = True,
     )
 
