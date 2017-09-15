@@ -42,6 +42,12 @@
 
   when: ipaclient_password is not defined and ipaclient_keytab is not defined
 
+- fail: msg="At least one of password, keytab or otp must be specified"
+  when: ipaclient_password is undefined and ipaclient_keytab is undefined and ipaclient_otp is undefined
+
+- fail: msg="Password is not defined"
+  when: ipaclient_password is undefined
+
 - name: Install - Join IPA
   ipajoin:
     servers: "{{ ipadiscovery.servers }}"
