@@ -197,6 +197,12 @@ def ensure_host_present(module, api, ipahost):
         if module.check_mode:
             module.exit_json(changed=True)
 
+        # If we want to create a random password, and the host
+        # already has Keytab: true, then we need first to run
+        # ipa host-disable in order to remove OTP and keytab
+        if module.params.get('random') and ipahost['has_keytab'] == True:
+            api.Command.host_disable(fqdn)
+
         result = api.Command.host_mod(fqdn, **diffs)
         # Save random password as it is not displayed by host-show
         if module.params.get('random'):
