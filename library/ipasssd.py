@@ -157,7 +157,6 @@ def main():
             dns_updates=dict(required=False, type='bool'),
             all_ip_addresses=dict(required=False, type='bool'),
         ),
-        # required_one_of = ( [ '', '' ] ),
         supports_check_mode = True,
     )
 

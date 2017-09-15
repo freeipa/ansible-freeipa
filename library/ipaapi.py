@@ -126,7 +126,6 @@ def main():
             hostname=dict(required=True),
             debug=dict(required=False, type='bool', default="false")
         ),
-        # required_one_of = ( [ '', '' ] ),
         supports_check_mode = True,
     )
 

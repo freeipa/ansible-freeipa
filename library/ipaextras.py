@@ -177,7 +177,6 @@ def main():
             nisdomain=dict(required=False),
             on_master=dict(required=False, type='bool', default='no'),
         ),
-        # required_one_of = ( [ '', '' ] ),
         supports_check_mode = True,
     )
 

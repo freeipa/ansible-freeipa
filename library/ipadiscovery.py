@@ -233,7 +233,6 @@ def main():
             ca_cert_file=dict(required=False),
             check=dict(required=False, type='bool', default=False),
         ),
-        # required_one_of = ( [ '', '' ] ),
         supports_check_mode = True,
     )
 

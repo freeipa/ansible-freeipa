@@ -172,7 +172,6 @@ def main():
             mkhomedir=dict(required=False),
             on_master=dict(required=False, type='bool'),
         ),
-        # required_one_of = ( [ '', '' ] ),
         supports_check_mode = True,
     )
 
