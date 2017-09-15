@@ -44,11 +44,13 @@
 
   when: ipaclient_use_otp | bool
 
-- fail: msg="At least one of password, keytab or otp must be specified"
-  when: ipaclient_password is undefined and ipaclient_keytab is undefined and ipaclient_otp is undefined
+- name: Install - Check if principal and keytab are set
+  fail: msg="Principal and keytab cannot be used together"
+  when: ipaclient_principal is defined and ipaclient_keytab is defined
 
-- fail: msg="Password is not defined"
-  when: ipaclient_password is undefined
+- name: Install - Check if one of password and keytab are set
+  fail: msg="At least one of password or keytab must be specified"
+  when: ipaclient_password is undefined and ipaclient_keytab is undefined
 
 - name: Install - Join IPA
   ipajoin:
