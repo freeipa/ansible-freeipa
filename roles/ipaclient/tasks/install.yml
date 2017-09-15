@@ -47,6 +47,14 @@
     set_fact:
       ipaclient_password: "{{ ipahost_output.host.randompassword if ipahost_output.host is defined }}"
 
+  - name: Install - Purge {{ ipadiscovery.realm }} from existing host keytab
+    command: /usr/sbin/ipa-rmkeytab -k /etc/krb5.keytab -r "{{ ipadiscovery.realm }}"
+    register: iparmkeytab
+    # Do not fail on error codes 3 and 5:
+    #   3 - Unable to open keytab
+    #   5 - Principal name or realm not found in keytab
+    failed_when: iparmkeytab.rc != 0 and iparmkeytab.rc != 3 and iparmkeytab.rc != 5
+
   when: ipaclient_use_otp | bool
 
 - name: Install - Check if principal and keytab are set
