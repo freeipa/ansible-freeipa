@@ -156,7 +156,7 @@
     ntp: "{{ ipaclient_ntp | default(omit) }}"
     #force_ntpd: no
     #sssd: yes
-    #ssh: yes"
+    #ssh: yes
     #trust_sshfp: yes
     #sshd: yes
     #automount_location:
