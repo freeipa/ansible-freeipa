@@ -16,6 +16,11 @@
     check: yes
   register: ipadiscovery
 
+- name: Install - Set default principal if no keytab is given and no OTP usage
+  set_fact:
+    ipaclient_principal: admin
+  when: ipaclient_principal is undefined and ipaclient_keytab is undefined and not ipaclient_use_otp | bool
+
 # The following block is executed when using OTP to enroll IPA client
 # ie when ipaclient_use_otp is set.
 # It connects to ipaserver and add the host with --random option in order
@@ -124,6 +129,11 @@
     hostname: "{{ ipadiscovery.hostname }}"
     #debug: yes
   register: ipaapi
+
+- name: Install - Set default principal after OTP usage
+  set_fact:
+    ipaclient_principal: admin
+  when: ipaclient_principal is undefined and ipaclient_keytab is undefined and ipaclient_use_otp | bool
 
 - name: Install - Create IPA NSS database
   ipanss:
