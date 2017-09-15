@@ -138,10 +138,11 @@ tbd
 
 import os
 from six.moves.configparser import RawConfigParser
-
 from ansible.module_utils.basic import AnsibleModule
-
-from ipalib.install.sysrestore import SYSRESTORE_STATEFILE
+try:
+    from ipalib.install.sysrestore import SYSRESTORE_STATEFILE
+except ImportError:
+    from ipapython.sysrestore import SYSRESTORE_STATEFILE
 from ipaplatform.paths import paths
 
 
