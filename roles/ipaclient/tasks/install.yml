@@ -17,9 +17,11 @@
   register: ipadiscovery
 
 # The following block is executed when using OTP to enroll IPA client
-# ie when neither ipaclient_password not ipaclient_keytab is set
+# ie when ipaclient_use_otp is set.
 # It connects to ipaserver and add the host with --random option in order
 # to create a OneTime Password
+# If a keytab is specified in the hostent, then the hostent will be disabled
+# if ipaclient_use_otp is set.
 - block:
   - name: Install - Get a One-Time Password for client enrollment
     ipahost:
@@ -38,9 +40,9 @@
 
   - name: Install - Store the previously obtained OTP
     set_fact:
-      ipaclient_otp: "{{ipahost_output.host.randompassword if ipahost_output.host is defined else 'dummyotp' }}"
+      ipaclient_password: "{{ ipahost_output.host.randompassword if ipahost_output.host is defined }}"
 
-  when: ipaclient_password is not defined and ipaclient_keytab is not defined
+  when: ipaclient_use_otp | bool
 
 - fail: msg="At least one of password, keytab or otp must be specified"
   when: ipaclient_password is undefined and ipaclient_keytab is undefined and ipaclient_otp is undefined
