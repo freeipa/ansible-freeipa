@@ -21,6 +21,23 @@
     ipaclient_principal: admin
   when: ipaclient_principal is undefined and ipaclient_keytab is undefined
 
+- block:
+  - name: Install - Test if IPA client has working krb5.keytab
+    ipatest:
+      servers: "{{ ipadiscovery.servers }}"
+      domain: "{{ ipadiscovery.domain }}"
+      realm: "{{ ipadiscovery.realm }}"
+      hostname: "{{ ipadiscovery.hostname }}"
+      kdc: "{{ ipadiscovery.kdc }}"
+      principal: "{{ ipaclient_principal if not ipaclient_use_otp | bool else '' }}"
+      kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
+    register: ipatest
+
+  - name: Install - Disable One-Time Password for client with working krb5.keytab
+    set_fact:
+      ipaclient_use_otp: "no"
+    when: ipaclient_use_otp | bool and ipatest.krb5_keytab_ok
+
 # The following block is executed when using OTP to enroll IPA client
 # ie when ipaclient_use_otp is set.
 # It connects to ipaserver and add the host with --random option in order
@@ -80,6 +97,8 @@
     keytab: "{{ ipaclient_keytab | default(omit) }}"
     #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
     kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
+  register: ipajoin
+  when: not ipatest.krb5_keytab_ok
 
 - name: Install - Configure IPA default.conf
   include_role:
