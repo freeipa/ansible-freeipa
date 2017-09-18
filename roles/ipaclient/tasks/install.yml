@@ -100,6 +100,13 @@
   register: ipajoin
   when: not ipatest.krb5_keytab_ok
 
+- block:
+  - file:
+      path: "/etc/ipa/.dns_ccache"
+      state: absent
+  - meta: end_play
+  when: not ipaclient_allow_repair | bool and (ipatest.krb5_keytab_ok or ipajoin.already_joined)
+
 - name: Install - Configure IPA default.conf
   include_role:
     name: ipaconf
