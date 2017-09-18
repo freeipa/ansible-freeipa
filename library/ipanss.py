@@ -332,7 +332,7 @@ def main():
     # Check that nss is working properly
     if not on_master:
         user = principal
-        if user is None:
+        if user is None or user == "":
             user = "admin@%s" % domain
             module.log("Principal is not set when enrolling with OTP"
                        "; using principal '%s' for 'getent passwd'" % user)
