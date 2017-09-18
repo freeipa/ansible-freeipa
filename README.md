@@ -91,6 +91,12 @@ Variables
 **ipaclient_force_join** - Set force_join to yes to join the host even if it is already enrolled.
  (bool, optional)
 
+**ipaclient_use_otp** - Enforce the generation of a one time password to configure new and existing hosts. The enforcement on an existing host is not done if there is a working krb5.keytab on the host. If the generation of an otp is enforced for an existing host entry, then the host gets diabled and the containing keytab gets removed.
+ (bool, optional)
+
+**ipaclient_allow_repair** - Allow repair of already joined hosts. Contrary to ipaclient_force_join the host entry will not be changed on the server.
+ (bool, optional)
+
 **ipaclient_kinit_attempts** - Repeat the request for host Kerberos ticket X times if it fails.
  (int, optional)
 
