@@ -51,11 +51,11 @@
 
 - name: Install - Check if principal and keytab are set
   fail: msg="Principal and keytab cannot be used together"
-  when: ipaclient_principal is defined and ipaclient_keytab is defined
+  when: ipaclient_principal is defined and ipaclient_principal != "" and ipaclient_keytab is defined and ipaclient_keytab != ""
 
 - name: Install - Check if one of password and keytab are set
   fail: msg="At least one of password or keytab must be specified"
-  when: (ipaclient_password is undefined or ipaclient_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
+  when: not ipatest.krb5_keytab_ok and (ipaclient_password is undefined or ipaclient_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
 
 - name: Install - Purge {{ ipadiscovery.realm }} from host keytab
   command: /usr/sbin/ipa-rmkeytab -k /etc/krb5.keytab -r "{{ ipadiscovery.realm }}"
