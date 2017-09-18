@@ -108,6 +108,10 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
+already_joined:
+  description: The flag describes if the host is arelady joined.
+  returned: always
+  type: bool
 '''
 
 class Object(object):
@@ -238,6 +242,8 @@ def main():
     options.password = password
 
     ccache_dir = None
+    changed = False
+    already_joined = False
     try:
         (krb_fd, krb_name) = tempfile.mkstemp()
         os.close(krb_fd)
@@ -315,8 +321,15 @@ def main():
         stderr = result.error_output
 
         if result.returncode != 0:
-            module.fail_json(msg="Joining realm failed: %s" % stderr)
+            if result.returncode == 13:
+                already_joined = True
+                module.log("Host is already joined")
+            else:
+                if principal:
+                    run(["kdestroy"], raiseonerr=False, env=env)
+                module.fail_json(msg="Joining realm failed: %s" % stderr)
         else:
+            changed = True
             module.log("Enrolled in IPA realm %s" % realm)
 
         start = stderr.find('Certificate subject base is: ')
@@ -360,7 +373,8 @@ def main():
             except OSError:
                 module.fail_json(msg="Could not remove %s.ipabkp" % krb_name)
 
-    module.exit_json(changed=True)
+    module.exit_json(changed=changed,
+                     already_joined=already_joined)
 
 if __name__ == '__main__':
     main()
