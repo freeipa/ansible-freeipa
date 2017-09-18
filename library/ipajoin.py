@@ -202,8 +202,6 @@ def main():
             kinit_attempts=dict(required=False, type='int', default=5),
             debug=dict(required=False, type='bool'),
         ),
-        mutually_exclusive = [['password','keytab']],
-        required_one_of = [['password', 'keytab']],
         supports_check_mode = True,
     )
 
@@ -221,6 +219,10 @@ def main():
     ca_cert_file = module.params.get('ca_cert_file')
     kinit_attempts = module.params.get('kinit_attempts')
     debug = module.params.get('debug')
+
+    if password is not None and password != "" and \
+       keytab is not None and keytab != "":
+        module.fail_json(msg="Password and keytab cannot be used together")
 
     client_domain = hostname[hostname.find(".")+1:]
     nolog = tuple()
