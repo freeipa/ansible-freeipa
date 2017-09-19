@@ -169,7 +169,7 @@ def main():
             principal=dict(required=False),
             subject_base=dict(required=True),
             ca_enabled=dict(required=True, type='bool'),
-            mkhomedir=dict(required=False),
+            mkhomedir=dict(required=False, type='bool'),
             on_master=dict(required=False, type='bool'),
         ),
         supports_check_mode = True,
