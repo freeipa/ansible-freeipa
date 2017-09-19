@@ -98,7 +98,7 @@
     #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
     kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
   register: ipajoin
-  when: not ipatest.krb5_keytab_ok
+  when: not ipatest.krb5_keytab_ok or ipaclient_force_join
 
 - block:
   - file:
