@@ -92,7 +92,7 @@
     basedn: "{{ ipadiscovery.basedn }}"
     hostname: "{{ ipadiscovery.hostname }}"
     force_join: "{{ ipaclient_force_join | default(omit) }}"
-    principal: "{{ ipaclient_principal if not ipaclient_use_otp | bool and ipaclient_keytab is not defined and ipaclient_keytab != "" else '' }}"
+    principal: "{{ ipaclient_principal if not ipaclient_use_otp | bool and ipaclient_keytab is not defined and ipaclient_keytab != '' else '' }}"
     password: "{{ ipaclient_password | default(omit) }}"
     keytab: "{{ ipaclient_keytab | default(omit) }}"
     #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
