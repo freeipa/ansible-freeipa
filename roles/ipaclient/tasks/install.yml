@@ -18,8 +18,8 @@
 
 - name: Install - Set default principal if no keytab is given
   set_fact:
-    ipaclient_principal: admin
-  when: ipaclient_principal is undefined and ipaclient_keytab is undefined
+    ipaadmin_principal: admin
+  when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
 
 - block:
   - name: Install - Test if IPA client has working krb5.keytab
@@ -29,7 +29,7 @@
       realm: "{{ ipadiscovery.realm }}"
       hostname: "{{ ipadiscovery.hostname }}"
       kdc: "{{ ipadiscovery.kdc }}"
-      principal: "{{ ipaclient_principal if not ipaclient_use_otp | bool else '' }}"
+      principal: "{{ ipaadmin_principal if not ipaclient_use_otp | bool else '' }}"
       kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
     register: ipatest
 
@@ -48,8 +48,8 @@
   - name: Install - Get a One-Time Password for client enrollment
     ipahost:
       state: present
-      principal: "{{ ipaclient_principal | default('admin') }}"
-      password: "{{ ipaclient_password | default(omit) }}"
+      principal: "{{ ipaadmin_principal | default('admin') }}"
+      password: "{{ ipaadmin_password | default(omit) }}"
       keytab: "{{ ipaadmin_keytab | default(omit) }}"
       fqdn: "{{ ansible_fqdn }}"
       lifetime: "{{ ipaclient_lifetime | default(omit) }}"
@@ -62,17 +62,17 @@
 
   - name: Install - Store the previously obtained OTP
     set_fact:
-      ipaclient_password: "{{ ipahost_output.host.randompassword if ipahost_output.host is defined }}"
+      ipaadmin_password: "{{ ipahost_output.host.randompassword if ipahost_output.host is defined }}"
 
   when: ipaclient_use_otp | bool
 
 - name: Install - Check if principal and keytab are set
   fail: msg="Principal and keytab cannot be used together"
-  when: ipaclient_principal is defined and ipaclient_principal != "" and ipaclient_keytab is defined and ipaclient_keytab != ""
+  when: ipaadmin_principal is defined and ipaadmin_principal != "" and ipaclient_keytab is defined and ipaclient_keytab != ""
 
 - name: Install - Check if one of password and keytab are set
   fail: msg="At least one of password or keytab must be specified"
-  when: not ipatest.krb5_keytab_ok and (ipaclient_password is undefined or ipaclient_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
+  when: not ipatest.krb5_keytab_ok and (ipaadmin_password is undefined or ipaadmin_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
 
 - name: Install - Purge {{ ipadiscovery.realm }} from host keytab
   command: /usr/sbin/ipa-rmkeytab -k /etc/krb5.keytab -r "{{ ipadiscovery.realm }}"
@@ -92,8 +92,8 @@
     basedn: "{{ ipadiscovery.basedn }}"
     hostname: "{{ ipadiscovery.hostname }}"
     force_join: "{{ ipaclient_force_join | default(omit) }}"
-    principal: "{{ ipaclient_principal if not ipaclient_use_otp | bool and ipaclient_keytab is not defined else '' }}"
-    password: "{{ ipaclient_password | default(omit) }}"
+    principal: "{{ ipaadmin_principal if not ipaclient_use_otp | bool and ipaclient_keytab is not defined else '' }}"
+    password: "{{ ipaadmin_password | default(omit) }}"
     keytab: "{{ ipaclient_keytab | default(omit) }}"
     #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
     kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
@@ -173,7 +173,7 @@
     basedn: "{{ ipadiscovery.basedn }}"
     hostname: "{{ ipadiscovery.hostname }}"
     subject_base: "{{ ipadiscovery.subject_base }}"
-    principal: "{{ ipaclient_principal | default(omit) }}"
+    principal: "{{ ipaadmin_principal | default(omit) }}"
     mkhomedir: "{{ ipaclient_mkhomedir | default(omit) }}"
     ca_enabled: "{{ ipaapi.ca_enabled | default(omit) }}"
     #on_master: no

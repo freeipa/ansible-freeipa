@@ -16,7 +16,7 @@ Example inventory file with fixed principal using auto-discovery with DNS record
     ipaclient2.example.com
 
     [ipaclients:vars]
-    ipaclient_principal=admin
+    ipaadmin_principal=admin
 
 Example playbook to setup the IPA client(s) using principal from inventory file and password from an [Ansible Vault](http://docs.ansible.com/ansible/latest/playbooks_vault.html) file:
 
@@ -51,8 +51,8 @@ Example inventory file with fixed servers, principal, password and domain:
     
     [ipaclients:vars]
     ipaclient_domain=example.com
-    ipaclient_principal=admin
-    ipaclient_password=MySecretPassword123
+    ipaadmin_principal=admin
+    ipaadmin_password=MySecretPassword123
 
 Example playbook to setup the IPA client(s) using principal and password from inventory file:
 
@@ -79,10 +79,10 @@ Variables
 **ipaclient_realm** - The Kerberos realm of an existing IPA deployment.
  (string, optional)
 
-**ipaclient_principal** - The authorized kerberos principal used to join the IPA realm.
+**ipaadmin_principal** - The authorized kerberos principal used to join the IPA realm.
  (string, optional)
 
-**ipaclient_password** - The password for the kerberos principal.
+**ipaadmin_password** - The password for the kerberos principal.
  (string, optional)
 
 **ipaclient_keytab** - The path to a backed-up host keytab from previous enrollment.
