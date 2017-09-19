@@ -9,7 +9,7 @@ This role allows to join hosts as clients to an IPA domain. This can be done in 
 Usage
 -----
 
-Example inventory file with fixed principal and using auto-discovery with DNS records:
+Example inventory file with fixed principal using auto-discovery with DNS records:
 
     [ipaclients]
     ipaclient1.example.com
@@ -109,7 +109,7 @@ Variables
 Requirements
 ------------
 
-freeipa-client v4.6
+freeipa-client v4.4 or later
 
 Authors
 -------
