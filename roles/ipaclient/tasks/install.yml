@@ -46,6 +46,7 @@
 # if ipaclient_use_otp is set.
 - block:
   - name: Install - Get a One-Time Password for client enrollment
+    no_log: yes
     ipahost:
       state: present
       principal: "{{ ipaadmin_principal | default('admin') }}"
@@ -61,6 +62,7 @@
     delegate_to: "{{ ipadiscovery.servers[0] }}"
 
   - name: Install - Store the previously obtained OTP
+    no_log: yes
     set_fact:
       ipaadmin_password: "{{ ipahost_output.host.randompassword if ipahost_output.host is defined }}"
 
