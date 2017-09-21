@@ -332,6 +332,10 @@ def main():
             changed = True
             module.log("Enrolled in IPA realm %s" % realm)
 
+        # Fix missing krb5.keytab file for already joined host
+        if already_joined and not os.path.exists(paths.KRB5_KEYTAB):
+            module.fail_json(msg="krb5.keytab missing! Retry with ipaclient_force_join=yes to generate a new one.")
+
         start = stderr.find('Certificate subject base is: ')
         if start >= 0:
             start = start + 29
