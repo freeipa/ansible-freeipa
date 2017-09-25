@@ -130,11 +130,6 @@ dnsok:
   description: True if DNS discovery worked and not passed in any servers.
   returned: always
   type: bool
-subject_base:
-  description: The subject base, needed for certmonger
-  returned: always
-  type: string
-  sample: O=EXAMPLE.COM
 ntp_servers:
   description: The list of detected NTP servers.
   returned: always
@@ -161,7 +156,6 @@ if NUM_VERSION < 30201:
     IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
 else:
     IPA_PYTHON_VERSION = NUM_VERSION
-from ipapython.dn import DN
 from ipaplatform.paths import paths
 try:
     from ipaclient.install import ipadiscovery
@@ -249,7 +243,6 @@ def main():
     dnsok = False
     cli_domain = None
     cli_server = None
-    subject_base = None
     cli_realm = None
     cli_kdc = None
     client_domain = None
@@ -408,7 +401,6 @@ def main():
     cli_basedn = str(ds.basedn)
     cli_basedn_source = ds.basedn_source
     module.debug("will use discovered basedn: %s" % cli_basedn)
-    subject_base = str(DN(('O', cli_realm)))
 
     module.log("Client hostname: %s" % hostname)
     module.debug("Hostname source: %s" % hostname_source)
@@ -466,7 +458,6 @@ def main():
                      hostname=hostname,
                      client_domain=client_domain,
                      dnsok=dnsok,
-                     subject_base=subject_base,
                      ntp_servers=ntp_servers,
                      ipa_python_version=IPA_PYTHON_VERSION)
 
