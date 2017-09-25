@@ -174,7 +174,7 @@
     realm: "{{ ipadiscovery.realm }}"
     basedn: "{{ ipadiscovery.basedn }}"
     hostname: "{{ ipadiscovery.hostname }}"
-    subject_base: "{{ ipadiscovery.subject_base }}"
+    subject_base: "{{ ipaapi.subject_base }}"
     principal: "{{ ipaadmin_principal | default(omit) }}"
     mkhomedir: "{{ ipaclient_mkhomedir | default(omit) }}"
     ca_enabled: "{{ ipaapi.ca_enabled | default(omit) }}"

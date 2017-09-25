@@ -63,6 +63,11 @@ ca_enabled:
   description: Wheter the Certificate Authority is enabled or not.
   returned: always
   type: bool
+subject_base:
+  description: The subject base, needed for certmonger
+  returned: always
+  type: string
+  sample: O=EXAMPLE.COM
 '''
 
 import os
@@ -88,6 +93,7 @@ from ipalib.rpc import delete_persistent_client_session_data
 from ipapython import certdb
 from ipapython.ipautil import CalledProcessError, write_tmp_file, \
     ipa_generate_password
+from ipapython.dn import DN
 ipa_client_install = None
 try:
     from ipaclient.install.client import SECURE_PATH, disable_ra
@@ -236,7 +242,16 @@ def main():
     if not ca_enabled:
         disable_ra()
 
-    module.exit_json(changed=True, ca_enabled=ca_enabled)
+    # Get subject base from ipa server
+    try:
+        config = api.Command['config_show']()['result']
+        subject_base = str(DN(config['ipacertificatesubjectbase'][0]))
+    except errors.PublicError as e:
+        module.fail_json(msg="Cannot get subject base from server: %s" % e)
+
+    module.exit_json(changed=True,
+                     ca_enabled=ca_enabled,
+                     subject_base=subject_base)
 
 if __name__ == '__main__':
     main()
