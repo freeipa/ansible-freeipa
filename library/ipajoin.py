@@ -129,7 +129,6 @@ from ipapython.version import NUM_VERSION, VERSION
 if NUM_VERSION < 40400:
     raise Exception, "freeipa version '%s' is too old" % VERSION
 from ipalib import errors
-from ipapython.dn import DN
 from ipaplatform.paths import paths
 try:
     from ipalib.install import sysrestore
@@ -335,13 +334,6 @@ def main():
         # Fix missing krb5.keytab file for already joined host
         if already_joined and not os.path.exists(paths.KRB5_KEYTAB):
             module.fail_json(msg="krb5.keytab missing! Retry with ipaclient_force_join=yes to generate a new one.")
-
-        start = stderr.find('Certificate subject base is: ')
-        if start >= 0:
-            start = start + 29
-            subject_base = stderr[start:]
-            subject_base = subject_base.strip()
-            subject_base = DN(subject_base)
 
         if principal:
             run(["kdestroy"], raiseonerr=False, env=env)
