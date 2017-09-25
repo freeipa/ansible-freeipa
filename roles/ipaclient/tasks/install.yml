@@ -103,7 +103,8 @@
   when: not ipatest.krb5_keytab_ok or ipaclient_force_join
 
 - block:
-  - file:
+  - name: Install - Cleanup ccache, end playbook processing
+    file:
       path: "/etc/ipa/.dns_ccache"
       state: absent
   - meta: end_play
