@@ -173,7 +173,7 @@ def get_ipa_conf():
     result = dict()
     for item in ['basedn', 'realm', 'domain', 'server', 'host', 'xmlrpc_uri']:
         if parser.has_option('global', item):
-	    value = parser.get('global', item)
+            value = parser.get('global', item)
         else:
             value = None
         if value:
