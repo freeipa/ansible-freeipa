@@ -1,0 +1,5 @@
+# defaults file for ipaclient
+# vars/rhel.yml
+ipaclient_package: ipa-client
+ansible_python_interpreter: '/usr/bin/python2'
+

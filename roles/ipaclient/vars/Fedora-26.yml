@@ -1,0 +1,2 @@
+ipaclient_package: python2-ipaclient
+ansible_python_interpreter: '/usr/bin/python2'
