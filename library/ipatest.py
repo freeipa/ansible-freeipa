@@ -183,7 +183,7 @@ def main():
     host_principal = 'host/%s@%s' % (hostname, realm)
     sssd = True
 
-    krb5_keytab_ok = True
+    krb5_keytab_ok = False
     try:
         (krb_fd, krb_name) = tempfile.mkstemp()
         os.close(krb_fd)
@@ -208,10 +208,9 @@ def main():
                          paths.IPA_DNS_CCACHE,
                          config=krb_name,
                          attempts=kinit_attempts)
+            krb5_keytab_ok = True
         except gssapi.exceptions.GSSError as e:
-            # failure to get ticket makes it impossible to login and bind
-            # from sssd to LDAP, abort installation and rollback changes
-            krb5_keytab_ok = False
+            pass
 
     finally:
         try:
@@ -219,7 +218,8 @@ def main():
         except OSError:
             module.fail_json(msg="Could not remove %s" % krb_name)
 
-    module.exit_json(changed=False, krb5_keytab_ok=krb5_keytab_ok)
+    module.exit_json(changed=False,
+                     krb5_keytab_ok=krb5_keytab_ok)
 
 if __name__ == '__main__':
     main()
