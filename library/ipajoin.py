@@ -127,7 +127,7 @@ import inspect
 from ansible.module_utils.basic import AnsibleModule
 from ipapython.version import NUM_VERSION, VERSION
 if NUM_VERSION < 40400:
-    raise Exception, "freeipa version '%s' is too old" % VERSION
+    raise Exception("freeipa version '%s' is too old" % VERSION)
 from ipalib import errors
 from ipaplatform.paths import paths
 try:

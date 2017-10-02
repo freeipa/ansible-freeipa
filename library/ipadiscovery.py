@@ -149,7 +149,7 @@ from six.moves.configparser import RawConfigParser
 from ansible.module_utils.basic import AnsibleModule
 from ipapython.version import NUM_VERSION, VERSION
 if NUM_VERSION < 40400:
-    raise Exception, "freeipa version '%s' is too old" % VERSION
+    raise Exception("freeipa version '%s' is too old" % VERSION)
 if NUM_VERSION < 30201:
     # See ipapython/version.py
     IPA_MAJOR,IPA_MINOR,IPA_RELEASE = [ int(x) for x in VERSION.split(".", 2) ]
