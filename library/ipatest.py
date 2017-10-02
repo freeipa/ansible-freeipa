@@ -187,6 +187,12 @@ def main():
     host_principal = 'host/%s@%s' % (hostname, realm)
     sssd = True
 
+    # Remove IPA_DNS_CCACHE remain if it exists
+    try:
+        os.remove(paths.IPA_DNS_CCACHE)
+    except OSError:
+        pass
+
     krb5_keytab_ok = False
     ca_crt_exists = os.path.exists(paths.IPA_CA_CRT)
     try:
