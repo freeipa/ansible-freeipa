@@ -90,6 +90,10 @@ krb5_keytab_ok:
   description: The flag describes if krb5.keytab on the host is usable.
   returned: always
   type: bool
+ca_crt_exists:
+  description: The flag describes if ca.crt exists.
+  returned: always
+  type: bool
 '''
 
 class Object(object):
@@ -184,6 +188,7 @@ def main():
     sssd = True
 
     krb5_keytab_ok = False
+    ca_crt_exists = os.path.exists(paths.IPA_CA_CRT)
     try:
         (krb_fd, krb_name) = tempfile.mkstemp()
         os.close(krb_fd)
@@ -219,7 +224,8 @@ def main():
             module.fail_json(msg="Could not remove %s" % krb_name)
 
     module.exit_json(changed=False,
-                     krb5_keytab_ok=krb5_keytab_ok)
+                     krb5_keytab_ok=krb5_keytab_ok,
+                     ca_crt_exists=ca_crt_exists)
 
 if __name__ == '__main__':
     main()
