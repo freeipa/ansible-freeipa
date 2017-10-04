@@ -114,8 +114,14 @@
       file:
         path: "/etc/ipa/.dns_ccache"
         state: absent
+    - fail:
+        msg: "The krb5 configuration is not correct, please enable allow_repair to fix this."
+      when: not ipatest.krb5_conf_ok
+    - fail:
+        msg: "The IPA test failed, please enable allow_repair to fix this."
+      when: not ipatest.ipa_test_ok
     - meta: end_play
-    when: not ipaclient_allow_repair | bool and (ipatest.krb5_keytab_ok or ipajoin.already_joined)
+    when: not ipajoin.changed and not ipaclient_allow_repair | bool and (ipatest.krb5_keytab_ok or ipajoin.already_joined)
 
   - name: Install - Configure IPA default.conf
     include_role:
