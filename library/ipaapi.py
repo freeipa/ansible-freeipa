@@ -172,7 +172,7 @@ def main():
         # Add CA certs to a temporary NSS database
         argspec = inspect.getargspec(tmp_db.create_db)
         try:
-            if NUM_VERSION > 40400:
+            if NUM_VERSION > 40404:
                 tmp_db.create_db()
 
                 for i, cert in enumerate(ca_certs):
