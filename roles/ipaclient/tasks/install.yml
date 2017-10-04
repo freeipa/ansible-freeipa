@@ -3,8 +3,9 @@
 
 - name: Install - Install IPA client package
   package:
-    name: "{{ ipaclient_package }}"
+    name: "{{ item }}"
     state: present
+  with_items: "{{ ipaclient_packages }}"
 
 - name: Install - IPA discovery
   ipadiscovery:

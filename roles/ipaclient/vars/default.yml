@@ -1,4 +1,4 @@
 # defaults file for ipaclient
 # vars/default.yml
-ipaclient_package: python3-ipaclient
+ipaclient_packages: [ "ipa-client", "libselinux-python" ]
 ansible_python_interpreter: '/usr/bin/python3'

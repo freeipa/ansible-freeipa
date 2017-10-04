@@ -1,2 +1,2 @@
-ipaclient_package: python2-ipaclient
+ipaclient_packages: [ "ipa-client", "libselinux-python" ]
 ansible_python_interpreter: '/usr/bin/python2'
