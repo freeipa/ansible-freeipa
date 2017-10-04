@@ -184,6 +184,14 @@
       #debug: yes
     register: ipaapi
 
+  - name: Install - Fix IPA ca
+    ipafixca:
+      servers: "{{ ipadiscovery.servers }}"
+      realm: "{{ ipadiscovery.realm }}"
+      basedn: "{{ ipadiscovery.basedn }}"
+      allow_repair: "{{ ipaclient_allow_repair }}"
+    when: ipatest.krb5_keytab_ok and not ipatest.ca_crt_exists
+
   - name: Install - Create IPA NSS database
     ipanss:
       servers: "{{ ipadiscovery.servers }}"
