@@ -93,6 +93,13 @@ krb5_keytab_ok:
 ca_crt_exists:
   description: The flag describes if ca.crt exists.
   returned: always
+krb5_conf_ok:
+  description: The flag describes if krb5.conf on the host is usable.
+  returned: always
+  type: bool
+ipa_test_ok:
+  description: The flag describes if ipa ping test succeded.
+  returned: always
   type: bool
 '''
 
@@ -116,7 +123,7 @@ try:
 except ImportError:
     from ipapython.ipautil import kinit_keytab
 try:
-    from ipaclient.install.client import configure_krb5_conf
+    from ipaclient.install.client import configure_krb5_conf, SECURE_PATH
 except ImportError:
     # Create temporary copy of ipa-client-install script (as
     # ipa_client_install.py) to be able to import the script easily and also
@@ -154,6 +161,7 @@ except ImportError:
                 filename, client_domain, client_hostname)
     else:
         configure_krb5_conf = ipa_client_install.configure_krb5_conf
+    SECURE_PATH = ("/bin:/sbin:/usr/kerberos/bin:/usr/kerberos/sbin:/usr/bin:/usr/sbin")
 from ipapython.ipautil import realm_to_suffix, run
 
 
@@ -194,44 +202,79 @@ def main():
         pass
 
     krb5_keytab_ok = False
+    krb5_conf_ok = False
+    ipa_test_ok = False
     ca_crt_exists = os.path.exists(paths.IPA_CA_CRT)
+    env = {'PATH': SECURE_PATH, 'KRB5CCNAME': paths.IPA_DNS_CCACHE}
+
+    # First try: Validate krb5 keytab with system krb5 configuraiton
     try:
-        (krb_fd, krb_name) = tempfile.mkstemp()
-        os.close(krb_fd)
-        configure_krb5_conf(
-            cli_realm=realm,
-            cli_domain=domain,
-            cli_server=servers,
-            cli_kdc=kdc,
-            dnsok=False,
-            filename=krb_name,
-            client_domain=client_domain,
-            client_hostname=hostname,
-            configure_sssd=sssd,
-            force=False)
+        kinit_keytab(host_principal, paths.KRB5_KEYTAB,
+                     paths.IPA_DNS_CCACHE,
+                     config=paths.KRB5_CONF,
+                     attempts=kinit_attempts)
+        krb5_keytab_ok = True
+        krb5_conf_ok = True
 
-        # Obtain the TGT. We do it with the temporary krb5.conf, so that
-        # only the KDC we're installing under is contacted.
-        # Other KDCs might not have replicated the principal yet.
-        # Once we have the TGT, it's usable on any server.
+        # Test IPA
         try:
-            kinit_keytab(host_principal, paths.KRB5_KEYTAB,
-                         paths.IPA_DNS_CCACHE,
-                         config=krb_name,
-                         attempts=kinit_attempts)
-            krb5_keytab_ok = True
-        except gssapi.exceptions.GSSError as e:
-            pass
-
-    finally:
-        try:
-            os.remove(krb_name)
+            result = run(["/usr/bin/ipa", "ping"], raiseonerr=False, env=env)
+            if result.returncode == 0:
+                ipa_test_ok = True
         except OSError:
-            module.fail_json(msg="Could not remove %s" % krb_name)
+            pass
+    except gssapi.exceptions.GSSError as e:
+        pass
+
+    # Second try: Validate krb5 keytab with temporary krb5
+    # configuration
+    if not krb5_conf_ok:
+      try:
+          (krb_fd, krb_name) = tempfile.mkstemp()
+          os.close(krb_fd)
+          configure_krb5_conf(
+              cli_realm=realm,
+              cli_domain=domain,
+              cli_server=servers,
+              cli_kdc=kdc,
+              dnsok=False,
+              filename=krb_name,
+              client_domain=client_domain,
+              client_hostname=hostname,
+              configure_sssd=sssd,
+              force=False)
+
+          try:
+              kinit_keytab(host_principal, paths.KRB5_KEYTAB,
+                           paths.IPA_DNS_CCACHE,
+                           config=krb_name,
+                           attempts=kinit_attempts)
+              krb5_keytab_ok = True
+
+              # Test IPA
+              env['KRB5_CONFIG'] = krb_name
+              try:
+                  result = run(["/usr/bin/ipa", "ping"], raiseonerr=False,
+                               env=env)
+                  if result.returncode == 0:
+                      ipa_test_ok = True
+              except OSError:
+                  pass
+
+          except gssapi.exceptions.GSSError as e:
+              pass
+
+      finally:
+          try:
+              os.remove(krb_name)
+          except OSError:
+              module.fail_json(msg="Could not remove %s" % krb_name)
 
     module.exit_json(changed=False,
                      krb5_keytab_ok=krb5_keytab_ok,
-                     ca_crt_exists=ca_crt_exists)
+                     krb5_conf_ok=krb5_conf_ok,
+                     ca_crt_exists=ca_crt_exists,
+                     ipa_test_ok=ipa_test_ok)
 
 if __name__ == '__main__':
     main()
