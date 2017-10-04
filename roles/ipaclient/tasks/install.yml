@@ -120,6 +120,9 @@
     - fail:
         msg: "The IPA test failed, please enable allow_repair to fix this."
       when: not ipatest.ipa_test_ok
+    - fail:
+        msg: "The ca.crt file is missing, please enable allow_repair to fix this."
+      when: not ipatest.ca_crt_exists
     - meta: end_play
     when: not ipajoin.changed and not ipaclient_allow_repair | bool and (ipatest.krb5_keytab_ok or ipajoin.already_joined)
 
