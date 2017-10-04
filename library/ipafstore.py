@@ -44,7 +44,7 @@ author:
 
 EXAMPLES = '''
 - name: Backup /etc/krb5.conf
-  fstore:
+  ipafstore:
     backup: "/etc/krb5.conf"
 '''
 
