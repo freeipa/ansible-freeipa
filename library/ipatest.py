@@ -60,7 +60,7 @@ author:
 '''
 
 EXAMPLES = '''
-# Join IPA to get the keytab
+# Test IPA with local keytab
 - name: Test IPA in force mode with maximum 5 kinit attempts
   ipatest:
     servers: ["server1.example.com","server2.example.com"]
@@ -70,7 +70,7 @@ EXAMPLES = '''
     hostname: client1.example.com
     kinit_attempts: 5
 
-# Join IPA to get the keytab using ipadiscovery return values
+# Test IPA with ipadiscovery return values
 - name: Join IPA
   ipajoin:
     servers: "{{ ipadiscovery.servers }}"
