@@ -333,7 +333,7 @@ def main():
             changed = True
             module.log("Enrolled in IPA realm %s" % realm)
 
-        # Fix missing krb5.keytab file for already joined host
+        # Fail for missing krb5.keytab on already joined host
         if already_joined and not os.path.exists(paths.KRB5_KEYTAB):
             module.fail_json(msg="krb5.keytab missing! Retry with ipaclient_force_join=yes to generate a new one.")
 
@@ -351,8 +351,8 @@ def main():
                          attempts=kinit_attempts)
             env['KRB5CCNAME'] = os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
         except gssapi.exceptions.GSSError as e:
-            # failure to get ticket makes it impossible to login and bind
-            # from sssd to LDAP, abort installation and rollback changes
+            # failure to get ticket makes it impossible to login and
+            # bind from sssd to LDAP, abort installation
             module.fail_json(msg="Failed to obtain host TGT: %s" % e)
 
     finally:
