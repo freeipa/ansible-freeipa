@@ -51,9 +51,6 @@ options:
   kdc:
     description: The name or address of the host running the KDC.
     required: true
-  principal:
-    description: The authorized kerberos principal used to join the IPA realm.
-    required: false
   kinit_attempts:
     description: Repeat the request for host Kerberos ticket X times.
     required: false
@@ -71,7 +68,6 @@ EXAMPLES = '''
     realm: EXAMPLE.COM
     kdc: server1.example.com
     hostname: client1.example.com
-    principal: admin
     kinit_attempts: 5
 
 # Join IPA to get the keytab using ipadiscovery return values
@@ -82,7 +78,6 @@ EXAMPLES = '''
     realm: "{{ ipadiscovery.realm }}"
     kdc: "{{ ipadiscovery.kdc }}"
     hostname: "{{ ipadiscovery.hostname }}"
-    principal: admin
 '''
 
 RETURN = '''
@@ -176,7 +171,6 @@ def main():
             realm=dict(required=True),
             hostname=dict(required=True),
             kdc=dict(required=True),
-            principal=dict(required=False),
             kinit_attempts=dict(required=False, type='int', default=5),
         ),
         supports_check_mode = True,
@@ -188,7 +182,6 @@ def main():
     realm = module.params.get('realm')
     hostname = module.params.get('hostname')
     kdc = module.params.get('kdc')
-    principal = module.params.get('principal')
     kinit_attempts = module.params.get('kinit_attempts')
 
     client_domain = hostname[hostname.find(".")+1:]
