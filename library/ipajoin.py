@@ -139,14 +139,16 @@ try:
 except ImportError:
     from ipapython.ipautil import kinit_keytab, kinit_password
 try:
-    from ipaclient.install.client import configure_krb5_conf, get_ca_certs, SECURE_PATH
+    from ipaclient.install.client import configure_krb5_conf, get_ca_certs, \
+        SECURE_PATH
 except ImportError:
     # Create temporary copy of ipa-client-install script (as
-    # ipa_client_install.py) to be able to import the script easily and also
-    # to remove the global finally clause in which the generated ccache file
-    # gets removed. The ccache file will be needed in the next step.
-    # This is done in a temporary directory that gets removed right after
-    # ipa_client_install has been imported.
+    # ipa_client_install.py) to be able to import the script easily
+    # and also to remove the global finally clause in which the
+    # generated ccache file gets removed. The ccache file will be
+    # needed in the next step.
+    # This is done in a temporary directory that gets removed right
+    # after ipa_client_install has been imported.
     import shutil
     temp_dir = tempfile.mkdtemp(dir="/tmp")
     sys.path.append(temp_dir)
@@ -338,8 +340,8 @@ def main():
         if principal:
             run(["kdestroy"], raiseonerr=False, env=env)
 
-        # Obtain the TGT. We do it with the temporary krb5.conf, so that
-        # only the KDC we're installing under is contacted.
+        # Obtain the TGT. We do it with the temporary krb5.conf, sot
+        # tha only the KDC we're installing under is contacted.
         # Other KDCs might not have replicated the principal yet.
         # Once we have the TGT, it's usable on any server.
         try:
