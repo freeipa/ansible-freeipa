@@ -172,7 +172,7 @@
       krb5_no_default_domain: "{{ 'true' if ipadiscovery.domain != ipadiscovery.client_domain else 'false' }}"
       krb5_dns_canonicalize_hostname: "false"
       krb5_pkinit_pool: "FILE:/var/lib/ipa-client/pki/ca-bundle.pem"
-      krb5_pkinit_anchors: "FILE:/var/lib/ipa-client/pki/pki-ca-bundle.pem"
+      krb5_pkinit_anchors: "FILE:/var/lib/ipa-client/pki/kdc-ca-bundle.pem"
     when: ipadiscovery.ipa_python_version > 40400
 
   - name: Install - IPA API calls for remaining enrollment parts
