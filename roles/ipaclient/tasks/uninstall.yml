@@ -1,6 +1,10 @@
 ---
 # tasks to uninstall IPA client
 
+- name: Uninstall - Include Python2/3 import test
+  include: "{{role_path}}/tasks/python_2_3_test.yml"
+  static: yes
+
 - name: Uninstall - Uninstall IPA client
   ipaclient:
     state: absent
