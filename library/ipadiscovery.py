@@ -39,6 +39,7 @@ options:
     description: The FQDN of the IPA servers to connect to.
     required: false
     type: list
+    default: []
   domain:
     description: The primary DNS domain of an existing IPA deployment.
     required: false
@@ -46,7 +47,7 @@ options:
     description:  The Kerberos realm of an existing IPA deployment.
     required: false
   hostname:
-    description: The authorized kerberos principal used to join the IPA realm.
+    description: The hostname of the machine to join (FQDN).
     required: false
   ca_cert_file:
     description: A CA certificate to use.
@@ -55,6 +56,8 @@ options:
     description: Check if IPA client is installed and matching.
     required: false
     default: false
+    type: bool
+    default: no
 author:
     - Thomas Woerner
 '''

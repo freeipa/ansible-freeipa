@@ -38,6 +38,7 @@ options:
   servers:
     description: The FQDN of the IPA servers to connect to.
     required: true
+    type: list
   domain:
     description: The primary DNS domain of an existing IPA deployment.
     required: true
@@ -57,14 +58,20 @@ options:
     description: The subject base, needed for certmonger
     required: true
   ca_enabled:
-    description: Wheter the Certificate Authority is enabled or not.
+    description: Whether the Certificate Authority is enabled or not.
     required: true
+    type: bool
+    default: no
   mkhomedir:
     description: Whether to create home directories for users on their first login.
     required: false
+    type: bool
+    default: no
   on_master:
-    description: Whether the configuration is done on the maseter or not.
+    description: Whether the configuration is done on the master or not.
     required: false
+    type: bool
+    default: no
 author:
     - Thomas Woerner
 '''
@@ -295,8 +302,6 @@ def main():
     nslcd = services.knownservices.nslcd
     if nslcd.is_installed():
         save_state(nslcd, statestore)
-
-    retcode, conf = (0, None)
 
     ##########################################################################
 

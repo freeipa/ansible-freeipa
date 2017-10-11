@@ -33,9 +33,6 @@ short description: Create temporary NSS database, call IPA API for remaining enr
 description:
 Create temporary NSS database, call IPA API for remaining enrollment parts
 options:
-  servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: false
   realm:
     description: The Kerberos realm of an existing IPA deployment.
     required: true
@@ -45,6 +42,8 @@ options:
   debug:
     description: Turn on extra debugging
     required: false
+    type: bool
+    default: no
 author:
     - Thomas Woerner
 '''
@@ -141,8 +140,6 @@ def main():
     servers = module.params.get('servers')
     debug = module.params.get('debug')
 
-    fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
-    statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
     host_principal = 'host/%s@%s' % (hostname, realm)
     os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
     
@@ -170,7 +167,6 @@ def main():
             pass
 
         # Add CA certs to a temporary NSS database
-        argspec = inspect.getargspec(tmp_db.create_db)
         try:
             if NUM_VERSION > 40404:
                 tmp_db.create_db()

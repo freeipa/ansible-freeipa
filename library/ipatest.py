@@ -39,6 +39,7 @@ options:
   servers:
     description: The FQDN of the IPA servers to connect to.
     required: true
+    type: list
   domain:
     description: The primary DNS domain of an existing IPA deployment.
     required: true
@@ -54,6 +55,7 @@ options:
   kinit_attempts:
     description: Repeat the request for host Kerberos ticket X times.
     required: false
+    type: int
     default: 5
 author:
     - Thomas Woerner

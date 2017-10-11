@@ -37,10 +37,11 @@ Configure sssd
 options:
   servers:
     description: The FQDN of the IPA servers to connect to.
-    required: false
+    required: true
+    type: list
   domain:
     description: The primary DNS domain of an existing IPA deployment.
-    required: false
+    required: true
   realm:
     description: The Kerberos realm of an existing IPA deployment.
     required: true
@@ -50,27 +51,42 @@ options:
   services:
     description: The services that should be enabled in the ssd configuration.
     required: true
+    type: list
   krb5_offline_passwords:
     description: Whether user passwords are stored when the server is offline.
     required: false
+    type: bool
+    default: no
   on_master:
-    description: Whether the configuration is done on the maseter or not.
+    description: Whether the configuration is done on the master or not.
     required: false
+    type: bool
+    default: no
   primary:
     description: Whether to use fixed server as primary IPA server.
     required: false
+    type: bool
+    default: no
   preserve_sssd:
     description: Preserve old SSSD configuration if possible.
     required: false
+    type: bool
+    default: no
   permit:
     description: Disable access rules by default, permit all access.
     required: false
+    type: bool
+    default: no
   dns_updates:
     description: Configures the machine to attempt dns updates when the ip address changes.
     required: false
+    type: bool
+    default: no
   all_ip_addresses:
     description: All routable IP addresses configured on any interface will be added to DNS.
     required: false
+    type: bool
+    default: no
 author:
     - Thomas Woerner
 '''
