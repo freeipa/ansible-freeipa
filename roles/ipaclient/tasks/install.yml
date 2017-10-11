@@ -45,7 +45,7 @@
   - name: Install - Disable One-Time Password for client with working krb5.keytab
     set_fact:
       ipaclient_use_otp: "no"
-    when: ipaclient_use_otp | bool and ipatest.krb5_keytab_ok
+    when: ipaclient_use_otp | bool and ipatest.krb5_keytab_ok and not ipaclient_force_join | bool
 
 
   # The following block is executed when using OTP to enroll IPA client
