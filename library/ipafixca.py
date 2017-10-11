@@ -28,14 +28,15 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 
 DOCUMENTATION = '''
 ---
-module: ipaapi
+module: ipafixca
 short description: Fix IPA ca certificate
 description:
 Repair Fix IPA ca certificate
 options:
   servers:
     description: The FQDN of the IPA servers to connect to.
-    required: false
+    required: true
+    type: list
   realm:
     description: The Kerberos realm of an existing IPA deployment.
     required: true
@@ -43,9 +44,10 @@ options:
     description: The basedn of the IPA server (of the form dc=example,dc=com).
     required: true
   allow_repair:
-    deescription: Allow repair of already joined hosts. Contrary to ipaclient_force_join the host entry will not be changed on the server.
+    description: Allow repair of already joined hosts. Contrary to ipaclient_force_join the host entry will not be changed on the server.
     required: true
-    type: boolean
+    type: bool
+    default: no
 author:
     - Thomas Woerner
 '''

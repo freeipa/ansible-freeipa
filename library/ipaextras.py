@@ -37,42 +37,52 @@ Configure IPA extras
 options:
   servers:
     description: The FQDN of the IPA servers to connect to.
-    required: false
+    required: true
+    type: list
   domain:
     description: The primary DNS domain of an existing IPA deployment.
-    required: false
+    required: true
   ntp:
     description: Set to no to not configure and enable NTP
     required: false
+    type: bool
+    default: no
   force_ntpd:
     description: Stop and disable any time&date synchronization services besides ntpd.
     required: false
+    type: bool
+    default: no
   ntp_servers:
     description: The ntp servers to configure if ntp is enabled.
     required: false
+    type: list
   ssh:
     description: Configure OpenSSH client
     required: false
+    type: bool
     default: yes
   sssd:
     description: Configure the client to use SSSD for authentication
     required: false
+    type: bool
     default: yes
   trust_sshfp:
     description: Configure OpenSSH client to trust DNS SSHFP records
     required: false
+    type: bool
     default: yes
   sshd:
     description: Configure OpenSSH server
     required: false
+    type: bool
     default: yes
   automount_location:
     description: Automount location
     required: false
-    default: no
   firefox:
     description: Configure Firefox to use IPA domain credentials
     required: false
+    type: bool
     default: no
   firefox_dir:
     description: Specify directory where Firefox is installed (for example: '/usr/lib/firefox')
@@ -80,11 +90,16 @@ options:
   no_nisdomain:
     description: Do not configure NIS domain name
     required: false
+    type: bool
     default: no
   nisdomain:
     description: NIS domain name
     required: false
   on_master:
+    description: Whether the configuration is done on the master or not.
+    required: false
+    type: bool
+    default: no
 author:
     - Thomas Woerner
 '''

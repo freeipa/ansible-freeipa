@@ -38,6 +38,7 @@ options:
   servers:
     description: The FQDN of the IPA servers to connect to.
     required: true
+    type: list
   domain:
     description: The primary DNS domain of an existing IPA deployment.
     required: true
@@ -68,13 +69,18 @@ options:
   force_join:
     description: Force enrolling the host even if host entry exists.
     required: false
+    type: bool
+    default: no
   kinit_attempts:
     description: Repeat the request for host Kerberos ticket X times.
     required: false
+    type: int
     default: 5
   debug:
     description: Enable debug mode.
     required: false
+    type: bool
+    default: no
 author:
     - Thomas Woerner
 '''
