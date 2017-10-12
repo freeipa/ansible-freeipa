@@ -10,12 +10,6 @@ ipaclient7.mine.dom
 #[ipaservers]
 #ipa.mine.dom
 
-#[ipaservers:vars]
-#ipaserver_domain=mine.dom
-#ipaserver_realm=MINE.DOM
-#ipaserver_principal=admin
-#ipaserver_password=password1
-
 [ipaclients:vars]
 #ipaclient_keytab=/tmp/krb5.keytab
 #ipaclient_domain=mine.dom
