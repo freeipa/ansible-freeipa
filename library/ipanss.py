@@ -98,6 +98,7 @@ import time
 import gssapi
 import tempfile
 import inspect
+import logging
 
 from ansible.module_utils.basic import AnsibleModule
 from ipapython.version import NUM_VERSION, VERSION
@@ -127,6 +128,7 @@ from ipaplatform.paths import paths
 from ipaplatform.tasks import tasks
 from ipapython import certdb, ipautil
 from ipapython.ipautil import CalledProcessError
+from ipapython.ipa_log_manager import standard_logging_setup
 
 try:
     from ipaclient.install.client import CCACHE_FILE, client_dns, configure_certmonger, update_ssh_keys, configure_openldap_conf, hardcode_ldap_server, get_certs_from_ldap, save_state, disable_ra, create_ipa_nssdb
@@ -196,8 +198,10 @@ def main():
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
-
-    ###########################################################################
+    logger = logging.getLogger("ipa-client-install")
+    standard_logging_setup(
+        paths.IPACLIENT_INSTALL_LOG, verbose=True, debug=False,
+        filemode='a', console_format='%(message)s')
 
     os.environ['KRB5CCNAME'] = CCACHE_FILE
     
