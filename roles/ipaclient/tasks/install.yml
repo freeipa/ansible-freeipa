@@ -55,6 +55,9 @@
   # If a keytab is specified in the hostent, then the hostent will be disabled
   # if ipaclient_use_otp is set.
   - block:
+    - fail: msg="Keytab or password is required for otp"
+      when: ipaadmin_keytab is undefined and ipaadmin_password is undefined
+
     - name: Install - Get a One-Time Password for client enrollment
       no_log: yes
       ipahost:
