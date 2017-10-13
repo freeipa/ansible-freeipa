@@ -62,7 +62,7 @@
         principal: "{{ ipaadmin_principal | default('admin') }}"
         password: "{{ ipaadmin_password | default(omit) }}"
         keytab: "{{ ipaadmin_keytab | default(omit) }}"
-        fqdn: "{{ ansible_fqdn }}"
+        fqdn: "{{ ipadiscovery.hostname }}"
         lifetime: "{{ ipaclient_lifetime | default(omit) }}"
         random: True
       register: ipahost_output
