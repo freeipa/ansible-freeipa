@@ -1,6 +1,6 @@
 - block:
   - name: Verify Python3 import
-    command: python3 -c "from ipapython.version import NUM_VERSION"
+    script: py3test.py
     register: py3test
     failed_when: False
 
