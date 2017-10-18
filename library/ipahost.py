@@ -53,7 +53,9 @@ options:
     required: true
   random:
     description: generate a random password to be used in bulk enrollment
+    required: false
     type: bool
+    default: no
   state:
     description: the host state
     required: false
@@ -70,6 +72,8 @@ options:
     description: the IP address for the host
     required: false
 
+requirements:
+    - gssapi on the Ansible controller
 author:
     - "Florence Blanc-Renaud"
 '''
@@ -107,16 +111,54 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-tbd
+host:
+  description: the host structure as returned from IPA API
+  returned: always
+  type: complex
+  contains:
+    dn:
+      description: the DN of the host entry
+      type: string
+      returned: always
+    fqdn:
+      description: the fully qualified host name
+      type: string
+      returned: always
+    has_keytab:
+      description: whether the host entry contains a keytab
+      type: bool
+      returned: always
+    has_password:
+      description: whether the host entry contains a password
+      type: bool
+      returned: always
+    managedby_host:
+      description: the list of hosts managing the host
+      type: list
+      returned: always
+    randompassword:
+      description: the OneTimePassword generated for this host
+      type: string
+      returned: changed
+    certificates:
+      description: the list of host certificates
+      type: list
+      returned: when present
+    sshpubkey:
+      description: the SSH public key for the host
+      type: string
+      returned: when present
+    ipaddress:
+      description: the IP address for the host
+      type: string
+      returned: when present
 '''
 
 import os
-import tempfile
 
 from ansible.module_utils.basic import AnsibleModule
 
-from ipalib import api, errors, x509
-from ipalib.install.kinit import kinit_keytab, kinit_password
+from ipalib import api, errors
 from ipaplatform.paths import paths
 from ipapython.ipautil import run
 
@@ -261,9 +303,7 @@ def main():
     """
     module = AnsibleModule(
         argument_spec=dict(
-            #keytab = dict(required=False, type='path'),
             principal = dict(default='admin'),
-            #password = dict(required=False, no_log=True),
             ccache = dict(required=False, type='path'),
             fqdn = dict(required=True),
             certificates = dict(required=False, type='list'),
@@ -272,14 +312,10 @@ def main():
             random = dict(default=False, type='bool'),
             state = dict(default='present', choices=[ 'present', 'absent' ]),
         ),
-        #mutually_exclusive=[['password','keytab']],
-        #required_one_of=[['[password','keytab']],
         supports_check_mode=True,
     )
 
     principal = module.params.get('principal', 'admin')
-    password = module.params.get('password')
-    keytab = module.params.get('keytab')
     ccache = module.params.get('ccache')
     fqdn = unicode(module.params.get('fqdn'))
     state = module.params.get('state')
