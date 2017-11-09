@@ -5,5 +5,5 @@ ipaclient_force_join: no
 ipaclient_ntp: no
 ipaclient_mkhomedir: no
 ipaclient_kinit_attempts: 5
-ipaclient_use_otp: "false"
-ipaclient_allow_repair: "false"
+ipaclient_use_otp: no
+ipaclient_allow_repair: no
