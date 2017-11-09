@@ -90,7 +90,10 @@
     when: not ipatest.krb5_keytab_ok and (ipaadmin_password is undefined or ipaadmin_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
 
   - name: Install - Purge {{ ipadiscovery.realm }} from host keytab
-    command: /usr/sbin/ipa-rmkeytab -k /etc/krb5.keytab -r "{{ ipadiscovery.realm }}"
+    command: >
+      /usr/sbin/ipa-rmkeytab
+      -k /etc/krb5.keytab
+      -r "{{ ipadiscovery.realm }}"
     register: iparmkeytab
     # Do not fail on error codes 3 and 5:
     #   3 - Unable to open keytab
