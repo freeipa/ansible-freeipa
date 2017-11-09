@@ -150,25 +150,7 @@ import socket
 
 from six.moves.configparser import RawConfigParser
 from ansible.module_utils.basic import AnsibleModule
-from ipapython.version import NUM_VERSION, VERSION
-if NUM_VERSION < 40400:
-    raise Exception("freeipa version '%s' is too old" % VERSION)
-if NUM_VERSION < 30201:
-    # See ipapython/version.py
-    IPA_MAJOR,IPA_MINOR,IPA_RELEASE = [ int(x) for x in VERSION.split(".", 2) ]
-    IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
-else:
-    IPA_PYTHON_VERSION = NUM_VERSION
-from ipaplatform.paths import paths
-try:
-    from ipaclient.install import ipadiscovery
-except ImportError:
-    from ipaclient import ipadiscovery
-try:
-    from ipalib.install.sysrestore import SYSRESTORE_STATEFILE
-except ImportError:
-    from ipapython.sysrestore import SYSRESTORE_STATEFILE
-
+from ansible.module_utils.ansible_ipa_client import *
 
 def get_cert_path(cert_path):
     """
@@ -198,7 +180,7 @@ def is_client_configured():
 
     return (os.path.isfile(paths.IPA_DEFAULT_CONF) and
             os.path.isfile(os.path.join(paths.IPA_CLIENT_SYSRESTORE,
-                                        SYSRESTORE_STATEFILE)))
+                                        sysrestore.SYSRESTORE_STATEFILE)))
 
 def get_ipa_conf():
     """

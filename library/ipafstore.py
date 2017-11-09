@@ -52,14 +52,7 @@ RETURN = '''
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ipapython.version import NUM_VERSION, VERSION
-if NUM_VERSION < 40400:
-    raise Exception("freeipa version '%s' is too old" % VERSION)
-try:
-    from ipalib.install import sysrestore
-except ImportError:
-    from ipapython import sysrestore
-from ipaplatform.paths import paths
+from ansible.module_utils.ansible_ipa_client import *
 
 def main():
     module = AnsibleModule(

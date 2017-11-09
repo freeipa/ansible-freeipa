@@ -105,65 +105,10 @@ class Object(object):
 options = Object()
 
 import os
-import sys
-import gssapi
 import tempfile
-import inspect
 
 from ansible.module_utils.basic import AnsibleModule
-from ipapython.version import NUM_VERSION, VERSION
-if NUM_VERSION < 40400:
-    raise Exception("freeipa version '%s' is too old" % VERSION)
-from ipaplatform.paths import paths
-try:
-    from ipalib.install.kinit import kinit_keytab
-except ImportError:
-    from ipapython.ipautil import kinit_keytab
-try:
-    from ipaclient.install.client import configure_krb5_conf, SECURE_PATH
-except ImportError:
-    # Create temporary copy of ipa-client-install script (as
-    # ipa_client_install.py) to be able to import the script easily and also
-    # to remove the global finally clause in which the generated ccache file
-    # gets removed. The ccache file will be needed in the next step.
-    # This is done in a temporary directory that gets removed right after
-    # ipa_client_install has been imported.
-    import shutil
-    temp_dir = tempfile.mkdtemp(dir="/tmp")
-    sys.path.append(temp_dir)
-    temp_file = "%s/ipa_client_install.py" % temp_dir
-
-    with open("/usr/sbin/ipa-client-install", "r") as f_in:
-        with open(temp_file, "w") as f_out:
-            for line in f_in:
-                if line.startswith("finally:"):
-                    break
-                f_out.write(line)
-    import ipa_client_install
-
-    shutil.rmtree(temp_dir, ignore_errors=True)
-    sys.path.remove(temp_dir)
-
-    argspec = inspect.getargspec(ipa_client_install.configure_krb5_conf)
-    if argspec.keywords is None:
-        def configure_krb5_conf(
-                cli_realm, cli_domain, cli_server, cli_kdc, dnsok,
-                filename, client_domain, client_hostname, force,
-                configure_sssd):
-            global options
-            options.force = force
-            options.sssd = configure_sssd
-            return ipa_client_install.configure_krb5_conf(
-                cli_realm, cli_domain, cli_server, cli_kdc, dnsok, options,
-                filename, client_domain, client_hostname)
-    else:
-        configure_krb5_conf = ipa_client_install.configure_krb5_conf
-    SECURE_PATH = ("/bin:/sbin:/usr/kerberos/bin:/usr/kerberos/sbin:/usr/bin:/usr/sbin")
-from ipapython.ipautil import realm_to_suffix, run
-
-
-import logging
-logger = logging.getLogger("ipa-client-install")
+from ansible.module_utils.ansible_ipa_client import *
 
 def main():
     module = AnsibleModule(
@@ -218,7 +163,7 @@ def main():
                 ipa_test_ok = True
         except OSError:
             pass
-    except gssapi.exceptions.GSSError as e:
+    except GSSError as e:
         pass
 
     # Second try: Validate krb5 keytab with temporary krb5
@@ -256,7 +201,7 @@ def main():
               except OSError:
                   pass
 
-          except gssapi.exceptions.GSSError as e:
+          except GSSError as e:
               pass
 
       finally:

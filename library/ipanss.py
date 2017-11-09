@@ -93,79 +93,10 @@ RETURN = '''
 '''
 
 import os
-import sys
 import time
-import gssapi
-import tempfile
-import inspect
-import logging
 
 from ansible.module_utils.basic import AnsibleModule
-from ipapython.version import NUM_VERSION, VERSION
-if NUM_VERSION < 40400:
-    raise Exception("freeipa version '%s' is too old" % VERSION)
-from ipalib import api, errors, x509
-try:
-    from ipalib.install import certmonger
-except ImportError:
-    from ipapython import certmonger
-try:
-    from ipalib.install import certstore
-except ImportError:
-    from ipalib import certstore
-try:
-    from ipalib.install import sysrestore
-except ImportError:
-    from ipapython import sysrestore
-try:
-    from ipalib.install.kinit import kinit_keytab, kinit_password
-except ImportError:
-    from ipapython.ipautil import kinit_keytab, kinit_password
-from ipalib.rpc import delete_persistent_client_session_data
-from ipapython.dn import DN
-from ipaplatform import services
-from ipaplatform.paths import paths
-from ipaplatform.tasks import tasks
-from ipapython import certdb, ipautil
-from ipapython.ipautil import CalledProcessError
-from ipapython.ipa_log_manager import standard_logging_setup
-
-try:
-    from ipaclient.install.client import CCACHE_FILE, client_dns, configure_certmonger, update_ssh_keys, configure_openldap_conf, hardcode_ldap_server, get_certs_from_ldap, save_state, disable_ra, create_ipa_nssdb
-except ImportError:
-    # Create temporary copy of ipa-client-install script (as
-    # ipa_client_install.py) to be able to import the script easily and also
-    # to remove the global finally clause in which the generated ccache file
-    # gets removed. The ccache file will be needed in the next step.
-    # This is done in a temporary directory that gets removed right after
-    # ipa_client_install has been imported.
-    import shutil
-    temp_dir = tempfile.mkdtemp(dir="/tmp")
-    sys.path.append(temp_dir)
-    temp_file = "%s/ipa_client_install.py" % temp_dir
-
-    with open("/usr/sbin/ipa-client-install", "r") as f_in:
-        with open(temp_file, "w") as f_out:
-            for line in f_in:
-                if line.startswith("finally:"):
-                    break
-                f_out.write(line)
-    import ipa_client_install
-
-    shutil.rmtree(temp_dir, ignore_errors=True)
-    sys.path.remove(temp_dir)
-
-    CCACHE_FILE = paths.IPA_DNS_CCACHE
-    client_dns = ipa_client_install.client_dns
-    configure_certmonger = ipa_client_install.configure_certmonger
-    update_ssh_keys = ipa_client_install.update_ssh_keys
-    configure_openldap_conf = ipa_client_install.configure_openldap_conf
-    hardcode_ldap_server = ipa_client_install.hardcode_ldap_server
-    get_certs_from_ldap = ipa_client_install.get_certs_from_ldap
-    save_state = ipa_client_install.save_state
-    disable_ra = ipa_client_install.disable_ra
-
-    from ipapython.certdb import create_ipa_nssdb
+from ansible.module_utils.ansible_ipa_client import *
 
 def main():
     module = AnsibleModule(
@@ -198,16 +129,12 @@ def main():
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
-    logger = logging.getLogger("ipa-client-install")
     standard_logging_setup(
         paths.IPACLIENT_INSTALL_LOG, verbose=True, debug=False,
         filemode='a', console_format='%(message)s')
 
-    os.environ['KRB5CCNAME'] = CCACHE_FILE
+    os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
     
-    class Object(object):
-        pass
-    options = Object()
     options.dns_updates = False
     options.all_ip_addresses = False
     options.ip_addresses = None
@@ -278,7 +205,7 @@ def main():
     update_ssh_keys(hostname, ssh_config_dir, options.create_sshfp)
 
     try:
-        os.remove(CCACHE_FILE)
+        os.remove(paths.IPA_DNS_CCACHE)
     except Exception:
         pass
 

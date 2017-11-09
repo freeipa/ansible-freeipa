@@ -72,56 +72,11 @@ subject_base:
 import os
 import sys
 import time
-import gssapi
 import tempfile
 import inspect
 
 from ansible.module_utils.basic import AnsibleModule
-from ipapython.version import NUM_VERSION, VERSION
-if NUM_VERSION < 40400:
-    raise Exception("freeipa version '%s' is too old" % VERSION)
-from ipaplatform.paths import paths
-if NUM_VERSION >= 40500 and NUM_VERSION < 40590:
-    from cryptography.hazmat.primitives import serialization
-from ipalib import api, errors, x509
-try:
-    from ipalib.install import sysrestore
-except ImportError:
-    from ipapython import sysrestore
-from ipalib.rpc import delete_persistent_client_session_data
-from ipapython import certdb
-from ipapython.ipautil import CalledProcessError, write_tmp_file, \
-    ipa_generate_password
-from ipapython.dn import DN
-ipa_client_install = None
-try:
-    from ipaclient.install.client import SECURE_PATH, disable_ra
-except ImportError:
-    # Create temporary copy of ipa-client-install script (as
-    # ipa_client_install.py) to be able to import the script easily and also
-    # to remove the global finally clause in which the generated ccache file
-    # gets removed. The ccache file will be needed in the next step.
-    # This is done in a temporary directory that gets removed right after
-    # ipa_client_install has been imported.
-    import shutil
-    temp_dir = tempfile.mkdtemp(dir="/tmp")
-    sys.path.append(temp_dir)
-    temp_file = "%s/ipa_client_install.py" % temp_dir
-
-    with open("/usr/sbin/ipa-client-install", "r") as f_in:
-        with open(temp_file, "w") as f_out:
-            for line in f_in:
-                if line.startswith("finally:"):
-                    break
-                f_out.write(line)
-    import ipa_client_install
-
-    shutil.rmtree(temp_dir, ignore_errors=True)
-    sys.path.remove(temp_dir)
-
-    SECURE_PATH = ("/bin:/sbin:/usr/kerberos/bin:/usr/kerberos/sbin:/usr/bin:/usr/sbin")
-    disable_ra = ipa_client_install.disable_ra
-
+from ansible.module_utils.ansible_ipa_client import *
 
 def main():
     module = AnsibleModule(

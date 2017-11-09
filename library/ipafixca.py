@@ -64,56 +64,10 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-iclass Object(object):
-    pass
-options = Object()
-
 import os
-import sys
-import tempfile
-import inspect
 
 from ansible.module_utils.basic import AnsibleModule
-from ipapython.version import NUM_VERSION, VERSION
-if NUM_VERSION < 40400:
-    raise Exception("freeipa version '%s' is too old" % VERSION)
-from ipalib import errors
-from ipaplatform.paths import paths
-try:
-    from ipalib.install import sysrestore
-except ImportError:
-    from ipapython import sysrestore
-try:
-    from ipaclient.install.client import get_ca_certs, SECURE_PATH
-except ImportError:
-    # Create temporary copy of ipa-client-install script (as
-    # ipa_client_install.py) to be able to import the script easily and also
-    # to remove the global finally clause in which the generated ccache file
-    # gets removed. The ccache file will be needed in the next step.
-    # This is done in a temporary directory that gets removed right after
-    # ipa_client_install has been imported.
-    import shutil
-    temp_dir = tempfile.mkdtemp(dir="/tmp")
-    sys.path.append(temp_dir)
-    temp_file = "%s/ipa_client_install.py" % temp_dir
-
-    with open("/usr/sbin/ipa-client-install", "r") as f_in:
-        with open(temp_file, "w") as f_out:
-            for line in f_in:
-                if line.startswith("finally:"):
-                    break
-                f_out.write(line)
-    import ipa_client_install
-
-    shutil.rmtree(temp_dir, ignore_errors=True)
-    sys.path.remove(temp_dir)
-
-    if NUM_VERSION < 40100:
-        get_ca_cert = ipa_client_install.get_ca_cert
-    else:
-        get_ca_certs = ipa_client_install.get_ca_certs
-    SECURE_PATH = ("/bin:/sbin:/usr/kerberos/bin:/usr/kerberos/sbin:/usr/bin:/usr/sbin")
-
+from ansible.module_utils.ansible_ipa_client import *
     
 def main():
     module = AnsibleModule(
@@ -144,12 +98,11 @@ def main():
     changed = False
     if not os.path.exists(paths.IPA_CA_CRT):
         if not allow_repair:
-            module.fail_json(msg="%s missing, enable allow_repair to fix it." % paths.IPA_CA_CRT)
-        
+            module.fail_json(
+                msg="%s missing, enable allow_repair to fix it." % \
+                paths.IPA_CA_CRT)
+
         # Repair missing ca.crt file
-
-        from ipaclient.install.client import get_ca_certs
-
         try:
             os.environ['KRB5_CONFIG'] = env['KRB5_CONFIG'] = "/etc/krb5.conf"
             env['KRB5CCNAME'] = os.environ['KRB5CCNAME']
