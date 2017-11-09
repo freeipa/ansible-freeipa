@@ -291,7 +291,7 @@ def main():
             cli_domain_source = 'Provided as option'
         else:
             module.fail_json(
-                msg="Unable to discover domain, not provided on command line")
+                msg="Unable to discover domain, not provided")
 
         ret = ds.search(
             domain=cli_domain,
