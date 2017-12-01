@@ -1,0 +1,3 @@
+ipaserver_packages: [ "ipa-server", "libselinux-python" ]
+ipaserver_packages_dns: [ "ipa-server-dns" ]
+ipaserver_packages_adtrust: [ ]

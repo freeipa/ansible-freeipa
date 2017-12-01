@@ -1,0 +1,88 @@
+---
+# tasks file for ipaserver
+
+- name: Install - Install IPA server package
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ ipaserver_packages }}"
+
+- name: Install - Include Python2/3 import test
+  include: "{{role_path}}/tasks/python_2_3_test.yml"
+  static: yes
+
+- name: Install - Server installation
+  server_install:
+    # basic
+    dm_password: "{{ ipaserver_dm_password }}"
+    password: "{{ ipaserver_password }}"
+    ip_addresses: "{{ ipaserver_ip_addresses | default([]) }}"
+    domain: "{{ ipaserver_domain | default(omit)}}"
+    realm: "{{ ipaserver_realm | default(omit)}}"
+    hostname: "{{ ipaserver_hostname | default(ansible_fqdn) }}"
+    ca_cert_file: "{{ ipaserver_ca_cert_file | default(omit) }}"
+    no_host_dns: "{{ ipaserver_no_host_dns }}"
+    #
+    setup_adtrust: "{{ ipaserver_setup_adtrust }}"
+    setup_kra: "{{ ipaserver_setup_kra }}"
+    setup_dns: "{{ ipaserver_setup_dns }}"
+    idstart: "{{ ipaserver_idstart | default(omit) }}"
+    idmax: "{{ ipaserver_idmax | default(omit) }}"
+    no_hbac_allow: "{{ ipaserver_no_hbac_allow }}"
+    no_pkinit: "{{ ipaserver_no_pkinit }}"
+    no_ui_redirect: "{{ ipaserver_no_ui_redirect }}"
+    dirserv_config_file: "{{ ipaserver_dirserv_config_file | default(omit) }}"
+    # ssl certificate
+    dirserv_cert_file: "{{ ipaserver_dirserv_cert_file | default(omit) }}"
+    dirserv_pin: "{{ ipaserver_dirserv_pin | default(omit) }}"
+    dirserv_cert_name: "{{ ipaserver_dirserv_cert_name | default(omit) }}"
+    http_cert_file: "{{ ipaserver_http_cert_file | default(omit) }}"
+    http_pin: "{{ ipaserver_http_pin | default(omit) }}"
+    http_cert_name: "{{ ipaserver_http_cert_name | default(omit) }}"
+    pkinit_cert_file: "{{ ipaserver_pkinit_cert_file | default(omit) }}"
+    pkinit_pin: "{{ ipaserver_pkinit_pin | default(omit) }}"
+    pkinit_cert_name: "{{ ipaserver_pkinit_cert_name | default(omit) }}"
+    # client
+    mkhomedir: "{{ ipaserver_mkhomedir }}"
+    no_ntp: "{{ ipaserver_no_ntp }}"
+    ssh_trust_dns: "{{ ipaserver_ssh_trust_dns }}"
+    no_ssh: "{{ ipaserver_no_ssh }}"
+    no_sshd: "{{ ipaserver_no_sshd }}"
+    no_dns_sshfp: "{{ ipaserver_no_dns_sshfp }}"
+    # certificate system
+    external_ca: "{{ ipaserver_external_ca | default(omit) }}"
+    external_ca_type: "{{ ipaserver_external_ca_type | default('generic') }}"
+    external_cert_files: "{{ ipaserver_external_cert_files | default([]) }}"
+    subject_base: "{{ ipaserver_subject_base | default(omit) }}"
+    ca_subject: "{{ ipaserver_ca_subject | default(omit) }}"
+    ca_signing_algorithm: "{{ ipaserver_ca_signing_algorithm | default(omit) }}"
+    # dns
+    allow_zone_overlap: "{{ ipaserver_allow_zone_overlap }}"
+    reverse_zone: "{{ ipaserver_reverse_zone | default(omit) }}"
+    no_reverse: "{{ ipaserver_no_reverse }}"
+    auto_reverse: "{{ ipaserver_auto_reverse }}"
+    zonemgr: "{{ ipaserver_zonemgr | default(omit) }}"
+    forwarders: "{{ ipaserver_forwarders | default([]) }}"
+    no_forwarders: "{{ ipaserver_no_forwarders }}"
+    auto_forwarders: "{{ ipaserver_auto_forwarders }}"
+    forward_policy: "{{ ipaserver_forward_policy | default(first) }}"
+    no_dnssec_validation: "{{ ipaserver_no_dnssec_validation }}"
+    # ad trust
+    enable_compat: "{{ ipaserver_enable_compat }}"
+    netbios_name: "{{ ipaserver_netbios_name | default(omit) }}"
+    rid_base: "{{ ipaserver_rid_base | default(omit) }}"
+    secondary_rid_base: "{{ ipaserver_secondary_rid_base | default(omit) }}"
+    # additional
+    #hostname_overridden: "{{ server_test.hostname_overridden }}"
+    #update_hosts_file: "{{ server_test.update_hosts_file }}"
+    #setup_ca: "{{ server_test.setup_ca }}"
+    #allow_repair: "{{ ipaserver_allow_repair }}"
+    #reverse_zones: "{{ server_test.reverse_zones }}"
+  register: server_install
+
+##
+
+- name: Install - Cleanup root IPA cache
+  file:
+    path: "/root/.ipa_cache"
+    state: absent

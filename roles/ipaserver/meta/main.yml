@@ -1,0 +1,27 @@
+galaxy_info:
+  author: Thomas Woerner
+  description: A role to setup an iPA domain server
+  company: Red Hat, Inc
+
+  # issue_tracker_url: http://example.com/issue/tracker
+
+  license: GPLv3
+
+  min_ansible_version: 2.0
+
+  #github_branch:
+
+  platforms:
+  - name: Fedora
+    versions:
+    - 25
+    - 26
+    - 27
+  - name: rhel
+    versions:
+    - 7.3
+    - 7.4
+
+  galaxy_tags: [ 'identity', 'ipa']
+
+dependencies: []

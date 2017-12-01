@@ -1,0 +1,40 @@
+---
+# defaults file for ipaserver
+
+### basic ###
+ipaserver_no_host_dns: no
+### server ###
+ipaserver_setup_adtrust: no
+ipaserver_setup_kra: no
+ipaserver_setup_dns: no
+ipaserver_no_hbac_allow: no
+ipaserver_no_pkinit: no
+ipaserver_no_ui_redirect: no
+### ssl certificate ###
+### client ###
+ipaserver_mkhomedir: no
+ipaserver_no_ntp: no
+#ipaserver_ssh_trust_dns: no
+#ipaserver_no_ssh: no
+#ipaserver_no_sshd: no
+#ipaserver_no_dns_sshfp: no
+### certificate system ###
+ipaserver_external_ca: no
+### dns ###
+ipaserver_allow_zone_overlap: no
+ipaserver_no_reverse: no
+ipaserver_auto_reverse: no
+ipaserver_no_forwarders: no
+ipaserver_auto_forwarders: no
+ipaserver_no_dnssec_validation: no
+### ad trust ###
+ipaserver_enable_compat: no
+ipaserver_setup_ca: yes
+
+### additional ###
+ipaserver_allow_repair: no
+ipaserver_allow_missing: [ ]
+
+### uninstall ###
+ipaserver_ignore_topology_disconnect: no
+ipaserver_ignore_last_of_role: no
