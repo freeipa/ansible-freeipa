@@ -52,12 +52,6 @@ options:
   ca_cert_file:
     description: A CA certificate to use.
     required: false
-  check:
-    description: Check if IPA client is installed and matching.
-    required: false
-    default: false
-    type: bool
-    default: no
 author:
     - Thomas Woerner
 '''
@@ -210,7 +204,6 @@ def main():
             realm=dict(required=False),
             hostname=dict(required=False),
             ca_cert_file=dict(required=False),
-            check=dict(required=False, type='bool', default=False),
         ),
         supports_check_mode = True,
     )
@@ -221,7 +214,6 @@ def main():
     opt_realm = module.params.get('realm')
     opt_hostname = module.params.get('hostname')
     opt_ca_cert_file = module.params.get('ca_cert_file')
-    opt_check = module.params.get('check')
 
     hostname = None
     hostname_source = None

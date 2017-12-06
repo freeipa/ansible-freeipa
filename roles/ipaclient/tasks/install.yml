@@ -17,8 +17,7 @@
     servers: "{{ groups.ipaservers | default(omit) }}"
     realm: "{{ ipaclient_realm | default(omit) }}"
     hostname: "{{ ipaclient_hostname | default(ansible_fqdn) }}"
-    #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
-    check: yes
+    ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
   register: ipadiscovery
 
 - name: Install - Set default principal if no keytab is given
