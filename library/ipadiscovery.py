@@ -52,6 +52,23 @@ options:
   ca_cert_file:
     description: A CA certificate to use.
     required: false
+  on_master:
+    description: IPA client installation on IPA server
+    required: false
+    default: false
+    type: bool
+    default: no
+  ntp_servers:
+    description: List of NTP servers to use
+    required: false
+    type: list
+    default: []
+  no_ntp:
+    description: Do not sync time and do not detect time servers
+    required: false
+    default: false
+    type: bool
+    default: no
 author:
     - Thomas Woerner
 '''
@@ -204,6 +221,9 @@ def main():
             realm=dict(required=False),
             hostname=dict(required=False),
             ca_cert_file=dict(required=False),
+            on_master=dict(required=False, type='bool', default=False),
+            ntp_servers=dict(required=False, type='list', default=[]),
+            no_ntp=dict(required=False, type='bool', default=False),
         ),
         supports_check_mode = True,
     )
@@ -214,6 +234,9 @@ def main():
     opt_realm = module.params.get('realm')
     opt_hostname = module.params.get('hostname')
     opt_ca_cert_file = module.params.get('ca_cert_file')
+    opt_on_master = module.params.get('on_master')
+    opt_ntp_servers = module.params.get('ntp_servers')
+    opt_no_ntp = module.params.get('no_ntp')
 
     hostname = None
     hostname_source = None
@@ -409,10 +432,32 @@ def main():
                 "installation may fail.")
             break
 
-    # Detect NTP servers
-    ds = ipadiscovery.IPADiscovery()
-    ntp_servers = ds.ipadns_search_srv(cli_domain, '_ntp._udp',
-                                       None, break_on_first=False)
+    if not opt_on_master and not opt_no_ntp:
+        if len(opt_ntp_servers) < 1:
+            # Detect NTP servers
+            ds = ipadiscovery.IPADiscovery()
+            ntp_servers = ds.ipadns_search_srv(cli_domain, '_ntp._udp',
+                                               None, break_on_first=False)
+        else:
+            ntp_servers = opt_ntp_servers
+
+        # Attempt to sync time:
+        # At first with given or dicovered time servers. If no ntp
+        # servers have been given or discovered, then with the ipa
+        # server.
+        module.log('Synchronizing time ...')
+        synced_ntp = False
+        # use user specified NTP servers if there are any
+        for s in ntp_servers:
+            synced_ntp = ntpconf.synconce_ntp(s, False)
+            if synced_ntp:
+                break
+        if not synced_ntp and not ntp_servers:
+            synced_ntp = ntpconf.synconce_ntp(cli_server[0], False)
+        if not synced_ntp:
+            module.warn("Unable to sync time with NTP server")
+    else:
+        ntp_servers = [ ]
 
     # Check if ipa client is already configured
     if is_client_configured():

@@ -18,6 +18,9 @@
     realm: "{{ ipaclient_realm | default(omit) }}"
     hostname: "{{ ipaclient_hostname | default(ansible_fqdn) }}"
     ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
+    on_master: "{{ ipaclient_on_master }}"
+    ntp_servers: "{{ ipaclient_ntp_servers | default([]) }}"
+    no_ntp: "{{ ipaclient_no_ntp }}"
   register: ipadiscovery
 
 - name: Install - Set default principal if no keytab is given
