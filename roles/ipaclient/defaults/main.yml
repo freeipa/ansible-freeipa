@@ -7,3 +7,4 @@ ipaclient_mkhomedir: no
 ipaclient_kinit_attempts: 5
 ipaclient_use_otp: no
 ipaclient_allow_repair: no
+ipaclient_on_master: no
