@@ -98,7 +98,8 @@ def main():
     options.realm_name = ansible_module.params.get('realm')
     options.host_name = ansible_module.params.get('hostname')
 
-    options.ip_addresses = ansible_module.params.get('ip_addresses')
+    options.ip_addresses = ansible_module_get_parsed_ip_addresses(
+        ansible_module)
     options.reverse_zones = ansible_module.params.get('reverse_zones')
 
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')

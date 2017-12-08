@@ -129,7 +129,8 @@ def main():
 
     options.dm_password = ansible_module.params.get('dm_password')
     options.admin_password = ansible_module.params.get('password')
-    options.ip_addresses = ansible_module.params.get('ip_addresses')
+    options.ip_addresses = ansible_module_get_parsed_ip_addresses(
+        ansible_module)
     options.domain_name = ansible_module.params.get('domain')
     options.realm_name = ansible_module.params.get('realm')
     options.host_name = ansible_module.params.get('hostname')
