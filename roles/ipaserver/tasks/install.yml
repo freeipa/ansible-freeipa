@@ -352,6 +352,9 @@
       forward_policy: "{{ ipaserver_forward_policy | default(omit) }}"
       zonemgr: "{{ ipaserver_zonemgr | default(omit) }}"
       no_dnssec_validation: "{{ ipaserver_no_dnssec_validation }}"
+      ### additional ###
+      dns_ip_addresses: "{{ ipaserver_test.dns_ip_addresses }}"
+      dns_reverse_zones: "{{ ipaserver_test.dns_reverse_zones }}"
     when: ipaserver_setup_dns | bool
 
   - name: Install - Setup ADTRUST

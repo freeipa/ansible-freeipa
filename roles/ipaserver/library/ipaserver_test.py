@@ -772,7 +772,10 @@ def main():
                              forwarders=options.forwarders,
                              ### additional ###
                              _installation_cleanup=_installation_cleanup,
-                             domainlevel=options.domainlevel)
+                             domainlevel=options.domainlevel,
+                             dns_ip_addresses=[ str(ip) for ip
+                                                in dns.ip_addresses ],
+                             dns_reverse_zones=dns.reverse_zones)
 
 if __name__ == '__main__':
     main()

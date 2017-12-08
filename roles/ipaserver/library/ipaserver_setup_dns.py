@@ -70,6 +70,9 @@ def main():
             forward_policy=dict(default='first', choices=['first', 'only']),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
+            ### additional ###
+            dns_ip_addresses=dict(required=True, type='list'),
+            dns_reverse_zones=dict(required=True, type='list'),
         ),
     )
 
@@ -89,6 +92,10 @@ def main():
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validation')
+    ### additional ###
+    dns.ip_addresses = ansible_module_get_parsed_ip_addresses(
+        ansible_module, 'dns_ip_addresses')
+    dns.reverse_zones = ansible_module.params.get('dns_reverse_zones')
 
     # init ##################################################################
 
