@@ -39,8 +39,8 @@ else:
     IPA_PYTHON_VERSION = NUM_VERSION
 
 
-if NUM_VERSION >= 40600:
-    # IPA version >= 4.6
+if NUM_VERSION >= 40500:
+    # IPA version >= 4.5
 
     import errno
     import pickle
@@ -53,6 +53,8 @@ if NUM_VERSION >= 40600:
 
     from ipalib.install import certmonger, sysrestore
     from ipapython import ipautil
+    if NUM_VERSION < 40600:
+        from ipapython.ipa_log_manager import root_logger
     from ipapython.ipautil import (
         format_netloc, ipa_generate_password, run, user_input)
     from ipapython.admintool import ScriptError
@@ -61,6 +63,8 @@ if NUM_VERSION >= 40600:
     from ipaplatform.tasks import tasks
     from ipalib import api, errors, x509
     from ipalib.constants import DOMAIN_LEVEL_0, MIN_DOMAIN_LEVEL, MAX_DOMAIN_LEVEL
+    if NUM_VERSION < 40600:
+        from ipalib.constants import IPAAPI_USER
     from ipalib.util import (
         validate_domain_name,
         no_matching_interface_for_ip_address_warning,
@@ -102,7 +106,7 @@ if NUM_VERSION >= 40600:
         _server_trust_ad_installed = False
 
 else:
-    # IPA version < 4.6
+    # IPA version < 4.5
 
     raise Exception("freeipa version '%s' is too old" % VERSION)
 

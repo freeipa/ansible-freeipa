@@ -124,6 +124,10 @@ def main():
 
     # setup DS ##############################################################
 
+    if NUM_VERSION < 40600:
+        # Make sure tmpfiles dir exist before installing components
+        tasks.create_tmpfiles_dirs(IPAAPI_USER)
+
     # Create a directory server instance
     if not options.external_cert_files:
         ds = dsinstance.DsInstance(fstore=fstore,

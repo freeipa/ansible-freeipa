@@ -87,6 +87,10 @@ def main():
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
     sstore = sysrestore.StateFile(paths.SYSRESTORE)
 
+    if NUM_VERSION < 40600:
+        # Make sure the files we crated in /var/run are recreated at startup
+        tasks.configure_tmpfiles()
+
     with redirect_stdout(ansible_log):
         services.knownservices.ipa.enable()
 
