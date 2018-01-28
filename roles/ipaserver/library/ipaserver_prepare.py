@@ -101,6 +101,7 @@ def main():
             subject_base=dict(required=False),
             ca_subject=dict(required=False),
             ### dns ###
+            allow_zone_overlap=dict(required=False, type='bool', default=False),
             reverse_zones=dict(required=False, type='list', default=[]),
             no_reverse=dict(required=False, type='bool', default=False),
             auto_reverse=dict(required=False, type='bool', default=False),
@@ -152,6 +153,7 @@ def main():
     options.subject_base = ansible_module.params.get('subject_base')
     options.ca_subject = ansible_module.params.get('ca_subject')
     ### dns ###
+    options.allow_zone_overlap= ansible_module.params.get('allow_zone_overlap')
     options.reverse_zones = ansible_module.params.get('reverse_zones')
     options.no_reverse = ansible_module.params.get('no_reverse')
     options.auto_reverse = ansible_module.params.get('auto_reverse')
