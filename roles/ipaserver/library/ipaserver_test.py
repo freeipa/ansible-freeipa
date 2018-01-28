@@ -442,7 +442,7 @@ def main():
     if not options.allow_zone_overlap:
         for zone in options.reverse_zones:
             with redirect_stdout(ansible_log):
-                dnsutil.check_zone_overlap(zone)
+                check_zone_overlap(zone)
 
     # validate zonemgr
     if options.zonemgr:
