@@ -89,7 +89,6 @@
     secondary_rid_base: "{{ ipaserver_secondary_rid_base | default(omit) }}"
 
     ### additional ###
-    allow_repair: "{{ ipaserver_allow_repair }}"
   register: ipaserver_test
 
 
@@ -400,7 +399,6 @@
   #    #no_ssh: "{{ ipaserver_no_ssh }}"
   #    #no_sshd: "{{ ipaserver_no_sshd }}"
   #    mkhomedir: "{{ ipaserver_mkhomedir }}"
-  #    #allow_repair: "{{ ipaserver_allow_repair }}"
 
   - name: Install - Setup client
     command: >

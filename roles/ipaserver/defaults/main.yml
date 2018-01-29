@@ -32,7 +32,6 @@ ipaserver_enable_compat: no
 ipaserver_setup_ca: yes
 
 ### additional ###
-ipaserver_allow_repair: no
 ipaserver_allow_missing: [ ]
 
 ### uninstall ###

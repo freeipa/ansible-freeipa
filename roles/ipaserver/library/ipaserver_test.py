@@ -118,7 +118,6 @@ def main():
             secondary_rid_base=dict(required=False, type='int'),
 
             ### additional ###
-            allow_repair=dict(required=False, type='bool', default=False),
         ),
         supports_check_mode = True,
     )
@@ -193,7 +192,6 @@ def main():
     options.secondary_rid_base = ansible_module.params.get('secondary_rid_base')
 
     ### additional ###
-    allow_repair = ansible_module.params.get('allow_repair')
 
     # version specific ######################################################
 
@@ -425,14 +423,14 @@ def main():
 
     options._installation_cleanup = True
     if not options.external_ca and len(options.external_cert_files) < 1 and \
-       is_ipa_configured() and not allow_repair:
+       is_ipa_configured():
         options._installation_cleanup = False
         ansible_module.fail_json(msg=
             "IPA server is already configured on this system. If you want "
             "to reinstall the IPA server, please uninstall it first.")
 
     client_fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
-    if client_fstore.has_files() and not allow_repair:
+    if client_fstore.has_files():
         options._installation_cleanup = False
         ansible_module.fail_json(
             msg="IPA client is already configured on this system. "
@@ -497,8 +495,8 @@ def main():
     tasks.check_selinux_status()
 
     _installation_cleanup = True
-    if (not options.external_ca and not options.external_cert_files and
-            is_ipa_configured() and not allow_repair):
+    if not options.external_ca and not options.external_cert_files and \
+       is_ipa_configured():
         _installation_cleanup = False
         ansible_module.fail_json(msg="IPA server is already configured on this system.")
 
@@ -521,8 +519,7 @@ def main():
         try:
             check_dirsrv(True)
         except ScriptError as e:
-            if not allow_repair:
-                ansible_module.fail_json(msg=e)
+            ansible_module.fail_json(msg=e)
 
     if not options.no_ntp:
         try:
@@ -535,7 +532,7 @@ def main():
             pass
 
     # Check to see if httpd is already configured to listen on 443
-    if httpinstance.httpd_443_configured() and not allow_repair:
+    if httpinstance.httpd_443_configured():
         ansible_module.fail_json(msg="httpd is already configured to listen on 443.")
 
     # check bind packages are installed
