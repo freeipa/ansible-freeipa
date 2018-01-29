@@ -46,7 +46,7 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
-value:
+password:
   description: The master password
   returned: always
 '''
@@ -87,7 +87,7 @@ def main():
         options.master_password = ipa_generate_password()
 
     module.exit_json(changed=True,
-                     value=options.master_password)
+                     password=options.master_password)
 
 if __name__ == '__main__':
     main()

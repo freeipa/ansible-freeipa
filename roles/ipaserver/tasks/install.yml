@@ -103,9 +103,8 @@
       register: ipaserver_master_password
 
     - name: Install - Use new master password
-      no_log: yes
       set_fact:
-        ipaserver_master_password: "{{ ipaserver_master_password.value }}"
+        ipaserver_master_password: "{{ ipaserver_master_password.password }}"
 
     when: ipaserver_master_password is undefined
 
