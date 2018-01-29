@@ -12,12 +12,12 @@ ipaserver_no_pkinit: no
 ipaserver_no_ui_redirect: no
 ### ssl certificate ###
 ### client ###
-ipaserver_mkhomedir: no
-ipaserver_no_ntp: no
-#ipaserver_ssh_trust_dns: no
-#ipaserver_no_ssh: no
-#ipaserver_no_sshd: no
-#ipaserver_no_dns_sshfp: no
+ipaclient_mkhomedir: no
+ipaclient_no_ntp: no
+#ipaclient_ssh_trust_dns: no
+#ipaclient_no_ssh: no
+#ipaclient_no_sshd: no
+#ipaclient_no_dns_sshfp: no
 ### certificate system ###
 ipaserver_external_ca: no
 ### dns ###

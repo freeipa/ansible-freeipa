@@ -59,7 +59,7 @@
     # pkinit_name
     ### client ###
     # mkhomedir
-    no_ntp: "{{ ipaserver_no_ntp }}"
+    no_ntp: "{{ ipaclient_no_ntp }}"
     # ssh_trust_dns
     # no_ssh
     # no_sshd
@@ -133,7 +133,7 @@
 
   - name: Install - Setup NTP
     ipaserver_setup_ntp:
-    when: not ipaserver_no_ntp | bool and (ipaserver_external_cert_files is undefined or ipaserver_external_cert_files|length < 1)
+    when: not ipaclient_no_ntp | bool and (ipaserver_external_cert_files is undefined or ipaserver_external_cert_files|length < 1)
 
   - name: Install - Setup DS
     ipaserver_setup_ds:
@@ -323,11 +323,11 @@
   #    realm: "{{ ipaserver_test.realm }}"
   #    server: "{{ ipaserver_test.hostname }}"
   #    hostname: "{{ ipaserver_test.hostname }}"
-  #    #no_dns_sshfp: "{{ ipaserver_no_dns_sshfp }}"
-  #    #ssh_trust_dns: "{{ ipaserver_ssh_trust_dns }}"
-  #    #no_ssh: "{{ ipaserver_no_ssh }}"
-  #    #no_sshd: "{{ ipaserver_no_sshd }}"
-  #    mkhomedir: "{{ ipaserver_mkhomedir }}"
+  #    #no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
+  #    #ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
+  #    #no_ssh: "{{ ipaclient_no_ssh }}"
+  #    #no_sshd: "{{ ipaclient_no_sshd }}"
+  #    mkhomedir: "{{ ipaclient_mkhomedir }}"
 
   - name: Install - Setup client
     command: >
@@ -338,12 +338,12 @@
       --realm "{{ ipaserver_test.realm }}"
       --server "{{ ipaserver_test.hostname }}"
       --hostname "{{ ipaserver_test.hostname }}"
-      {{ "--mkhomedir" if ipaserver_mkhomedir | bool else "" }}
+      {{ "--mkhomedir" if ipaclient_mkhomedir | bool else "" }}
 
-    #  {{ "--no-dns-sshfp" if ipaserver_no_dns_sshfp | bool else "" }}
-    #  {{ "--ssh-trust-dns" if ipaserver_ssh_trust_dns | bool else "" }}
-    #  {{ "--no-ssh" if ipaserver_no_ssh | bool else "" }}
-    #  {{ "--no-sshd" if ipaserver_no_sshd | bool else "" }}
+    #  {{ "--no-dns-sshfp" if ipaclient_no_dns_sshfp | bool else "" }}
+    #  {{ "--ssh-trust-dns" if ipaclient_ssh_trust_dns | bool else "" }}
+    #  {{ "--no-ssh" if ipaclient_no_ssh | bool else "" }}
+    #  {{ "--no-sshd" if ipaclient_no_sshd | bool else "" }}
 
   - name: Install - Enable IPA
     ipaserver_enable_ipa:
