@@ -131,6 +131,7 @@
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_reverse: "{{ ipaserver_auto_reverse }}"
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"
+      no_dnssec_validation: "{{ ipaserver_no_dnssec_validation }}"
       ### additional ###
       setup_ca: "{{ result_ipaserver_test.setup_ca }}"
       _hostname_overridden: "{{ result_ipaserver_test._hostname_overridden }}"

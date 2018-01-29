@@ -109,6 +109,8 @@ def main():
             no_forwarders=dict(required=False, type='bool', default=False),
             auto_forwarders=dict(required=False, type='bool', default=False),
             forward_policy=dict(required=False),
+            no_dnssec_validation=dict(required=False, type='bool',
+                                      default=False),
             ### ad trust ###
             enable_compat=dict(required=False, type='bool', default=False),
             netbios_name=dict(required=False),
@@ -161,7 +163,8 @@ def main():
     options.no_forwarders = ansible_module.params.get('no_forwarders')
     options.auto_forwarders = ansible_module.params.get('auto_forwarders')
     options.forward_policy = ansible_module.params.get('forward_policy')
-
+    options.no_dnssec_validation = ansible_module.params.get(
+        'no_dnssec_validation')
     ### additional ###
     options.setup_ca = ansible_module.params.get('setup_ca')
     options._host_name_overridden = ansible_module.params.get(
