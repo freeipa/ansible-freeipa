@@ -110,24 +110,29 @@
 
   - name: Install - Server preparation
     ipaserver_prepare:
+      ### basic ###
       dm_password: "{{ ipadm_password }}"
       password: "{{ ipaadmin_password }}"
+      #ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
       domain: "{{ result_ipaserver_test.domain }}"
       realm: "{{ result_ipaserver_test.realm }}"
       hostname: "{{ result_ipaserver_test.hostname }}"
-      ##ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
-      reverse_zones: "{{ result_ipaserver_test.reverse_zones }}"
+      no_host_dns: "{{ result_ipaserver_test.no_host_dns }}"
+      ### server ###
       setup_adtrust: "{{ result_ipaserver_test.setup_adtrust }}"
       setup_kra: "{{ result_ipaserver_test.setup_kra }}"
       setup_dns: "{{ ipaserver_setup_dns }}"
-      setup_ca: "{{ result_ipaserver_test.setup_ca }}"
-      no_host_dns: "{{ result_ipaserver_test.no_host_dns }}"
+      #no_pkinit: "{{ result_ipaserver_test.no_pkinit }}"
+      ### certificate system ###
       subject_base: "{{ result_ipaserver_test.subject_base }}"
       ca_subject: "{{ result_ipaserver_test.ca_subject }}"
+      ### dns ###
+      reverse_zones: "{{ result_ipaserver_test.reverse_zones }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_reverse: "{{ ipaserver_auto_reverse }}"
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"
-      #no_pkinit: "{{ result_ipaserver_test.no_pkinit }}"
+      ### additional ###
+      setup_ca: "{{ result_ipaserver_test.setup_ca }}"
       _hostname_overridden: "{{ result_ipaserver_test._hostname_overridden }}"
     register: result_ipaserver_prepare
 
