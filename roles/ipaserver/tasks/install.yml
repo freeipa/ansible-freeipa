@@ -1,20 +1,20 @@
 ---
 # tasks file for ipaserver
 
-- name: Install - Install IPA server package
+- name: Install - Ensure that IPA server packages are installed
   package:
     name: "{{ item }}"
     state: present
   with_items: "{{ ipaserver_packages }}"
 
-- name: Install - Install packages for dns
+- name: Install - Ensure that IPA server packages for dns are installed
   package:
     name: "{{ item }}"
     state: present
   with_items: "{{ ipaserver_packages_dns }}"
   when: ipaserver_setup_dns | bool
 
-- name: Install - Install packages for adtrust
+- name: Install - Ensure that IPA server packages for adtrust are installed
   package:
     name: "{{ item }}"
     state: present
