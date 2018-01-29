@@ -28,8 +28,8 @@
 - name: Install - Server installation test
   ipaserver_test:
     ### basic ###
-    dm_password: "{{ ipaserver_dm_password }}"
-    password: "{{ ipaserver_password }}"
+    dm_password: "{{ ipadm_password }}"
+    password: "{{ ipaadmin_password }}"
     master_password: "{{ ipaserver_master_password | default(omit) }}"
     ip_addresses: "{{ ipaserver_ip_addresses | default([]) }}"
     domain: "{{ ipaserver_domain | default(omit) }}"
@@ -98,7 +98,7 @@
     - name: Install - Master password creation
       no_log: yes
       ipaserver_master_password:
-        dm_password: "{{ ipaserver_dm_password }}"
+        dm_password: "{{ ipadm_password }}"
         master_password: "{{ ipaserver_master_password | default(omit) }}"
       register: ipaserver_master_password
 
@@ -110,8 +110,8 @@
 
   - name: Install - Server preparation
     ipaserver_prepare:
-      dm_password: "{{ ipaserver_dm_password }}"
-      password: "{{ ipaserver_password }}"
+      dm_password: "{{ ipadm_password }}"
+      password: "{{ ipaadmin_password }}"
       domain: "{{ ipaserver_test.domain }}"
       realm: "{{ ipaserver_test.realm }}"
       hostname: "{{ ipaserver_test.hostname }}"
@@ -137,8 +137,8 @@
 
   - name: Install - Setup DS
     ipaserver_setup_ds:
-      dm_password: "{{ ipaserver_dm_password }}"
-      password: "{{ ipaserver_password }}"
+      dm_password: "{{ ipadm_password }}"
+      password: "{{ ipaadmin_password }}"
       #master_password: "{{ ipaserver_master_password }}"
       domain: "{{ ipaserver_test.domain }}"
       realm: "{{ ipaserver_test.realm | default(omit) }}"
@@ -164,8 +164,8 @@
 
   - name: Install - Setup KRB
     ipaserver_setup_krb:
-      dm_password: "{{ ipaserver_dm_password }}"
-      password: "{{ ipaserver_password }}"
+      dm_password: "{{ ipadm_password }}"
+      password: "{{ ipaadmin_password }}"
       master_password: "{{ ipaserver_master_password }}"
       domain: "{{ ipaserver_test.domain }}"
       realm: "{{ ipaserver_test.realm }}"
@@ -190,8 +190,8 @@
 
   - name: Install - Setup CA
     ipaserver_setup_ca:
-      dm_password: "{{ ipaserver_dm_password }}"
-      password: "{{ ipaserver_password }}"
+      dm_password: "{{ ipadm_password }}"
+      password: "{{ ipaadmin_password }}"
       master_password: "{{ ipaserver_master_password }}"
       #ip_addresses: "{{ ipaserver_test.ip_addresses }}"
       domain: "{{ ipaserver_test.domain }}"
@@ -235,8 +235,8 @@
 
   - name: Install - Setup HTTP
     ipaserver_setup_http:
-      dm_password: "{{ ipaserver_dm_password }}"
-      password: "{{ ipaserver_password }}"
+      dm_password: "{{ ipadm_password }}"
+      password: "{{ ipaadmin_password }}"
       master_password: "{{ ipaserver_master_password }}"
       domain: "{{ ipaserver_test.domain }}"
       realm: "{{ ipaserver_test.realm }}"
@@ -267,7 +267,7 @@
     ipaserver_setup_kra:
       hostname: "{{ ipaserver_test.hostname }}"
       setup_ca: "{{ ipaserver_test.setup_ca }}"
-      dm_password: "{{ ipaserver_dm_password }}"
+      dm_password: "{{ ipadm_password }}"
       setup_kra: "{{ ipaserver_test.setup_kra }}"
     when: ipaserver_test.setup_kra | bool
 
@@ -294,8 +294,8 @@
 
   - name: Install - Set DS password
     ipaserver_set_ds_password:
-      dm_password: "{{ ipaserver_dm_password }}"
-      password: "{{ ipaserver_password }}"
+      dm_password: "{{ ipadm_password }}"
+      password: "{{ ipaadmin_password }}"
       domain: "{{ ipaserver_test.domain }}"
       realm: "{{ ipaserver_test.realm }}"
       hostname: "{{ ipaserver_test.hostname }}"
