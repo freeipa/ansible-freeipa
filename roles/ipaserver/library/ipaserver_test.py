@@ -108,7 +108,7 @@ def main():
             forwarders=dict(required=False, type='list', default=[]),
             no_forwarders=dict(required=False, type='bool', default=False),
             auto_forwarders=dict(required=False, type='bool', default=False),
-            forward_policy=dict(default='first', choices=['first', 'only']),
+            forward_policy=dict(default=None, choices=['first', 'only']),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
             ### ad trust ###
@@ -766,7 +766,9 @@ def main():
                              _ca_subject=options._ca_subject,
                              ### dns ###
                              reverse_zones=options.reverse_zones,
+                             forward_policy=options.forward_policy,
                              forwarders=options.forwarders,
+                             no_dnssec_validation=options.no_dnssec_validation,
                              ### additional ###
                              _installation_cleanup=_installation_cleanup,
                              domainlevel=options.domainlevel,
