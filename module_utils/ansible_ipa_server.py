@@ -144,8 +144,8 @@ class AnsibleModuleLog():
         pass
 
     def write(self, msg):
-        # self.module.debug(msg)
-        self.module.warn(msg)
+        self.module.debug(msg)
+        #self.module.warn(msg)
 
 
 class options_obj(object):
