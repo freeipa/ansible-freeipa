@@ -155,12 +155,16 @@ host:
 '''
 
 import os
+import six
 
 from ansible.module_utils.basic import AnsibleModule
 
 from ipalib import api, errors
 from ipaplatform.paths import paths
 from ipapython.ipautil import run
+
+if six.PY3:
+    unicode = str
 
 def get_host_diff(ipa_host, module_host):
     """
