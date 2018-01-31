@@ -103,6 +103,7 @@
       register: result_ipaserver_master_password
 
     - name: Install - Use new master password
+      no_log: yes
       set_fact:
         ipaserver_master_password: "{{ result_ipaserver_master_password.password }}"
 
