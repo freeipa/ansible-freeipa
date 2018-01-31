@@ -64,7 +64,7 @@ def main():
             realm=dict(required=False),
             hostname=dict(required=False),
             ca_cert_files=dict(required=False, type='list', default=[]),
-            # no_host_dns=dict(required=False, type='bool', default=False),
+            no_host_dns=dict(required=False, type='bool', default=False),
             ### server ###
             setup_adtrust=dict(required=False, type='bool', default=False),
             setup_kra=dict(required=False, type='bool', default=False),
@@ -137,7 +137,7 @@ def main():
     options.realm_name = ansible_module.params.get('realm')
     options.host_name = ansible_module.params.get('hostname')
     options.ca_cert_files = ansible_module.params.get('ca_cert_files')
-    # no_host_dns
+    options.no_host_dns = ansible_module.params.get('no_host_dns')
     ### server ###
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_dns = ansible_module.params.get('setup_dns')
