@@ -13,9 +13,9 @@
 
 - name: Install - IPA discovery
   ipadiscovery:
-    domain: "{{ ipaclient_domain | default(omit) }}"
-    servers: "{{ groups.ipaservers | default(omit) }}"
-    realm: "{{ ipaclient_realm | default(omit) }}"
+    domain: "{{ ipaserver_domain | default(ipaclient_domain) | default(omit) }}"
+    servers: "{{ groups.ipaserver | default(groups.ipaservers) | default(omit) }}"
+    realm: "{{ ipaserver_realm | default(ipaclient_realm) | default(omit) }}"
     hostname: "{{ ipaclient_hostname | default(ansible_fqdn) }}"
     ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
     on_master: "{{ ipaclient_on_master }}"
