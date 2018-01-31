@@ -42,6 +42,8 @@ if NUM_VERSION >= 40400:
     import inspect
     import logging
 
+    import six
+
     try:
         from ipaclient.install import ipadiscovery
     except ImportError:
@@ -153,6 +155,9 @@ if NUM_VERSION >= 40400:
         configure_firefox = ipa_client_install.configure_firefox
 
     from ipapython.ipautil import realm_to_suffix, run
+
+    if six.PY3:
+        unicode = str
 
     try:
         from ipaclient.install import ntpconf
