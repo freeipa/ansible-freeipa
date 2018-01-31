@@ -318,41 +318,36 @@
       dirsrv_config_file: "{{ ipaserver_dirsrv_config_file | default(omit) }}"
       _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info }}"
 
-  #- name: Install - Setup client
-  #  include_role:
-  #    name: ipaclient
-  #    private: yes
-  #    defaults_from: "/roles/ipaclient/defaults/main.yml"
-  #    tasks_from: "/roles/ipaclient/tasks/main.yml"
-  #    vars_from: "/roles/ipaclient/vars/main.yml"
-  #  vars:
-  #    state: present
-  #    on_master: yes
-  #    domain: "{{ result_ipaserver_test.domain }}"
-  #    realm: "{{ result_ipaserver_test.realm }}"
-  #    server: "{{ result_ipaserver_test.hostname }}"
-  #    hostname: "{{ result_ipaserver_test.hostname }}"
-  #    #no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
-  #    #ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
-  #    #no_ssh: "{{ ipaclient_no_ssh }}"
-  #    #no_sshd: "{{ ipaclient_no_sshd }}"
-  #    mkhomedir: "{{ ipaclient_mkhomedir }}"
-
   - name: Install - Setup client
-    command: >
-      /usr/sbin/ipa-client-install
-      --unattended
-      --on-master
-      --domain "{{ result_ipaserver_test.domain }}"
-      --realm "{{ result_ipaserver_test.realm }}"
-      --server "{{ result_ipaserver_test.hostname }}"
-      --hostname "{{ result_ipaserver_test.hostname }}"
-      {{ "--mkhomedir" if ipaclient_mkhomedir | bool else "" }}
+    include_role:
+      name: ipaclient
+    vars:
+      state: present
+      on_master: yes
+      domain: "{{ result_ipaserver_test.domain }}"
+      realm: "{{ result_ipaserver_test.realm }}"
+      server: "{{ result_ipaserver_test.hostname }}"
+      hostname: "{{ result_ipaserver_test.hostname }}"
+      #no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
+      #ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
+      #no_ssh: "{{ ipaclient_no_ssh }}"
+      #no_sshd: "{{ ipaclient_no_sshd }}"
+      mkhomedir: "{{ ipaclient_mkhomedir }}"
 
-    #  {{ "--no-dns-sshfp" if ipaclient_no_dns_sshfp | bool else "" }}
-    #  {{ "--ssh-trust-dns" if ipaclient_ssh_trust_dns | bool else "" }}
-    #  {{ "--no-ssh" if ipaclient_no_ssh | bool else "" }}
-    #  {{ "--no-sshd" if ipaclient_no_sshd | bool else "" }}
+  #- name: Install - Setup client
+  #  command: >
+  #    /usr/sbin/ipa-client-install
+  #    --unattended
+  #    --on-master
+  #    --domain "{{ result_ipaserver_test.domain }}"
+  #    --realm "{{ result_ipaserver_test.realm }}"
+  #    --server "{{ result_ipaserver_test.hostname }}"
+  #    --hostname "{{ result_ipaserver_test.hostname }}"
+  #    {{ "--mkhomedir" if ipaclient_mkhomedir | bool else "" }}
+  #  #  {{ "--no-dns-sshfp" if ipaclient_no_dns_sshfp | bool else "" }}
+  #  #  {{ "--ssh-trust-dns" if ipaclient_ssh_trust_dns | bool else "" }}
+  #  #  {{ "--no-ssh" if ipaclient_no_ssh | bool else "" }}
+  #  #  {{ "--no-sshd" if ipaclient_no_sshd | bool else "" }}
 
   - name: Install - Enable IPA
     ipaserver_enable_ipa:
