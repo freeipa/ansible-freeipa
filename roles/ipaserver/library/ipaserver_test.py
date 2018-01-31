@@ -254,7 +254,13 @@ def main():
 
     # domain_name
     if (options.setup_dns and not options.allow_zone_overlap):
-        check_zone_overlap(options.domain_name, False)
+        try:
+            check_zone_overlap(options.domain_name, False)
+        except ValueError as e:
+            if "already exists in DNS" in str(e):
+                ansible_module.log(str(e))
+                ansible_module.exit_json(changed=False, dns_zone_exists=True)
+            raise
 
     # dm_password
     with redirect_stdout(ansible_log):
@@ -425,16 +431,20 @@ def main():
     if not options.external_ca and len(options.external_cert_files) < 1 and \
        is_ipa_configured():
         options._installation_cleanup = False
-        ansible_module.fail_json(msg=
+        ansible_module.log(
             "IPA server is already configured on this system. If you want "
             "to reinstall the IPA server, please uninstall it first.")
+        ansible_module.exit_json(changed=False,
+                                 server_already_configured=True)
 
     client_fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     if client_fstore.has_files():
         options._installation_cleanup = False
-        ansible_module.fail_json(
-            msg="IPA client is already configured on this system. "
+        ansible_module.log(
+            "IPA client is already configured on this system. "
             "Please uninstall it before configuring the IPA server.")
+        ansible_module.exit_json(changed=False,
+                                 client_already_configured=True)
 
     # validate reverse_zones
     if not options.allow_zone_overlap:

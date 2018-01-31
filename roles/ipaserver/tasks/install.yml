@@ -91,6 +91,8 @@
     ### additional ###
   register: result_ipaserver_test
 
+- meta: end_play
+  when: not result_ipaserver_test.changed and (result_ipaserver_test.dns_zone_exists is defined or result_ipaserver_test.client_already_configured is defined or result_ipaserver_test.server_already_configured is defined)
 
 - block:
 
