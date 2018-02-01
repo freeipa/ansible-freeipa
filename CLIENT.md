@@ -1,5 +1,5 @@
-ansible-freeipa
-===============
+ipaclient role
+==============
 
 Description
 -----------
@@ -70,19 +70,22 @@ Variables
 **ipaservers** - Group of IPA server hostnames.
  (list of strings, optional)
 
+**ipaclients** - Group of IPA client hostnames.
+ (list of strings)
+
 **ipaadmin_keytab** - The path to the admin keytab used for alternative authentication.
- (string, optional)
-
-**ipaclient_domain** - The primary DNS domain of an existing IPA deployment.
- (string, optional)
-
-**ipaclient_realm** - The Kerberos realm of an existing IPA deployment.
  (string, optional)
 
 **ipaadmin_principal** - The authorized kerberos principal used to join the IPA realm.
  (string, optional)
 
 **ipaadmin_password** - The password for the kerberos principal.
+ (string, optional)
+ 
+**ipaclient_domain** - The primary DNS domain of an existing IPA deployment.
+ (string, optional)
+
+**ipaclient_realm** - The Kerberos realm of an existing IPA deployment.
  (string, optional)
 
 **ipaclient_keytab** - The path to a backed-up host keytab from previous enrollment.
