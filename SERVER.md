@@ -96,10 +96,10 @@ Variables
 **ipaserver_dirsrv_config_file** - The path to LDIF file that will be used to modify configuration of dse.ldif during installation.
  (string, optional)
 
-**ipaserver_setup-kra** - Install and configure a KRA on this server.
+**ipaserver_setup_kra** - Install and configure a KRA on this server.
  (bool, optional)
 
-**ipaserver_setup-dns** - Configure an integrated DNS server, create DNS zone specified by domain
+**ipaserver_setup_dns** - Configure an integrated DNS server, create DNS zone specified by domain
  (string, optional)
 
 **ipaserver_forwarders** - Add DNS forwarders to the DNS configuration.
@@ -135,7 +135,7 @@ Variables
 **ipaserver_allow_zone_overlap** - Allow creation of (reverse) zone even if the zone is already resolvable.
  (bool, optional)
 
-**ipaserver_setup-adtrust** - Configure AD Trust capability.
+**ipaserver_setup_adtrust** - Configure AD Trust capability.
  (bool, optional)
  
 **ipaserver_netbios_name** - The NetBIOS name for the IPA domain.
@@ -147,7 +147,7 @@ Variables
 **ipaserver_secondary_rid_base** - Start value of the secondary RID range.
  (integer, optional)
 
-**ipaserver_enable-compat** - Enables support for trusted domains users for old clients through Schema Compatibility plugin. 
+**ipaserver_enable_compat** - Enables support for trusted domains users for old clients through Schema Compatibility plugin. 
  (bool, optional)
  
 **ipaclient_force_join** - Set force_join to yes to join the host even if it is already enrolled.
