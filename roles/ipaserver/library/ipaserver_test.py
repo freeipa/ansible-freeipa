@@ -31,7 +31,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_test
-short description: 
+short description:
 description:
 options:
 author:
@@ -56,6 +56,7 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec = dict(
             ### basic ###
+            force=dict(required=False, type='bool', default=False),
             dm_password=dict(required=True, no_log=True),
             password=dict(required=True, no_log=True),
             master_password=dict(required=False, no_log=True),
@@ -128,6 +129,7 @@ def main():
     # set values ############################################################
 
     ### basic ###
+    options.force = ansible_module.params.get('force')
     options.dm_password = ansible_module.params.get('dm_password')
     options.admin_password = ansible_module.params.get('password')
     options.master_password = ansible_module.params.get('master_password')
@@ -174,7 +176,7 @@ def main():
     options.ca_subject = ansible_module.params.get('ca_subject')
     # ca_signing_algorithm
     ### dns ###
-    options.allow_zone_overlap= ansible_module.params.get('allow_zone_overlap')
+    options.allow_zone_overlap = ansible_module.params.get('allow_zone_overlap')
     options.reverse_zones = ansible_module.params.get('reverse_zones')
     options.no_reverse = ansible_module.params.get('no_reverse')
     options.auto_reverse = ansible_module.params.get('auto_reverse')
