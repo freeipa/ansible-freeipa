@@ -171,6 +171,7 @@ def main():
     options.setup_ca = ansible_module.params.get('setup_ca')
     options._host_name_overridden = ansible_module.params.get(
         '_hostname_overridden')
+    options.kasp_db_file = None
 
     # init ##################################################################
 

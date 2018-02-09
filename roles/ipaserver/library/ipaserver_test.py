@@ -194,6 +194,7 @@ def main():
     options.secondary_rid_base = ansible_module.params.get('secondary_rid_base')
 
     ### additional ###
+    options.kasp_db_file = None
 
     # version specific ######################################################
 
