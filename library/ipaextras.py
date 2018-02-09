@@ -191,8 +191,11 @@ def main():
         configure_firefox(options, statestore, domain)
 
     if not no_nisdomain:
-        configure_nisdomain(
-            options=options, domain=domain, statestore=statestore)
+        if NUM_VERSION < 40500:
+            configure_nisdomain(options=options, domain=domain)
+        else:
+            configure_nisdomain(options=options, domain=domain,
+                                statestore=statestore)
 
     # Cleanup: Remove CCACHE_FILE
     try:

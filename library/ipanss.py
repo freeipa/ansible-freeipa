@@ -215,7 +215,10 @@ def main():
     # (if installed)
     nscd = services.knownservices.nscd
     if nscd.is_installed():
-        save_state(nscd, statestore)
+        if NUM_VERSION < 40500:
+            save_state(nscd)
+        else:
+            save_state(nscd, statestore)
 
         try:
             nscd_service_action = 'stop'
@@ -232,7 +235,10 @@ def main():
 
     nslcd = services.knownservices.nslcd
     if nslcd.is_installed():
-        save_state(nslcd, statestore)
+        if NUM_VERSION < 40500:
+            save_state(nslcd)
+        else:
+            save_state(nslcd, statestore)
 
     ##########################################################################
 
