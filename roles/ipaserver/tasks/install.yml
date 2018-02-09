@@ -130,6 +130,7 @@
       subject_base: "{{ result_ipaserver_test.subject_base }}"
       ca_subject: "{{ result_ipaserver_test.ca_subject }}"
       ### dns ###
+      allow_zone_overlap: "{{ ipaserver_allow_zone_overlap }}"
       reverse_zones: "{{ result_ipaserver_test.reverse_zones }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_reverse: "{{ ipaserver_auto_reverse }}"
