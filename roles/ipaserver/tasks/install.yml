@@ -361,3 +361,22 @@
       path: "/root/.ipa_cache"
       state: absent
     when: result_ipaserver_enable_ipa.changed
+
+  - name: Install - Configure firewalld
+    command: >
+      firewall-cmd
+      --permanent
+      --add-service=freeipa-ldap
+      --add-service=freeipa-ldaps
+      {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
+      {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
+    when: not ipaserver_no_firewalld | bool
+
+  - name: Install - Configure firewalld runtime
+    command: >
+      firewall-cmd
+      --add-service=freeipa-ldap
+      --add-service=freeipa-ldaps
+      {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
+      {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
+    when: not ipaserver_no_firewalld | bool
