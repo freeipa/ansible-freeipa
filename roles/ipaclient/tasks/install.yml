@@ -43,7 +43,6 @@
       kdc: "{{ ipadiscovery.kdc }}"
       kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
     register: ipatest
-    when: not ipaclient_on_master | bool
 
   - name: Install - Disable One-Time Password for client with working krb5.keytab
     set_fact:
@@ -84,13 +83,15 @@
 
     when: ipaclient_use_otp | bool
 
-  - name: Install - Check if principal and keytab are set
-    fail: msg="Principal and keytab cannot be used together"
-    when: ipaadmin_principal is defined and ipaadmin_principal != "" and ipaclient_keytab is defined and ipaclient_keytab != ""
+  - block:
+    - name: Install - Check if principal and keytab are set
+      fail: msg="Principal and keytab cannot be used together"
+      when: ipaadmin_principal is defined and ipaadmin_principal != "" and ipaclient_keytab is defined and ipaclient_keytab != ""
 
-  - name: Install - Check if one of password and keytab are set
-    fail: msg="At least one of password or keytab must be specified"
-    when: not ipatest.krb5_keytab_ok and (ipaadmin_password is undefined or ipaadmin_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
+    - name: Install - Check if one of password and keytab are set
+      fail: msg="At least one of password or keytab must be specified"
+      when: not ipatest.krb5_keytab_ok and (ipaadmin_password is undefined or ipaadmin_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
+    when: not ipaclient_on_master | bool
 
   - name: Install - Purge {{ ipadiscovery.realm }} from host keytab
     command: >
@@ -203,7 +204,7 @@
       realm: "{{ ipadiscovery.realm }}"
       basedn: "{{ ipadiscovery.basedn }}"
       allow_repair: "{{ ipaclient_allow_repair }}"
-    when: ipatest.krb5_keytab_ok and not ipatest.ca_crt_exists
+    when: not ipaclient_on_master | bool and ipatest.krb5_keytab_ok and not ipatest.ca_crt_exists
 
   - name: Install - Create IPA NSS database
     ipanss:

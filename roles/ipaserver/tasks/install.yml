@@ -324,16 +324,16 @@
       name: ipaclient
     vars:
       state: present
-      on_master: yes
-      domain: "{{ result_ipaserver_test.domain }}"
-      realm: "{{ result_ipaserver_test.realm }}"
-      server: "{{ result_ipaserver_test.hostname }}"
-      hostname: "{{ result_ipaserver_test.hostname }}"
-      #no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
-      #ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
-      #no_ssh: "{{ ipaclient_no_ssh }}"
-      #no_sshd: "{{ ipaclient_no_sshd }}"
-      mkhomedir: "{{ ipaclient_mkhomedir }}"
+      ipaclient_on_master: yes
+      ipaclient_domain: "{{ result_ipaserver_test.domain }}"
+      ipaclient_realm: "{{ result_ipaserver_test.realm }}"
+      ipaclient_server: "{{ result_ipaserver_test.hostname }}"
+      ipaclient_hostname: "{{ result_ipaserver_test.hostname }}"
+      #ipaclient_no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
+      #ipaclient_ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
+      #ipaclient_no_ssh: "{{ ipaclient_no_ssh }}"
+      #ipaclient_no_sshd: "{{ ipaclient_no_sshd }}"
+      #ipaclient_mkhomedir: "{{ ipaclient_mkhomedir }}"
 
   #- name: Install - Setup client
   #  command: >
