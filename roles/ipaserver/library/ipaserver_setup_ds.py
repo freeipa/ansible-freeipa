@@ -126,7 +126,7 @@ def main():
 
     if NUM_VERSION < 40600:
         # Make sure tmpfiles dir exist before installing components
-        tasks.create_tmpfiles_dirs(IPAAPI_USER)
+        tasks.create_tmpfiles_dirs()
 
     # Create a directory server instance
     if not options.external_cert_files:
