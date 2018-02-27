@@ -1,8 +1,8 @@
 # FreeIPA Ansible roles
 
-This repository contains [Ansible](https://www.ansible.com/) roles and playbooks to install and uninstall [FreeIPA](https://www.freeipa.org/) servers and clients. A role for replica is in the work, but not functional so far.
+This repository contains [Ansible](https://www.ansible.com/) roles and playbooks to install and uninstall [FreeIPA](https://www.freeipa.org/) servers and clients. A role for replica is in the works, but is not functional so far.
 
-**Note**: The ansible playbooks and roles require a configured ansible environment where the ansible nodes are reachanble and are properly set up to have an IP address and a working package manager.
+**Note**: The ansible playbooks and roles require a configured ansible environment where the ansible nodes are reachable and are properly set up to have an IP address and a working package manager.
 
 **Supported FreeIPA versions**
 
