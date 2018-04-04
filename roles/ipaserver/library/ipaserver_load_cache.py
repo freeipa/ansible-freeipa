@@ -68,7 +68,7 @@ def main():
 
     # restore cache #########################################################
 
-    if ipautil.file_exists(paths.ROOT_IPA_CACHE):
+    if os.path.isfile(paths.ROOT_IPA_CACHE):
         if options.dm_password is None:
             ansible_module.fail_json(msg="Directory Manager password required")
         try:

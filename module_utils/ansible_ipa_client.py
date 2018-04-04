@@ -69,7 +69,7 @@ if NUM_VERSION >= 40400:
     if NUM_VERSION >= 40500 and NUM_VERSION < 40590:
         from cryptography.hazmat.primitives import serialization
     from ipapython.ipautil import CalledProcessError, write_tmp_file, \
-        ipa_generate_password, file_exists
+        ipa_generate_password
     from ipapython.dn import DN
     try:
         from ipalib.install.kinit import kinit_keytab, kinit_password

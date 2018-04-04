@@ -201,8 +201,8 @@ def main():
     if on_master:
         sssd_enable_service(module, sssdconfig, 'ifp')
 
-    if (("ssh" in services and file_exists(paths.SSH_CONFIG)) or
-        ("sshd" in services and file_exists(paths.SSHD_CONFIG))):
+    if (("ssh" in services and os.path.isfile(paths.SSH_CONFIG)) or
+        ("sshd" in services and os.path.isfile(paths.SSHD_CONFIG))):
         sssd_enable_service(module, sssdconfig, 'ssh')
 
     if "sudo" in services:

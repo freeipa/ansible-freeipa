@@ -399,7 +399,7 @@ def main():
                     msg="servers cannot be used without providing domain")
 
         else:
-            if not ipautil.file_exists(options.replica_file):
+            if not os.path.isfile(options.replica_file):
                 ansible_module.fail_json(
                     msg="Replica file %s does not exist" % options.replica_file)
 
