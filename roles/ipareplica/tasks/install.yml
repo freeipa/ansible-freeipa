@@ -1,0 +1,619 @@
+---
+# tasks file for ipareplica
+
+- name: Install - Ensure IPA replica packages are installed
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ ipareplica_packages }}"
+  when: not ipareplica_no_package_install | bool
+
+- name: Install - Ensure IPA replica packages for dns are installed
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ ipareplica_packages_dns }}"
+  when: not ipareplica_no_package_install | bool and ipareplica_setup_dns | bool
+
+- name: Install - Ensure IPA replica packages for adtrust are installed
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ ipareplica_packages_adtrust }}"
+  when: not ipareplica_no_package_install | bool and ipareplica_setup_adtrust | bool
+
+- name: Install - Include Python2/3 import test
+  include: "{{role_path}}/tasks/python_2_3_test.yml"
+  static: yes
+
+- name: Install - Set default principal if no keytab is given
+  set_fact:
+    ipaadmin_principal: admin
+  when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
+
+- name: Install - Replica installation test
+  ipareplica_test:
+    ### basic ###
+    ip_addresses: "{{ ipareplica_ip_addresses | default([]) }}"
+    domain: "{{ ipareplica_domain | default(ipaserver_domain) | default(omit) }}"
+    servers: "{{ groups.ipaservers | default(groups.ipaserver) | default(omit) }}"
+    realm: "{{ ipareplica_realm | default(omit) }}"
+    hostname: "{{ ipareplica_hostname | default(ansible_fqdn) }}"
+    ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
+    ### server ###
+    setup_adtrust: "{{ ipareplica_setup_adtrust }}"
+    setup_kra: "{{ ipareplica_setup_kra }}"
+    setup_dns: "{{ ipareplica_setup_dns }}"
+    no_pkinit: "{{ ipareplica_no_pkinit }}"
+    dirsrv_config_file: "{{ ipareplica_dirsrv_config_file | default(omit) }}"
+    ### ssl certificate ###
+    dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
+    http_cert_files: "{{ ipareplica_http_cert_files | default([]) }}"
+    pkinit_cert_files: "{{ ipareplica_pkinit_cert_files | default([]) }}"
+    ### client ###
+    no_ntp: "{{ ipaclient_no_ntp }}"
+    ### dns ###
+    no_reverse: "{{ ipareplica_no_reverse }}"
+    auto_reverse: "{{ ipareplica_auto_reverse }}"
+    forwarders: "{{ ipareplica_forwarders | default([]) }}"
+    no_forwarders: "{{ ipareplica_no_forwarders }}"
+    auto_forwarders: "{{ ipareplica_auto_forwarders }}"
+    forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
+    no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
+  register: result_ipareplica_test
+
+- block:
+
+  #- name: Install - Setup client
+  #  include_role:
+  #    name: ipaclient
+  #  vars:
+  #    state: present
+  #    ipaclient_domain: "{{ result_ipareplica_test.domain }}"
+  #    ipaclient_realm: "{{ result_ipareplica_test.realm }}"
+  #    ipaclient_server: "{{ result_ipareplica_test.server }}"
+  #    ipaclient_hostname: "{{ result_ipareplica_test.hostname }}"
+  #    #ipaclient_no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
+  #    #ipaclient_ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
+  #    #ipaclient_no_ssh: "{{ ipaclient_no_ssh }}"
+  #    #ipaclient_no_sshd: "{{ ipaclient_no_sshd }}"
+  #    #ipaclient_mkhomedir: "{{ ipaclient_mkhomedir }}"
+
+  #- name: Install - Setup client
+  #  command: >
+  #    /usr/sbin/ipa-client-install
+  #    --unattended
+  #    --no-ntp
+  #    --domain "{{ result_ipareplica_test.domain }}"
+  #    --realm "{{ result_ipareplica_test.realm }}"
+  #    --server "{{ result_ipareplica_test.server }}"
+  #    --hostname "{{ result_ipareplica_test.hostname }}"
+  #    {{ "--principal" if ipaadmin_password is defined else "" }} {{ ipaadmin_principal if ipaadmin_password is defined else "" }}
+  #    {{ "--password" if ipaadmin_password is defined else "" }} {{ ipaadmin_password if ipaadmin_password is defined else "" }}
+  #    {{ "--mkhomedir" if ipaclient_mkhomedir | bool else "" }}
+  #  #  {{ "--no-dns-sshfp" if ipaclient_no_dns_sshfp | bool else "" }}
+  #  #  {{ "--ssh-trust-dns" if ipaclient_ssh_trust_dns | bool else "" }}
+  #  #  {{ "--no-ssh" if ipaclient_no_ssh | bool else "" }}
+  #  #  {{ "--no-sshd" if ipaclient_no_sshd | bool else "" }}
+  #  when: not result_ipareplica_test.client_enrolled
+
+  - name: Install - Configure firewalld
+    command: >
+      firewall-cmd
+      --permanent
+      --add-service=freeipa-ldap
+      --add-service=freeipa-ldaps
+      --add-service=freeipa-replication
+      {{ "--add-service=dns" if ipareplica_setup_dns | bool else "" }}
+      {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
+    when: not ipareplica_no_firewalld | bool
+
+  - name: Install - Configure firewalld runtime
+    command: >
+      firewall-cmd
+      --add-service=freeipa-ldap
+      --add-service=freeipa-ldaps
+      --add-service=freeipa-replication
+      {{ "--add-service=dns" if ipareplica_setup_dns | bool else "" }}
+      {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
+    when: not ipareplica_no_firewalld | bool
+
+  - name: Install - Replica preparation
+    ipareplica_prepare:
+      ### basic ###
+      password: "{{ ipaadmin_password | default(omit) }}"
+      ip_addresses: "{{ ipareplica_ip_addresses | default([]) }}"
+      domain: "{{ result_ipareplica_test.domain }}"
+      realm: "{{ result_ipareplica_test.realm }}"
+      hostname: "{{ result_ipareplica_test.hostname }}"
+      principal: "{{ ipaadmin_principal | default(omit) }}"
+      ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
+      no_host_dns: "{{ ipareplica_no_host_dns }}"
+      ### replica ###
+      setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      setup_dns: "{{ ipareplica_setup_dns }}"
+      ### ssl certificate ###
+      dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
+      dirsrv_pin: "{{ ipareplica_dirsrv_pin | default(omit) }}"
+      http_cert_files: "{{ ipareplica_http_cert_files | default([]) }}"
+      http_pin: "{{ ipareplica_http_pin | default(omit) }}"
+      pkinit_cert_files: "{{ ipareplica_pkinit_cert_files | default([]) }}"
+      pkinit_pin: "{{ ipareplica_pkinit_pin | default(omit) }}"
+      ### client ###
+      keytab: "{{ ipaclient_keytab | default(omit) }}"
+      mkhomedir: "{{ ipaclient_mkhomedir | default(omit) }}"
+      force_join: "{{ ipaclient_force_join | default(omit) }}"
+      no_ntp: "{{ ipaclient_no_ntp | default(omit) }}"
+      ssh_trust_dns: "{{ ipaclient_ssh_trust_dns | default(omit) }}"
+      no_ssh: no
+      no_sshd: no
+      no_dns_sshfp: no
+      ### dns ###
+      no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
+      forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
+      ### ad trust ###
+      netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
+      rid_base: "{{ ipareplica_rid_base | default(omit) }}"
+      secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
+      ### additional ###
+      server: "{{ result_ipareplica_test.server }}"
+      skip_conncheck: "{{ ipareplica_skip_conncheck }}"
+    register: result_ipareplica_prepare
+
+  - name: Install - Setup NTP
+    ipaserver_setup_ntp:
+    when: not ipaclient_no_ntp | bool
+
+  - name: Install - Add to ipaservers
+    ipareplica_add_to_ipaservers:
+      ### server ###
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      ### additional ###
+      config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      installer_ccache: "{{ result_ipareplica_prepare.installer_ccache }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+    when: result_ipareplica_prepare._add_to_ipaservers
+
+  - name: Install - Create dirman password
+    no_log: yes
+    ipaserver_master_password:
+      dm_password: "{{ ipadm_password }}"
+      master_password: "{{ ipaserver_master_password | default(omit) }}"
+    register: result_ipaserver_master_password
+
+  - name: Install - Set dirman password
+    no_log: yes
+    set_fact:
+      ipareplica_dirman_password: "{{ result_ipaserver_master_password.password }}"
+
+  - name: Install - Setup certmonger
+    ipareplica_setup_certmonger:
+    when: result_ipareplica_prepare._ca_enabled
+
+  - name: Install - Install CA certs
+    ipareplica_install_ca_certs:
+      ### basic ###
+      dm_password: "{{ ipadm_password | default(omit) }}"
+      password: "{{ ipaadmin_password | default(omit) }}"
+      ip_addresses: "{{ ipareplica_ip_addresses | default([]) }}"
+      domain: "{{ result_ipareplica_test.domain }}"
+      realm: "{{ result_ipareplica_test.realm }}"
+      hostname: "{{ result_ipareplica_test.hostname }}"
+      ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
+      no_host_dns: "{{ ipareplica_no_host_dns }}"
+      ### replica ###
+      setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      setup_dns: "{{ ipareplica_setup_dns }}"
+      ### ssl certificate ###
+      dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
+      ### client ###
+      force_join: "{{ ipaclient_force_join }}"
+      ### dns ###
+      forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
+      ### ad trust ###
+      netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
+      rid_base: "{{ ipareplica_rid_base | default(omit) }}"
+      secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
+      ### additional ###
+      server: "{{ result_ipareplica_test.server }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      installer_ccache: "{{ result_ipareplica_prepare.installer_ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
+      _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info }}"
+      _http_pkcs12_info: "{{ result_ipareplica_prepare._http_pkcs12_info }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
+      _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
+      _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+      config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+      config_ca_host_name: "{{ result_ipareplica_prepare.config_ca_host_name }}"
+      config_ips: "{{ result_ipareplica_prepare.config_ips }}"
+    register: result_ipareplica_install_ca_certs
+
+  - name: Install - Setup DS
+    ipareplica_setup_ds:
+      ### basic ###
+      dm_password: "{{ ipadm_password | default(omit) }}"
+      password: "{{ ipaadmin_password | default(omit) }}"
+      ip_addresses: "{{ ipareplica_ip_addresses | default([]) }}"
+      domain: "{{ result_ipareplica_test.domain }}"
+      realm: "{{ result_ipareplica_test.realm }}"
+      hostname: "{{ result_ipareplica_test.hostname }}"
+      ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
+      no_host_dns: "{{ ipareplica_no_host_dns }}"
+      ### replica ###
+      setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      setup_dns: "{{ ipareplica_setup_dns }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      dirsrv_config_file: "{{ ipareplica_dirsrv_config_file | default(omit) }}"
+      ### ssl certificate ###
+      dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
+      ### client ###
+      force_join: "{{ ipaclient_force_join }}"
+      ### dns ###
+      forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
+      ### ad trust ###
+      netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
+      rid_base: "{{ ipareplica_rid_base | default(omit) }}"
+      secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
+      ### additional ###
+      server: "{{ result_ipareplica_test.server }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      installer_ccache: "{{ result_ipareplica_prepare.installer_ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
+      _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info }}"
+      _http_pkcs12_info: "{{ result_ipareplica_prepare._http_pkcs12_info }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
+      _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
+      _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+      config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      config_ca_host_name: "{{ result_ipareplica_prepare.config_ca_host_name }}"
+      config_ips: "{{ result_ipareplica_prepare.config_ips }}"
+    register: result_ipareplica_setup_ds
+
+  - name: Install - Create IPA conf
+    ipareplica_create_ipa_conf:
+      ### basic ###
+      dm_password: "{{ ipadm_password | default(omit) }}"
+      password: "{{ ipaadmin_password | default(omit) }}"
+      ip_addresses: "{{ ipareplica_ip_addresses | default([]) }}"
+      domain: "{{ result_ipareplica_test.domain }}"
+      realm: "{{ result_ipareplica_test.realm }}"
+      hostname: "{{ result_ipareplica_test.hostname }}"
+      ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
+      no_host_dns: "{{ ipareplica_no_host_dns }}"
+      ### replica ###
+      setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      setup_dns: "{{ ipareplica_setup_dns }}"
+      ### ssl certificate ###
+      dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
+      ### client ###
+      force_join: "{{ ipaclient_force_join }}"
+      ### dns ###
+      forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
+      ### ad trust ###
+      netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
+      rid_base: "{{ ipareplica_rid_base | default(omit) }}"
+      secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
+      ### additional ###
+      server: "{{ result_ipareplica_test.server }}"
+      config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      installer_ccache: "{{ result_ipareplica_prepare.installer_ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
+      _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info }}"
+      _http_pkcs12_info: "{{ result_ipareplica_prepare._http_pkcs12_info }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
+      _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
+      _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+
+  - name: Install - Setup KRB
+    ipareplica_setup_krb:
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+
+  - name: Install - DS enable SSL
+    ipareplica_ds_enable_ssl:
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      dirsrv_config_file: "{{ ipareplica_dirsrv_config_file | default(omit) }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+      ds_ca_subject: "{{ result_ipareplica_setup_ds.ds_ca_subject }}"
+
+  - name: Install - Setup http
+    ipareplica_setup_http:
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      no_ui_redirect: "{{ ipareplica_no_ui_redirect }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
+      _http_pkcs12_info: "{{ result_ipareplica_prepare._http_pkcs12_info }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+
+  - name: Install - Setup otpd
+    ipareplica_setup_otpd:
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      no_ui_redirect: "{{ ipareplica_no_ui_redirect }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+
+  - name: Install - Setup custodia
+    ipareplica_setup_custodia:
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      no_ui_redirect: "{{ ipareplica_no_ui_redirect }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+
+  - name: Install - Setup CA
+    ipareplica_setup_ca:
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      no_ui_redirect: "{{ ipareplica_no_ui_redirect }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
+      _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
+      _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+      config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      config_ca_host_name: "{{ result_ipareplica_install_ca_certs.config_ca_host_name }}"
+      config_ips: "{{ result_ipareplica_prepare.config_ips }}"
+    when: result_ipareplica_prepare._ca_enabled
+
+  - name: Install - KRB enable SSL
+    ipareplica_krb_enable_ssl:
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      #no_ui_redirect: "{{ ipareplica_no_ui_redirect }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+
+  - name: Install - DS apply updates
+    ipareplica_ds_apply_updates:
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      no_ui_redirect: "{{ ipareplica_no_ui_redirect }}"
+      dirsrv_config_file: "{{ ipareplica_dirsrv_config_file | default(omit) }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+      ds_ca_subject: "{{ result_ipareplica_setup_ds.ds_ca_subject }}"
+
+  - name: Install - Setup kra
+    ipareplica_setup_kra:
+      ### basic ###
+      dm_password: "{{ ipadm_password | default(omit) }}"
+      password: "{{ ipaadmin_password | default(omit) }}"
+      ip_addresses: "{{ ipareplica_ip_addresses | default([]) }}"
+      domain: "{{ result_ipareplica_test.domain }}"
+      realm: "{{ result_ipareplica_test.realm }}"
+      hostname: "{{ result_ipareplica_test.hostname }}"
+      ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
+      no_host_dns: "{{ ipareplica_no_host_dns }}"
+      ### replica ###
+      setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      setup_dns: "{{ ipareplica_setup_dns }}"
+      ### ssl certificate ###
+      dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
+      ### client ###
+      force_join: "{{ ipaclient_force_join }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      server: "{{ result_ipareplica_test.server }}"
+      config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      installer_ccache: "{{ result_ipareplica_prepare.installer_ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
+      _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info }}"
+      _http_pkcs12_info: "{{ result_ipareplica_prepare._http_pkcs12_info }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
+      _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
+      _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
+    when: result_ipareplica_test.setup_kra
+
+  - name: Install - Restart KDC
+    ipareplica_restart_kdc:
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      no_ui_redirect: "{{ ipareplica_no_ui_redirect }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+
+  - name: Install - Custodia import dm password
+    ipareplica_custodia_import_dm_password:
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      no_pkinit: "{{ ipareplica_no_pkinit }}"
+      no_ui_redirect: "{{ ipareplica_no_ui_redirect }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
+
+  - name: Install - Promote SSSD
+    ipareplica_promote_sssd:
+      ### replica ###
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+
+  - name: Install - Promote openldap.conf
+    ipareplica_promote_openldap_conf:
+      ### replica ###
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+
+  - name: Install - Setup DNS
+    ipareplica_setup_dns:
+      ### server ###
+      setup_dns: "{{ ipareplica_setup_dns }}"
+      ### replica ###
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+
+  - name: Install - Setup adtrust
+    ipareplica_setup_adtrust:
+      ### replica ###
+      setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+    when: result_ipareplica_test.setup_adtrust
+
+  #- name: Install - Disconnect backend
+  #  ipareplica_backend_disconnect:
+
+  - name: Install - Enable IPA
+    ipaserver_enable_ipa:
+      hostname: "{{ result_ipareplica_test.hostname }}"
+      setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+    register: result_ipareplica_enable_ipa
+
+  - name: Install - Cleanup root IPA cache
+    file:
+      path: "/root/.ipa_cache"
+      state: absent
+    when: result_ipareplica_enable_ipa.changed

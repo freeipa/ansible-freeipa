@@ -1,0 +1,40 @@
+---
+# defaults file for ipareplica
+
+### basic ###
+ipareplica_no_host_dns: no
+ipareplica_skip_conncheck: no
+### server ###
+ipareplica_setup_adtrust: no
+ipareplica_setup_ca: no
+ipareplica_setup_kra: no
+ipareplica_setup_dns: no
+ipareplica_no_pkinit: no
+ipareplica_no_ui_redirect: no
+### client ###
+ipaclient_mkhomedir: no
+ipaclient_force_join: no
+ipaclient_no_ntp: no
+#ipaclient_ssh_trust_dns: no
+#ipaclient_no_ssh: no
+#ipaclient_no_sshd: no
+#ipaclient_no_dns_sshfp: no
+### certificate system ###
+ipareplica_skip_schema_check: no
+### dns ###
+ipareplica_allow_zone_overlap: no
+ipareplica_no_reverse: no
+ipareplica_auto_reverse: no
+ipareplica_no_forwarders: no
+ipareplica_auto_forwarders: no
+ipareplica_no_dnssec_validation: no
+### ad trust ###
+ipareplica_add_sids: no
+ipareplica_add_agents: no
+ipareplica_enable_compat: no
+### uninstall ###
+ipareplica_ignore_topology_disconnect: no
+ipareplica_ignore_last_of_role: no
+### additional ###
+ipareplica_no_package_install: no
+ipareplica_no_firewalld: no

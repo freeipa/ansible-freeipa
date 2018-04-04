@@ -1,0 +1,8 @@
+---
+- name: Playbook to unconfigure IPA replicas
+  hosts: ipareplicas
+  become: true
+
+  roles:
+  - role: ipareplica
+    state: absent

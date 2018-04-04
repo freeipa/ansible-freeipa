@@ -1,0 +1,18 @@
+---
+# tasks file for ipareplica
+
+- name: Import variables specific to distribution
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "vars/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+    - "vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - "vars/{{ ansible_distribution }}.yml"
+    - "vars/default.yml"
+
+- name: Install IPA replica
+  include: tasks/install.yml
+  when: state|default('present') == 'present'
+
+- name: Uninstall IPA replica
+  include: tasks/uninstall.yml
+  when: state|default('present') == 'absent'
