@@ -1,0 +1,24 @@
+---
+- name: Uninstall IPA clients
+  hosts: ipaclients
+  become: true
+
+  roles:
+  - role: ipaclient
+    state: absent
+
+- name: Uninstall IPA replicas
+  hosts: ipareplicas
+  become: true
+
+  roles:
+  - role: ipareplica
+    state: absent
+
+- name: Uninstall IPA servers
+  hosts: ipaserver
+  become: true
+
+  roles:
+  - role: ipaserver
+    state: absent

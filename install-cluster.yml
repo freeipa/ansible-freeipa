@@ -1,0 +1,24 @@
+---
+- name: Install IPA servers
+  hosts: ipaserver
+  become: true
+
+  roles:
+  - role: ipaserver
+    state: present
+
+- name: Install IPA replicas
+  hosts: ipareplicas
+  become: true
+
+  roles:
+  - role: ipareplica
+    state: present
+
+- name: Install IPA clients
+  hosts: ipaclients
+  become: true
+
+  roles:
+  - role: ipaclient
+    state: present
