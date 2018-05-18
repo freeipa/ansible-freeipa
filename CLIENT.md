@@ -109,6 +109,15 @@ Variables
 **ipaclient_mkhomedir** - Set to yes to configure PAM to create a users home directory if it does not exist.
  (string, optional)
 
+Cluster Specific Variables
+--------------------------
+
+**ipaclient_no_dns_lookup** - Set to 'yes' to use groups.ipaserver in cluster environments as servers for the clients. This deactivates DNS lookup in krb5.
+ (bool, optional, default: 'no')
+
+**ipaclient_servers** - Manually override list of servers for example in a cluster environment on a per client basis. The list of servers is normally taken from from groups.ipaserver in cluster environments.
+ (list of strings, optional)
+
 Requirements
 ------------
 

@@ -11,10 +11,20 @@
   include: "{{role_path}}/tasks/python_2_3_test.yml"
   static: yes
 
+- name: Install - Set ipaclient_servers
+  set_fact:
+    ipaclient_servers: "{{ groups['ipaservers'] | list }}"
+  when: groups.ipaservers is defined and ipaclient_servers is not defined
+
+- name: Install - Set ipaclient_servers from cluster inventory
+  set_fact:
+    ipaclient_servers: "{{ groups['ipaserver'] | list }}"
+  when: ipaclient_no_dns_lookup | bool and groups.ipaserver is defined and ipaclient_servers is not defined
+
 - name: Install - IPA discovery
   ipadiscovery:
     domain: "{{ ipaserver_domain | default(ipaclient_domain) | default(omit) }}"
-    servers: "{{ groups.ipaserver | default(groups.ipaservers) | default(omit) }}"
+    servers: "{{ ipaclient_servers | default(omit) }}"
     realm: "{{ ipaserver_realm | default(ipaclient_realm) | default(omit) }}"
     hostname: "{{ ipaclient_hostname | default(ansible_fqdn) }}"
     ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
