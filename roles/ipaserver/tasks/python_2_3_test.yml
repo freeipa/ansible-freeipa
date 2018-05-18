@@ -3,6 +3,7 @@
     script: py3test.py
     register: py3test
     failed_when: False
+    changed_when: False
 
   - name: Set python interpreter to 3
     set_fact:
