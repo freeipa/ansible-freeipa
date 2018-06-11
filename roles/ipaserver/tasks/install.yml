@@ -134,6 +134,8 @@
       reverse_zones: "{{ result_ipaserver_test.reverse_zones }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_reverse: "{{ ipaserver_auto_reverse }}"
+      forwarders: "{{ ipaserver_forwarders | default([]) }}"
+      no_forwarders: "{{ ipaserver_no_forwarders }}"
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"
       no_dnssec_validation: "{{ result_ipaserver_test.no_dnssec_validation }}"
       ### additional ###
