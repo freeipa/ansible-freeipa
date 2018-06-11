@@ -226,7 +226,7 @@ def main():
         with redirect_stdout(ansible_log):
             kra.install_check(api, None, options)
 
-    if options.setup_dns:
+    if options.setup_dns and not options.no_host_dns:
         with redirect_stdout(ansible_log):
             dns.install_check(False, api, False, options, options.host_name)
         ip_addresses = dns.ip_addresses
