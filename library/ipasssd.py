@@ -87,6 +87,13 @@ options:
     required: false
     type: bool
     default: no
+  override_shell:
+    description: Override the login shell for all users within the IPA domain.
+    required: false
+  override_shell_global:
+    description: Override the login shell for all users globally.
+    required: false
+    default: no
 author:
     - Thomas Woerner
 '''
@@ -101,6 +108,8 @@ EXAMPLES = '''
     services: ["ssh", "sudo"]
     cache_credentials: yes
     krb5_offline_passwords: yes
+    override_shell: /bin/bash
+    override_shell_global: yes
 '''
 
 RETURN = '''
@@ -139,6 +148,8 @@ def main():
             permit=dict(required=False, type='bool'),
             dns_updates=dict(required=False, type='bool'),
             all_ip_addresses=dict(required=False, type='bool'),
+            override_shell=dict(required=False),
+            override_shell_global=dict(required=False, type='bool'),
         ),
         supports_check_mode = True,
     )
@@ -156,6 +167,8 @@ def main():
     permit = module.params.get('permit')
     dns_updates = module.params.get('dns_updates')
     all_ip_addresses = module.params.get('all_ip_addresses')
+    override_shell = module.params.get('override_shell')
+    override_shell_global = module.params.get('override_shell_global')
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     client_domain = client_hostname[client_hostname.find(".")+1:]
@@ -270,6 +283,17 @@ def main():
     if krb5_offline_passwords:
         domain.set_option('krb5_store_password_if_offline', True)
 
+    if override_shell and override_shell_global:
+        try:
+            nss_service = sssdconfig.get_service('nss')
+        except SSSDConfig.NoServiceError:
+            nss_service = sssdconfig.new_service('nss')
+        nss_service.set_option('override_shell', override_shell)
+        sssdconfig.save_service(nss_service)
+
+    elif override_shell and not override_shell_global:
+        domain.set_option('override_shell', override_shell)
+        
     domain.set_active(True)
 
     sssdconfig.save_domain(domain)
