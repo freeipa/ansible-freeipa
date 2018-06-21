@@ -200,7 +200,7 @@ def main():
     fd.write("realm=%s\n" % options.realm_name)
     fd.write("domain=%s\n" % options.domain_name)
     fd.write("xmlrpc_uri=https://%s/ipa/xml\n" % \
-             format_netloc(options.host_name))
+             ipautil.format_netloc(options.host_name))
     fd.write("ldap_uri=ldapi://%%2fvar%%2frun%%2fslapd-%s.socket\n" % \
              installutils.realm_to_serverid(options.realm_name))
     if options.setup_ca:

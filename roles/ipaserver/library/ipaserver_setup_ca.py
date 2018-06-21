@@ -170,6 +170,8 @@ def main():
 
     # init #################################################################
 
+    options.promote = False  # first master, no promotion
+
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
 
     api_Backend_ldap2(options.host_name, options.setup_ca, connect=True)
@@ -186,6 +188,11 @@ def main():
     # setup CA ##############################################################
 
     with redirect_stdout(ansible_log):
+        if NUM_VERSION >= 40604:
+            custodia = custodiainstance.get_custodia_instance(
+                options, custodiainstance.CustodiaModes.MASTER_PEER)
+            custodia.create_instance()
+
         if options.setup_ca:
             if not options.external_cert_files and options.external_ca:
                 # stage 1 of external CA installation
@@ -193,7 +200,10 @@ def main():
                               if n in options.__dict__}
                 write_cache(cache_vars)
 
-            ca.install_step_0(False, None, options)
+            if NUM_VERSION >= 40604:
+                ca.install_step_0(False, None, options, custodia=custodia)
+            else:
+                ca.install_step_0(False, None, options)
         else:
             # Put the CA cert where other instances expect it
             x509.write_certificate(options._http_ca_cert, paths.IPA_CA_CRT)
@@ -210,13 +220,15 @@ def main():
             x509.write_certificate(options._http_ca_cert, paths.CA_BUNDLE_PEM)
             os.chmod(paths.CA_BUNDLE_PEM, 0o444)
 
-    with redirect_stdout(ansible_log):
         # we now need to enable ssl on the ds
         ds.enable_ssl()
 
-    if options.setup_ca:
-        with redirect_stdout(ansible_log):
-            ca.install_step_1(False, None, options)
+        if options.setup_ca:
+            with redirect_stdout(ansible_log):
+                if NUM_VERSION >= 40604:
+                    ca.install_step_1(False, None, options, custodia=custodia)
+                else:
+                    ca.install_step_1(False, None, options)
 
     ansible_module.exit_json(changed=True)
 

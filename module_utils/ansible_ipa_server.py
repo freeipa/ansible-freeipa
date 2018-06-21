@@ -51,12 +51,14 @@ if NUM_VERSION >= 40500:
 
     import six
 
+    if NUM_VERSION >= 40690:
+        from ipaclient.install.ipachangeconf import IPAChangeConf
     from ipalib.install import certmonger, sysrestore
     from ipapython import ipautil
     if NUM_VERSION < 40600:
         from ipapython.ipa_log_manager import root_logger
     from ipapython.ipautil import (
-        format_netloc, ipa_generate_password, run, user_input)
+        ipa_generate_password, run, user_input)
     from ipapython.admintool import ScriptError
     from ipaplatform import services
     from ipaplatform.paths import paths
@@ -70,11 +72,21 @@ if NUM_VERSION >= 40500:
         no_matching_interface_for_ip_address_warning,
     )
     from ipapython.dnsutil import check_zone_overlap
-    from ipaclient.install import ntpconf
+    try:
+        from ipaclient.install import timeconf
+        from ipaclient.install.client import sync_time
+        time_service = "chronyd"
+    except ImportError:
+        try:
+            from ipaclient.install import ntpconf as timeconf
+        except ImportError:
+            from ipaclient import ntpconf as timeconf
+        from ipaserver.install import ntpinstance
+        time_service = "ntpd"
     from ipaserver.install import (
         adtrust, bindinstance, ca, dns, dsinstance,
         httpinstance, installutils, kra, krbinstance,
-        ntpinstance, otpdinstance, custodiainstance, replication, service,
+        otpdinstance, custodiainstance, replication, service,
         sysupgrade)
     adtrust_imported = True
     kra_imported = True
@@ -104,6 +116,11 @@ if NUM_VERSION >= 40500:
         _server_trust_ad_installed = True
     except ImportError:
         _server_trust_ad_installed = False
+
+    try:
+        from ipaclient.install.client import check_ldap_conf
+    except ImportError:
+        check_ldap_conf = None
 
 else:
     # IPA version < 4.5

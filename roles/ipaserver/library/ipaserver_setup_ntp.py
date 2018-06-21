@@ -64,12 +64,28 @@ def main():
 
     # setup NTP #####################################################
 
-    ntpconf.force_ntpd(sstore)
-    ntp = ntpinstance.NTPInstance(fstore)
-    ntp.set_output(ansible_log)
-    with redirect_stdout(ansible_log):
-        if not ntp.is_configured():
-            ntp.create_instance()
+    if time_service == "chronyd":
+        # We have to sync time before certificate handling on master.
+        # As chrony configuration is moved from client here, unconfiguration of
+        # chrony will be handled here in uninstall() method as well by invoking
+        # the ipa-server-install --uninstall
+        ansible_module.log("Synchronizing time")
+        options.ntp_servers = None
+        options.ntp_pool = None
+        if sync_time(options, fstore, sstore):
+            ansible_module.log("Time synchronization was successful.")
+        else:
+            ansible_module.warn("IPA was unable to sync time with chrony!")
+            ansible_module.warn("Time synchronization is required for IPA "
+                                "to work correctly")
+    else:
+        # Configure ntpd
+        timeconf.force_ntpd(sstore)
+        ntp = ntpinstance.NTPInstance(fstore)
+        ntp.set_output(ansible_log)
+        with redirect_stdout(ansible_log):
+            if not ntp.is_configured():
+                ntp.create_instance()
 
     # done ##########################################################
 

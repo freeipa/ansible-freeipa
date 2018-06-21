@@ -80,7 +80,14 @@ def main():
     # setup kra #####################################################
 
     with redirect_stdout(ansible_log):
-        kra.install(api, None, options)
+        if NUM_VERSION >= 40604:
+            custodia = custodiainstance.get_custodia_instance(
+                options, custodiainstance.CustodiaModes.MASTER_PEER)
+            custodia.create_instance()
+
+            kra.install(api, None, options, custodia=custodia)
+        else:
+            kra.install(api, None, options)
 
     # done ##########################################################
 

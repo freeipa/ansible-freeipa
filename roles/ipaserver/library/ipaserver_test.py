@@ -506,6 +506,8 @@ def main():
 
     tasks.check_ipv6_stack_enabled()
     tasks.check_selinux_status()
+    if check_ldap_conf is not None:
+        check_ldap_conf()
 
     _installation_cleanup = True
     if not options.external_ca and not options.external_cert_files and \
@@ -515,17 +517,18 @@ def main():
 
     if not options.no_ntp:
         try:
-            ntpconf.check_timedate_services()
-        except ntpconf.NTPConflictingService as e:
+            timeconf.check_timedate_services()
+        except timeconf.NTPConflictingService as e:
             ansible_module.log("Conflicting time&date synchronization service '%s'"
-                       " will be disabled in favor of ntpd" % \
-                       e.conflicting_service)
-        except ntpconf.NTPConfigurationError:
+                       " will be disabled in favor of %s" % \
+                       (e.conflicting_service, time_service))
+        except timeconf.NTPConfigurationError:
             pass
 
-    # Check to see if httpd is already configured to listen on 443
-    if httpinstance.httpd_443_configured():
-        ansible_module.fail_json(msg="httpd is already configured to listen on 443.")
+    if hasattr(httpinstance, "httpd_443_configured"):
+        # Check to see if httpd is already configured to listen on 443
+        if httpinstance.httpd_443_configured():
+            ansible_module.fail_json(msg="httpd is already configured to listen on 443.")
 
     if not options.external_cert_files:
         # Make sure the 389-ds ports are available
@@ -533,20 +536,6 @@ def main():
             check_dirsrv(True)
         except ScriptError as e:
             ansible_module.fail_json(msg=e)
-
-    if not options.no_ntp:
-        try:
-            ntpconf.check_timedate_services()
-        except ntpconf.NTPConflictingService as e:
-            ansible_module.warn(
-                "Conflicting time&date synchronization service "
-                "'%s' will be disabled" % e.conflicting_service)
-        except ntpconf.NTPConfigurationError:
-            pass
-
-    # Check to see if httpd is already configured to listen on 443
-    if httpinstance.httpd_443_configured():
-        ansible_module.fail_json(msg="httpd is already configured to listen on 443.")
 
     # check bind packages are installed
     if options.setup_dns:
@@ -560,12 +549,9 @@ def main():
     else:
         options.host_default = get_fqdn()
 
-    _host_name_overridden = False
     try:
         verify_fqdn(options.host_default, options.no_host_dns)
         options.host_name = options.host_default
-        if options.host_default != get_fqdn():
-            _host_name_overridden = True
     except BadHostError as e:
         ansible_module.fail_json(msg=e)
     options.host_name = options.host_name.lower()
@@ -581,6 +567,11 @@ def main():
     if not options.realm_name:
         options.realm_name = options.domain_name
     options.realm_name = options.realm_name.upper()
+    if NUM_VERSION >= 40690:
+        try:
+            validate_domain_name(options.realm_name, entity="realm")
+        except ValueError as e:
+            raise ScriptError("Invalid realm name: {}".format(unicode(e)))
 
     if not options.setup_adtrust:
         # If domain name and realm does not match, IPA server will not be able
@@ -686,7 +677,7 @@ def main():
         fd.write("basedn=%s\n" % ipautil.realm_to_suffix(options.realm_name))
         fd.write("realm=%s\n" % options.realm_name)
         fd.write("domain=%s\n" % options.domain_name)
-        fd.write("xmlrpc_uri=https://%s/ipa/xml\n" % format_netloc(options.host_name))
+        fd.write("xmlrpc_uri=https://%s/ipa/xml\n" % ipautil.format_netloc(options.host_name))
         fd.write("ldap_uri=ldapi://%%2fvar%%2frun%%2fslapd-%s.socket\n" %
                  installutils.realm_to_serverid(options.realm_name))
         if options.setup_ca:
@@ -744,6 +735,9 @@ def main():
         except OSError:
             ansible_module.fail_json(msg="Could not remove %s" % ipa_tempdir)
 
+    # Always set _host_name_overridden
+    options._host_name_overridden = bool(options.host_name)
+
     # done ##################################################################
 
     ansible_module.exit_json(changed=True,
@@ -753,7 +747,7 @@ def main():
                              realm=options.realm_name,
                              ip_addresses=[ str(ip) for ip in ip_addresses ],
                              hostname=options.host_name,
-                             _hostname_overridden=_host_name_overridden,
+                             _hostname_overridden=options._host_name_overridden,
                              no_host_dns=options.no_host_dns,
                              ### server ###
                              setup_adtrust=options.setup_adtrust,

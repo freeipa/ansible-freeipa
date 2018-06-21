@@ -151,7 +151,7 @@ def main():
                                ca_subject=options.ca_subject,
                                hbac_allow=not options.no_hbac_allow,
                                setup_pkinit=not options.no_pkinit)
-            if not options.dirsrv_cert_files:
+            if not options.dirsrv_cert_files and NUM_VERSION < 40690:
                 ntpinstance.ntp_ldap_enable(options.host_name, ds.suffix,
                                             options.realm_name)
 
