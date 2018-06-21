@@ -97,6 +97,7 @@ def main():
             #### certificate system ###
             subject_base=dict(required=True),
             config_master_host_name=dict(required=True),
+            config_ca_host_name=dict(required=True),
             ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
             _ca_file=dict(required=False),
@@ -123,6 +124,7 @@ def main():
         options.subject_base = DN(options.subject_base)
     ### additional ###
     master_host_name = ansible_module.params.get('config_master_host_name')
+    ca_host_name = ansible_module.params.get('config_master_host_name')
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
     #os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
@@ -146,8 +148,12 @@ def main():
                                          constants.DEFAULT_CONFIG)
     api_bootstrap_finalize(env)
     config = gen_ReplicaConfig()
-    config.dirman_password = dirman_password
     config.subject_base = options.subject_base
+    config.dirman_password = dirman_password
+    config.setup_ca = options.setup_ca
+    #config.master_host_name = master_host_name
+    config.ca_host_name = ca_host_name
+    config.promote = installer.promote
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     #installer._remote_api = remote_api
@@ -164,6 +170,24 @@ def main():
     with redirect_stdout(ansible_log):
         ansible_log.debug("-- INSTALL_HTTP --")
 
+        # We need to point to the master when certmonger asks for
+        # HTTP certificate.
+        # During http installation, the HTTP/hostname principal is created
+        # locally then the installer waits for the entry to appear on the
+        # master selected for the installation.
+        # In a later step, the installer requests a SSL certificate through
+        # Certmonger (and the op adds the principal if it does not exist yet).
+        # If xmlrpc_uri points to the soon-to-be replica,
+        # the httpd service is not ready yet to handle certmonger requests
+        # and certmonger tries to find another master. The master can be
+        # different from the one selected for the installation, and it is
+        # possible that the principal has not been replicated yet. This
+        # may lead to a replication conflict.
+        # This is why we need to force the use of the same master by
+        # setting xmlrpc_uri
+        create_ipa_conf(fstore, config, ca_enabled,
+                        master=config.master_host_name)
+
         install_http(
             config,
             auto_redirect=not options.no_ui_redirect,
@@ -171,6 +195,9 @@ def main():
             pkcs12_info=http_pkcs12_info,
             ca_is_configured=ca_enabled,
             ca_file=cafile)
+
+        # Need to point back to ourself after the cert for HTTP is obtained
+        create_ipa_conf(fstore, config, ca_enabled)
 
     # done #
 

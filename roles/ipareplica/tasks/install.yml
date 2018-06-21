@@ -373,6 +373,7 @@
       subject_base: "{{ result_ipareplica_prepare.subject_base }}"
       ### additional ###
       config_master_host_name: "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
+      config_ca_host_name: "{{ result_ipareplica_prepare.config_ca_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
       _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
@@ -586,7 +587,7 @@
       ### additional ###
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
       config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
 
   - name: Install - Setup adtrust

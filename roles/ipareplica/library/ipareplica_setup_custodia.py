@@ -148,6 +148,7 @@ def main():
     api_bootstrap_finalize(env)
     config = gen_ReplicaConfig()
     config.dirman_password = dirman_password
+    config.promote = installer.promote
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     #installer._remote_api = remote_api
@@ -163,13 +164,21 @@ def main():
     with redirect_stdout(ansible_log):
         ansible_log.debug("-- INSTALL_CUSTODIA --")
 
-        custodia = custodiainstance.CustodiaInstance(config.host_name,
-                                                     config.realm_name)
-        if promote:
-            ansible_log.debug("-- CUSTODIA CREATE_REPLICA --")
-            custodia.create_replica(config.master_host_name)
+        if NUM_VERSION < 40690:
+            custodia = custodiainstance.CustodiaInstance(config.host_name,
+                                                         config.realm_name)
+            if promote:
+                ansible_log.debug("-- CUSTODIA CREATE_REPLICA --")
+                custodia.create_replica(config.master_host_name)
+            else:
+                ansible_log.debug("-- CUSTODIA CREATE_INSTANCE --")
+                custodia.create_instance()
         else:
-            ansible_log.debug("-- CUSTODIA CREATE_INSTANCE --")
+            if ca_enabled:
+                mode = custodiainstance.CustodiaModes.CA_PEER
+            else:
+                mode = custodiainstance.CustodiaModes.MASTER_PEER
+            custodia = custodiainstance.get_custodia_instance(config, mode)
             custodia.create_instance()
 
     # done #

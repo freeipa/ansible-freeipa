@@ -265,7 +265,9 @@ def main():
                 # do not use ensure_enrolled, it uses redirect_output
                 # ensure_enrolled(installer)
 
-                args = [paths.IPA_CLIENT_INSTALL, "--unattended", "--no-ntp"]
+                args = [paths.IPA_CLIENT_INSTALL, "--unattended"]
+                if NUM_VERSION < 40690:
+                    args.append("--no-ntp")
                 stdin = None
                 nolog = []
 

@@ -205,6 +205,7 @@ def main():
     api_bootstrap_finalize(env)
     config = gen_ReplicaConfig()
     config.subject_base = options.subject_base
+    config.promote = installer.promote
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
@@ -215,7 +216,16 @@ def main():
     with redirect_stdout(ansible_log):
         ansible_log.debug("-- INSTALL KRA --")
 
-        kra.install(api, config, options)
+        if NUM_VERSION < 40690:
+            kra.install(api, config, options)
+        else:
+            if ca_enabled:
+                mode = custodiainstance.CustodiaModes.CA_PEER
+            else:
+                mode = custodiainstance.CustodiaModes.MASTER_PEER
+            custodia = custodiainstance.get_custodia_instance(config, mode)
+
+            kra.install(api, config, options, custodia=custodia)
 
     # done #
 

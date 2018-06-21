@@ -189,6 +189,7 @@ def main():
     config.master_host_name = config_master_host_name
     config.ca_host_name = config_ca_host_name
     config.ips = config_ips
+    config.promote = options.promote
 
     remote_api = gen_remote_api(config.master_host_name, paths.ETC_IPA)
     options._remote_api = remote_api
@@ -208,7 +209,16 @@ def main():
         options.domain_name = config.domain_name
         options.host_name = config.host_name
         options.dm_password = config.dirman_password
-        ca.install(False, config, options)
+        if NUM_VERSION < 40690:
+            ca.install(False, config, options)
+        else:
+            if ca_enabled:
+                mode = custodiainstance.CustodiaModes.CA_PEER
+            else:
+                mode = custodiainstance.CustodiaModes.MASTER_PEER
+            custodia = custodiainstance.get_custodia_instance(config, mode)
+
+            ca.install(False, config, options, custodia=custodia)
 
     # done #
 

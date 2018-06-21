@@ -289,6 +289,7 @@ def main():
     config.master_host_name = config_master_host_name
     config.ca_host_name = config_ca_host_name
     config.ips = config_ips
+    config.promote = installer.promote
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
@@ -324,8 +325,9 @@ def main():
         install_dns_records(config, options, remote_api)
 
         ansible_log.debug("-- NTP LDAP ENABLE --")
-        ntpinstance.ntp_ldap_enable(config.host_name, ds.suffix,
-                                    remote_api.env.realm)
+        if ntpinstance is not None:
+            ntpinstance.ntp_ldap_enable(config.host_name, ds.suffix,
+                                        remote_api.env.realm)
     finally:
         if conn.isconnected():
             ansible_log.debug("-- DISCONNECT --")

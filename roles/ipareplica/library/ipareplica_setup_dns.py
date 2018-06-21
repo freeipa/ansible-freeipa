@@ -52,7 +52,7 @@ options:
   _top_dir:
     description: 
     required: yes
-  config_setup_ca:
+  setup_ca:
     description: 
     required: yes
   config_master_host_name:
@@ -82,7 +82,7 @@ def main():
             ### additional ###
             ccache=dict(required=True),
             _top_dir = dict(required=True),
-            config_setup_ca=dict(required=True),
+            setup_ca=dict(required=True),
             config_master_host_name=dict(required=True),
         ),
         supports_check_mode = True,
@@ -105,7 +105,7 @@ def main():
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
     options._top_dir = ansible_module.params.get('_top_dir')
-    config_setup_ca = ansible_module.params.get('config_setup_ca')
+    options.setup_ca = ansible_module.params.get('setup_ca')
     config_master_host_name = ansible_module.params.get('config_master_host_name')
 
     # init #
