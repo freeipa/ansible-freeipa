@@ -353,7 +353,7 @@ def main():
     except Exception as e:
         module.fail_json(msg="ipahost module failed : %s" % str(e))
     finally:
-        run(["kdestroy"], raiseonerr=False, env=os.environ)
+        run([paths.KDESTROY], raiseonerr=False, env=os.environ)
 
     module.exit_json(changed=changed, host=host)
 

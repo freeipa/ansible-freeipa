@@ -288,7 +288,7 @@ def main():
         # Particulary, SSSD might take longer than 6-8 seconds.
         while n < 10 and not found:
             try:
-                ipautil.run(["getent", "passwd", user])
+                ipautil.run([paths.GETENT if hasattr(paths, "KDESTROY") else "getent", "passwd", user])
                 found = True
             except Exception as e:
                 time.sleep(1)

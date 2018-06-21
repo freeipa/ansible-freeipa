@@ -263,7 +263,7 @@ def main():
                 module.log("Host is already joined")
             else:
                 if principal:
-                    run(["kdestroy"], raiseonerr=False, env=env)
+                    run([paths.KDESTROY], raiseonerr=False, env=env)
                 module.fail_json(msg="Joining realm failed: %s" % stderr)
         else:
             changed = True
@@ -274,7 +274,7 @@ def main():
             module.fail_json(msg="krb5.keytab missing! Retry with ipaclient_force_join=yes to generate a new one.")
 
         if principal:
-            run(["kdestroy"], raiseonerr=False, env=env)
+            run([paths.KDESTROY], raiseonerr=False, env=env)
 
         # Obtain the TGT. We do it with the temporary krb5.conf, sot
         # tha only the KDC we're installing under is contacted.
