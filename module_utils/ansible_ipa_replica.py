@@ -103,67 +103,6 @@ if NUM_VERSION >= 40600:
     if six.PY3:
         unicode = str
 
-    """
-    import errno
-    import pickle
-    import shutil
-    import tempfile
-    import textwrap
-    import random
-
-    import six
-
-    from ipalib.install import certmonger, sysrestore
-    from ipapython import ipautil
-    from ipapython.ipautil import (
-        format_netloc, ipa_generate_password, run)
-    from ipapython.admintool import ScriptError
-    from ipaplatform import services
-    from ipaplatform.paths import paths
-    from ipaplatform.tasks import tasks
-    from ipalib import api, errors, x509
-    from ipalib.constants import DOMAIN_LEVEL_0, MIN_DOMAIN_LEVEL, MAX_DOMAIN_LEVEL
-    from ipalib.util import (
-        validate_domain_name,
-        no_matching_interface_for_ip_address_warning,
-    )
-    from ipapython.dnsutil import check_zone_overlap
-    from ipaclient.install import ntpconf
-    from ipaserver.install import (
-        adtrust, bindinstance, ca, dns, dsinstance,
-        httpinstance, installutils, kra, krbinstance,
-        ntpinstance, otpdinstance, custodiainstance, replication, service,
-        sysupgrade)
-    adtrust_imported = True
-    kra_imported = True
-    from ipaserver.install.installutils import (
-        IPA_MODULES, BadHostError, get_fqdn, get_server_ip_address,
-        is_ipa_configured, load_pkcs12, read_password, verify_fqdn,
-        update_hosts_file)
-    from ipaserver.install.server.install import (
-        check_dirsrv, validate_admin_password, validate_dm_password,
-        write_cache)
-    try:
-        from ipaserver.install.installutils import default_subject_base
-    except ImportError:
-        def default_subject_base(realm_name):
-            return DN(('O', realm_name))
-    try:
-        from ipaserver.install.installutils import default_ca_subject_dn
-    except ImportError:
-        def default_ca_subject_dn(subject_base):
-            return DN(('CN', 'Certificate Authority'), subject_base)
-
-    if six.PY3:
-        unicode = str
-
-    try:
-        from ipaserver.install import adtrustinstance
-        _server_trust_ad_installed = True
-    except ImportError:
-        _server_trust_ad_installed = False
-    """
-
 else:
     # IPA version < 4.6
 
