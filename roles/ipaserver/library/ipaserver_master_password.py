@@ -4,7 +4,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Based on ipa-client-install code
+# Based on ipa-server-install code
 #
 # Copyright (C) 2017  Red Hat
 # see file 'COPYING' for use and warranty information
