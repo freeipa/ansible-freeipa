@@ -30,6 +30,7 @@
     ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
     on_master: "{{ ipaclient_on_master }}"
     ntp_servers: "{{ ipaclient_ntp_servers | default([]) }}"
+    ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
     no_ntp: "{{ ipaclient_no_ntp }}"
   register: ipadiscovery
 

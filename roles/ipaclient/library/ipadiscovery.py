@@ -63,12 +63,23 @@ options:
     required: false
     type: list
     default: []
+  ntp_pool:
+    description: ntp server pool to use
+    required: false
   no_ntp:
     description: Do not sync time and do not detect time servers
     required: false
     default: false
     type: bool
     default: no
+  no_nisdomain:
+    description: Do not configure NIS domain name
+    required: false
+    type: bool
+    default: no
+  nisdomain:
+    description: NIS domain name
+    required: false
 author:
     - Thomas Woerner
 '''
@@ -223,20 +234,30 @@ def main():
             ca_cert_file=dict(required=False),
             on_master=dict(required=False, type='bool', default=False),
             ntp_servers=dict(required=False, type='list', default=[]),
+            ntp_pool=dict(required=False),
             no_ntp=dict(required=False, type='bool', default=False),
+            #no_nisdomain=dict(required=False, type='bool', default='no'),
+            #nisdomain=dict(required=False),
         ),
         supports_check_mode = True,
     )
 
     module._ansible_debug = True
-    opt_domain = module.params.get('domain')
-    opt_servers = module.params.get('servers')
-    opt_realm = module.params.get('realm')
-    opt_hostname = module.params.get('hostname')
-    opt_ca_cert_file = module.params.get('ca_cert_file')
-    opt_on_master = module.params.get('on_master')
-    opt_ntp_servers = module.params.get('ntp_servers')
-    opt_no_ntp = module.params.get('no_ntp')
+    options.domain = module.params.get('domain')
+    options.servers = module.params.get('servers')
+    options.realm = module.params.get('realm')
+    options.hostname = module.params.get('hostname')
+    options.ca_cert_file = module.params.get('ca_cert_file')
+    options.on_master = module.params.get('on_master')
+    options.ntp_servers = module.params.get('ntp_servers')
+    options.ntp_pool = module.params.get('ntp_pool')
+    options.no_ntp = module.params.get('no_ntp')
+    options.conf_ntp = not options.no_ntp
+    #options.no_nisdomain = module.params.get('no_nisdomain')
+    #options.nisdomain = module.params.get('nisdomain')
+    #options.ip_addresses
+    #options.all_ip_addresses
+    #options.enable_dns_updates
 
     hostname = None
     hostname_source = None
@@ -248,8 +269,34 @@ def main():
     client_domain = None
     cli_basedn = None
 
-    if opt_hostname:
-        hostname = opt_hostname
+    fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
+    statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
+
+    if options.ntp_servers and options.no_ntp:
+        module.fail_json(
+            "--ntp-server cannot be used together with --no-ntp")
+
+    if options.ntp_pool and options.no_ntp:
+        module.fail_json(
+            "--ntp-pool cannot be used together with --no-ntp")
+
+    #if options.no_nisdomain and options.nisdomain:
+    #    module.fail_json(
+    #        "--no-nisdomain cannot be used together with --nisdomain")
+
+    #if options.ip_addresses:
+    #    if options.enable_dns_updates:
+    #        module.fail_json(
+    #            "--ip-addresses cannot be used together with"
+    #            " --enable-dns-updates")
+
+    #    if options.all_ip_addresses:
+    #        module.fail_json(
+    #            "--ip-address cannot be used together with"
+    #            "--all-ip-addresses")
+
+    if options.hostname:
+        hostname = options.hostname
         hostname_source = 'Provided as option'
     else:
         hostname = socket.getfqdn()
@@ -263,25 +310,25 @@ def main():
             msg="Invalid hostname, '%s' must not be used." % hostname)
 
     # Get domain from first server if domain is not set, but there are servers
-    if opt_domain is None and len(opt_servers) > 0:
-        opt_domain = opt_servers[0][opt_servers[0].find(".")+1:]
+    if options.domain is None and len(options.servers) > 0:
+        options.domain = options.servers[0][options.servers[0].find(".")+1:]
 
     # Create the discovery instance
     ds = ipadiscovery.IPADiscovery()
 
     ret = ds.search(
-        domain=opt_domain,
-        servers=opt_servers,
-        realm=opt_realm,
+        domain=options.domain,
+        servers=options.servers,
+        realm=options.realm,
         hostname=hostname,
-        ca_cert_path=get_cert_path(opt_ca_cert_file))
+        ca_cert_path=get_cert_path(options.ca_cert_file))
 
-    if opt_servers and ret != 0:
+    if options.servers and ret != 0:
         # There is no point to continue with installation as server list was
         # passed as a fixed list of server and thus we cannot discover any
         # better result
         module.fail_json(msg="Failed to verify that %s is an IPA Server." % \
-                         ', '.join(opt_servers))
+                         ', '.join(options.servers))
 
     if ret == ipadiscovery.BAD_HOST_CONFIG:
         module.fail_json(msg="Can't get the fully qualified name of this host")
@@ -301,8 +348,8 @@ def main():
                 module.log("No IPA server found")
         else:
             module.log("Domain not found")
-        if opt_domain:
-            cli_domain = opt_domain
+        if options.domain:
+            cli_domain = options.domain
             cli_domain_source = 'Provided as option'
         else:
             module.fail_json(
@@ -310,9 +357,9 @@ def main():
 
         ret = ds.search(
             domain=cli_domain,
-            servers=opt_servers,
+            servers=options.servers,
             hostname=hostname,
-            ca_cert_path=get_cert_path(opt_ca_cert_file))
+            ca_cert_path=get_cert_path(options.ca_cert_file))
 
     if not cli_domain:
         if ds.domain:
@@ -325,8 +372,8 @@ def main():
     if ret in (ipadiscovery.NO_LDAP_SERVER, ipadiscovery.NOT_IPA_SERVER) \
             or not ds.server:
         module.debug("IPA Server not found")
-        if opt_servers:
-            cli_server = opt_servers
+        if options.servers:
+            cli_server = options.servers
             cli_server_source = 'Provided as option'
         else:
             module.fail_json(msg="Unable to find IPA Server to join")
@@ -335,12 +382,12 @@ def main():
             domain=cli_domain,
             servers=cli_server,
             hostname=hostname,
-            ca_cert_path=get_cert_path(opt_ca_cert_file))
+            ca_cert_path=get_cert_path(options.ca_cert_file))
 
     else:
         # Only set dnsok to True if we were not passed in one or more servers
         # and if DNS discovery actually worked.
-        if not opt_servers:
+        if not options.servers:
             (server, domain) = ds.check_domain(
                 ds.domain, set(), "Validating DNS Discovery")
             if server and domain:
@@ -353,11 +400,11 @@ def main():
                 "Using servers from command line, disabling DNS discovery")
 
     if not cli_server:
-        if opt_servers:
+        if options.servers:
             cli_server = ds.servers
             cli_server_source = 'Provided as option'
             module.debug(
-                "will use provided server: %s" % ', '.join(opt_servers))
+                "will use provided server: %s" % ', '.join(options.servers))
         elif ds.server:
             cli_server = ds.servers
             cli_server_source = ds.server_source
@@ -392,11 +439,11 @@ def main():
     cli_realm_source = ds.realm_source
     module.debug("will use discovered realm: %s" % cli_realm)
 
-    if opt_realm and opt_realm != cli_realm:
+    if options.realm and options.realm != cli_realm:
         module.fail_json(
             msg=
             "The provided realm name [%s] does not match discovered one [%s]" %
-            (opt_realm, cli_realm))
+            (options.realm, cli_realm))
 
     cli_basedn = str(ds.basedn)
     cli_basedn_source = ds.basedn_source
@@ -432,14 +479,33 @@ def main():
                 "installation may fail.")
             break
 
-    if not opt_on_master and not opt_no_ntp:
-        if len(opt_ntp_servers) < 1:
+    ntp_servers = [ ]
+    if sync_time is not None:
+        if options.conf_ntp:
+            # Attempt to configure and sync time with NTP server (chrony).
+            sync_time(options, fstore, statestore)
+        elif options.on_master:
+            # If we're on master skipping the time sync here because it was done
+            # in ipa-server-install
+            logger.info("Skipping attempt to configure and synchronize time with"
+                        " chrony server as it has been already done on master.")
+        else:
+            logger.info("Skipping chrony configuration")
+
+    elif not options.on_master and options.conf_ntp:
+        # Attempt to sync time with IPA server.
+        # If we're skipping NTP configuration, we also skip the time sync here.
+        # We assume that NTP servers are discoverable through SRV records
+        # in the DNS.
+        # If that fails, we try to sync directly with IPA server,
+        # assuming it runs NTP
+        if len(options.ntp_servers) < 1:
             # Detect NTP servers
             ds = ipadiscovery.IPADiscovery()
             ntp_servers = ds.ipadns_search_srv(cli_domain, '_ntp._udp',
                                                None, break_on_first=False)
         else:
-            ntp_servers = opt_ntp_servers
+            ntp_servers = options.ntp_servers
 
         # Attempt to sync time:
         # At first with given or dicovered time servers. If no ntp
@@ -449,15 +515,13 @@ def main():
         synced_ntp = False
         # use user specified NTP servers if there are any
         for s in ntp_servers:
-            synced_ntp = ntpconf.synconce_ntp(s, False)
+            synced_ntp = timconf.synconce_ntp(s, False)
             if synced_ntp:
                 break
         if not synced_ntp and not ntp_servers:
-            synced_ntp = ntpconf.synconce_ntp(cli_server[0], False)
+            synced_ntp = timeconf.synconce_ntp(cli_server[0], False)
         if not synced_ntp:
             module.warn("Unable to sync time with NTP server")
-    else:
-        ntp_servers = [ ]
 
     # Check if ipa client is already configured
     if is_client_configured():

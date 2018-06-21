@@ -160,9 +160,24 @@ if NUM_VERSION >= 40400:
         unicode = str
 
     try:
-        from ipaclient.install import ntpconf
+        from ipaclient.install import timeconf
+        time_service = "chronyd"
     except ImportError:
-        from ipaclient import ntpconf
+        try:
+            from ipaclient.install import ntpconf as timeconf
+        except ImportError:
+            from ipaclient import ntpconf as timeconf
+        time_service = "ntpd"
+
+    try:
+        from ipaclient.install.client import sync_time
+    except ImportError:
+        sync_time = None
+
+    try:
+        from ipaclient.install.client import check_ldap_conf
+    except ImportError:
+        check_ldap_conf = None
 
     logger = logging.getLogger("ipa-client-install")
 
