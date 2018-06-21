@@ -113,7 +113,8 @@ def get_ipa_version():
             # DEV versions look like:
             # 4.4.90.201610191151GITd852c00
             # 4.4.90.dev201701071308+git2e43db1
-            if part.startswith('dev') or 'GIT' in part:
+            # 4.6.90.pre2
+            if part.startswith('dev') or part.startswith('pre') or 'GIT' in part:
                 version_info.append(part)
             else:
                 version_info.append(int(part))
