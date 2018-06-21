@@ -124,8 +124,10 @@ def main():
 
     # setup DS ##############################################################
 
-    if NUM_VERSION < 40600:
-        # Make sure tmpfiles dir exist before installing components
+    # Make sure tmpfiles dir exist before installing components
+    if NUM_VERSION == 40504:
+        tasks.create_tmpfiles_dirs(IPAAPI_USER)
+    elif NUM_VERSION >= 40500 and NUM_VERSION <= 40503:
         tasks.create_tmpfiles_dirs()
 
     # Create a directory server instance

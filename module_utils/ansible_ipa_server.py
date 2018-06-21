@@ -63,7 +63,7 @@ if NUM_VERSION >= 40500:
     from ipaplatform.tasks import tasks
     from ipalib import api, errors, x509
     from ipalib.constants import DOMAIN_LEVEL_0, MIN_DOMAIN_LEVEL, MAX_DOMAIN_LEVEL
-    if NUM_VERSION < 40600:
+    if NUM_VERSION == 40504:
         from ipalib.constants import IPAAPI_USER
     from ipalib.util import (
         validate_domain_name,
