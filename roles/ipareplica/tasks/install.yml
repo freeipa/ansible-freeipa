@@ -97,6 +97,11 @@
   #  #  {{ "--no-sshd" if ipaclient_no_sshd | bool else "" }}
   #  when: not result_ipareplica_test.client_enrolled
 
+  - name: Install - Ensure firewalld is running
+    service:
+      name: firewalld
+      state: started
+
   - name: Install - Configure firewalld
     command: >
       firewall-cmd

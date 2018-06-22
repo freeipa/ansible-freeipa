@@ -366,6 +366,11 @@
       state: absent
     when: result_ipaserver_enable_ipa.changed
 
+  - name: Install - Ensure firewalld is running
+    service:
+      name: firewalld
+      state: started
+
   - name: Install - Configure firewalld
     command: >
       firewall-cmd
