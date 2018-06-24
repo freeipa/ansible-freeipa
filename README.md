@@ -8,9 +8,11 @@ This repository contains [Ansible](https://www.ansible.com/) roles and playbooks
 
 For now only FreeIPA versions 4.5 and up are supported. The client role should also be functional with FreeIPA 4.4.
 
+## Ubuntu Support
+Ubuntu support added. 
+
 ## Roles
 
 [Client](CLIENT.md)
 
 [Server](SERVER.md)
-
