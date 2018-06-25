@@ -1,0 +1,4 @@
+# vars/Ubuntu.yml
+ipaserver_packages: [ "freeipa-server" ]
+ipaserver_packages_dns: [ "freeipa-server-dns" ]
+ipaserver_packages_adtrust: [ ]
