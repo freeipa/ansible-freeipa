@@ -515,7 +515,7 @@ def main():
         synced_ntp = False
         # use user specified NTP servers if there are any
         for s in ntp_servers:
-            synced_ntp = timconf.synconce_ntp(s, False)
+            synced_ntp = timeconf.synconce_ntp(s, False)
             if synced_ntp:
                 break
         if not synced_ntp and not ntp_servers:
