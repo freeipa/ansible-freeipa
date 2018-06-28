@@ -67,29 +67,9 @@ Example playbook to setup the IPA client(s) using principal and password from in
 Variables
 ---------
 
-The client role is configured with variables. The `ipaclient_ ` prefix is used for client specific settings and `ipaadmin_` prefix for admin user specific settings.
-
-### `ipaservers`
-
-The optional `ipaservers` group is a list of the IPA server full qualified host names. In a topology with a chain of servers and replicas, it is important to use the right server or replica as the server for the client. If there is a need to overwrite the setting for a client in the `ipaclients` group, please use the list `ipaclient_servers` explained below.
-
-If no `ipaservers` group is defined than the installation preparation step will try to use DNS autodiscovery to identify the the IPA server using DNS txt records.
-
 ### `ipaclients`
 
 The mandatory `ipaclients` group is a list of the names of the IPA clients in FQDN form. All these clients will be installed or configured using the playbook.
-
-### `ipaadmin_keytab`
-
-The `ipaadmin_keytab` variable enables the use of an admin keytab as an alternativce authentication method. The variable needs to contain the local path to the keytab file. If `ipaadmin_keytab` is used, then `ipaadmin_password` does not need to be set.
-
-### `ipaadmin_principal`
-
-The optional `ipaadmin_principal` variable only needs to be set if the name of the Kerberos admin principal is not "admin". If `ipaadmin_principal` is not set it will be set internally to "admin".
-
-### `ipaadmin_password`
-
-The `ipaadmin_password` variable contains the Kerberos password of the Kerberos admin principal. If `ipaadmin_keytab` is used, then `ipaadmin_password` does not need to be set.
 
 ### `ipaclient_domain`
 
@@ -136,8 +116,30 @@ The `ipaclient_no_ntp` bool value defines if NTP will not be configured and enab
 
 The `ipaclient_mkhomedir` bool value defines if PAM will be configured to create a users home directory if it does not exist. `ipaclient_mkhomedir` defaults to `no`.
 
-Topology Specific Variables
----------------------------
+Server Variables
+----------------
+
+### `ipaservers`
+
+The optional `ipaservers` group is a list of the IPA server full qualified host names. In a topology with a chain of servers and replicas, it is important to use the right server or replica as the server for the client. If there is a need to overwrite the setting for a client in the `ipaclients` group, please use the list `ipaclient_servers` explained below.
+
+If no `ipaservers` group is defined than the installation preparation step will try to use DNS autodiscovery to identify the the IPA server using DNS txt records.
+
+### `ipaadmin_keytab`
+
+The `ipaadmin_keytab` variable enables the use of an admin keytab as an alternativce authentication method. The variable needs to contain the local path to the keytab file. If `ipaadmin_keytab` is used, then `ipaadmin_password` does not need to be set.
+
+### `ipaadmin_principal`
+
+The optional `ipaadmin_principal` variable only needs to be set if the name of the Kerberos admin principal is not "admin". If `ipaadmin_principal` is not set it will be set internally to "admin".
+
+### `ipaadmin_password`
+
+The `ipaadmin_password` variable contains the Kerberos password of the Kerberos admin principal. If `ipaadmin_keytab` is used, then `ipaadmin_password` does not need to be set.
+
+
+Topology Variables
+------------------
 
 These variables can be used to define or change how clients are arranged within a cluster for example.
 
