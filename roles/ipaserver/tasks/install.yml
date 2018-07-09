@@ -287,6 +287,7 @@
       setup_ca: "{{ result_ipaserver_test.setup_ca }}"
       dm_password: "{{ ipadm_password }}"
       setup_kra: "{{ result_ipaserver_test.setup_kra }}"
+      realm: "{{ result_ipaserver_test.realm }}"
     when: result_ipaserver_test.setup_kra | bool
 
   - name: Install - Setup DNS

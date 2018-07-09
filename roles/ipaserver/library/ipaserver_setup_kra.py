@@ -57,6 +57,7 @@ def main():
             hostname=dict(required=True),
             setup_ca=dict(required=True, type='bool'),
             setup_kra=dict(required=True, type='bool'),
+            realm=dict(required=True),
         ),
     )
 
@@ -69,6 +70,8 @@ def main():
     options.host_name = ansible_module.params.get('hostname')
     options.setup_ca = ansible_module.params.get('setup_ca')
     options.setup_kra = ansible_module.params.get('setup_kra')
+    options.realm_name = ansible_module.params.get('realm')
+    options.promote = False  # first master, no promotion
 
     # init ##########################################################
 
@@ -80,7 +83,7 @@ def main():
     # setup kra #####################################################
 
     with redirect_stdout(ansible_log):
-        if NUM_VERSION >= 40604:
+        if NUM_VERSION >= 40504:
             custodia = custodiainstance.get_custodia_instance(
                 options, custodiainstance.CustodiaModes.MASTER_PEER)
             custodia.create_instance()
