@@ -162,20 +162,6 @@ class AnsibleModuleLog():
         # self.module.debug(msg)
         self.module.warn(msg)
 
-def show_obj(obj):
-    s="%s = {" % obj.__class__
-    for key in dir(obj):
-        #if key in [ "__class__", "__dict__" ]:
-        #    continue
-        if key.startswith("--") and key.endswith("--"):
-            continue
-        if not hasattr(obj, key):
-            continue
-        value = getattr(obj, key)
-        if callable(value):
-            continue
-        s += " '%s': %s," % (key, repr(value))
-    logger.info(s+" }")
 
 class installer_obj(object):
     def __init__(self):
@@ -309,8 +295,6 @@ def gen_ReplicaConfig():
     config.dir = options._top_dir
     config.basedn = api.env.basedn
     #config.subject_base = options.subject_base
-
-    #show_obj(config)
 
     return config
 

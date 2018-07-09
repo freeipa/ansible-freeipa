@@ -318,7 +318,6 @@ def main():
                                     ca_file=cafile,
                                     promote=promote,
                                     pkcs12_info=dirsrv_pkcs12_info)
-            #show_obj(ds)
 
         ansible_log.debug("-- INSTALL DNS RECORDS --")
         # Always try to install DNS records
