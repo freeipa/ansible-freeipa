@@ -83,7 +83,7 @@ def main():
     # setup kra #####################################################
 
     with redirect_stdout(ansible_log):
-        if NUM_VERSION >= 40504:
+        if hasattr(custodiainstance, "get_custodia_instance"):
             custodia = custodiainstance.get_custodia_instance(
                 options, custodiainstance.CustodiaModes.MASTER_PEER)
             custodia.create_instance()

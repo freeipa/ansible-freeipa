@@ -188,7 +188,7 @@ def main():
     # setup CA ##############################################################
 
     with redirect_stdout(ansible_log):
-        if NUM_VERSION >= 40504:
+        if hasattr(custodiainstance, "get_custodia_instance"):
             custodia = custodiainstance.get_custodia_instance(
                 options, custodiainstance.CustodiaModes.MASTER_PEER)
             custodia.create_instance()
@@ -200,7 +200,7 @@ def main():
                               if n in options.__dict__}
                 write_cache(cache_vars)
 
-            if NUM_VERSION >= 40504:
+            if hasattr(custodiainstance, "get_custodia_instance"):
                 ca.install_step_0(False, None, options, custodia=custodia)
             else:
                 ca.install_step_0(False, None, options)
@@ -225,7 +225,7 @@ def main():
 
         if options.setup_ca:
             with redirect_stdout(ansible_log):
-                if NUM_VERSION >= 40504:
+                if hasattr(custodiainstance, "get_custodia_instance"):
                     ca.install_step_1(False, None, options, custodia=custodia)
                 else:
                     ca.install_step_1(False, None, options)
