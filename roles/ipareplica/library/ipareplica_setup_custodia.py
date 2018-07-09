@@ -164,7 +164,7 @@ def main():
     with redirect_stdout(ansible_log):
         ansible_log.debug("-- INSTALL_CUSTODIA --")
 
-        if NUM_VERSION < 40690:
+        if not hasattr(custodiainstance, "get_custodia_instance"):
             custodia = custodiainstance.CustodiaInstance(config.host_name,
                                                          config.realm_name)
             if promote:

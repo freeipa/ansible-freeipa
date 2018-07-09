@@ -216,7 +216,7 @@ def main():
     with redirect_stdout(ansible_log):
         ansible_log.debug("-- INSTALL KRA --")
 
-        if NUM_VERSION < 40690:
+        if not hasattr(custodiainstance, "get_custodia_instance"):
             kra.install(api, config, options)
         else:
             if ca_enabled:

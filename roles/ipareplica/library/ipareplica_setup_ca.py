@@ -209,7 +209,8 @@ def main():
         options.domain_name = config.domain_name
         options.host_name = config.host_name
         options.dm_password = config.dirman_password
-        if NUM_VERSION < 40690:
+
+        if not hasattr(custodiainstance, "get_custodia_instance"):
             ca.install(False, config, options)
         else:
             if ca_enabled:
