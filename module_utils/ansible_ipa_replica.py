@@ -159,8 +159,8 @@ class AnsibleModuleLog():
         self.module.debug(msg)
 
     def write(self, msg):
-        # self.module.debug(msg)
-        self.module.warn(msg)
+        self.module.debug(msg)
+        #self.module.warn(msg)
 
 
 class installer_obj(object):
