@@ -578,8 +578,8 @@ def main():
         # to establish trust with Active Directory. Fail.
 
         if options.domain_name.upper() != options.realm_name:
-            ansible_module.fail_json(
-                msg="Realm name does not match the domain name: "
+            ansible_module.warn(
+                "Realm name does not match the domain name: "
                 "You will not be able to establish trusts with Active "
                 "Directory.")
 
