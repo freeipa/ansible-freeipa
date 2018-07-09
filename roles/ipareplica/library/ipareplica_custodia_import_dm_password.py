@@ -100,7 +100,6 @@ def main():
             #### certificate system ###
             subject_base=dict(required=True),
             #### additional ###
-            config_master_host_name=dict(required=True),
             ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
             _ca_file=dict(required=False),
@@ -108,6 +107,9 @@ def main():
             _pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
             dirman_password=dict(required=True, no_log=True),
+            config_setup_ca=dict(required=True),
+            config_master_host_name=dict(required=True),
+            config_ca_host_name=dict(required=True),
         ),
         supports_check_mode = True,
     )
@@ -137,6 +139,8 @@ def main():
     pkinit_pkcs12_info = ansible_module.params.get('_pkinit_pkcs12_info')
     options._top_dir = ansible_module.params.get('_top_dir')
     dirman_password = ansible_module.params.get('dirman_password')
+    config_setup_ca = ansible_module.params.get('config_setup_ca')
+    config_ca_host_name = ansible_module.params.get('config_ca_host_name')
 
     # init #
 
@@ -146,15 +150,19 @@ def main():
     ansible_log.debug("== INSTALL ==")
 
     options = installer
-    promote = installer.promote
 
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)
     api_bootstrap_finalize(env)
     config = gen_ReplicaConfig()
+    config.dirman_password = dirman_password
+    config.setup_ca = config_setup_ca
+    config.master_host_name = master_host_name
+    config.ca_host_name = config_ca_host_name
     config.subject_base = options.subject_base
+    config.promote = installer.promote
 
-    remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
+    remote_api = gen_remote_api(config.master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
 
     conn = remote_api.Backend.ldap2
@@ -163,12 +171,22 @@ def main():
     # do the work #
 
     with redirect_stdout(ansible_log):
-        custodia = custodiainstance.CustodiaInstance(config.host_name,
-                                                     config.realm_name)
+        if not hasattr(custodiainstance, "get_custodia_instance"):
+            custodia = custodiainstance.CustodiaInstance(config.host_name,
+                                                         config.realm_name)
+        else:
+            if ca_enabled:
+                mode = custodiainstance.CustodiaModes.CA_PEER
+            else:
+                mode = custodiainstance.CustodiaModes.MASTER_PEER
+            custodia = custodiainstance.get_custodia_instance(config, mode)
 
         ansible_log.debug("-- CUSTODIA IMPORT DM PASSWORD --")
 
-        custodia.import_dm_password(config.master_host_name)
+        if not hasattr(custodiainstance, "get_custodia_instance"):
+            custodia.import_dm_password(config.master_host_name)
+        else:
+            custodia.import_dm_password()
 
     # done #
 
