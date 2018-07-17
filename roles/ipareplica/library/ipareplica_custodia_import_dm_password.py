@@ -183,7 +183,8 @@ def main():
 
         ansible_log.debug("-- CUSTODIA IMPORT DM PASSWORD --")
 
-        if not hasattr(custodiainstance, "get_custodia_instance"):
+        argspec = inspect.getargspec(custodia.import_dm_password)
+        if "master_host_name" in argspec.args:
             custodia.import_dm_password(config.master_host_name)
         else:
             custodia.import_dm_password()

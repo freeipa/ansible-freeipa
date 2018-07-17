@@ -42,6 +42,8 @@ else:
 if NUM_VERSION >= 40600:
     # IPA version >= 4.6
 
+    import inspect
+
     import contextlib
     import logging
 
