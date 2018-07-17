@@ -192,7 +192,7 @@
 
   - name: Install - Configure krb5 for IPA realm "{{ ipadiscovery.realm }} <= 4.4"
     include_role:
-      name: krb5
+      name: ipa-krb5
     vars:
       krb5_servers: "{{ ipadiscovery.servers if not ipadiscovery.dnsok or not ipadiscovery.kdc else [ ] }}"
       krb5_realm: "{{ ipadiscovery.realm }}"
@@ -204,7 +204,7 @@
 
   - name: Install - Configure krb5 for IPA realm "{{ ipadiscovery.realm }} > 4.4"
     include_role:
-      name: krb5
+      name: ipa-krb5
     vars:
       krb5_servers: "{{ ipadiscovery.servers if not ipadiscovery.dnsok or not ipadiscovery.kdc else [ ] }}"
       krb5_realm: "{{ ipadiscovery.realm }}"
