@@ -3,6 +3,10 @@
   package: name="{{ item }}" state=present
   with_items: "{{ krb5_packages }}"
 
+- name: Install - Create ipabkp of krb5.conf
+  copy: src="{{ krb5_conf }}" dest="{{ krb5_conf }}".ipabkp
+  failed_when: false
+
 - name: Install - Backup krb5.conf
   ipafstore:
     backup: "{{ krb5_conf }}"
