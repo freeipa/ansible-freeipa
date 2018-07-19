@@ -198,7 +198,7 @@
       krb5_realm: "{{ ipadiscovery.realm }}"
       krb5_dns_lookup_realm: "{{ 'false' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'true' }}"
       krb5_dns_lookup_kdc: "{{ 'false' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'true' }}"
-      krb5_no_default_domain: "{{ 'true' if ipadiscovery.domain != ipadiscovery.client_domain else 'false' }}"
+      krb5_default_domain: "{{ 'true' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'false' }}"
       krb5_pkinit_anchors: "FILE:/etc/ipa/ca.crt"
     when: not ipaclient_on_master | bool and ipadiscovery.ipa_python_version <= 40400
 
@@ -210,7 +210,7 @@
       krb5_realm: "{{ ipadiscovery.realm }}"
       krb5_dns_lookup_realm: "{{ 'false' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'true' }}"
       krb5_dns_lookup_kdc: "{{ 'false' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'true' }}"
-      krb5_no_default_domain: "{{ 'true' if ipadiscovery.domain != ipadiscovery.client_domain else 'false' }}"
+      krb5_default_domain: "{{ 'true' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'false' }}"
       krb5_dns_canonicalize_hostname: "false"
       krb5_pkinit_pool: "FILE:/var/lib/ipa-client/pki/ca-bundle.pem"
       krb5_pkinit_anchors: "FILE:/var/lib/ipa-client/pki/kdc-ca-bundle.pem"

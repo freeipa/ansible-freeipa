@@ -22,7 +22,7 @@ includedir {{ krb5_include_d }}
     admin_server = {{ server }}:749
     kpasswd_server = {{ server }}:464
 {% endfor %}
-{% if krb5_no_default_domain | bool %}
+{% if krb5_default_domain | bool %}
     default_domain = {{ krb5_realm | lower }}
 {% endif %}
 {% if krb5_pkinit_anchors is defined %}
