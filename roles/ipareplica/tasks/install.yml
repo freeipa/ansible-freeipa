@@ -64,38 +64,25 @@
 
 - block:
 
-  #- name: Install - Setup client
-  #  include_role:
-  #    name: ipaclient
-  #  vars:
-  #    state: present
-  #    ipaclient_domain: "{{ result_ipareplica_test.domain }}"
-  #    ipaclient_realm: "{{ result_ipareplica_test.realm }}"
-  #    ipaclient_server: "{{ result_ipareplica_test.server }}"
-  #    ipaclient_hostname: "{{ result_ipareplica_test.hostname }}"
-  #    #ipaclient_no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
-  #    #ipaclient_ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
-  #    #ipaclient_no_ssh: "{{ ipaclient_no_ssh }}"
-  #    #ipaclient_no_sshd: "{{ ipaclient_no_sshd }}"
-  #    #ipaclient_mkhomedir: "{{ ipaclient_mkhomedir }}"
-
-  #- name: Install - Setup client
-  #  command: >
-  #    /usr/sbin/ipa-client-install
-  #    --unattended
-  #    --no-ntp
-  #    --domain "{{ result_ipareplica_test.domain }}"
-  #    --realm "{{ result_ipareplica_test.realm }}"
-  #    --server "{{ result_ipareplica_test.server }}"
-  #    --hostname "{{ result_ipareplica_test.hostname }}"
-  #    {{ "--principal" if ipaadmin_password is defined else "" }} {{ ipaadmin_principal if ipaadmin_password is defined else "" }}
-  #    {{ "--password" if ipaadmin_password is defined else "" }} {{ ipaadmin_password if ipaadmin_password is defined else "" }}
-  #    {{ "--mkhomedir" if ipaclient_mkhomedir | bool else "" }}
-  #  #  {{ "--no-dns-sshfp" if ipaclient_no_dns_sshfp | bool else "" }}
-  #  #  {{ "--ssh-trust-dns" if ipaclient_ssh_trust_dns | bool else "" }}
-  #  #  {{ "--no-ssh" if ipaclient_no_ssh | bool else "" }}
-  #  #  {{ "--no-sshd" if ipaclient_no_sshd | bool else "" }}
-  #  when: not result_ipareplica_test.client_enrolled
+  - name: Install - Setup client
+    include_role:
+      name: ipaclient
+    vars:
+      state: present
+      ipaclient_domain: "{{ result_ipareplica_test.domain }}"
+      ipaclient_realm: "{{ result_ipareplica_test.realm }}"
+      ipaclient_servers: ["{{ result_ipareplica_test.server }}"]
+      ipaclient_hostname: "{{ result_ipareplica_test.hostname }}"
+      #ipaclient_keytab: "{{ ipaclient_keytab }}"
+      #ipaclient_mkhomedir: "{{ ipaclient_mkhomedir }}"
+      #ipaclient_force_join: "{{ ipaclient_force_join }}"
+      ##ipaclient_no_ntp: "{{ ipaclient_no_ntp }}"
+      ipaclient_no_ntp: "{{ result_ipareplica_test.ipa_python_version < 40690 }}"
+      #ipaclient_ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
+      ##ipaclient_no_ssh: "{{ ipaclient_no_ssh }}"
+      ##ipaclient_no_sshd: "{{ ipaclient_no_sshd }}"
+      ##ipaclient_no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
+    when: not result_ipareplica_test.client_enrolled
 
   - name: Install - Configure firewalld
     command: >
