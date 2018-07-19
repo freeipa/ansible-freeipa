@@ -426,6 +426,7 @@
       config_ca_host_name: "{{ result_ipareplica_install_ca_certs.config_ca_host_name }}"
       config_ips: "{{ result_ipareplica_prepare.config_ips }}"
     when: result_ipareplica_prepare._ca_enabled
+    max_concurrent: 1
 
   - name: Install - KRB enable SSL
     ipareplica_krb_enable_ssl:
