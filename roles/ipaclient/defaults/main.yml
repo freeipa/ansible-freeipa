@@ -10,3 +10,4 @@ ipaclient_allow_repair: no
 ipaclient_on_master: no
 ipaclient_no_ntp: no
 ipaclient_no_dns_lookup: no
+ipaclient_ssh_trust_dns: no
