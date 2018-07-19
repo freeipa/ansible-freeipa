@@ -131,6 +131,11 @@
     failed_when: iparmkeytab.rc != 0 and iparmkeytab.rc != 3 and iparmkeytab.rc != 5
     when: ipaclient_use_otp | bool or ipaclient_force_join | bool
 
+  - name: Install - Backup and set hostname
+    ipaclient_set_hostname:
+      hostname: "{{ ipadiscovery.hostname }}"
+    when: not ipaclient_on_master | bool
+
   - name: Install - Join IPA
     ipajoin:
       servers: "{{ ipadiscovery.servers }}"
