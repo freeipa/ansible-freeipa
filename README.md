@@ -15,6 +15,7 @@ Supported Distributions
 
 * RHEL/CentOS 7.4+
 * Fedora 26+
+* Ubuntu
 
 Roles
 -----
