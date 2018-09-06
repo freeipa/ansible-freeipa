@@ -117,6 +117,7 @@ def main():
             netbios_name=dict(required=False),
             rid_base=dict(required=False, type='int'),
             secondary_rid_base=dict(required=False, type='int'),
+            add_sids=dict(required=False, type='bool', default=False),
 
             ### additional ###
         ),
@@ -192,6 +193,7 @@ def main():
     options.netbios_name = ansible_module.params.get('netbios_name')
     options.rid_base = ansible_module.params.get('rid_base')
     options.secondary_rid_base = ansible_module.params.get('secondary_rid_base')
+    options.add_sids = ansible_module.params.get('add_sids')
 
     ### additional ###
     options.kasp_db_file = None

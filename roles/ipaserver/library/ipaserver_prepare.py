@@ -122,6 +122,7 @@ def main():
             setup_ca=dict(required=False, type='bool', default=False),
             _hostname_overridden=dict(required=False, type='bool',
                                        default=False),
+            add_sids=dict(required=False, type='bool', default=False),
         ),
         supports_check_mode = True,
     )
@@ -172,6 +173,8 @@ def main():
     options._host_name_overridden = ansible_module.params.get(
         '_hostname_overridden')
     options.kasp_db_file = None
+    options.netbios_name = ansible_module.params.get('netbios_name')
+    options.add_sids = ansible_module.params.get('add_sids')
 
     # init ##################################################################
 

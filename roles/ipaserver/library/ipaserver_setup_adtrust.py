@@ -54,8 +54,8 @@ def main():
         argument_spec = dict(
             # basic
             hostname=dict(required=False),
-            setup_ca=dict(required=True, type='bool', default=False),
-            setup_adtrust=dict(required=True, type='bool', default=False),
+            setup_ca=dict(required=False, type='bool', default=False),
+            setup_adtrust=dict(required=False, type='bool', default=False),
         ),
     )
 
