@@ -13,7 +13,7 @@ Example inventory file with fixed domain and realm, setting up of the DNS server
 
     [ipaserver]
     ipaserver2.example.com
-    
+
     [ipaserver:vars]
     ipaserver_domain=example.com
     ipaserver_realm=EXAMPLE.COM
@@ -27,7 +27,7 @@ Example playbook to setup the IPA server using admin and dirman passwords from a
       become: true
       vars_files:
       - playbook_sensitive_data.yml
-    
+
       roles:
       - role: ipaserver
         state: present
@@ -37,7 +37,7 @@ Example playbook to unconfigure the IPA client(s) using principal and password f
     - name: Playbook to unconfigure IPA server
       hosts: ipaserver
       become: true
-    
+
       roles:
       - role: ipaserver
         state: absent
@@ -46,7 +46,7 @@ Example inventory file with fixed domain, realm, admin and dirman passwords:
 
     [ipaserver]
     ipaserver.example.com
-    
+
     [ipaserver:vars]
     ipaserver_domain=example.com
     ipaserver_realm=EXAMPLE.COM
@@ -58,7 +58,7 @@ Example playbook to setup the IPA server using admin and dirman passwords from i
     - name: Playbook to configure IPA server
       hosts: ipaserver
       become: true
-    
+
       roles:
       - role: ipaserver
         state: present
@@ -71,10 +71,10 @@ Variables
 
 **ipaadmin_password** - The password for the IPA admin user.
  (string, optional)
- 
+
  **ipadm_password** - The password for the  Directory Manager.
  (string, optional)
- 
+
 **ipaserver_domain** - The primary DNS domain of an existing IPA deployment.
  (string)
 
@@ -128,16 +128,16 @@ Variables
 
 **ipaserver_no_host_dns** - Do not use DNS for hostname lookup during installation.
  (bool, optional)
-              
+
 **ipaserver_no_dnssec_validation** - Disable DNSSEC validation on this server.
  (bool, optional)
- 
+
 **ipaserver_allow_zone_overlap** - Allow creation of (reverse) zone even if the zone is already resolvable.
  (bool, optional)
 
 **ipaserver_setup_adtrust** - Configure AD Trust capability.
  (bool, optional)
- 
+
 **ipaserver_netbios_name** - The NetBIOS name for the IPA domain.
  (string, optional)
 
@@ -147,9 +147,9 @@ Variables
 **ipaserver_secondary_rid_base** - Start value of the secondary RID range.
  (integer, optional)
 
-**ipaserver_enable_compat** - Enables support for trusted domains users for old clients through Schema Compatibility plugin. 
+**ipaserver_enable_compat** - Enables support for trusted domains users for old clients through Schema Compatibility plugin.
  (bool, optional)
- 
+
 **ipaclient_force_join** - Set force_join to yes to join the host even if it is already enrolled.
  (bool, optional)
 
@@ -163,6 +163,7 @@ Requirements
 ------------
 
 freeipa-server v4.5 or later
+gssapi on the Ansible controller
 
 Authors
 -------
