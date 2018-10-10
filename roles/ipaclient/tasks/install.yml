@@ -80,6 +80,12 @@
       static: yes
       delegate_to: "{{ ipadiscovery.servers[0] }}"
 
+    - name: Install - Ensure gssapi is installed on Ansible controller
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ gssapi_packages }}"
+      
     - name: Install - Get One-Time Password for client enrollment
       #no_log: yes
       ipahost:
@@ -273,4 +279,3 @@
     file:
       path: "/etc/ipa/.dns_ccache"
       state: absent
-
