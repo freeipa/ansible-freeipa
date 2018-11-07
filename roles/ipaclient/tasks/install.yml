@@ -167,7 +167,7 @@
         msg: "The ca.crt file is missing, please enable allow_repair to fix this."
       when: not ipatest.ca_crt_exists
     - meta: end_play
-    when: not ipaclient_on_master | bool and not ipajoin.changed and not ipaclient_allow_repair | bool and (ipatest.krb5_keytab_ok or (ipajoin.already_joined is defined and ipajoin.already_joined))
+    when: not ipaclient_on_master | bool and ipajoin is defined and not ipajoin.changed and not ipaclient_allow_repair | bool and (ipatest.krb5_keytab_ok or (ipajoin.already_joined is defined and ipajoin.already_joined))
 
   - name: Install - Configure IPA default.conf
     include_role:
