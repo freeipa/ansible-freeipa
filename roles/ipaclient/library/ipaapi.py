@@ -198,7 +198,19 @@ def main():
         config = api.Command['config_show']()['result']
         subject_base = str(DN(config['ipacertificatesubjectbase'][0]))
     except errors.PublicError as e:
-        module.fail_json(msg="Cannot get subject base from server: %s" % e)
+        try:
+            config = api.Backend.rpcclient.forward(
+                'config_show',
+                raw=True,  # so that servroles are not queried
+                version=u'2.0'
+            )['result']
+        except Exception as e:
+            logger.debug("config_show failed %s", e, exc_info=True)
+            module.fail_json(
+                "Failed to retrieve CA certificate subject base: {}".format(e),
+                rval=CLIENT_INSTALL_ERROR)
+        else:
+            subject_base = str(DN(config['ipacertificatesubjectbase'][0]))
 
     module.exit_json(changed=True,
                      ca_enabled=ca_enabled,
