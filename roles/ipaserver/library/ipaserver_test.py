@@ -500,7 +500,7 @@ def main():
 
     # ca_subject
     if options.ca_subject:
-        subject_validator(VALID_SUBJECT_ATTRS, options.ca_subject)
+        ca.subject_validator(ca.VALID_SUBJECT_ATTRS, options.ca_subject)
 
     # IPv6 and SELinux check
 
