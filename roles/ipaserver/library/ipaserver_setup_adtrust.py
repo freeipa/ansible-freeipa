@@ -73,7 +73,7 @@ def main():
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
     sstore = sysrestore.StateFile(paths.SYSRESTORE)
 
-    api_Backend_ldap2_connect(options.host_name, options.setup_ca)
+    api_Backend_ldap2(options.host_name, options.setup_ca, connect=True)
 
     # setup ds ######################################################
 
