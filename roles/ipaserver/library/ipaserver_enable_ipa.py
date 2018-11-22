@@ -53,6 +53,7 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec = dict(
             hostname=dict(required=False),
+            setup_dns=dict(required=True, type='bool'),
             setup_ca=dict(required=True, type='bool'),
         ),
     )
@@ -63,6 +64,7 @@ def main():
     # set values #############################################################
 
     options.host_name = ansible_module.params.get('hostname')
+    options.setup_dns = ansible_module.params.get('setup_dns')
     options.setup_ca = ansible_module.params.get('setup_ca')
 
     # Configuration for ipalib, we will bootstrap and finalize later, after
@@ -90,6 +92,17 @@ def main():
     if NUM_VERSION < 40600:
         # Make sure the files we crated in /var/run are recreated at startup
         tasks.configure_tmpfiles()
+
+    if hasattr(service, "enable_services"):
+        # Enable configured services and update DNS SRV records
+        service.enable_services(options.host_name)
+        api.Command.dns_update_system_records()
+
+        if not options.setup_dns:
+            # After DNS and AD trust are configured and services are
+            # enabled, create a dummy instance to dump DNS configuration.
+            bind = bindinstance.BindInstance(fstore)
+            bind.create_file_with_system_records()
 
     with redirect_stdout(ansible_log):
         services.knownservices.ipa.enable()

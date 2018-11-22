@@ -358,6 +358,7 @@
   - name: Install - Enable IPA
     ipaserver_enable_ipa:
       hostname: "{{ result_ipaserver_test.hostname }}"
+      setup_dns: "{{ ipaserver_setup_dns }}"
       setup_ca: "{{ result_ipaserver_test.setup_ca }}"
     register: result_ipaserver_enable_ipa
 
