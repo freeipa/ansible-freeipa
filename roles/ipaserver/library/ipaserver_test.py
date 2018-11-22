@@ -256,14 +256,12 @@ def main():
                 msg="File %s does not exist." % options.dirsrv_config_file)
 
     # domain_name
-    if (options.setup_dns and not options.allow_zone_overlap):
+    if (options.setup_dns and not options.allow_zone_overlap and \
+        options.domain_name is not None):
         try:
             check_zone_overlap(options.domain_name, False)
         except ValueError as e:
-            if "already exists in DNS" in str(e):
-                ansible_module.log(str(e))
-                ansible_module.exit_json(changed=False, dns_zone_exists=True)
-            raise
+            ansible_module.fail_json(str(e))
 
     # dm_password
     with redirect_stdout(ansible_log):
