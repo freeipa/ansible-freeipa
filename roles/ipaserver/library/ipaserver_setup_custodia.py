@@ -70,6 +70,7 @@ def main():
     options.realm_name = ansible_module.params.get('realm')
     options.host_name = ansible_module.params.get('hostname')
     options.setup_ca = ansible_module.params.get('setup_ca')
+    options.promote = False
 
     # init ##################################################################
 
