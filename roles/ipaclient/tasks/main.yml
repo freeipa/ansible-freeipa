@@ -10,9 +10,9 @@
     - "{{ role_path }}/vars/default.yml"
 
 - name: Install IPA client
-  include: tasks/install.yml
+  include_tasks: tasks/install.yml
   when: state|default('present') == 'present'
 
 - name: Uninstall IPA client
-  include: tasks/uninstall.yml
+  include_tasks: tasks/uninstall.yml
   when: state|default('present') == 'absent'

@@ -1,1 +1,1 @@
-ansible>=2.4.1.0
+ansible>=2.5.0
