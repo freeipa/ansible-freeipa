@@ -79,8 +79,15 @@ def main():
 
     # setup custodia ########################################################
 
-    custodia = custodiainstance.CustodiaInstance(options.host_name,
-                                                 options.realm_name)
+    if hasattr(custodiainstance, "get_custodia_instance"):
+        if hasattr(custodiainstance.CustodiaModes, "FIRST_MASTER"):
+            mode = custodiainstance.CustodiaModes.FIRST_MASTER
+        else:
+            mode = custodiainstance.CustodiaModes.MASTER_PEER
+        custodia = custodiainstance.get_custodia_instance(options, mode)
+    else:
+        custodia = custodiainstance.CustodiaInstance(options.host_name,
+                                                     options.realm_name)
     custodia.set_output(ansible_log)
     with redirect_stdout(ansible_log):
         custodia.create_instance()
