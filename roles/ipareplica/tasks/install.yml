@@ -23,7 +23,7 @@
   when: not ipareplica_no_package_install | bool and ipareplica_setup_adtrust | bool
 
 - name: Install - Include Python2/3 import test
-  inport_tasks: "{{role_path}}/tasks/python_2_3_test.yml"
+  import_tasks: "{{role_path}}/tasks/python_2_3_test.yml"
 
 - name: Install - Set default principal if no keytab is given
   set_fact:
