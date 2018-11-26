@@ -599,6 +599,9 @@
     ipaserver_enable_ipa:
       hostname: "{{ result_ipareplica_test.hostname }}"
       setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      # The setup_dns step is only used on the server, therefore simply
+      # setting setup_dns to reuse the server version here.
+      setup_dns: no
     register: result_ipareplica_enable_ipa
 
   - name: Install - Cleanup root IPA cache
