@@ -261,7 +261,7 @@ def main():
         try:
             check_zone_overlap(options.domain_name, False)
         except ValueError as e:
-            ansible_module.fail_json(str(e))
+            ansible_module.fail_json(msg=str(e))
 
     # dm_password
     with redirect_stdout(ansible_log):
