@@ -27,11 +27,11 @@ Supported Distributions
 Requirements
 ------------
 
-Controller:
+**Controller**
 * Ansible version: 2.5+
 * python3-gssapi is required on the controller if a one time password (OTP) is used to install the client.
 
-Node:
+**Node**
 * Supported FreeIPA version (see above)
 * Supported distribution (needed for package installation only, see above)
 
