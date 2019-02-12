@@ -378,7 +378,7 @@
       --add-service=freeipa-ldaps
       {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
-    when: not ipaserver_no_firewalld | bool
+    when: ipaserver_setup_firewalld | bool
 
   - name: Install - Configure firewalld runtime
     command: >
@@ -387,4 +387,4 @@
       --add-service=freeipa-ldaps
       {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
-    when: not ipaserver_no_firewalld | bool
+    when: ipaserver_setup_firewalld | bool

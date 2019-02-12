@@ -33,7 +33,7 @@ ipaserver_setup_ca: yes
 ### packages ###
 ipaserver_install_packages: yes
 ### firewalld ###
-ipaserver_no_firewalld: no
+ipaserver_setup_firewalld: yes
 
 ### additional ###
 ipaserver_allow_missing: [ ]

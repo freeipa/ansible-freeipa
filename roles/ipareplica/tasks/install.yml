@@ -95,7 +95,7 @@
       --add-service=freeipa-replication
       {{ "--add-service=dns" if ipareplica_setup_dns | bool else "" }}
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
-    when: not ipareplica_no_firewalld | bool
+    when: ipareplica_setup_firewalld | bool
 
   - name: Install - Configure firewalld runtime
     command: >
@@ -105,7 +105,7 @@
       --add-service=freeipa-replication
       {{ "--add-service=dns" if ipareplica_setup_dns | bool else "" }}
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
-    when: not ipareplica_no_firewalld | bool
+    when: ipareplica_setup_firewalld | bool
 
   - name: Install - Replica preparation
     ipareplica_prepare:

@@ -39,4 +39,5 @@ ipareplica_ignore_last_of_role: no
 ### additional ###
 ### packages ###
 ipareplica_install_packages: yes
-ipareplica_no_firewalld: no
+### firewalld ###
+ipareplica_setup_firewalld: yes
