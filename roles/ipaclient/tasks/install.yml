@@ -6,6 +6,7 @@
     name: "{{ item }}"
     state: present
   with_items: "{{ ipaclient_packages }}"
+  when: ipaclient_install_packages | bool
 
 - name: Install - Include Python2/3 import test
   import_tasks: "{{role_path}}/tasks/python_2_3_test.yml"

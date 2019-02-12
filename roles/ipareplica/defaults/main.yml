@@ -37,5 +37,6 @@ ipareplica_enable_compat: no
 ipareplica_ignore_topology_disconnect: no
 ipareplica_ignore_last_of_role: no
 ### additional ###
-ipareplica_no_package_install: no
+### packages ###
+ipareplica_install_packages: yes
 ipareplica_no_firewalld: no

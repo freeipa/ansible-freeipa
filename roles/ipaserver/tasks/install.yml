@@ -1,25 +1,28 @@
 ---
 # tasks file for ipaserver
 
-- name: Install - Ensure that IPA server packages are installed
-  package:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ ipaserver_packages }}"
+- block:
+  - name: Install - Ensure that IPA server packages are installed
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ ipaserver_packages }}"
 
-- name: Install - Ensure that IPA server packages for dns are installed
-  package:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ ipaserver_packages_dns }}"
-  when: ipaserver_setup_dns | bool
+  - name: Install - Ensure that IPA server packages for dns are installed
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ ipaserver_packages_dns }}"
+    when: ipaserver_setup_dns | bool
 
-- name: Install - Ensure that IPA server packages for adtrust are installed
-  package:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ ipaserver_packages_adtrust }}"
-  when: ipaserver_setup_adtrust | bool
+  - name: Install - Ensure that IPA server packages for adtrust are installed
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ ipaserver_packages_adtrust }}"
+    when: ipaserver_setup_adtrust | bool
+
+  when: ipaserver_install_packages | bool
 
 - name: Install - Include Python2/3 import test
   import_tasks: "{{role_path}}/tasks/python_2_3_test.yml"

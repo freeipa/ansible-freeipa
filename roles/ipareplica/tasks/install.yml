@@ -1,26 +1,29 @@
 ---
 # tasks file for ipareplica
 
-- name: Install - Ensure IPA replica packages are installed
-  package:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ ipareplica_packages }}"
-  when: not ipareplica_no_package_install | bool
+- block:
 
-- name: Install - Ensure IPA replica packages for dns are installed
-  package:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ ipareplica_packages_dns }}"
-  when: not ipareplica_no_package_install | bool and ipareplica_setup_dns | bool
+  - name: Install - Ensure IPA replica packages are installed
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ ipareplica_packages }}"
 
-- name: Install - Ensure IPA replica packages for adtrust are installed
-  package:
-    name: "{{ item }}"
-    state: present
-  with_items: "{{ ipareplica_packages_adtrust }}"
-  when: not ipareplica_no_package_install | bool and ipareplica_setup_adtrust | bool
+  - name: Install - Ensure IPA replica packages for dns are installed
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ ipareplica_packages_dns }}"
+    when: ipareplica_setup_dns | bool
+
+  - name: Install - Ensure IPA replica packages for adtrust are installed
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ ipareplica_packages_adtrust }}"
+    when: ipareplica_setup_adtrust | bool
+
+  when: ipareplica_install_packages | bool
 
 - name: Install - Include Python2/3 import test
   import_tasks: "{{role_path}}/tasks/python_2_3_test.yml"

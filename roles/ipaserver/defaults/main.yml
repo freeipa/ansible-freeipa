@@ -30,6 +30,8 @@ ipaserver_no_dnssec_validation: no
 ### ad trust ###
 ipaserver_enable_compat: no
 ipaserver_setup_ca: yes
+### packages ###
+ipaserver_install_packages: yes
 ### firewalld ###
 ipaserver_no_firewalld: no
 
