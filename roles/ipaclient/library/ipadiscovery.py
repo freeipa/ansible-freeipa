@@ -274,11 +274,11 @@ def main():
 
     if options.ntp_servers and options.no_ntp:
         module.fail_json(
-            "--ntp-server cannot be used together with --no-ntp")
+            msg="--ntp-server cannot be used together with --no-ntp")
 
     if options.ntp_pool and options.no_ntp:
         module.fail_json(
-            "--ntp-pool cannot be used together with --no-ntp")
+            msg="--ntp-pool cannot be used together with --no-ntp")
 
     #if options.no_nisdomain and options.nisdomain:
     #    module.fail_json(
