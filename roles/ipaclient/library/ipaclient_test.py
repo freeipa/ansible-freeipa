@@ -239,6 +239,13 @@ def main():
             #no_nisdomain=dict(required=False, type='bool', default='no'),
             #nisdomain=dict(required=False),
         ),
+        mutually_exclusive=[
+            #['nisdomain', 'no_nisdomain'],
+            #['ip_addresses', 'enable_dns_updates'],
+            #['ip_addresses', 'all_ip_addresses'],
+            ['ntp_servers', 'no_ntp'],
+            ['ntp_pool', 'no_ntp']
+        ],
         supports_check_mode = True,
     )
 
@@ -271,29 +278,6 @@ def main():
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
-
-    if options.ntp_servers and options.no_ntp:
-        module.fail_json(
-            msg="--ntp-server cannot be used together with --no-ntp")
-
-    if options.ntp_pool and options.no_ntp:
-        module.fail_json(
-            msg="--ntp-pool cannot be used together with --no-ntp")
-
-    #if options.no_nisdomain and options.nisdomain:
-    #    module.fail_json(
-    #        "--no-nisdomain cannot be used together with --nisdomain")
-
-    #if options.ip_addresses:
-    #    if options.enable_dns_updates:
-    #        module.fail_json(
-    #            "--ip-addresses cannot be used together with"
-    #            " --enable-dns-updates")
-
-    #    if options.all_ip_addresses:
-    #        module.fail_json(
-    #            "--ip-address cannot be used together with"
-    #            "--all-ip-addresses")
 
     if options.hostname:
         hostname = options.hostname
