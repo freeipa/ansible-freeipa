@@ -2,15 +2,18 @@
   - name: Verify Python3 import
     script: py3test.py
     register: py3test
+    check_mode: False
     failed_when: False
     changed_when: False
 
   - name: Set python interpreter to 3
     set_fact:
       ansible_python_interpreter: "/usr/bin/python3"
+    check_mode: False
     when: py3test.rc == 0
 
   - name: Set python interpreter to 2
     set_fact:
       ansible_python_interpreter: "/usr/bin/python2"
+    check_mode: False
     when: py3test.failed or py3test.rc != 0
