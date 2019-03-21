@@ -249,23 +249,30 @@
       ca_enabled: "{{ result_ipaclient_api.ca_enabled | default(omit) }}"
       on_master: "{{ ipaclient_on_master }}"
 
-  - name: Install - IPA extras configuration
-    ipaclient_extras:
+  - name: Install - Configure SSH and SSHD
+    ipaclient_setup_ssh:
       servers: "{{ result_ipaclient_test.servers }}"
+      sssd: "{{ result_ipaclient_test.sssd }}"
+      ssh: "{{ not ipaclient_no_ssh }}"
+      trust_sshfp: "{{ ipaclient_ssh_trust_dns }}"
+      sshd: "{{ not ipaclient_no_sshd }}"
+
+  - name: Install - Configure automount
+    ipaclient_setup_automount:
+      servers: "{{ result_ipaclient_test.servers }}"
+      sssd: "{{ result_ipaclient_test.sssd }}"
+      automount_location: "{{ ipaautomount_location | default(omit) }}"
+
+  - name: Install - Configure firefox
+    ipaclient_setup_firefox:
+      firefox_dir: "{{ ipaclient_firefox_dir | default(omit) }}"
+    when: ipaclient_configure_firefox | bool
+
+  - name: Install - Configure NIS
+    ipaclient_setup_nis:
       domain: "{{ result_ipaclient_test.domain }}"
-      ntp_servers: "{{ result_ipaclient_test.ntp_servers }}"
-      ntp: "{{ ipaclient_ntp | default(omit) }}"
-      on_master: "{{ ipaclient_on_master }}"
-      #force_ntpd: no
-      #sssd: yes
-      #ssh: yes
-      #trust_sshfp: yes
-      #sshd: yes
-      #automount_location:
-      #firefox: no
-      #firefox_dir:
-      #no_nisdomain: no
-      #nisdomain:
+      nisdomain: "{{ ipaclient_nisdomain | default(omit)}}"
+    when: not ipaclient_no_nisdomain | bool
 
   always:
   - name: Cleanup leftover ccache
