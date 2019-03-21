@@ -3,9 +3,8 @@
 
 - name: Install - Ensure that IPA client packages are installed
   package:
-    name: "{{ item }}"
+    name: "{{ ipaclient_packages }}"
     state: present
-  with_items: "{{ ipaclient_packages }}"
   when: ipaclient_install_packages | bool
 
 #- name: Install - Include Python2/3 import test

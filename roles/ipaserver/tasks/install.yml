@@ -4,22 +4,19 @@
 - block:
   - name: Install - Ensure that IPA server packages are installed
     package:
-      name: "{{ item }}"
+      name: "{{ ipaserver_packages }}"
       state: present
-    with_items: "{{ ipaserver_packages }}"
 
   - name: Install - Ensure that IPA server packages for dns are installed
     package:
-      name: "{{ item }}"
+      name: "{{ ipaserver_packages_dns }}"
       state: present
-    with_items: "{{ ipaserver_packages_dns }}"
     when: ipaserver_setup_dns | bool
 
   - name: Install - Ensure that IPA server packages for adtrust are installed
     package:
-      name: "{{ item }}"
+      name: "{{ ipaserver_packages_adtrust }}"
       state: present
-    with_items: "{{ ipaserver_packages_adtrust }}"
     when: ipaserver_setup_adtrust | bool
 
   when: ipaserver_install_packages | bool
