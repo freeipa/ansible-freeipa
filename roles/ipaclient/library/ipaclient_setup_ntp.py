@@ -1,0 +1,170 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Authors:
+#   Thomas Woerner <twoerner@redhat.com>
+#
+# Based on ipa-client-install code
+#
+# Copyright (C) 2017  Red Hat
+# see file 'COPYING' for use and warranty information
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ANSIBLE_METADATA = {
+    'metadata_version': '1.0',
+    'supported_by': 'community',
+    'status': ['preview'],
+}
+
+DOCUMENTATION = '''
+---
+module: ipaclient_setup_ntp
+short description: Setup NTP for IPA client
+description:
+  Setup NTP for IPA client
+options:
+  servers:
+    description: The FQDN of the IPA servers to connect to.
+    required: false
+    type: list
+    default: []
+  domain:
+    description: The primary DNS domain of an existing IPA deployment.
+    required: false
+  realm:
+    description:  The Kerberos realm of an existing IPA deployment.
+    required: false
+  hostname:
+    description: The hostname of the machine to join (FQDN).
+    required: false
+  ca_cert_file:
+    description: A CA certificate to use.
+    required: false
+  on_master:
+    description: IPA client installation on IPA server
+    required: false
+    default: false
+    type: bool
+    default: no
+  ntp_servers:
+    description: List of NTP servers to use
+    required: false
+    type: list
+    default: []
+  ntp_pool:
+    description: ntp server pool to use
+    required: false
+  no_ntp:
+    description: Do not sync time and do not detect time servers
+    required: false
+    default: false
+    type: bool
+    default: no
+
+author:
+    - Thomas Woerner
+'''
+
+EXAMPLES = '''
+'''
+
+RETURN = '''
+'''
+
+import os
+import socket
+
+from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.ansible_freeipa.client import *
+
+def main():
+    module = AnsibleModule(
+        argument_spec = dict(
+            ### basic ###
+            ntp_servers=dict(required=False, type='list', default=None),
+            ntp_pool=dict(required=False, default=None),
+            no_ntp=dict(required=False, type='bool', default=False),
+            #force_ntpd=dict(required=False, type='bool', default=False),
+            on_master=dict(required=False, type='bool', default=False),
+            ### additional ###
+            domain=dict(required=False, default=None),
+        ),
+        supports_check_mode = True,
+    )
+
+    #module._ansible_debug = True
+    options.ntp_servers = module.params.get('ntp_servers')
+    options.ntp_pool = module.params.get('ntp_pool')
+    options.no_ntp = module.params.get('no_ntp')
+    #options.force_ntpd = module.params.get('force_ntpd')
+    options.on_master = module.params.get('on_master')
+    cli_domain = module.params.get('domain')
+
+    options.conf_ntp = not options.no_ntp
+
+    fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
+    statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
+
+    ntp_servers = [ ]
+    synced_ntp = False
+    if sync_time is not None:
+        if options.conf_ntp:
+            # Attempt to configure and sync time with NTP server (chrony).
+            synced_ntp = sync_time(options, fstore, statestore)
+        elif options.on_master:
+            # If we're on master skipping the time sync here because it was done
+            # in ipa-server-install
+            logger.info("Skipping attempt to configure and synchronize time with"
+                        " chrony server as it has been already done on master.")
+        else:
+            logger.info("Skipping chrony configuration")
+
+    elif not options.on_master and options.conf_ntp:
+        # Attempt to sync time with IPA server.
+        # If we're skipping NTP configuration, we also skip the time sync here.
+        # We assume that NTP servers are discoverable through SRV records
+        # in the DNS.
+        # If that fails, we try to sync directly with IPA server,
+        # assuming it runs NTP
+        if len(options.ntp_servers) < 1:
+            # Detect NTP servers
+            ds = ipadiscovery.IPADiscovery()
+            ntp_servers = ds.ipadns_search_srv(cli_domain, '_ntp._udp',
+                                               None, break_on_first=False)
+        else:
+            ntp_servers = options.ntp_servers
+
+        # Attempt to sync time:
+        # At first with given or dicovered time servers. If no ntp
+        # servers have been given or discovered, then with the ipa
+        # server.
+        module.log('Synchronizing time ...')
+        synced_ntp = False
+        # use user specified NTP servers if there are any
+        for s in ntp_servers:
+            synced_ntp = timeconf.synconce_ntp(s, False)
+            if synced_ntp:
+                break
+        if not synced_ntp and not ntp_servers:
+            synced_ntp = timeconf.synconce_ntp(cli_server[0], False)
+        if not synced_ntp:
+            module.warn("Unable to sync time with NTP server")
+
+    # Done
+    module.exit_json(changed=True,
+                     synced_ntp=synced_ntp)
+
+if __name__ == '__main__':
+    main()

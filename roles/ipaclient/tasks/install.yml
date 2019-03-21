@@ -45,6 +45,17 @@
     state: absent
 
 - block:
+  - name: Install - Configure NTP
+    ipaclient_setup_ntp:
+      ### basic ###
+      ntp_servers: "{{ ipaclient_ntp_servers | default(omit) }}"
+      ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
+      no_ntp: "{{ ipaclient_no_ntp }}"
+      #force_ntpd: "{{ ipaclient_force_ntpd }}"
+      on_master: "{{ ipaclient_on_master }}"
+      ### additional ###
+      domain: "{{ result_ipaclient_test.domain }}"
+
   - name: Install - Test if IPA client has working krb5.keytab
     ipaclient_test_keytab:
       servers: "{{ result_ipaclient_test.servers }}"

@@ -107,7 +107,7 @@ Variables
 **ipaclient_kinit_attempts** - Repeat the request for host Kerberos ticket X times if it fails.
  (int, optional)
 
-**ipaclient_ntp** - Set to no to not configure and enable NTP
+**ipaclient_no_ntp** - Set to yes to not configure and enable NTP
  (bool, optional)
 
 **ipaclient_mkhomedir** - Set to yes to configure PAM to create a users home directory if it does not exist.
