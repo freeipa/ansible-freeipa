@@ -28,7 +28,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 
 DOCUMENTATION = '''
 ---
-module: ipaapi
+module: ipaclient_api
 short description: Create temporary NSS database, call IPA API for remaining enrollment parts
 description:
 Create temporary NSS database, call IPA API for remaining enrollment parts
@@ -50,11 +50,11 @@ author:
 
 EXAMPLES = '''
 - name: IPA API calls for remaining enrollment parts
-  ipaapi:
+  ipaclient_api:
     servers: ["server1.example.com","server2.example.com"]
     domain: example.com
     hostname: client1.example.com
-  register: ipaapi
+  register: result_ipaclient_api
 '''
 
 RETURN = '''

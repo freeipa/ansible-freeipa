@@ -30,10 +30,10 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: sssd_conf
-short description: Configure sssd
+module: ipaclient_setup_sssd
+short description: Configure sssd for IPA client
 description:
-Configure sssd
+  Configure sssd for IPA client
 options:
   servers:
     description: The FQDN of the IPA servers to connect to.
@@ -93,7 +93,7 @@ author:
 
 EXAMPLES = '''
 - name: Configure SSSD
-  sssd:
+  ipaclient_setup_sssd:
     servers: ["server1.example.com","server2.example.com"]
     domain: example.com
     realm: EXAMPLE.COM

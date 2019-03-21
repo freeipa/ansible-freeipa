@@ -28,7 +28,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 
 DOCUMENTATION = '''
 ---
-module: ipafixca
+module: ipaclient_fix_ca
 short description: Fix IPA ca certificate
 description:
 Repair Fix IPA ca certificate
@@ -54,7 +54,7 @@ author:
 
 EXAMPLES = '''
 - name: Fix IPA ca certificate
-  ipafixca:
+  ipaclient_fix_ca:
     servers: ["server1.example.com","server2.example.com"]
     realm: EXAMPLE.COM
     basedn: dc=example,dc=com

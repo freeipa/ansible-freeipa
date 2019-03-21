@@ -30,7 +30,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: fstore
+module: ipaclient_fstore
 short description: Backup files using IPA client sysrestore
 description:
 Backup files using IPA client sysrestore
@@ -44,7 +44,7 @@ author:
 
 EXAMPLES = '''
 - name: Backup /etc/krb5.conf
-  ipafstore:
+  ipaclient_fstore:
     backup: "/etc/krb5.conf"
 '''
 

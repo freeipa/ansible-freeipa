@@ -30,7 +30,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ipajoin
+module: ipaclient_join
 short description: Join a machine to an IPA realm and get a keytab for the host service principal
 description:
   Join a machine to an IPA realm and get a keytab for the host service principal
@@ -88,7 +88,7 @@ author:
 EXAMPLES = '''
 # Join IPA to get the keytab
 - name: Join IPA in force mode with maximum 5 kinit attempts
-  ipajoin:
+  ipaclient_join:
     servers: ["server1.example.com","server2.example.com"]
     domain: example.com
     realm: EXAMPLE.COM
@@ -102,7 +102,7 @@ EXAMPLES = '''
 
 # Join IPA to get the keytab using ipadiscovery return values
 - name: Join IPA
-  ipajoin:
+  ipaclient_join:
     servers: "{{ ipadiscovery.servers }}"
     domain: "{{ ipadiscovery.domain }}"
     realm: "{{ ipadiscovery.realm }}"

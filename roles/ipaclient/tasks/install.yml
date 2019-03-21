@@ -22,7 +22,7 @@
   when: ipaclient_no_dns_lookup | bool and groups.ipaserver is defined and ipaclient_servers is not defined
 
 - name: Install - IPA discovery
-  ipadiscovery:
+  ipaclient_test:
     domain: "{{ ipaserver_domain | default(ipaclient_domain) | default(omit) }}"
     servers: "{{ ipaclient_servers | default(omit) }}"
     realm: "{{ ipaserver_realm | default(ipaclient_realm) | default(omit) }}"
@@ -32,7 +32,7 @@
     ntp_servers: "{{ ipaclient_ntp_servers | default([]) }}"
     ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
     no_ntp: "{{ ipaclient_no_ntp }}"
-  register: ipadiscovery
+  register: result_ipaclient_test
 
 - name: Install - Set default principal if no keytab is given
   set_fact:
@@ -46,19 +46,19 @@
 
 - block:
   - name: Install - Test if IPA client has working krb5.keytab
-    ipatest:
-      servers: "{{ ipadiscovery.servers }}"
-      domain: "{{ ipadiscovery.domain }}"
-      realm: "{{ ipadiscovery.realm }}"
-      hostname: "{{ ipadiscovery.hostname }}"
-      kdc: "{{ ipadiscovery.kdc }}"
+    ipaclient_test_keytab:
+      servers: "{{ result_ipaclient_test.servers }}"
+      domain: "{{ result_ipaclient_test.domain }}"
+      realm: "{{ result_ipaclient_test.realm }}"
+      hostname: "{{ result_ipaclient_test.hostname }}"
+      kdc: "{{ result_ipaclient_test.kdc }}"
       kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
-    register: ipatest
+    register: result_ipaclient_test_keytab
 
   - name: Install - Disable One-Time Password for client with working krb5.keytab
     set_fact:
       ipaclient_use_otp: "no"
-    when: ipaclient_use_otp | bool and ipatest.krb5_keytab_ok and not ipaclient_force_join | bool
+    when: ipaclient_use_otp | bool and result_ipaclient_test_keytab.krb5_keytab_ok and not ipaclient_force_join | bool
 
 
   # The following block is executed when using OTP to enroll IPA client
@@ -77,30 +77,30 @@
 
     - name: Install - Include Python2/3 import test
       import_tasks: "{{role_path}}/tasks/python_2_3_test.yml"
-      delegate_to: "{{ ipadiscovery.servers[0] }}"
+      delegate_to: "{{ result_ipaclient_test.servers[0] }}"
 
     - name: Install - Get One-Time Password for client enrollment
       #no_log: yes
-      ipahost:
+      ipaclient_get_otp:
         state: present
         principal: "{{ ipaadmin_principal | default('admin') }}"
         password: "{{ ipaadmin_password | default(omit) }}"
         keytab: "{{ ipaadmin_keytab | default(omit) }}"
-        fqdn: "{{ ipadiscovery.hostname }}"
+        fqdn: "{{ result_ipaclient_test.hostname }}"
         lifetime: "{{ ipaclient_lifetime | default(omit) }}"
         random: True
         ansible_python_interpreter: "{{ ansible_python_interpreter }}"
-      register: ipahost_output
+      register: result_ipaclient_get_otp
       # If the host is already enrolled, this command will exit on error
       # The error can be ignored
-      failed_when: ipahost_output is failed and "Password cannot be set on enrolled host" not in ipahost_output.msg
-      delegate_to: "{{ ipadiscovery.servers[0] }}"
+      failed_when: result_ipaclient_get_otp is failed and "Password cannot be set on enrolled host" not in result_ipaclient_get_otp.msg
+      delegate_to: "{{ result_ipaclient_test.servers[0] }}"
       delegate_facts: True
 
     - name: Install - Store the previously obtained OTP
       no_log: yes
       set_fact:
-        ipaadmin_password: "{{ ipahost_output.host.randompassword if ipahost_output.host is defined }}"
+        ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword if result_ipaclient_get_otp.host is defined }}"
 
     - name: Install - Restore client ansible_python_interpreter setting
       set_fact:
@@ -115,42 +115,42 @@
 
     - name: Install - Check if one of password and keytab are set
       fail: msg="At least one of password or keytab must be specified"
-      when: not ipatest.krb5_keytab_ok and (ipaadmin_password is undefined or ipaadmin_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
+      when: not result_ipaclient_test_keytab.krb5_keytab_ok and (ipaadmin_password is undefined or ipaadmin_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
     when: not ipaclient_on_master | bool
 
-  - name: Install - Purge {{ ipadiscovery.realm }} from host keytab
+  - name: Install - Purge {{ result_ipaclient_test.realm }} from host keytab
     command: >
       /usr/sbin/ipa-rmkeytab
       -k /etc/krb5.keytab
-      -r "{{ ipadiscovery.realm }}"
-    register: iparmkeytab
+      -r "{{ result_ipaclient_test.realm }}"
+    register: result_ipa_rmkeytab
     # Do not fail on error codes 3 and 5:
     #   3 - Unable to open keytab
     #   5 - Principal name or realm not found in keytab
-    failed_when: iparmkeytab.rc != 0 and iparmkeytab.rc != 3 and iparmkeytab.rc != 5
+    failed_when: result_ipa_rmkeytab.rc != 0 and result_ipa_rmkeytab.rc != 3 and result_ipa_rmkeytab.rc != 5
     when: ipaclient_use_otp | bool or ipaclient_force_join | bool
 
   - name: Install - Backup and set hostname
     ipaclient_set_hostname:
-      hostname: "{{ ipadiscovery.hostname }}"
+      hostname: "{{ result_ipaclient_test.hostname }}"
     when: not ipaclient_on_master | bool
 
   - name: Install - Join IPA
-    ipajoin:
-      servers: "{{ ipadiscovery.servers }}"
-      domain: "{{ ipadiscovery.domain }}"
-      realm: "{{ ipadiscovery.realm }}"
-      kdc: "{{ ipadiscovery.kdc }}"
-      basedn: "{{ ipadiscovery.basedn }}"
-      hostname: "{{ ipadiscovery.hostname }}"
+    ipaclient_join:
+      servers: "{{ result_ipaclient_test.servers }}"
+      domain: "{{ result_ipaclient_test.domain }}"
+      realm: "{{ result_ipaclient_test.realm }}"
+      kdc: "{{ result_ipaclient_test.kdc }}"
+      basedn: "{{ result_ipaclient_test.basedn }}"
+      hostname: "{{ result_ipaclient_test.hostname }}"
       force_join: "{{ ipaclient_force_join | default(omit) }}"
       principal: "{{ ipaadmin_principal if not ipaclient_use_otp | bool and ipaclient_keytab is not defined else '' }}"
       password: "{{ ipaadmin_password | default(omit) }}"
       keytab: "{{ ipaclient_keytab | default(omit) }}"
       #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
       kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
-    register: ipajoin
-    when: not ipaclient_on_master | bool and (not ipatest.krb5_keytab_ok or ipaclient_force_join)
+    register: result_ipaclient_join
+    when: not ipaclient_on_master | bool and (not result_ipaclient_test_keytab.krb5_keytab_ok or ipaclient_force_join)
 
   - block:
     - name: Install - End playbook processing
@@ -159,33 +159,33 @@
         state: absent
     - fail:
         msg: "The krb5 configuration is not correct, please enable allow_repair to fix this."
-      when: not ipatest.krb5_conf_ok
+      when: not result_ipaclient_test_keytab.krb5_conf_ok
     - fail:
         msg: "The IPA test failed, please enable allow_repair to fix this."
-      when: not ipatest.ipa_test_ok
+      when: not result_ipaclient_test_keytab.ping_test_ok
     - fail:
         msg: "The ca.crt file is missing, please enable allow_repair to fix this."
-      when: not ipatest.ca_crt_exists
+      when: not result_ipaclient_test_keytab.ca_crt_exists
     - meta: end_play
-    when: not ipaclient_on_master | bool and not ipajoin.changed and not ipaclient_allow_repair | bool and (ipatest.krb5_keytab_ok or (ipajoin.already_joined is defined and ipajoin.already_joined))
+    when: not ipaclient_on_master | bool and not result_ipaclient_join.changed and not ipaclient_allow_repair | bool and (result_ipaclient_test_keytab.krb5_keytab_ok or (result_ipaclient_join.already_joined is defined and result_ipaclient_join.already_joined))
 
   - name: Install - Configure IPA default.conf
     include_role:
       name: ipaconf
     vars:
-      ipaconf_server: "{{ ipadiscovery.servers[0] }}"
-      ipaconf_domain: "{{ ipadiscovery.domain }}"
-      ipaconf_realm: "{{ ipadiscovery.realm }}"
-      ipaconf_hostname: "{{ ipadiscovery.hostname }}"
-      ipaconf_basedn: "{{ ipadiscovery.basedn }}"
+      ipaconf_server: "{{ result_ipaclient_test.servers[0] }}"
+      ipaconf_domain: "{{ result_ipaclient_test.domain }}"
+      ipaconf_realm: "{{ result_ipaclient_test.realm }}"
+      ipaconf_hostname: "{{ result_ipaclient_test.hostname }}"
+      ipaconf_basedn: "{{ result_ipaclient_test.basedn }}"
     when: not ipaclient_on_master | bool
 
   - name: Install - Configure SSSD
-    ipasssd:
-      servers: "{{ ipadiscovery.servers }}"
-      domain: "{{ ipadiscovery.domain }}"
-      realm: "{{ ipadiscovery.realm }}"
-      hostname: "{{ ipadiscovery.hostname }}"
+    ipaclient_setup_sssd:
+      servers: "{{ result_ipaclient_test.servers }}"
+      domain: "{{ result_ipaclient_test.domain }}"
+      realm: "{{ result_ipaclient_test.realm }}"
+      hostname: "{{ result_ipaclient_test.hostname }}"
       services: ["ssh", "sudo"]
       krb5_offline_passwords: yes
       on_master: "{{ ipaclient_on_master }}"
@@ -194,66 +194,66 @@
       #dns_updates: no
       #all_ip_addresses: no
 
-  - name: Install - Configure krb5 for IPA realm "{{ ipadiscovery.realm }} <= 4.4"
+  - name: Install - Configure krb5 for IPA realm "{{ result_ipaclient_test.realm }} <= 4.4"
     include_role:
       name: ipa-krb5
     vars:
-      krb5_servers: "{{ ipadiscovery.servers if not ipadiscovery.dnsok or not ipadiscovery.kdc else [ ] }}"
-      krb5_realm: "{{ ipadiscovery.realm }}"
-      krb5_dns_lookup_realm: "{{ 'false' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'true' }}"
-      krb5_dns_lookup_kdc: "{{ 'false' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'true' }}"
-      krb5_default_domain: "{{ 'true' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'false' }}"
+      krb5_servers: "{{ result_ipaclient_test.servers if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else [ ] }}"
+      krb5_realm: "{{ result_ipaclient_test.realm }}"
+      krb5_dns_lookup_realm: "{{ 'false' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'true' }}"
+      krb5_dns_lookup_kdc: "{{ 'false' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'true' }}"
+      krb5_default_domain: "{{ 'true' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'false' }}"
       krb5_pkinit_anchors: "FILE:/etc/ipa/ca.crt"
-    when: not ipaclient_on_master | bool and ipadiscovery.ipa_python_version <= 40400
+    when: not ipaclient_on_master | bool and result_ipaclient_test.ipa_python_version <= 40400
 
-  - name: Install - Configure krb5 for IPA realm "{{ ipadiscovery.realm }} > 4.4"
+  - name: Install - Configure krb5 for IPA realm "{{ result_ipaclient_test.realm }} > 4.4"
     include_role:
       name: ipa-krb5
     vars:
-      krb5_servers: "{{ ipadiscovery.servers if not ipadiscovery.dnsok or not ipadiscovery.kdc else [ ] }}"
-      krb5_realm: "{{ ipadiscovery.realm }}"
-      krb5_dns_lookup_realm: "{{ 'false' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'true' }}"
-      krb5_dns_lookup_kdc: "{{ 'false' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'true' }}"
-      krb5_default_domain: "{{ 'true' if not ipadiscovery.dnsok or not ipadiscovery.kdc else 'false' }}"
+      krb5_servers: "{{ result_ipaclient_test.servers if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else [ ] }}"
+      krb5_realm: "{{ result_ipaclient_test.realm }}"
+      krb5_dns_lookup_realm: "{{ 'false' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'true' }}"
+      krb5_dns_lookup_kdc: "{{ 'false' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'true' }}"
+      krb5_default_domain: "{{ 'true' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'false' }}"
       krb5_dns_canonicalize_hostname: "false"
       krb5_pkinit_pool: "FILE:/var/lib/ipa-client/pki/ca-bundle.pem"
       krb5_pkinit_anchors: "FILE:/var/lib/ipa-client/pki/kdc-ca-bundle.pem"
-    when: not ipaclient_on_master | bool and ipadiscovery.ipa_python_version > 40400
+    when: not ipaclient_on_master | bool and result_ipaclient_test.ipa_python_version > 40400
 
   - name: Install - IPA API calls for remaining enrollment parts
-    ipaapi:
-      servers: "{{ ipadiscovery.servers }}"
-      realm: "{{ ipadiscovery.realm }}"
-      hostname: "{{ ipadiscovery.hostname }}"
+    ipaclient_api:
+      servers: "{{ result_ipaclient_test.servers }}"
+      realm: "{{ result_ipaclient_test.realm }}"
+      hostname: "{{ result_ipaclient_test.hostname }}"
       #debug: yes
-    register: ipaapi
+    register: result_ipaclient_api
 
   - name: Install - Fix IPA ca
-    ipafixca:
-      servers: "{{ ipadiscovery.servers }}"
-      realm: "{{ ipadiscovery.realm }}"
-      basedn: "{{ ipadiscovery.basedn }}"
+    ipaclient_fix_ca:
+      servers: "{{ result_ipaclient_test.servers }}"
+      realm: "{{ result_ipaclient_test.realm }}"
+      basedn: "{{ result_ipaclient_test.basedn }}"
       allow_repair: "{{ ipaclient_allow_repair }}"
-    when: not ipaclient_on_master | bool and ipatest.krb5_keytab_ok and not ipatest.ca_crt_exists
+    when: not ipaclient_on_master | bool and result_ipaclient_test_keytab.krb5_keytab_ok and not result_ipaclient_test_keytab.ca_crt_exists
 
   - name: Install - Create IPA NSS database
-    ipanss:
-      servers: "{{ ipadiscovery.servers }}"
-      domain: "{{ ipadiscovery.domain }}"
-      realm: "{{ ipadiscovery.realm }}"
-      basedn: "{{ ipadiscovery.basedn }}"
-      hostname: "{{ ipadiscovery.hostname }}"
-      subject_base: "{{ ipaapi.subject_base }}"
+    ipaclient_setup_nss:
+      servers: "{{ result_ipaclient_test.servers }}"
+      domain: "{{ result_ipaclient_test.domain }}"
+      realm: "{{ result_ipaclient_test.realm }}"
+      basedn: "{{ result_ipaclient_test.basedn }}"
+      hostname: "{{ result_ipaclient_test.hostname }}"
+      subject_base: "{{ result_ipaclient_api.subject_base }}"
       principal: "{{ ipaadmin_principal | default(omit) }}"
       mkhomedir: "{{ ipaclient_mkhomedir | default(omit) }}"
-      ca_enabled: "{{ ipaapi.ca_enabled | default(omit) }}"
+      ca_enabled: "{{ result_ipaclient_api.ca_enabled | default(omit) }}"
       on_master: "{{ ipaclient_on_master }}"
 
   - name: Install - IPA extras configuration
-    ipaextras:
-      servers: "{{ ipadiscovery.servers }}"
-      domain: "{{ ipadiscovery.domain }}"
-      ntp_servers: "{{ ipadiscovery.ntp_servers }}"
+    ipaclient_extras:
+      servers: "{{ result_ipaclient_test.servers }}"
+      domain: "{{ result_ipaclient_test.domain }}"
+      ntp_servers: "{{ result_ipaclient_test.ntp_servers }}"
       ntp: "{{ ipaclient_ntp | default(omit) }}"
       on_master: "{{ ipaclient_on_master }}"
       #force_ntpd: no

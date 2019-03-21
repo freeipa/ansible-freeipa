@@ -30,7 +30,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ipadiscovery
+module: ipaclient_test
 short description: Tries to discover IPA server
 description:
   Tries to discover IPA server using DNS or host name
@@ -85,34 +85,34 @@ author:
 '''
 
 EXAMPLES = '''
-# Complete autodiscovery, register return values as ipadiscovery
+# Complete autodiscovery, register return values as ipaclient_test
 - name: IPA discovery
-  ipadiscovery:
-  register: ipadiscovery
+  ipaclient_test:
+  register: register_ipaclient_test
 
-# Discovery using servers, register return values as ipadiscovery
+# Discovery using servers, register return values as ipaclient_test
 - name: IPA discovery
-  ipadiscovery:
+  ipaclient_test:
     servers: server1.domain.com,server2.domain.com
-  register: ipadiscovery
+  register: register_ipaclient_test
 
-# Discovery using domain name, register return values as ipadiscovery
+# Discovery using domain name, register return values as ipaclient_test
 - name: IPA discovery
-  ipadiscovery:
+  ipaclient_test:
     domain: domain.com
-  register: ipadiscovery
+  register: register_ipaclient_test
 
-# Discovery using realm, register return values as ipadiscovery
+# Discovery using realm, register return values as ipaclient_test
 - name: IPA discovery
-  ipadiscovery:
+  ipaclient_test:
     realm: DOMAIN.COM
-  register: ipadiscovery
+  register: register_ipaclient_test
 
-# Discovery using hostname, register return values as ipadiscovery
+# Discovery using hostname, register return values as ipaclient_test
 - name: IPA discovery
-  ipadiscovery:
+  ipaclient_test:
     hostname: host.domain.com
-  register: ipadiscovery
+  register: register_ipaclient_test
 '''
 
 RETURN = '''

@@ -8,7 +8,7 @@
   failed_when: false
 
 - name: Install - Backup krb5.conf
-  ipafstore:
+  ipaclient_fstore:
     backup: "{{ krb5_conf }}"
 
 - name: Template krb5.conf

@@ -136,7 +136,7 @@ def main():
     # The module does not change anything, meaning that
     # check mode is supported
 
-    ipa_facts = dict(
+    facts = dict(
         packages= dict(
             ipalib=HAS_IPALIB,
             ipaserver=HAS_IPASERVER,
@@ -153,23 +153,23 @@ def main():
 
     if HAS_IPALIB:
         if is_client_configured():
-            ipa_facts['configured']['client'] = True
+            facts['configured']['client'] = True
 
-            ipa_facts['version'] = get_ipa_version()
+            facts['version'] = get_ipa_version()
             for key,value in six.iteritems(get_ipa_conf()):
-                ipa_facts[key] = value
+                facts[key] = value
 
     if HAS_IPASERVER:
         if is_server_configured():
-            ipa_facts['configured']['server'] = True
-            ipa_facts['configured']['dns'] = is_dns_configured()
-            ipa_facts['configured']['ca'] = is_ca_configured()
-            ipa_facts['configured']['kra'] = is_kra_configured()
-            ipa_facts['configured']['ntpd'] = is_ntpd_configured()
+            facts['configured']['server'] = True
+            facts['configured']['dns'] = is_dns_configured()
+            facts['configured']['ca'] = is_ca_configured()
+            facts['configured']['kra'] = is_kra_configured()
+            facts['configured']['ntpd'] = is_ntpd_configured()
 
     module.exit_json(
         changed=False,
-        ansible_facts=dict(ipa=ipa_facts)
+        ansible_facts=dict(ipa=facts)
         )
 
 if __name__ == '__main__':

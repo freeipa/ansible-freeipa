@@ -26,7 +26,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 
 DOCUMENTATION = '''
 ---
-module: ipahost
+module: ipaclient_get_otp
 short description: Manage IPA hosts
 description:
   Manage hosts in a IPA domain.
@@ -84,28 +84,28 @@ author:
 EXAMPLES = '''
 # Example from Ansible Playbooks
 # Add a new host with a random OTP, authenticate using principal/password
-- ipahost:
+- ipaclient_get_otp:
     principal: admin
     password: MySecretPassword
     fqdn: ipaclient.ipa.domain.com
     ipaddress: 192.168.100.23
     random: True
-  register: ipahost
+  register: result_ipaclient_get_otp
 
 # Add a new host, authenticate with a keytab stored on the controller node
-- ipahost:
+- ipaclient_get_otp:
     keytab: admin.keytab
     fqdn: ipaclient.ipa.domain.com
 
 # Remove a host, authenticate using principal/password
-- ipahost:
+- ipaclient_get_otp:
     principal: admin
     password: MySecretPassword
     fqdn: ipaclient.ipa.domain.com
     state: absent
 
 # Modify a host, add ssh public key:
-- ipahost:
+- ipaclient_get_otp:
     principal: admin
     password: MySecretPassword
     fqdn: ipaclient.ipa.domain.com
@@ -355,7 +355,7 @@ def main():
             changed = ensure_host_absent(module, api, host)
 
     except Exception as e:
-        module.fail_json(msg="ipahost module failed : %s" % str(e))
+        module.fail_json(msg="ipaclient_get_otp module failed : %s" % str(e))
     finally:
         run([paths.KDESTROY], raiseonerr=False, env=os.environ)
 

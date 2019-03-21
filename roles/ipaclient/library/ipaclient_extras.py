@@ -30,7 +30,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ipaextras
+module: ipaclient_extras
 short description: Configure IPA extras
 description:
 Configure IPA extras
@@ -106,7 +106,7 @@ author:
 
 EXAMPLES = '''
 - name: IPA extras configurations
-  ipaextras:
+  ipaclient_extras:
     servers: ["server1.example.com","server2.example.com"]
     domain: example.com
 '''

@@ -1,6 +1,6 @@
 ---
 - name: Backup IPA default.conf
-  ipafstore:
+  ipaclient_fstore:
     backup: "{{ ipaconf_default_conf }}"
 
 - name: Template IPA default.conf

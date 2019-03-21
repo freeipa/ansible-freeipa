@@ -162,7 +162,7 @@ class ActionModule(ActionBase):
             result['msg'] = "principal is required"
             return result
 
-        data = self._execute_module(module_name='ipa_facts', module_args=dict(),
+        data = self._execute_module(module_name='ipaclient_get_facts', module_args=dict(),
                                     task_vars={ "ansible_python_interpreter": ansible_python_interpreter })
         try:
             domain = data['ansible_facts']['ipa']['domain']

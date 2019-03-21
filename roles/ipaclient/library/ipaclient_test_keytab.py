@@ -30,7 +30,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ipatest
+module: ipaclient_test_keytab
 short description: Test if the krb5.keytab on the machine is valid and can be used.
 description:
   Test if the krb5.keytab on the machine is valid and can be used.
@@ -64,7 +64,7 @@ author:
 EXAMPLES = '''
 # Test IPA with local keytab
 - name: Test IPA in force mode with maximum 5 kinit attempts
-  ipatest:
+  ipaclient_test_keytab:
     servers: ["server1.example.com","server2.example.com"]
     domain: example.com
     realm: EXAMPLE.COM
@@ -74,7 +74,7 @@ EXAMPLES = '''
 
 # Test IPA with ipadiscovery return values
 - name: Join IPA
-  ipajoin:
+  ipaclient_test_keytab:
     servers: "{{ ipadiscovery.servers }}"
     domain: "{{ ipadiscovery.domain }}"
     realm: "{{ ipadiscovery.realm }}"
@@ -94,7 +94,7 @@ krb5_conf_ok:
   description: The flag describes if krb5.conf on the host is usable.
   returned: always
   type: bool
-ipa_test_ok:
+ping_test_ok:
   description: The flag describes if ipa ping test succeded.
   returned: always
   type: bool
@@ -143,7 +143,7 @@ def main():
 
     krb5_keytab_ok = False
     krb5_conf_ok = False
-    ipa_test_ok = False
+    ping_test_ok = False
     ca_crt_exists = os.path.exists(paths.IPA_CA_CRT)
     env = {'PATH': SECURE_PATH, 'KRB5CCNAME': paths.IPA_DNS_CCACHE}
 
@@ -160,7 +160,7 @@ def main():
         try:
             result = run(["/usr/bin/ipa", "ping"], raiseonerr=False, env=env)
             if result.returncode == 0:
-                ipa_test_ok = True
+                ping_test_ok = True
         except OSError:
             pass
     except GSSError as e:
@@ -197,7 +197,7 @@ def main():
                   result = run(["/usr/bin/ipa", "ping"], raiseonerr=False,
                                env=env)
                   if result.returncode == 0:
-                      ipa_test_ok = True
+                      ping_test_ok = True
               except OSError:
                   pass
 
@@ -214,7 +214,7 @@ def main():
                      krb5_keytab_ok=krb5_keytab_ok,
                      krb5_conf_ok=krb5_conf_ok,
                      ca_crt_exists=ca_crt_exists,
-                     ipa_test_ok=ipa_test_ok)
+                     ping_test_ok=ping_test_ok)
 
 if __name__ == '__main__':
     main()

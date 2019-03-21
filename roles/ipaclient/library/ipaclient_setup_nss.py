@@ -30,8 +30,8 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ipanss
-short description: Create IPA NSS database
+module: ipaclient_setup_nss
+short description: Create IPA client NSS database
 description:
 Create IPA NSS database
 options:
@@ -77,8 +77,8 @@ author:
 '''
 
 EXAMPLES = '''
-- name: Create IPA NSS database
-  ipanss:
+- name: Create IPA client NSS database
+  ipaclient_setup_nss:
     servers: ["server1.example.com","server2.example.com"]
     domain: example.com
     realm: EXAMPLE.COM
