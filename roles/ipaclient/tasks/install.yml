@@ -216,13 +216,17 @@
       domain: "{{ result_ipaclient_test.domain }}"
       realm: "{{ result_ipaclient_test.realm }}"
       hostname: "{{ result_ipaclient_test.hostname }}"
-      services: ["ssh", "sudo"]
-      krb5_offline_passwords: yes
       on_master: "{{ ipaclient_on_master }}"
-      #primary: no
-      #permit: no
-      #dns_updates: no
-      #all_ip_addresses: no
+      no_ssh: "{{ ipaclient_no_ssh }}"
+      no_sshd: "{{ ipaclient_no_sshd }}"
+      no_sudo: "{{ ipaclient_no_sudo }}"
+      all_ip_addresses: "{{ ipahost_all_ip_addresses }}"
+
+      fixed_primary: "{{ ipassd_fixed_primary }}"
+      permit: "{{ ipassd_permit }}"
+      enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
+      preserve_sssd: "{{ ipassd_preserve_sssd }}"
+      no_krb5_offline_passwords: "{{ ipassd_no_krb5_offline_passwords }}"
 
   - name: Install - Configure krb5 for IPA realm "{{ result_ipaclient_test.realm }} <= 4.4"
     include_role:

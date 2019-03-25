@@ -12,12 +12,18 @@ ipaclient_no_dns_lookup: no
 ipaclient_ssh_trust_dns: no
 ipaclient_no_ssh: no
 ipaclient_no_sshd: no
+ipaclient_no_sudo: no
 #ipaclient_no_dns_sshfp: no
 #ipaclient_force: no
 ipaclient_force_ntpd: no
 ipaclient_no_nisdomain: no
 ipaclient_configure_firefox: no
 ipahost_all_ip_addresses: no
+ipassd_fixed_primary: no
+ipassd_permit: no
+ipassd_enable_dns_updates: no
+ipassd_no_krb5_offline_passwords: no
+ipassd_preserve_sssd: no
 
 ### packages ###
 ipaclient_install_packages: yes
