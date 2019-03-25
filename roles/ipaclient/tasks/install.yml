@@ -53,6 +53,9 @@
     enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
   register: result_ipaclient_test
 
+- meta: end_play
+  when: result_ipaclient_test.client_already_configured and not ipaclient_allow_repair | bool and not ipaclient_force_join | bool
+
 - name: Install - Set default principal if no keytab is given
   set_fact:
     ipaadmin_principal: admin

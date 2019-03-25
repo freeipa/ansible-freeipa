@@ -848,14 +848,18 @@ def main():
 
     # Check if ipa client is already configured
     if is_client_configured():
+        client_already_configured = True
+
         # Check that realm and domain match
         current_config = get_ipa_conf()
         if cli_domain != current_config.get('domain'):
-            return module.fail_json(msg="IPA client already installed "
-                                        "with a conflicting domain")
+            module.fail_json(msg="IPA client already installed "
+                             "with a conflicting domain")
         if cli_realm != current_config.get('realm'):
-            return module.fail_json(msg="IPA client already installed "
-                                        "with a conflicting realm")
+            module.fail_json(msg="IPA client already installed "
+                             "with a conflicting realm")
+    else:
+        client_already_configured = False
 
     # Done
     module.exit_json(changed=False,
@@ -868,6 +872,7 @@ def main():
                      client_domain=client_domain,
                      dnsok=dnsok,
                      sssd=options.sssd,
+                     client_already_configured=client_already_configured,
                      ipa_python_version=IPA_PYTHON_VERSION)
 
 if __name__ == '__main__':
