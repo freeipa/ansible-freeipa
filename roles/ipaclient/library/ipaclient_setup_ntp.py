@@ -87,7 +87,7 @@ import os
 import socket
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_freeipa.client import *
+from ansible.module_utils.ansible_ipa_client import *
 
 def main():
     module = AnsibleModule(
