@@ -200,14 +200,12 @@
     when: not ipaclient_on_master | bool and not result_ipaclient_join.changed and not ipaclient_allow_repair | bool and (result_ipaclient_test_keytab.krb5_keytab_ok or (result_ipaclient_join.already_joined is defined and result_ipaclient_join.already_joined))
 
   - name: Install - Configure IPA default.conf
-    include_role:
-      name: ipaconf
-    vars:
-      ipaconf_server: "{{ result_ipaclient_test.servers[0] }}"
-      ipaconf_domain: "{{ result_ipaclient_test.domain }}"
-      ipaconf_realm: "{{ result_ipaclient_test.realm }}"
-      ipaconf_hostname: "{{ result_ipaclient_test.hostname }}"
-      ipaconf_basedn: "{{ result_ipaclient_test.basedn }}"
+    ipaclient_ipa_conf:
+      servers: "{{ result_ipaclient_test.servers }}"
+      domain: "{{ result_ipaclient_test.domain }}"
+      realm: "{{ result_ipaclient_test.realm }}"
+      hostname: "{{ result_ipaclient_test.hostname }}"
+      basedn: "{{ result_ipaclient_test.basedn }}"
     when: not ipaclient_on_master | bool
 
   - name: Install - Configure SSSD
