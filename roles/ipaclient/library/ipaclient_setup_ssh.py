@@ -84,9 +84,9 @@ def main():
     module = AnsibleModule(
         argument_spec = dict(
             servers=dict(required=True, type='list'),
-            ssh=dict(required=False, type='bool', default='no'),
-            trust_sshfp=dict(required=False, type='bool', default='no'),
-            sshd=dict(required=False, type='bool', default='no'),
+            no_ssh=dict(required=False, type='bool', default='no'),
+            ssh_trust_dns=dict(required=False, type='bool', default='no'),
+            no_sshd=dict(required=False, type='bool', default='no'),
             sssd=dict(required=False, type='bool', default='no'),
         ),
         supports_check_mode = True,
@@ -95,9 +95,11 @@ def main():
     module._ansible_debug = True
     options.servers = module.params.get('servers')
     options.server = options.servers
-    options.conf_ssh = module.params.get('ssh')
-    options.trust_sshfp = module.params.get('trust_sshfp')
-    options.conf_sshd = module.params.get('sshd')
+    options.no_ssh = module.params.get('no_ssh')
+    options.conf_ssh = not options.no_ssh
+    options.trust_sshfp = module.params.get('ssh_trust_dns')
+    options.no_sshd = module.params.get('no_sshd')
+    options.conf_sshd = not options.no_sshd
     options.sssd = module.params.get('sssd')
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)

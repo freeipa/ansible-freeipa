@@ -287,9 +287,9 @@
     ipaclient_setup_ssh:
       servers: "{{ result_ipaclient_test.servers }}"
       sssd: "{{ result_ipaclient_test.sssd }}"
-      ssh: "{{ not ipaclient_no_ssh }}"
-      trust_sshfp: "{{ ipaclient_ssh_trust_dns }}"
-      sshd: "{{ not ipaclient_no_sshd }}"
+      no_ssh: "{{ ipaclient_no_ssh }}"
+      ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
+      no_sshd: "{{ ipaclient_no_sshd }}"
 
   - name: Install - Configure automount
     ipaclient_setup_automount:
