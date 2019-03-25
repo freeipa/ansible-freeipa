@@ -62,7 +62,7 @@ def kinit_password(principal, password, ccache_name, config):
     os.environ['KRB5_CONFIG'] = config
 
     try:
-        result = run_cmd(args, stdin=password)
+        result = run_cmd(args, stdin=password.encode())
         return result
     finally:
         if old_config is not None:
