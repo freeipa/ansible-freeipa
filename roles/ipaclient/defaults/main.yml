@@ -14,7 +14,7 @@ ipaclient_no_ssh: no
 ipaclient_no_sshd: no
 ipaclient_no_sudo: no
 #ipaclient_no_dns_sshfp: no
-#ipaclient_force: no
+ipaclient_force: no
 ipaclient_force_ntpd: no
 ipaclient_no_nisdomain: no
 ipaclient_configure_firefox: no

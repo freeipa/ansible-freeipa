@@ -226,31 +226,18 @@
       preserve_sssd: "{{ ipassd_preserve_sssd }}"
       no_krb5_offline_passwords: "{{ ipassd_no_krb5_offline_passwords }}"
 
-  - name: Install - Configure krb5 for IPA realm "{{ result_ipaclient_test.realm }} <= 4.4"
-    include_role:
-      name: ipa-krb5
-    vars:
-      krb5_servers: "{{ result_ipaclient_test.servers if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else [ ] }}"
-      krb5_realm: "{{ result_ipaclient_test.realm }}"
-      krb5_dns_lookup_realm: "{{ 'false' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'true' }}"
-      krb5_dns_lookup_kdc: "{{ 'false' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'true' }}"
-      krb5_default_domain: "{{ 'true' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'false' }}"
-      krb5_pkinit_anchors: "FILE:/etc/ipa/ca.crt"
-    when: not ipaclient_on_master | bool and result_ipaclient_test.ipa_python_version <= 40400
-
-  - name: Install - Configure krb5 for IPA realm "{{ result_ipaclient_test.realm }} > 4.4"
-    include_role:
-      name: ipa-krb5
-    vars:
-      krb5_servers: "{{ result_ipaclient_test.servers if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else [ ] }}"
-      krb5_realm: "{{ result_ipaclient_test.realm }}"
-      krb5_dns_lookup_realm: "{{ 'false' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'true' }}"
-      krb5_dns_lookup_kdc: "{{ 'false' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'true' }}"
-      krb5_default_domain: "{{ 'true' if not result_ipaclient_test.dnsok or not result_ipaclient_test.kdc else 'false' }}"
-      krb5_dns_canonicalize_hostname: "false"
-      krb5_pkinit_pool: "FILE:/var/lib/ipa-client/pki/ca-bundle.pem"
-      krb5_pkinit_anchors: "FILE:/var/lib/ipa-client/pki/kdc-ca-bundle.pem"
-    when: not ipaclient_on_master | bool and result_ipaclient_test.ipa_python_version > 40400
+  - name: Install - Configure krb5 for IPA realm
+    ipaclient_setup_krb5:
+      realm: "{{ result_ipaclient_test.realm }}"
+      domain: "{{ result_ipaclient_test.domain }}"
+      servers: "{{ result_ipaclient_test.servers }}"
+      kdc: "{{ result_ipaclient_test.kdc }}"
+      dnsok: "{{ result_ipaclient_test.dnsok }}"
+      client_domain: "{{ result_ipaclient_test.client_domain }}"
+      hostname: "{{ result_ipaclient_test.hostname }}"
+      sssd: "{{ result_ipaclient_test.sssd }}"
+      force: "{{ ipaclient_force }}"
+      #on_master: "{{ ipaclient_on_master }}"
 
   - name: Install - IPA API calls for remaining enrollment parts
     ipaclient_api:
