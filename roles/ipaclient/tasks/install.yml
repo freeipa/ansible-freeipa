@@ -21,17 +21,36 @@
     ipaclient_servers: "{{ groups['ipaserver'] | list }}"
   when: ipaclient_no_dns_lookup | bool and groups.ipaserver is defined and ipaclient_servers is not defined
 
-- name: Install - IPA discovery
+- fail: msg="ipaadmin_principal and ipaadmin_keytab cannot be used together"
+  when: ipaadmin_keytab is defined and ipaadmin_principal is defined
+
+- name: Install - Set default principal if no keytab is given
+  set_fact:
+    ipaadmin_principal: admin
+  when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
+
+- name: Install - IPA client test
   ipaclient_test:
+    ### basic ###
     domain: "{{ ipaserver_domain | default(ipaclient_domain) | default(omit) }}"
     servers: "{{ ipaclient_servers | default(omit) }}"
     realm: "{{ ipaserver_realm | default(ipaclient_realm) | default(omit) }}"
     hostname: "{{ ipaclient_hostname | default(ansible_fqdn) }}"
-    ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
-    on_master: "{{ ipaclient_on_master }}"
-    ntp_servers: "{{ ipaclient_ntp_servers | default([]) }}"
+    ntp_servers: "{{ ipaclient_ntp_servers | default(omit) }}"
     ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
     no_ntp: "{{ ipaclient_no_ntp }}"
+    force_ntpd: "{{ ipaclient_force_ntpd }}"
+    nisdomain: "{{ ipaclient_nisdomain | default(omit) }}"
+    no_nisdomain: "{{ ipaclient_no_nisdomain }}"
+    kinit_attempts: "{{ ipaclient_kinit_attempts }}"
+    ca_cert_files: "{{ ipaclient_ca_cert_file | default(omit) }}"
+    configure_firefox: "{{ ipaclient_configure_firefox }}"
+    firefox_dir: "{{ ipaclient_firefox_dir | default(omit) }}"
+    ip_addresses: "{{ ipaclient_ip_addresses | default(omit) }}"
+    all_ip_addresses: "{{ ipahost_all_ip_addresses }}"
+    on_master: "{{ ipaclient_on_master }}"
+    ### sssd ###
+    enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
   register: result_ipaclient_test
 
 - name: Install - Set default principal if no keytab is given

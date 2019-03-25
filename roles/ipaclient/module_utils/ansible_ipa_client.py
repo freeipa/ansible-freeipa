@@ -31,19 +31,51 @@ if NUM_VERSION < 30201:
 else:
     IPA_PYTHON_VERSION = NUM_VERSION
 
-class options_obj(object):
-    pass
-options = options_obj()
+class installer_obj(object):
+    def __init__(self):
+        pass
+
+    def set_logger(self, logger):
+        self.logger = logger
+
+    #def __getattribute__(self, attr):
+    #    value = super(installer_obj, self).__getattribute__(attr)
+    #    if not attr.startswith("--") and not attr.endswith("--"):
+    #        logger.debug(
+    #            "  <-- Accessing installer.%s (%s)" % (attr, repr(value)))
+    #    return value
+
+    def __getattr__(self, attr):
+        #logger.info("  --> ADDING missing installer.%s" % attr)
+        self.logger.warn("  --> ADDING missing installer.%s" % attr)
+        setattr(self, attr, None)
+        return getattr(self, attr)
+
+    #def __setattr__(self, attr, value):
+    #    logger.debug("  --> Setting installer.%s to %s" % (attr, repr(value)))
+    #    return super(installer_obj, self).__setattr__(attr, value)
+
+    def knobs(self):
+        for name in self.__dict__:
+            yield self, name
+
+# Initialize installer settings
+installer = installer_obj()
+# Create options
+options = installer
+options.interactive = False
 
 if NUM_VERSION >= 40400:
     # IPA version >= 4.4
 
     import sys
     import inspect
+    import gssapi
     import logging
 
     import six
 
+    from ipapython import version
     try:
         from ipaclient.install import ipadiscovery
     except ImportError:
@@ -63,6 +95,9 @@ if NUM_VERSION >= 40400:
         from ipalib import certstore
     from ipalib.rpc import delete_persistent_client_session_data
     from ipapython import certdb, ipautil
+    from ipapython.admintool import ScriptError
+    from ipapython.ipautil import CheckedIPAddress
+    from ipalib.util import validate_domain_name, normalize_hostname
     from ipaplatform import services
     from ipaplatform.paths import paths
     from ipaplatform.tasks import tasks
@@ -84,7 +119,11 @@ if NUM_VERSION >= 40400:
             configure_certmonger, update_ssh_keys, configure_openldap_conf, \
             hardcode_ldap_server, get_certs_from_ldap, save_state, \
             create_ipa_nssdb, configure_ssh_config, configure_sshd_config, \
-            configure_automount, configure_firefox, configure_nisdomain
+            configure_automount, configure_firefox, configure_nisdomain, \
+            CLIENT_INSTALL_ERROR, is_ipa_client_installed, \
+            CLIENT_ALREADY_CONFIGURED, nssldap_exists, remove_file, \
+            check_ip_addresses, print_port_conf_info, configure_ipa_conf, \
+            purge_host_keytab, configure_sssd_conf
     except ImportError:
         # Create temporary copy of ipa-client-install script (as
         # ipa_client_install.py) to be able to import the script easily
@@ -125,6 +164,7 @@ if NUM_VERSION >= 40400:
             configure_krb5_conf = ipa_client_install.configure_krb5_conf
         if NUM_VERSION < 40100:
             get_ca_cert = ipa_client_install.get_ca_cert
+            get_ca_certs = None
         else:
             get_ca_certs = ipa_client_install.get_ca_certs
         SECURE_PATH = ("/bin:/sbin:/usr/kerberos/bin:/usr/kerberos/sbin:/usr/bin:/usr/sbin")
@@ -179,9 +219,16 @@ if NUM_VERSION >= 40400:
     except ImportError:
         check_ldap_conf = None
 
+    try:
+        from ipaclient.install.client import sssd_enable_ifp
+    except ImportError:
+        sssd_enable_ifp = None
+
     logger = logging.getLogger("ipa-client-install")
+    root_logger = logger
 
 else:
     # IPA version < 4.4
 
     raise Exception("freeipa version '%s' is too old" % VERSION)
+
