@@ -25,7 +25,7 @@
 import os
 import sys
 import logging
-#import fcntl
+import inspect
 from contextlib import contextmanager as contextlib_contextmanager
 
 
@@ -42,10 +42,7 @@ else:
 if NUM_VERSION >= 40600:
     # IPA version >= 4.6
 
-    import inspect
-
     import contextlib
-    import logging
 
     import dns.exception as dnsexception
     import dns.name as dnsname
@@ -81,7 +78,7 @@ if NUM_VERSION >= 40600:
         installutils, kra, krbinstance,
         otpdinstance, custodiainstance, service, upgradeinstance)
     from ipaserver.install.installutils import (
-        create_replica_config, ReplicaConfig, load_pkcs12, is_ipa_configured)
+        ReplicaConfig, load_pkcs12, is_ipa_configured)
     from ipaserver.install.replication import (
         ReplicationManager, replica_conn_check)
     from ipaserver.install.server.replicainstall import (
