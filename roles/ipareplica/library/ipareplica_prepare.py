@@ -420,17 +420,17 @@ def main():
 
         ansible_log.debug("-- CHECK DOMAIN_LEVEL --")
 
+        # Make sure that domain fulfills minimal domain level
+        # requirement
         domain_level = current_domain_level(remote_api)
         check_domain_level_is_supported(domain_level)
-        if domain_level < constants.DOMAIN_LEVEL_1:
-            ansible_module.fail_json(msg=
-                "You used the wrong mechanism to install a replica in "
-                "domain level {dl}:\n"
-                "\tFor domain level >= 1 replica installation, first join the "
-                "domain by running ipa-client-install, then run "
-                "ipa-replica-install without a replica file."
-                .format(dl=domain_level)
-            )
+        if domain_level < constants.MIN_DOMAIN_LEVEL:
+            ansible_module.fail_json(
+                msg=
+                "Cannot promote this client to a replica. The domain level "
+                "must be raised to {mindomainlevel} before the replica can be "
+                "installed".format(
+                    mindomainlevel=constants.MIN_DOMAIN_LEVEL))
 
         ansible_log.debug("-- CHECK AUTHORIZATION --")
 
