@@ -36,6 +36,8 @@
 - name: Install - Replica installation test
   ipareplica_test:
     ### basic ###
+    #dm_password: "{{ ipadm_password | default(omit) }}"
+    #password: "{{ ipaadmin_password | default(omit) }}"
     ip_addresses: "{{ ipareplica_ip_addresses | default([]) }}"
     domain: "{{ ipareplica_domain | default(ipaserver_domain) | default(omit) }}"
     servers: "{{ groups.ipaservers | default(groups.ipaserver) | default(omit) }}"
@@ -54,6 +56,8 @@
     pkinit_cert_files: "{{ ipareplica_pkinit_cert_files | default([]) }}"
     ### client ###
     no_ntp: "{{ ipaclient_no_ntp }}"
+    ntp_servers: "{{ ipaclient_ntp_servers | default([]) }}"
+    ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
     ### dns ###
     no_reverse: "{{ ipareplica_no_reverse }}"
     auto_reverse: "{{ ipareplica_auto_reverse }}"

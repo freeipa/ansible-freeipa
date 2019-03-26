@@ -56,6 +56,8 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec = dict(
             ### basic ###
+            #dm_password=dict(required=False, no_log=True),
+            #password=dict(required=False, no_log=True),
             ip_addresses=dict(required=False, type='list', default=[]),
             domain=dict(required=False),
             servers=dict(required=False, type='list', default=[]),
@@ -74,6 +76,8 @@ def main():
             pkinit_cert_files=dict(required=False, type='list', default=[]),
             ### client ###
             no_ntp=dict(required=False, type='bool', default=False),
+            ntp_servers=dict(required=False, type='list', default=[]),
+            ntp_pool=dict(required=False),
             ### dns ###
             no_reverse=dict(required=False, type='bool', default=False),
             auto_reverse=dict(required=False, type='bool', default=False),
@@ -92,6 +96,9 @@ def main():
     # get parameters #
 
     ### basic ###
+    #options.dm_password = ansible_module.params.get('dm_password')
+    ##options.password = ansible_module.params.get('password')
+    #options.password = options.dm_password
     options.ip_addresses = ansible_module_get_parsed_ip_addresses(
         ansible_module)
     options.domain_name = ansible_module.params.get('domain')
@@ -111,6 +118,8 @@ def main():
     options.pkinit_cert_files = ansible_module.params.get('pkinit_cert_files')
     ### client ###
     options.no_ntp = ansible_module.params.get('no_ntp')
+    options.ntp_servers = ansible_module.params.get('ntp_servers')
+    options.ntp_pool = ansible_module.params.get('ntp_pool')
     ### dns ###
     options.no_reverse = ansible_module.params.get('no_reverse')
     options.auto_reverse = ansible_module.params.get('auto_reverse')
@@ -290,14 +299,28 @@ def main():
     except Exception as msg: #ScriptError as msg:
         ansible_module.fail_json(msg=str(msg))
 
+    # TODO: Check ntp_servers and ntp_pool
+
     # client enrolled?
 
     client_fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     client_enrolled = client_fstore.has_files()
 
+    if not client_enrolled:
+        ## One-step replica installation
+        #if options.dm_password and options.password:
+        #    ansible_module.fail_json(
+        #        msg="--password and --admin-password options are "
+        #        "mutually exclusive")
+        pass
+    else:
+        # The NTP configuration can not be touched on pre-installed client:
+        if options.no_ntp or options.ntp_servers or options.ntp_pool:
+            ansible_module.fail_json(
+                msg="NTP configuration cannot be updated during promotion")
+
     # done #
 
-    #ip_addresses = [ ]
     ansible_module.exit_json(changed=True,
                              ipa_python_version=IPA_PYTHON_VERSION,
                              ### basic ###
