@@ -4,6 +4,7 @@
     register: result_py3test
     failed_when: False
     changed_when: False
+    check_mode: no
 
   - name: Set python interpreter to 3
     set_fact:
