@@ -145,11 +145,25 @@ def main():
     ansible_log.debug("-- INSTALL_KRB --")
 
     with redirect_stdout(ansible_log):
-        krb = install_krb(
-            config,
-            setup_pkinit=not options.no_pkinit,
-            pkcs12_info=pkinit_pkcs12_info,
-            promote=promote)
+        argspec = inspect.getargspec(install_krb)
+        if "promote" in argspec.args:
+            krb = install_krb(
+                config,
+                setup_pkinit=not options.no_pkinit,
+                pkcs12_info=pkinit_pkcs12_info,
+                promote=promote)
+        else:
+            if "fstore" not in argspec.args:
+                krb = install_krb(
+                    config,
+                    setup_pkinit=not options.no_pkinit,
+                    pkcs12_info=pkinit_pkcs12_info)
+            else:
+                krb = install_krb(
+                    config,
+                    setup_pkinit=not options.no_pkinit,
+                    pkcs12_info=pkinit_pkcs12_info,
+                    fstore=fstore)
 
     # done #
 
