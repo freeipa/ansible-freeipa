@@ -222,7 +222,6 @@
       no_sshd: "{{ ipaclient_no_sshd }}"
       no_sudo: "{{ ipaclient_no_sudo }}"
       all_ip_addresses: "{{ ipahost_all_ip_addresses }}"
-
       fixed_primary: "{{ ipassd_fixed_primary }}"
       permit: "{{ ipassd_permit }}"
       enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
