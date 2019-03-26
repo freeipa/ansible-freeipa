@@ -477,7 +477,9 @@ def main():
         #    logger.info(
         #        "If you want to reinstall the IPA client, uninstall it first "
         #        "using 'ipa-client-install --uninstall'.")
-        #    raise ScriptError(rval=CLIENT_ALREADY_CONFIGURED)
+        #    raise ScriptError(
+        #        "IPA client is already configured on this system.",
+        #        rval=CLIENT_ALREADY_CONFIGURED)
 
         check_ldap_conf()
 
@@ -583,8 +585,9 @@ def main():
             logger.warning("Using existing certificate '%s'.", paths.IPA_CA_CRT)
 
         if not check_ip_addresses(options):
-            module.warn("Failed to check ip addresses, check installation log")
-            raise ScriptError(rval=CLIENT_INSTALL_ERROR)
+            raise ScriptError(
+                "Failed to check ip addresses, check installation log",
+                rval=CLIENT_INSTALL_ERROR)
 
         # Create the discovery instance
         ds = ipadiscovery.IPADiscovery()
@@ -608,15 +611,16 @@ def main():
                 "This may mean that the remote server is not up "
                 "or is not reachable due to network or firewall settings.")
             print_port_conf_info()
-            module.warn("Failed to verify that %s is an IPA Server." %
-                        ', '.join(options.server))
-            raise ScriptError(rval=CLIENT_INSTALL_ERROR)
+            raise ScriptError("Failed to verify that %s is an IPA Server." %
+                              ', '.join(options.server),
+                              rval=CLIENT_INSTALL_ERROR)
 
         if ret == ipadiscovery.BAD_HOST_CONFIG:
             logger.error("Can't get the fully qualified name of this host")
             logger.info("Check that the client is properly configured")
-            module.warn("Can't get the fully qualified name of this host")
-            raise ScriptError(rval=CLIENT_INSTALL_ERROR)
+            raise ScriptError(
+                "Can't get the fully qualified name of this host",
+                rval=CLIENT_INSTALL_ERROR)
         if ret == ipadiscovery.NOT_FQDN:
             raise ScriptError(
                 "{} is not a fully-qualified hostname".format(hostname),
@@ -723,7 +727,8 @@ def main():
             logger.error("%s is not an IPA v2 Server.", cli_server[0])
             print_port_conf_info()
             logger.debug("(%s: %s)", cli_server[0], cli_server_source)
-            raise ScriptError(rval=CLIENT_INSTALL_ERROR)
+            raise ScriptError("%s is not an IPA v2 Server." % cli_server[0],
+                              rval=CLIENT_INSTALL_ERROR)
 
         if ret == ipadiscovery.NO_ACCESS_TO_LDAP:
             logger.warning("Anonymous access to the LDAP server is disabled.")
@@ -748,7 +753,9 @@ def main():
                 "or is not reachable due to network or firewall settings.")
             print_port_conf_info()
             logger.debug("(%s: %s)", cli_server[0], cli_server_source)
-            raise ScriptError(rval=CLIENT_INSTALL_ERROR)
+            raise ScriptError("Failed to verify that %s is an IPA Server." %
+                              cli_server[0],
+                              rval=CLIENT_INSTALL_ERROR)
 
         cli_kdc = ds.kdc
         if dnsok and not cli_kdc:
@@ -788,7 +795,9 @@ def main():
                 "The provided realm name [%s] does not match discovered one [%s]",
                 options.realm_name, cli_realm)
             logger.debug("(%s: %s)", cli_realm, cli_realm_source)
-            raise ScriptError(rval=CLIENT_INSTALL_ERROR)
+            raise ScriptError(
+                "The provided realm name [%s] does not match discovered one [%s]" % (options.realm_name, cli_realm),
+                rval=CLIENT_INSTALL_ERROR)
 
         cli_basedn = ds.basedn
         cli_basedn_source = ds.basedn_source
