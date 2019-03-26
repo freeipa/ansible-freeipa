@@ -738,7 +738,7 @@ def main():
 
     # done ##################################################################
 
-    ansible_module.exit_json(changed=True,
+    ansible_module.exit_json(changed=False,
                              ipa_python_version=IPA_PYTHON_VERSION,
                              ### basic ###
                              domain=options.domain_name,
