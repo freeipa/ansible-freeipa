@@ -603,12 +603,15 @@
   #  ipareplica_backend_disconnect:
 
   - name: Install - Enable IPA
-    ipaserver_enable_ipa:
+    ipareplica_enable_ipa:
       hostname: "{{ result_ipareplica_test.hostname }}"
+      ### certificate system ###
+      subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### additional ###
+      ccache: "{{ result_ipareplica_prepare.ccache }}"
+      _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
-      # The setup_dns step is only used on the server, therefore simply
-      # setting setup_dns to reuse the server version here.
-      setup_dns: no
+      config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
     register: result_ipareplica_enable_ipa
 
   - name: Install - Cleanup root IPA cache
