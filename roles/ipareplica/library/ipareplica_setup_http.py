@@ -188,13 +188,31 @@ def main():
         create_ipa_conf(fstore, config, ca_enabled,
                         master=config.master_host_name)
 
-        install_http(
-            config,
-            auto_redirect=not options.no_ui_redirect,
-            promote=promote,
-            pkcs12_info=http_pkcs12_info,
-            ca_is_configured=ca_enabled,
-            ca_file=cafile)
+        argspec = inspect.getargspec(install_http)
+        if "promote" in argspec.args:
+            install_http(
+                config,
+                auto_redirect=not options.no_ui_redirect,
+                promote=promote,
+                pkcs12_info=http_pkcs12_info,
+                ca_is_configured=ca_enabled,
+                ca_file=cafile)
+        else:
+            if "fstore" not in argspec.args:
+                install_http(
+                    config,
+                    auto_redirect=not options.no_ui_redirect,
+                    pkcs12_info=http_pkcs12_info,
+                    ca_is_configured=ca_enabled,
+                    ca_file=cafile)
+            else:
+                install_http(
+                    config,
+                    auto_redirect=not options.no_ui_redirect,
+                    pkcs12_info=http_pkcs12_info,
+                    ca_is_configured=ca_enabled,
+                    ca_file=cafile,
+                    fstore=fstore)
 
         # Need to point back to ourself after the cert for HTTP is obtained
         create_ipa_conf(fstore, config, ca_enabled)
