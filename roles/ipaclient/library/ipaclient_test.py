@@ -832,7 +832,6 @@ def main():
         #    raise ScriptError(rval=CLIENT_INSTALL_ERROR)
 
     except ScriptError as e:
-        module.warn("2nd part: %s" % e)
         module.fail_json(msg=str(e))
 
     #########################################################################
