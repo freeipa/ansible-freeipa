@@ -313,15 +313,35 @@ def main():
         ansible_log.debug("-- CONFIGURE DIRSRV --")
         # Configure dirsrv
         with redirect_stdout(ansible_log):
-            ds = install_replica_ds(config, options, ca_enabled,
-                                    remote_api,
-                                    ca_file=cafile,
-                                    promote=promote,
-                                    pkcs12_info=dirsrv_pkcs12_info)
+            argspec = inspect.getargspec(install_replica_ds)
+            if "promote" in argspec.args:
+                ds = install_replica_ds(config, options, ca_enabled,
+                                        remote_api,
+                                        ca_file=cafile,
+                                        promote=promote,
+                                        pkcs12_info=dirsrv_pkcs12_info)
+            else:
+                if "fstore" in argspec.args:
+                    ds = install_replica_ds(config, options, ca_enabled,
+                                            remote_api,
+                                            ca_file=cafile,
+                                            pkcs12_info=dirsrv_pkcs12_info,
+                                            fstore=fstore)
+                else:
+                    ds = install_replica_ds(config, options, ca_enabled,
+                                            remote_api,
+                                            ca_file=cafile,
+                                            pkcs12_info=dirsrv_pkcs12_info)
 
         ansible_log.debug("-- INSTALL DNS RECORDS --")
         # Always try to install DNS records
-        install_dns_records(config, options, remote_api)
+        argspec = inspect.getargspec(install_dns_records)
+        if "fstore" not in argspec.args:
+            install_dns_records(config, options, remote_api)
+        else:
+            install_dns_records(config, options, remote_api, fstore=fstore)
+
+        # TODO: check if ntp needs to be enabled later on
 
         ansible_log.debug("-- NTP LDAP ENABLE --")
         if ntpinstance is not None:
