@@ -52,7 +52,7 @@ options:
   _top_dir:
     description: 
     required: yes
-  config_setup_ca:
+  setup_ca:
     description: 
     required: yes
   config_master_host_name:
@@ -82,7 +82,7 @@ def main():
             ### additional ###
             ccache=dict(required=True),
             _top_dir = dict(required=True),
-            config_setup_ca=dict(required=True),
+            setup_ca=dict(required=True),
             config_master_host_name=dict(required=True),
         ),
         supports_check_mode = True,
@@ -105,7 +105,7 @@ def main():
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
     options._top_dir = ansible_module.params.get('_top_dir')
-    config_setup_ca = ansible_module.params.get('config_setup_ca')
+    options.setup_ca = ansible_module.params.get('setup_ca')
     config_master_host_name = ansible_module.params.get('config_master_host_name')
 
     # init #
@@ -115,7 +115,6 @@ def main():
 
     ansible_log.debug("== INSTALL ==")
 
-    options = installer
     promote = installer.promote
 
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
@@ -123,12 +122,15 @@ def main():
     api_bootstrap_finalize(env)
     config = gen_ReplicaConfig()
     config.subject_base = options.subject_base
+    config.master_host_name = config_master_host_name
 
-    remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
+    remote_api = gen_remote_api(config.master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
 
     conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']
+
+    api.Backend.ldap2.connect()
 
     with redirect_stdout(ansible_log):
         #if options.setup_adtrust:

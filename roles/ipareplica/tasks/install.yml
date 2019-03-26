@@ -595,7 +595,7 @@
       ### additional ###
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
       config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
     when: result_ipareplica_test.setup_adtrust
 
