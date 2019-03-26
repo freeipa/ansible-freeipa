@@ -68,6 +68,9 @@
     no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
   register: result_ipareplica_test
 
+- meta: end_play
+  when: result_ipareplica_test.client_already_configured is defined or result_ipareplica_test.server_already_configured is defined
+
 - block:
 
   - name: Install - Setup client

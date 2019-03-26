@@ -297,7 +297,12 @@ def main():
         with redirect_stdout(ansible_log):
             common_check(options.no_ntp)
     except Exception as msg: #ScriptError as msg:
-        ansible_module.fail_json(msg=str(msg))
+        _msg = str(msg)
+        if "server is already configured" in _msg:
+            ansible_module.exit_json(changed=False,
+                                     server_already_configured=True)
+        else:
+            ansible_module.fail_json(msg=_msg)
 
     # TODO: Check ntp_servers and ntp_pool
 
@@ -321,7 +326,7 @@ def main():
 
     # done #
 
-    ansible_module.exit_json(changed=True,
+    ansible_module.exit_json(changed=False,
                              ipa_python_version=IPA_PYTHON_VERSION,
                              ### basic ###
                              domain=options.domain_name,
