@@ -45,11 +45,11 @@ class installer_obj(object):
     #            "  <-- Accessing installer.%s (%s)" % (attr, repr(value)))
     #    return value
 
-    def __getattr__(self, attr):
-        #logger.info("  --> ADDING missing installer.%s" % attr)
-        self.logger.warn("  --> ADDING missing installer.%s" % attr)
-        setattr(self, attr, None)
-        return getattr(self, attr)
+    #def __getattr__(self, attr):
+    #    #logger.info("  --> ADDING missing installer.%s" % attr)
+    #    self.logger.warn("  --> ADDING missing installer.%s" % attr)
+    #    setattr(self, attr, None)
+    #    return getattr(self, attr)
 
     #def __setattr__(self, attr, value):
     #    logger.debug("  --> Setting installer.%s to %s" % (attr, repr(value)))
