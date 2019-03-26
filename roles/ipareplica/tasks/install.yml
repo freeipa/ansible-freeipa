@@ -622,3 +622,5 @@
       path: "/root/.ipa_cache"
       state: absent
     when: result_ipareplica_enable_ipa.changed
+
+  when: not ansible_check_mode

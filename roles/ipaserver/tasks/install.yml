@@ -388,3 +388,5 @@
       {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
     when: ipaserver_setup_firewalld | bool
+
+  when: not ansible_check_mode

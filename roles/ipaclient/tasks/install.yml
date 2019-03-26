@@ -295,6 +295,8 @@
       nisdomain: "{{ ipaclient_nisdomain | default(omit)}}"
     when: not ipaclient_no_nisdomain | bool
 
+  when: not ansible_check_mode
+
   always:
   - name: Cleanup leftover ccache
     file:
