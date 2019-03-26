@@ -1,7 +1,10 @@
 #!/usr/bin/python3
 
 # Test ipaerver python3 binding
-from ipaserver.install.server.replicainstall import install_check
+try:
+    from ipaserver.install.server.replicainstall import install_check
+except ImportError:
+    from ipaserver.install.server.replicainstall import promote_check
 
 # Check ipapython version to be >= 4.6
 from ipapython.version import NUM_VERSION, VERSION
