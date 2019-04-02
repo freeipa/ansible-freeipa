@@ -16,6 +16,5 @@
 
 #- name: Remove IPA client package
 #  package:
-#    name: "{{ item }}"
+#    name: "{{ ipaclient_packages }}"
 #    state: absent
-#  with_items: "{{ ipaclient_packages }}"
