@@ -159,19 +159,19 @@ def main():
 
     # version specific tests #
 
-    if options.setup_adtrust and not adtrust_imported:
-        #if "adtrust" not in options._allow_missing:
-        ansible_module.fail_json(msg="adtrust can not be imported")
-        #else:
-        #  options.setup_adtrust = False
-        #  ansible_module.warn(msg="adtrust is not supported, disabling")
+    #if options.setup_adtrust and not adtrust_imported:
+    #    #if "adtrust" not in options._allow_missing:
+    #    ansible_module.fail_json(msg="adtrust can not be imported")
+    #    #else:
+    #    #  options.setup_adtrust = False
+    #    #  ansible_module.warn(msg="adtrust is not supported, disabling")
 
-    if options.setup_kra and not kra_imported:
-        #if "kra" not in options._allow_missing:
-        ansible_module.fail_json(msg="kra can not be imported")
-        #else:
-        #  options.setup_kra = False
-        #  ansible_module.warn(msg="kra is not supported, disabling")
+    #if options.setup_kra and not kra_imported:
+    #    #if "kra" not in options._allow_missing:
+    #    ansible_module.fail_json(msg="kra can not be imported")
+    #    #else:
+    #    #  options.setup_kra = False
+    #    #  ansible_module.warn(msg="kra is not supported, disabling")
 
     # From ipa installer classes
 
