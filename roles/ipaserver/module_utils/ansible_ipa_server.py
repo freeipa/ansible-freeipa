@@ -55,6 +55,7 @@ if NUM_VERSION >= 40500:
         from ipaclient.install.ipachangeconf import IPAChangeConf
     from ipalib.install import certmonger, sysrestore
     from ipapython import ipautil
+    from ipapython.ipa_log_manager import standard_logging_setup
     if NUM_VERSION < 40600:
         from ipapython.ipa_log_manager import root_logger
     from ipapython.ipautil import (
@@ -129,7 +130,10 @@ else:
 
 
 logger = logging.getLogger("ipa-server-install")
-logger.setLevel(logging.DEBUG)
+#logger.setLevel(logging.DEBUG)
+standard_logging_setup(
+    paths.IPASERVER_INSTALL_LOG, verbose=True, debug=False,
+    filemode='a', console_format='%(message)s')
 
 
 @contextlib_contextmanager
