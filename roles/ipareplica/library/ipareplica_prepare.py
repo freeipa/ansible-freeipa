@@ -660,6 +660,8 @@ def main():
                     config.realm_name, options.setup_ca, 389,
                     options.admin_password, principal=options.principal,
                     ca_cert_file=cafile)
+        except ScriptError as e:
+            ansible_module.fail_json(msg=str(e))
         finally:
             if add_to_ipaservers:
                 os.environ['KRB5CCNAME'] = ccache
