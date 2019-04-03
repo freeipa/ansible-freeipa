@@ -341,6 +341,7 @@
       ipaclient_servers: [ "{{ result_ipaserver_test.hostname }}" ]
       ipaclient_hostname: "{{ result_ipaserver_test.hostname }}"
       ipaclient_no_ntp: "{{ 'true' if result_ipaserver_test.ipa_python_version >= 40690 else 'false' }}"
+      ipaclient_install_packages: "{{ ipaserver_install_packages }}"
 
   #- name: Install - Setup client
   #  command: >
