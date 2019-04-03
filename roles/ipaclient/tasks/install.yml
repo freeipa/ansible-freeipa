@@ -47,7 +47,7 @@
     configure_firefox: "{{ ipaclient_configure_firefox }}"
     firefox_dir: "{{ ipaclient_firefox_dir | default(omit) }}"
     ip_addresses: "{{ ipaclient_ip_addresses | default(omit) }}"
-    all_ip_addresses: "{{ ipahost_all_ip_addresses }}"
+    all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
     on_master: "{{ ipaclient_on_master }}"
     ### sssd ###
     enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
@@ -221,7 +221,7 @@
       no_ssh: "{{ ipaclient_no_ssh }}"
       no_sshd: "{{ ipaclient_no_sshd }}"
       no_sudo: "{{ ipaclient_no_sudo }}"
-      all_ip_addresses: "{{ ipahost_all_ip_addresses }}"
+      all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
       fixed_primary: "{{ ipassd_fixed_primary }}"
       permit: "{{ ipassd_permit }}"
       enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
