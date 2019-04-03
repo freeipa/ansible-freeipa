@@ -82,39 +82,6 @@ options:
   ca_subject:
     description: 
     required: yes
-  reverse_zones:
-    description: 
-    required: yes
-  no_reverse:
-    description: 
-    required: yes
-  auto_reverse:
-    description: 
-    required: yes
-  forwarders:
-    description: 
-    required: yes
-  no_forwarders:
-    description: 
-    required: yes
-G  auto_forwarders:
-    description: 
-    required: yes
-  forward_policy:
-    description: 
-    required: yes
-  enable_compat:
-    description: 
-    required: yes
-  netbios_name:
-    description: 
-    required: yes
-  rid_base:
-    description: 
-    required: yes
-  secondary_rid_base:
-    description: 
-    required: yes
   setup_ca:
     description: 
     required: yes
@@ -213,14 +180,6 @@ def main():
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
     options.ca_subject = ansible_module.params.get('ca_subject')
-    ### dns ###
-    options.reverse_zones = ansible_module.params.get('reverse_zones')
-    options.no_reverse = ansible_module.params.get('no_reverse')
-    options.auto_reverse = ansible_module.params.get('auto_reverse')
-    options.forwarders = ansible_module.params.get('forwarders')
-    options.no_forwarders = ansible_module.params.get('no_forwarders')
-    options.auto_forwarders = ansible_module.params.get('auto_forwarders')
-    options.forward_policy = ansible_module.params.get('forward_policy')
     ### additional ###
     options.server = ansible_module.params.get('server')
     ccache = ansible_module.params.get('ccache')
