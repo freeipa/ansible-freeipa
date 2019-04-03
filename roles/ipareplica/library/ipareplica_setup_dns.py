@@ -79,6 +79,12 @@ def main():
             setup_dns=dict(required=False, type='bool'),
             ### certificate system ###
             subject_base=dict(required=True),
+            ### dns ###
+            zonemgr=dict(required=False),
+            forwarders=dict(required=False, type='list', default=[]),
+            forward_policy=dict(default=None, choices=['first', 'only']),
+            no_dnssec_validation=dict(required=False, type='bool',
+                                      default=False),
             ### additional ###
             ccache=dict(required=True),
             _top_dir = dict(required=True),
@@ -101,6 +107,12 @@ def main():
     options.subject_base = ansible_module.params.get('subject_base')
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
+    ### dns ###
+    options.zonemgr = ansible_module.params.get('zonemgr')
+    options.forwarders = ansible_module.params.get('forwarders')
+    options.forward_policy = ansible_module.params.get('forward_policy')
+    options.no_dnssec_validation = ansible_module.params.get(
+        'no_dnssec_validationdnssec_validation')
     ### additional ###
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache

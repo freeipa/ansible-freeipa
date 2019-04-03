@@ -211,6 +211,12 @@ class installer_obj(object):
 installer = installer_obj()
 options = installer
 
+# DNSInstallInterface
+options.dnssec_master = False
+options.disable_dnssec_master = False
+options.kasp_db_file = None
+options.force = False
+
 
 def api_Backend_ldap2(host_name, setup_ca, connect=False):
     # we are sure we have the configuration file ready.

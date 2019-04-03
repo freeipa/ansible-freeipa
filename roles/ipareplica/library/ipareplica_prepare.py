@@ -172,8 +172,17 @@ def main():
             no_dns_sshfp=dict(required=False, type='bool'),
             ### certificate system ###
             #subject_base=dict(required=False),
-            no_dnssec_validation=dict(required=False, type='bool'),
             ### dns ###
+            allow_zone_overlap=dict(required=False, type='bool', default=False),
+            reverse_zones=dict(required=False,type='list',default=[]),
+            no_reverse=dict(required=False, type='bool', default=False),
+            auto_reverse=dict(required=False, type='bool', default=False),
+            forwarders=dict(required=False, type='list', default=[]),
+            no_forwarders=dict(required=False, type='bool', default=False),
+            auto_forwarders=dict(required=False, type='bool', default=False),
+            forward_policy=dict(default=None, choices=['first', 'only']),
+            no_dnssec_validation=dict(required=False, type='bool',
+                                      default=False),
             ### ad trust ###
             ### additional ###
             server=dict(required=True),
@@ -224,6 +233,7 @@ def main():
     #options.ca_subject = ansible_module.params.get('ca_subject')
     options.no_dnssec_validation = ansible_module.params.get('no_dnssec_validation')
     ### dns ###
+    options.allow_zone_overlap = ansible_module.params.get('allow_zone_overlap')
     options.reverse_zones = ansible_module.params.get('reverse_zones')
     options.no_reverse = ansible_module.params.get('no_reverse')
     options.auto_reverse = ansible_module.params.get('auto_reverse')
@@ -231,6 +241,8 @@ def main():
     options.no_forwarders = ansible_module.params.get('no_forwarders')
     options.auto_forwarders = ansible_module.params.get('auto_forwarders')
     options.forward_policy = ansible_module.params.get('forward_policy')
+    options.no_dnssec_validation = ansible_module.params.get(
+        'no_dnssec_validationdnssec_validation')
 
     ### additional ###
     #options._host_name_overridden = ansible_module.params.get(
@@ -666,6 +678,7 @@ def main():
                              ccache=ccache,
                              installer_ccache=installer._ccache,
                              subject_base=str(config.subject_base),
+                             forward_policy=options.forward_policy,
                              _ca_enabled=ca_enabled,
                              _ca_subject=str(options._ca_subject),
                              _subject_base=str(options._subject_base) if options._subject_base is not None else None,

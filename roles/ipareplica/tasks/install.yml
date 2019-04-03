@@ -148,8 +148,15 @@
       no_sshd: no
       no_dns_sshfp: no
       ### dns ###
-      no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
+      allow_zone_overlap: "{{ ipareplica_allow_zone_overlap }}"
+      reverse_zones: "{{ ipareplica_reverse_zones | default([]) }}"
+      no_reverse: "{{ ipareplica_no_reverse }}"
+      auto_reverse: "{{ ipareplica_auto_reverse }}"
+      forwarders: "{{ ipareplica_forwarders | default([]) }}"
+      no_forwarders: "{{ ipareplica_no_forwarders }}"
+      auto_forwarders: "{{ ipareplica_auto_forwarders }}"
       forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
+      no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
       ### ad trust ###
       netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
       rid_base: "{{ ipareplica_rid_base | default(omit) }}"
@@ -573,6 +580,11 @@
       setup_kra: "{{ result_ipareplica_test.setup_kra }}"
       ### certificate system ###
       subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### dns ###
+      zonemgr: "{{ ipareplica_zonemgr | default(omit) }}"
+      forwarders: "{{ ipareplica_forwarders | default([]) }}"
+      forward_policy: "{{ result_ipareplica_prepare.forward_policy }}"
+      no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
       ### additional ###
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
