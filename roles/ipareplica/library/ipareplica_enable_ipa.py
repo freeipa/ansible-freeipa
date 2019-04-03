@@ -112,11 +112,8 @@ def main():
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)
     api_bootstrap_finalize(env)
-    config = gen_ReplicaConfig()
-    config.subject_base = options.subject_base
-    config.master_host_name = config_master_host_name
 
-    remote_api = gen_remote_api(config.master_host_name, paths.ETC_IPA)
+    remote_api = gen_remote_api(config_master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
 
     conn = remote_api.Backend.ldap2
@@ -126,7 +123,7 @@ def main():
 
     with redirect_stdout(ansible_log):
         # Enable configured services and update DNS SRV records
-        service.enable_services(config.host_name)
+        service.enable_services(options.host_name)
         api.Command.dns_update_system_records()
         ca_servers = service.find_providing_servers('CA', api.Backend.ldap2,
                                                     api)
