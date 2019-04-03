@@ -59,7 +59,7 @@ if NUM_VERSION >= 40500:
     if NUM_VERSION < 40600:
         from ipapython.ipa_log_manager import root_logger
     from ipapython.ipautil import (
-        ipa_generate_password, run, user_input)
+        ipa_generate_password, run)
     from ipapython.admintool import ScriptError
     from ipaplatform import services
     from ipaplatform.paths import paths
@@ -73,10 +73,12 @@ if NUM_VERSION >= 40500:
         no_matching_interface_for_ip_address_warning,
     )
     from ipapython.dnsutil import check_zone_overlap
+    from ipapython.dn import DN
     try:
         from ipaclient.install import timeconf
         from ipaclient.install.client import sync_time
         time_service = "chronyd"
+        ntpinstance = None
     except ImportError:
         try:
             from ipaclient.install import ntpconf as timeconf
@@ -195,7 +197,6 @@ class options_obj(object):
 
 options = options_obj()
 installer = options
-
 
 def api_Backend_ldap2(host_name, setup_ca, connect=False):
     # we are sure we have the configuration file ready.
