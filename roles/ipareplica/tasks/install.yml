@@ -250,8 +250,6 @@
       dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
       ### client ###
       force_join: "{{ ipaclient_force_join }}"
-      ### dns ###
-      forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
       ### ad trust ###
       netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
       rid_base: "{{ ipareplica_rid_base | default(omit) }}"
