@@ -91,6 +91,7 @@
       ##ipaclient_no_ssh: "{{ ipaclient_no_ssh }}"
       ##ipaclient_no_sshd: "{{ ipaclient_no_sshd }}"
       ##ipaclient_no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
+      ipaclient_install_packages: "{{ ipareplica_install_packages }}"
     when: not result_ipareplica_test.client_enrolled
 
   - name: Install - Configure firewalld
