@@ -59,6 +59,7 @@ if NUM_VERSION >= 40600:
 
     from ipaclient.install.ipachangeconf import IPAChangeConf
     from ipalib.install import certstore, sysrestore
+    from ipapython.ipautil import ipa_generate_password
     from ipalib.install.kinit import kinit_keytab
     from ipapython import ipaldap, ipautil, kernel_keyring
     from ipapython.certdb import IPA_CA_TRUST_FLAGS, EXTERNAL_CA_TRUST_FLAGS
@@ -100,18 +101,6 @@ if NUM_VERSION >= 40600:
 
     if six.PY3:
         unicode = str
-
-    try:
-        from ipaclient.install import timeconf
-        time_service = "chronyd"
-        ntpinstance = None
-    except ImportError:
-        try:
-            from ipaclient.install import ntpconf as timeconf
-        except ImportError:
-            from ipaclient import ntpconf as timeconf
-        from ipaserver.install import ntpinstance
-        time_service = "ntpd"
 
 else:
     # IPA version < 4.6

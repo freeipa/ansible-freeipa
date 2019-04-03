@@ -158,10 +158,6 @@
       skip_conncheck: "{{ ipareplica_skip_conncheck }}"
     register: result_ipareplica_prepare
 
-  - name: Install - Setup NTP
-    ipaserver_setup_ntp:
-    when: not ipaclient_no_ntp | bool
-
   - name: Install - Add to ipaservers
     ipareplica_add_to_ipaservers:
       ### server ###
@@ -175,15 +171,15 @@
 
   - name: Install - Create dirman password
     no_log: yes
-    ipaserver_master_password:
+    ipareplica_master_password:
       dm_password: "{{ ipadm_password }}"
-      master_password: "{{ ipaserver_master_password | default(omit) }}"
-    register: result_ipaserver_master_password
+      master_password: "{{ ipareplica_master_password | default(omit) }}"
+    register: result_ipareplica_master_password
 
   - name: Install - Set dirman password
     no_log: yes
     set_fact:
-      ipareplica_dirman_password: "{{ result_ipaserver_master_password.password }}"
+      ipareplica_dirman_password: "{{ result_ipareplica_master_password.password }}"
 
   - name: Install - Setup certmonger
     ipareplica_setup_certmonger:
