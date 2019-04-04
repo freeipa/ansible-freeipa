@@ -565,7 +565,9 @@ def main():
     if not options.realm_name:
         options.realm_name = options.domain_name
     options.realm_name = options.realm_name.upper()
-    if NUM_VERSION >= 40690:
+    argspec = inspect.getargspec(validate_domain_name)
+    if "entity" in argspec.args:
+        # NUM_VERSION >= 40690:
         try:
             validate_domain_name(options.realm_name, entity="realm")
         except ValueError as e:

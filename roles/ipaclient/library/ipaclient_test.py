@@ -327,7 +327,10 @@ def main():
         validate_domain_name(options.domain_name)
 
         if options.realm_name:
-            validate_domain_name(options.realm_name, entity="realm")
+            argspec = inspect.getargspec(validate_domain_name)
+            if "entity" in argspec.args:
+                # NUM_VERSION >= 40690:
+                validate_domain_name(options.realm_name, entity="realm")
 
         ### ClientInstallInterface ###
 
