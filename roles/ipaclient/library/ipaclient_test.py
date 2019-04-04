@@ -484,7 +484,8 @@ def main():
         #        "IPA client is already configured on this system.",
         #        rval=CLIENT_ALREADY_CONFIGURED)
 
-        check_ldap_conf()
+        if check_ldap_conf is not None:
+            check_ldap_conf()
 
         if options.conf_ntp:
             try:
@@ -526,21 +527,22 @@ def main():
                 "Invalid hostname, '{}' must not be used.".format(hostname),
                 rval=CLIENT_INSTALL_ERROR)
 
-        # --no-sssd is not supported any more for rhel-based distros
-        if not tasks.is_nosssd_supported() and not options.sssd:
-            raise ScriptError(
-                "Option '--no-sssd' is incompatible with the 'authselect' tool "
-                "provided by this distribution for configuring system "
-                "authentication resources",
-                rval=CLIENT_INSTALL_ERROR)
+        if hasattr(tasks, "is_nosssd_supported"):
+            # --no-sssd is not supported any more for rhel-based distros
+            if not tasks.is_nosssd_supported() and not options.sssd:
+                raise ScriptError(
+                    "Option '--no-sssd' is incompatible with the 'authselect' tool "
+                    "provided by this distribution for configuring system "
+                    "authentication resources",
+                    rval=CLIENT_INSTALL_ERROR)
 
-        # --noac is not supported any more for rhel-based distros
-        if not tasks.is_nosssd_supported() and options.no_ac:
-            raise ScriptError(
-                "Option '--noac' is incompatible with the 'authselect' tool "
-                "provided by this distribution for configuring system "
-                "authentication resources",
-                rval=CLIENT_INSTALL_ERROR)
+            # --noac is not supported any more for rhel-based distros
+            if not tasks.is_nosssd_supported() and options.no_ac:
+                raise ScriptError(
+                    "Option '--noac' is incompatible with the 'authselect' tool "
+                    "provided by this distribution for configuring system "
+                    "authentication resources",
+                    rval=CLIENT_INSTALL_ERROR)
 
         # when installing with '--no-sssd' option, check whether nss-ldap is
         # installed
