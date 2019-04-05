@@ -101,6 +101,19 @@ if NUM_VERSION >= 40600:
     if six.PY3:
         unicode = str
 
+    try:
+        from ipaclient.install import timeconf
+        time_service = "chronyd"
+        ntpinstance = None
+    except ImportError:
+        try:
+            from ipaclient.install import ntpconf as timeconf
+        except ImportError:
+            from ipaclient import ntpconf as timeconf
+        from ipaserver.install import ntpinstance
+        time_service = "ntpd"
+
+
 else:
     # IPA version < 4.6
 
