@@ -583,7 +583,7 @@
       ### dns ###
       zonemgr: "{{ ipareplica_zonemgr | default(omit) }}"
       forwarders: "{{ ipareplica_forwarders | default([]) }}"
-      forward_policy: "{{ result_ipareplica_prepare.forward_policy }}"
+      forward_policy: "{{ result_ipareplica_prepare.forward_policy if result_ipareplica_prepare.forward_policy is not none else omit }}"
       no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
       ### additional ###
       ccache: "{{ result_ipareplica_prepare.ccache }}"
