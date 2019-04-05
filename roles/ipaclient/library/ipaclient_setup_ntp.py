@@ -99,6 +99,7 @@ def main():
             #force_ntpd=dict(required=False, type='bool', default=False),
             on_master=dict(required=False, type='bool', default=False),
             ### additional ###
+            servers=dict(required=False, type='list', default=None),
             domain=dict(required=False, default=None),
         ),
         supports_check_mode = True,
@@ -110,6 +111,7 @@ def main():
     options.no_ntp = module.params.get('no_ntp')
     #options.force_ntpd = module.params.get('force_ntpd')
     options.on_master = module.params.get('on_master')
+    cli_server = module.params.get('servers')
     cli_domain = module.params.get('domain')
 
     options.conf_ntp = not options.no_ntp
@@ -138,7 +140,7 @@ def main():
         # in the DNS.
         # If that fails, we try to sync directly with IPA server,
         # assuming it runs NTP
-        if len(options.ntp_servers) < 1:
+        if not options.ntp_servers:
             # Detect NTP servers
             ds = ipadiscovery.IPADiscovery()
             ntp_servers = ds.ipadns_search_srv(cli_domain, '_ntp._udp',

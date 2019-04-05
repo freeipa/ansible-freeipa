@@ -76,6 +76,7 @@
       #force_ntpd: "{{ ipaclient_force_ntpd }}"
       on_master: "{{ ipaclient_on_master }}"
       ### additional ###
+      servers: "{{ result_ipaclient_test.servers }}"
       domain: "{{ result_ipaclient_test.domain }}"
 
   - name: Install - Test if IPA client has working krb5.keytab
