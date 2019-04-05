@@ -65,7 +65,6 @@ if NUM_VERSION >= 40600:
     from ipapython.certdb import IPA_CA_TRUST_FLAGS, EXTERNAL_CA_TRUST_FLAGS
     from ipapython.dn import DN
     from ipapython.admintool import ScriptError
-    from ipapython.ipa_log_manager import standard_logging_setup
     from ipaplatform import services
     from ipaplatform.tasks import tasks
     from ipaplatform.paths import paths
@@ -109,10 +108,8 @@ else:
 
 
 logger = logging.getLogger("ipa-server-install")
-#logger.setLevel(logging.DEBUG)
-standard_logging_setup(
-    paths.IPAREPLICA_INSTALL_LOG, verbose=True, debug=False,
-    filemode='a', console_format='%(message)s')
+logger.setLevel(logging.DEBUG)
+
 
 @contextlib_contextmanager
 def redirect_stdout(f):
