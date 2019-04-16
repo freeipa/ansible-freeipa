@@ -129,9 +129,6 @@ def main():
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
-    standard_logging_setup(
-        paths.IPACLIENT_INSTALL_LOG, verbose=True, debug=False,
-        filemode='a', console_format='%(message)s')
 
     os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
     
