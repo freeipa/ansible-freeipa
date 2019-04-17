@@ -30,8 +30,6 @@ ipareplica_no_forwarders: no
 ipareplica_auto_forwarders: no
 ipareplica_no_dnssec_validation: no
 ### ad trust ###
-ipareplica_add_sids: no
-ipareplica_add_agents: no
 ipareplica_enable_compat: no
 ### uninstall ###
 ipareplica_ignore_topology_disconnect: no
