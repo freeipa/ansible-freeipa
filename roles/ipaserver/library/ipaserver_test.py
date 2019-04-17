@@ -730,7 +730,7 @@ def main():
             adtrust.install_check(False, options, api)
 
     except (RuntimeError, ValueError, ScriptError) as e:
-        module.fail_json(msg=str(e))
+        ansible_module.fail_json(msg=str(e))
 
     finally:
         try:
