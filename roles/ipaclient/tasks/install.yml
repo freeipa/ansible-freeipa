@@ -53,20 +53,12 @@
     enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
   register: result_ipaclient_test
 
-- meta: end_play
-  when: result_ipaclient_test.client_already_configured and not ipaclient_allow_repair | bool and not ipaclient_force_join | bool
-
-- name: Install - Set default principal if no keytab is given
-  set_fact:
-    ipaadmin_principal: admin
-  when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
-
-- name: Install - Cleanup leftover ccache
-  file:
-    path: "/etc/ipa/.dns_ccache"
-    state: absent
-
 - block:
+  - name: Install - Cleanup leftover ccache
+    file:
+      path: "/etc/ipa/.dns_ccache"
+      state: absent
+
   - name: Install - Configure NTP
     ipaclient_setup_ntp:
       ### basic ###
@@ -143,6 +135,14 @@
     when: ipaclient_use_otp | bool
 
   - block:
+    # This block is executed only when
+    # not (not ipaclient_on_master | bool and
+    #      not result_ipaclient_join.changed and
+    #      not ipaclient_allow_repair | bool and
+    #      (result_ipaclient_test_keytab.krb5_keytab_ok or
+    #       (result_ipaclient_join.already_joined is defined and
+    #        result_ipaclient_join.already_joined)))
+
     - name: Install - Check if principal and keytab are set
       fail: msg="Principal and keytab cannot be used together"
       when: ipaadmin_principal is defined and ipaadmin_principal != "" and ipaclient_keytab is defined and ipaclient_keytab != ""
@@ -187,10 +187,6 @@
     when: not ipaclient_on_master | bool and (not result_ipaclient_test_keytab.krb5_keytab_ok or ipaclient_force_join)
 
   - block:
-    - name: Install - End playbook processing
-      file:
-        path: "/etc/ipa/.dns_ccache"
-        state: absent
     - fail:
         msg: "The krb5 configuration is not correct, please enable allow_repair to fix this."
       when: not result_ipaclient_test_keytab.krb5_conf_ok
@@ -200,104 +196,106 @@
     - fail:
         msg: "The ca.crt file is missing, please enable allow_repair to fix this."
       when: not result_ipaclient_test_keytab.ca_crt_exists
-    - meta: end_play
     when: not ipaclient_on_master | bool and not result_ipaclient_join.changed and not ipaclient_allow_repair | bool and (result_ipaclient_test_keytab.krb5_keytab_ok or (result_ipaclient_join.already_joined is defined and result_ipaclient_join.already_joined))
 
-  - name: Install - Configure IPA default.conf
-    ipaclient_ipa_conf:
-      servers: "{{ result_ipaclient_test.servers }}"
-      domain: "{{ result_ipaclient_test.domain }}"
-      realm: "{{ result_ipaclient_test.realm }}"
-      hostname: "{{ result_ipaclient_test.hostname }}"
-      basedn: "{{ result_ipaclient_test.basedn }}"
-    when: not ipaclient_on_master | bool
+  - block:
+    - name: Install - Configure IPA default.conf
+      ipaclient_ipa_conf:
+        servers: "{{ result_ipaclient_test.servers }}"
+        domain: "{{ result_ipaclient_test.domain }}"
+        realm: "{{ result_ipaclient_test.realm }}"
+        hostname: "{{ result_ipaclient_test.hostname }}"
+        basedn: "{{ result_ipaclient_test.basedn }}"
+      when: not ipaclient_on_master | bool
 
-  - name: Install - Configure SSSD
-    ipaclient_setup_sssd:
-      servers: "{{ result_ipaclient_test.servers }}"
-      domain: "{{ result_ipaclient_test.domain }}"
-      realm: "{{ result_ipaclient_test.realm }}"
-      hostname: "{{ result_ipaclient_test.hostname }}"
-      on_master: "{{ ipaclient_on_master }}"
-      no_ssh: "{{ ipaclient_no_ssh }}"
-      no_sshd: "{{ ipaclient_no_sshd }}"
-      no_sudo: "{{ ipaclient_no_sudo }}"
-      all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
-      fixed_primary: "{{ ipassd_fixed_primary }}"
-      permit: "{{ ipassd_permit }}"
-      enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
-      preserve_sssd: "{{ ipassd_preserve_sssd }}"
-      no_krb5_offline_passwords: "{{ ipassd_no_krb5_offline_passwords }}"
+    - name: Install - Configure SSSD
+      ipaclient_setup_sssd:
+        servers: "{{ result_ipaclient_test.servers }}"
+        domain: "{{ result_ipaclient_test.domain }}"
+        realm: "{{ result_ipaclient_test.realm }}"
+        hostname: "{{ result_ipaclient_test.hostname }}"
+        on_master: "{{ ipaclient_on_master }}"
+        no_ssh: "{{ ipaclient_no_ssh }}"
+        no_sshd: "{{ ipaclient_no_sshd }}"
+        no_sudo: "{{ ipaclient_no_sudo }}"
+        all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
+        fixed_primary: "{{ ipassd_fixed_primary }}"
+        permit: "{{ ipassd_permit }}"
+        enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
+        preserve_sssd: "{{ ipassd_preserve_sssd }}"
+        no_krb5_offline_passwords: "{{ ipassd_no_krb5_offline_passwords }}"
 
-  - name: Install - Configure krb5 for IPA realm
-    ipaclient_setup_krb5:
-      realm: "{{ result_ipaclient_test.realm }}"
-      domain: "{{ result_ipaclient_test.domain }}"
-      servers: "{{ result_ipaclient_test.servers }}"
-      kdc: "{{ result_ipaclient_test.kdc }}"
-      dnsok: "{{ result_ipaclient_test.dnsok }}"
-      client_domain: "{{ result_ipaclient_test.client_domain }}"
-      hostname: "{{ result_ipaclient_test.hostname }}"
-      sssd: "{{ result_ipaclient_test.sssd }}"
-      force: "{{ ipaclient_force }}"
-      #on_master: "{{ ipaclient_on_master }}"
-    when: not ipaclient_on_master | bool
+    - name: Install - Configure krb5 for IPA realm
+      ipaclient_setup_krb5:
+        realm: "{{ result_ipaclient_test.realm }}"
+        domain: "{{ result_ipaclient_test.domain }}"
+        servers: "{{ result_ipaclient_test.servers }}"
+        kdc: "{{ result_ipaclient_test.kdc }}"
+        dnsok: "{{ result_ipaclient_test.dnsok }}"
+        client_domain: "{{ result_ipaclient_test.client_domain }}"
+        hostname: "{{ result_ipaclient_test.hostname }}"
+        sssd: "{{ result_ipaclient_test.sssd }}"
+        force: "{{ ipaclient_force }}"
+        #on_master: "{{ ipaclient_on_master }}"
+      when: not ipaclient_on_master | bool
 
-  - name: Install - IPA API calls for remaining enrollment parts
-    ipaclient_api:
-      servers: "{{ result_ipaclient_test.servers }}"
-      realm: "{{ result_ipaclient_test.realm }}"
-      hostname: "{{ result_ipaclient_test.hostname }}"
-      #debug: yes
-    register: result_ipaclient_api
+    - name: Install - IPA API calls for remaining enrollment parts
+      ipaclient_api:
+        servers: "{{ result_ipaclient_test.servers }}"
+        realm: "{{ result_ipaclient_test.realm }}"
+        hostname: "{{ result_ipaclient_test.hostname }}"
+        #debug: yes
+      register: result_ipaclient_api
 
-  - name: Install - Fix IPA ca
-    ipaclient_fix_ca:
-      servers: "{{ result_ipaclient_test.servers }}"
-      realm: "{{ result_ipaclient_test.realm }}"
-      basedn: "{{ result_ipaclient_test.basedn }}"
-      allow_repair: "{{ ipaclient_allow_repair }}"
-    when: not ipaclient_on_master | bool and result_ipaclient_test_keytab.krb5_keytab_ok and not result_ipaclient_test_keytab.ca_crt_exists
+    - name: Install - Fix IPA ca
+      ipaclient_fix_ca:
+        servers: "{{ result_ipaclient_test.servers }}"
+        realm: "{{ result_ipaclient_test.realm }}"
+        basedn: "{{ result_ipaclient_test.basedn }}"
+        allow_repair: "{{ ipaclient_allow_repair }}"
+      when: not ipaclient_on_master | bool and result_ipaclient_test_keytab.krb5_keytab_ok and not result_ipaclient_test_keytab.ca_crt_exists
 
-  - name: Install - Create IPA NSS database
-    ipaclient_setup_nss:
-      servers: "{{ result_ipaclient_test.servers }}"
-      domain: "{{ result_ipaclient_test.domain }}"
-      realm: "{{ result_ipaclient_test.realm }}"
-      basedn: "{{ result_ipaclient_test.basedn }}"
-      hostname: "{{ result_ipaclient_test.hostname }}"
-      subject_base: "{{ result_ipaclient_api.subject_base }}"
-      principal: "{{ ipaadmin_principal | default(omit) }}"
-      mkhomedir: "{{ ipaclient_mkhomedir }}"
-      ca_enabled: "{{ result_ipaclient_api.ca_enabled }}"
-      on_master: "{{ ipaclient_on_master }}"
+    - name: Install - Create IPA NSS database
+      ipaclient_setup_nss:
+        servers: "{{ result_ipaclient_test.servers }}"
+        domain: "{{ result_ipaclient_test.domain }}"
+        realm: "{{ result_ipaclient_test.realm }}"
+        basedn: "{{ result_ipaclient_test.basedn }}"
+        hostname: "{{ result_ipaclient_test.hostname }}"
+        subject_base: "{{ result_ipaclient_api.subject_base }}"
+        principal: "{{ ipaadmin_principal | default(omit) }}"
+        mkhomedir: "{{ ipaclient_mkhomedir }}"
+        ca_enabled: "{{ result_ipaclient_api.ca_enabled }}"
+        on_master: "{{ ipaclient_on_master }}"
 
-  - name: Install - Configure SSH and SSHD
-    ipaclient_setup_ssh:
-      servers: "{{ result_ipaclient_test.servers }}"
-      sssd: "{{ result_ipaclient_test.sssd }}"
-      no_ssh: "{{ ipaclient_no_ssh }}"
-      ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
-      no_sshd: "{{ ipaclient_no_sshd }}"
+    - name: Install - Configure SSH and SSHD
+      ipaclient_setup_ssh:
+        servers: "{{ result_ipaclient_test.servers }}"
+        sssd: "{{ result_ipaclient_test.sssd }}"
+        no_ssh: "{{ ipaclient_no_ssh }}"
+        ssh_trust_dns: "{{ ipaclient_ssh_trust_dns }}"
+        no_sshd: "{{ ipaclient_no_sshd }}"
 
-  - name: Install - Configure automount
-    ipaclient_setup_automount:
-      servers: "{{ result_ipaclient_test.servers }}"
-      sssd: "{{ result_ipaclient_test.sssd }}"
-      automount_location: "{{ ipaautomount_location | default(omit) }}"
+    - name: Install - Configure automount
+      ipaclient_setup_automount:
+        servers: "{{ result_ipaclient_test.servers }}"
+        sssd: "{{ result_ipaclient_test.sssd }}"
+        automount_location: "{{ ipaautomount_location | default(omit) }}"
 
-  - name: Install - Configure firefox
-    ipaclient_setup_firefox:
-      firefox_dir: "{{ ipaclient_firefox_dir | default(omit) }}"
-    when: ipaclient_configure_firefox | bool
+    - name: Install - Configure firefox
+      ipaclient_setup_firefox:
+        firefox_dir: "{{ ipaclient_firefox_dir | default(omit) }}"
+      when: ipaclient_configure_firefox | bool
 
-  - name: Install - Configure NIS
-    ipaclient_setup_nis:
-      domain: "{{ result_ipaclient_test.domain }}"
-      nisdomain: "{{ ipaclient_nisdomain | default(omit)}}"
-    when: not ipaclient_no_nisdomain | bool
+    - name: Install - Configure NIS
+      ipaclient_setup_nis:
+        domain: "{{ result_ipaclient_test.domain }}"
+        nisdomain: "{{ ipaclient_nisdomain | default(omit)}}"
+      when: not ipaclient_no_nisdomain | bool
 
-  when: not ansible_check_mode
+    when: not (not ipaclient_on_master | bool and not result_ipaclient_join.changed and not ipaclient_allow_repair | bool and (result_ipaclient_test_keytab.krb5_keytab_ok or (result_ipaclient_join.already_joined is defined and result_ipaclient_join.already_joined)))
+
+  when: not ansible_check_mode and not (result_ipaclient_test.client_already_configured and not ipaclient_allow_repair | bool and not ipaclient_force_join | bool)
 
   always:
   - name: Cleanup leftover ccache

@@ -93,10 +93,12 @@
     ### additional ###
   register: result_ipaserver_test
 
-- meta: end_play
-  when: not result_ipaserver_test.changed and (result_ipaserver_test.client_already_configured is defined or result_ipaserver_test.server_already_configured is defined)
-
 - block:
+  # This block is executed only when
+  # not ansible_check_mode and
+  # not (not result_ipaserver_test.changed and
+  #      (result_ipaserver_test.client_already_configured is defined or
+  #       result_ipaserver_test.server_already_configured is defined)
 
   - block:
     - name: Install - Master password creation
@@ -390,4 +392,4 @@
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
     when: ipaserver_setup_firewalld | bool
 
-  when: not ansible_check_mode
+  when: not ansible_check_mode and not (not result_ipaserver_test.changed and (result_ipaserver_test.client_already_configured is defined or result_ipaserver_test.server_already_configured is defined))

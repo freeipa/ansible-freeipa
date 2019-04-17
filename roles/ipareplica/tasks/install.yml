@@ -68,10 +68,11 @@
     no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
   register: result_ipareplica_test
 
-- meta: end_play
-  when: result_ipareplica_test.client_already_configured is defined or result_ipareplica_test.server_already_configured is defined
-
 - block:
+  # This block is executed only when
+  # not ansible_check_mode and
+  # not (result_ipareplica_test.client_already_configured is defined or
+  #      result_ipareplica_test.server_already_configured is defined)
 
   - name: Install - Setup client
     include_role:
@@ -626,4 +627,4 @@
       state: absent
     when: result_ipareplica_enable_ipa.changed
 
-  when: not ansible_check_mode
+  when: not ansible_check_mode and not (result_ipareplica_test.client_already_configured is defined or result_ipareplica_test.server_already_configured is defined)
