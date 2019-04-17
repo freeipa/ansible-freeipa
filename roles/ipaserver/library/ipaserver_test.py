@@ -115,8 +115,9 @@ def main():
             ### ad trust ###
             enable_compat=dict(required=False, type='bool', default=False),
             netbios_name=dict(required=False),
-            rid_base=dict(required=False, type='int'),
-            secondary_rid_base=dict(required=False, type='int'),
+            rid_base=dict(required=False, type='int', default=1000),
+            secondary_rid_base=dict(required=False, type='int',
+                                    default=100000000),
 
             ### additional ###
         ),
@@ -779,12 +780,17 @@ def main():
                              forward_policy=options.forward_policy,
                              forwarders=options.forwarders,
                              no_dnssec_validation=options.no_dnssec_validation,
+                             ### ad trust ###
+                             rid_base=options.rid_base,
+                             secondary_rid_base=options.secondary_rid_base,
                              ### additional ###
                              _installation_cleanup=_installation_cleanup,
                              domainlevel=options.domainlevel,
                              dns_ip_addresses=[ str(ip) for ip
                                                 in dns.ip_addresses ],
-                             dns_reverse_zones=dns.reverse_zones)
+                             dns_reverse_zones=dns.reverse_zones,
+                             adtrust_netbios_name=adtrust.netbios_name,
+                             adtrust_reset_netbios_name=adtrust.reset_netbios_name)
 
 if __name__ == '__main__':
     main()

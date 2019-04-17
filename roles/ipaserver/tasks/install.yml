@@ -144,8 +144,8 @@
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"
       no_dnssec_validation: "{{ result_ipaserver_test.no_dnssec_validation }}"
       ### ad trust ###
-      # enable_compat
-      # netbios_name
+      enable_compat: "{{ ipaserver_enable_compat }}"
+      netbios_name: "{{ ipaserver_netbios_name | default(omit) }}"
       # rid_base
       # secondary_rid_base
       ### additional ###
@@ -313,6 +313,13 @@
       hostname: "{{ result_ipaserver_test.hostname }}"
       setup_ca: "{{ result_ipaserver_test.setup_ca }}"
       setup_adtrust: "{{ result_ipaserver_test.setup_adtrust }}"
+      ### ad trust ###
+      enable_compat: "{{ ipaserver_enable_compat }}"
+      rid_base: "{{ result_ipaserver_test.rid_base }}"
+      secondary_rid_base: "{{ result_ipaserver_test.secondary_rid_base }}"
+      ### additional ###
+      adtrust_netbios_name: "{{ result_ipaserver_test.adtrust_netbios_name }}"
+      adtrust_reset_netbios_name: "{{ result_ipaserver_test.adtrust_reset_netbios_name }}"
     when: result_ipaserver_test.setup_adtrust
 
   - name: Install - Set DS password

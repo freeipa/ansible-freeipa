@@ -199,6 +199,11 @@ class options_obj(object):
 options = options_obj()
 installer = options
 
+# ServerMasterInstall
+options.add_sids = True
+options.add_agents = False
+
+
 def api_Backend_ldap2(host_name, setup_ca, connect=False):
     # we are sure we have the configuration file ready.
     cfg = dict(context='installer', confdir=paths.ETC_IPA, in_server=True,
