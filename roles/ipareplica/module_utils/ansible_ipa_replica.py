@@ -65,6 +65,7 @@ if NUM_VERSION >= 40600:
     from ipapython.certdb import IPA_CA_TRUST_FLAGS, EXTERNAL_CA_TRUST_FLAGS
     from ipapython.dn import DN
     from ipapython.admintool import ScriptError
+    from ipapython.ipa_log_manager import standard_logging_setup
     from ipaplatform import services
     from ipaplatform.tasks import tasks
     from ipaplatform.paths import paths
@@ -121,8 +122,10 @@ else:
 
 
 logger = logging.getLogger("ipa-server-install")
-logger.setLevel(logging.DEBUG)
-
+#logger.setLevel(logging.DEBUG)
+standard_logging_setup(
+    paths.IPAREPLICA_INSTALL_LOG, verbose=False, debug=False,
+    filemode='a', console_format='%(message)s')
 
 @contextlib_contextmanager
 def redirect_stdout(f):
@@ -226,6 +229,14 @@ options.dnssec_master = False
 options.disable_dnssec_master = False
 options.kasp_db_file = None
 options.force = False
+
+# ServerMasterInstall
+options.add_sids = True
+options.add_agents = False
+
+# ServerReplicaInstall
+options.subject_base = None
+options.ca_subject = None
 
 
 def api_Backend_ldap2(host_name, setup_ca, connect=False):

@@ -37,9 +37,6 @@ short description: Setup adtrust
 description:
   Setup adtrust
 options:
-  setup_adtrust:
-    description: 
-    required: yes
   setup_kra:
     description: 
     required: yes
@@ -75,10 +72,16 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec = dict(
             ### server ###
-            setup_adtrust=dict(required=False, type='bool'),
             setup_kra=dict(required=False, type='bool'),
             ### certificate system ###
             subject_base=dict(required=True),
+            ### ad trust ###
+            enable_compat=dict(required=False, type='bool', default=False),
+            rid_base=dict(required=False, type='int'),
+            secondary_rid_base=dict(required=False, type='int'),
+            ### additional ###
+            adtrust_netbios_name=dict(required=True),
+            adtrust_reset_netbios_name=dict(required=True, type='bool'),
             ### additional ###
             ccache=dict(required=True),
             _top_dir = dict(required=True),
@@ -95,18 +98,23 @@ def main():
 
     options = installer
     ### server ###
-    options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_kra = ansible_module.params.get('setup_kra')
     ### certificate system ###
     options.subject_base = ansible_module.params.get('subject_base')
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
-    ### additional ###
+    ### ad trust ###
+    options.enable_compat = ansible_module.params.get('enable_compat')
+    options.rid_base = ansible_module.params.get('rid_base')
+    options.secondary_rid_base = ansible_module.params.get('secondary_rid_base')    ### additional ###
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
     options._top_dir = ansible_module.params.get('_top_dir')
     options.setup_ca = ansible_module.params.get('setup_ca')
     config_master_host_name = ansible_module.params.get('config_master_host_name')
+    adtrust.netbios_name = ansible_module.params.get('adtrust_netbios_name')
+    adtrust.reset_netbios_name = \
+        ansible_module.params.get('adtrust_reset_netbios_name')
 
     # init #
 
@@ -133,7 +141,6 @@ def main():
     api.Backend.ldap2.connect()
 
     with redirect_stdout(ansible_log):
-        #if options.setup_adtrust:
         ansible_log.debug("-- INSTALL ADTRUST --")
 
         adtrust.install(False, options, fstore, api)

@@ -56,6 +56,7 @@ if NUM_VERSION >= 40500:
         from ipaclient.install.ipachangeconf import IPAChangeConf
     from ipalib.install import certmonger, sysrestore
     from ipapython import ipautil
+    from ipapython.ipa_log_manager import standard_logging_setup
     if NUM_VERSION < 40600:
         from ipapython.ipa_log_manager import root_logger
     from ipapython.ipautil import (
@@ -132,7 +133,10 @@ else:
 
 
 logger = logging.getLogger("ipa-server-install")
-logger.setLevel(logging.DEBUG)
+#logger.setLevel(logging.DEBUG)
+standard_logging_setup(
+    paths.IPASERVER_INSTALL_LOG, verbose=False, debug=False,
+    filemode='a', console_format='%(message)s')
 
 
 @contextlib_contextmanager
@@ -194,6 +198,11 @@ class options_obj(object):
 
 options = options_obj()
 installer = options
+
+# ServerMasterInstall
+options.add_sids = True
+options.add_agents = False
+
 
 def api_Backend_ldap2(host_name, setup_ca, connect=False):
     # we are sure we have the configuration file ready.

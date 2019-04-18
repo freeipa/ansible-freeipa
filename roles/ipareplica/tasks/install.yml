@@ -42,7 +42,7 @@
     domain: "{{ ipareplica_domain | default(ipaserver_domain) | default(omit) }}"
     servers: "{{ groups.ipaservers | default(groups.ipaserver) | default(omit) }}"
     realm: "{{ ipareplica_realm | default(omit) }}"
-    hostname: "{{ ipareplica_hostname | default(ansible_fqdn) }}"
+    hostname: "{{ ipareplica_hostname | default(omit) }}"
     ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
     ### server ###
     setup_adtrust: "{{ ipareplica_setup_adtrust }}"
@@ -68,10 +68,11 @@
     no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
   register: result_ipareplica_test
 
-- meta: end_play
-  when: result_ipareplica_test.client_already_configured is defined or result_ipareplica_test.server_already_configured is defined
-
 - block:
+  # This block is executed only when
+  # not ansible_check_mode and
+  # not (result_ipareplica_test.client_already_configured is defined or
+  #      result_ipareplica_test.server_already_configured is defined)
 
   - name: Install - Setup client
     include_role:
@@ -158,6 +159,7 @@
       forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
       no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
       ### ad trust ###
+      enable_compat: "{{ ipareplica_enable_compat }}"
       netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
       rid_base: "{{ ipareplica_rid_base | default(omit) }}"
       secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
@@ -594,15 +596,20 @@
   - name: Install - Setup adtrust
     ipareplica_setup_adtrust:
       ### replica ###
-      setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
       setup_kra: "{{ result_ipareplica_test.setup_kra }}"
       ### certificate system ###
       subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### ad trust ###
+      enable_compat: "{{ ipareplica_enable_compat }}"
+      rid_base: "{{ result_ipareplica_prepare.rid_base }}"
+      secondary_rid_base: "{{ result_ipareplica_prepare.secondary_rid_base }}"
       ### additional ###
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
       config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+      adtrust_netbios_name: "{{ result_ipareplica_prepare.adtrust_netbios_name }}"
+      adtrust_reset_netbios_name: "{{ result_ipareplica_prepare.adtrust_reset_netbios_name }}"
     when: result_ipareplica_test.setup_adtrust
 
   #- name: Install - Disconnect backend
@@ -626,4 +633,4 @@
       state: absent
     when: result_ipareplica_enable_ipa.changed
 
-  when: not ansible_check_mode
+  when: not ansible_check_mode and not (result_ipareplica_test.client_already_configured is defined or result_ipareplica_test.server_already_configured is defined)

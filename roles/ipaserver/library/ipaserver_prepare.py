@@ -167,6 +167,9 @@ def main():
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validation')
+    ### ad trust ###
+    options.enable_compat = ansible_module.params.get('enable_compat')
+    options.netbios_name = ansible_module.params.get('netbios_name')
     ### additional ###
     options.setup_ca = ansible_module.params.get('setup_ca')
     options._host_name_overridden = ansible_module.params.get(

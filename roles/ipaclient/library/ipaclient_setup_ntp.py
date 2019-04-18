@@ -115,11 +115,11 @@ def main():
     cli_domain = module.params.get('domain')
 
     options.conf_ntp = not options.no_ntp
+    options.debug = False
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
 
-    ntp_servers = [ ]
     synced_ntp = False
     if sync_time is not None:
         if options.conf_ntp:
@@ -133,40 +133,43 @@ def main():
         else:
             logger.info("Skipping chrony configuration")
 
-    elif not options.on_master and options.conf_ntp:
-        # Attempt to sync time with IPA server.
-        # If we're skipping NTP configuration, we also skip the time sync here.
-        # We assume that NTP servers are discoverable through SRV records
-        # in the DNS.
-        # If that fails, we try to sync directly with IPA server,
-        # assuming it runs NTP
-        if not options.ntp_servers:
-            # Detect NTP servers
+    else:
+        ntp_srv_servers = [ ]
+        if not options.on_master and options.conf_ntp:
+            # Attempt to sync time with IPA server.
+            # If we're skipping NTP configuration, we also skip the time sync here.
+            # We assume that NTP servers are discoverable through SRV records
+            # in the DNS.
+            # If that fails, we try to sync directly with IPA server,
+            # assuming it runs NTP
+            logger.info('Synchronizing time with KDC...')
             ds = ipadiscovery.IPADiscovery()
-            ntp_servers = ds.ipadns_search_srv(cli_domain, '_ntp._udp',
-                                               None, break_on_first=False)
-        else:
-            ntp_servers = options.ntp_servers
+            ntp_srv_servers = ds.ipadns_search_srv(cli_domain, '_ntp._udp',
+                                                   None, break_on_first=False)
+            synced_ntp = False
+            ntp_servers = ntp_srv_servers
 
-        # Attempt to sync time:
-        # At first with given or dicovered time servers. If no ntp
-        # servers have been given or discovered, then with the ipa
-        # server.
-        module.log('Synchronizing time ...')
-        synced_ntp = False
-        # use user specified NTP servers if there are any
-        for s in ntp_servers:
-            synced_ntp = timeconf.synconce_ntp(s, False)
-            if synced_ntp:
-                break
-        if not synced_ntp and not ntp_servers:
-            synced_ntp = timeconf.synconce_ntp(cli_server[0], False)
-        if not synced_ntp:
-            module.warn("Unable to sync time with NTP server")
+            # use user specified NTP servers if there are any
+            if options.ntp_servers:
+                ntp_servers = options.ntp_servers
+
+            for s in ntp_servers:
+                synced_ntp = ntpconf.synconce_ntp(s, options.debug)
+                if synced_ntp:
+                    break
+
+            if not synced_ntp and not options.ntp_servers:
+                synced_ntp = timeconf.synconce_ntp(cli_server[0], options.debug)
+            if not synced_ntp:
+                module.warn(
+                    "Unable to sync time with NTP "
+                    "server, assuming the time is in sync. Please check "
+                    "that 123 UDP port is opened.")
+        else:
+            logger.info('Skipping synchronizing time with NTP server.')
 
     # Done
-    module.exit_json(changed=True,
-                     synced_ntp=synced_ntp)
+    module.exit_json(changed=synced_ntp)
 
 if __name__ == '__main__':
     main()

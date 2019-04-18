@@ -225,6 +225,9 @@ if NUM_VERSION >= 40400:
         sssd_enable_ifp = None
 
     logger = logging.getLogger("ipa-client-install")
+    standard_logging_setup(
+        paths.IPACLIENT_INSTALL_LOG, verbose=False, debug=False,
+        filemode='a', console_format='%(message)s')
     root_logger = logger
 
 else:
