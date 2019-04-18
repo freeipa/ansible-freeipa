@@ -36,7 +36,7 @@
     ip_addresses: "{{ ipaserver_ip_addresses | default([]) }}"
     domain: "{{ ipaserver_domain | default(omit) }}"
     realm: "{{ ipaserver_realm | default(omit) }}"
-    hostname: "{{ ipaserver_hostname | default(omit) }}"
+    hostname: "{{ ipaserver_hostname | default(ansible_fqdn) }}"
     ca_cert_files: "{{ ipaserver_ca_cert_files | default(omit) }}"
     no_host_dns: "{{ ipaserver_no_host_dns }}"
     ### server ###
