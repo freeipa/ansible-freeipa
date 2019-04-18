@@ -159,6 +159,7 @@
       forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
       no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
       ### ad trust ###
+      enable_compat: "{{ ipareplica_enable_compat }}"
       netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
       rid_base: "{{ ipareplica_rid_base | default(omit) }}"
       secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
@@ -595,15 +596,20 @@
   - name: Install - Setup adtrust
     ipareplica_setup_adtrust:
       ### replica ###
-      setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
       setup_kra: "{{ result_ipareplica_test.setup_kra }}"
       ### certificate system ###
       subject_base: "{{ result_ipareplica_prepare.subject_base }}"
+      ### ad trust ###
+      enable_compat: "{{ ipareplica_enable_compat }}"
+      rid_base: "{{ result_ipareplica_prepare.rid_base }}"
+      secondary_rid_base: "{{ result_ipareplica_prepare.secondary_rid_base }}"
       ### additional ###
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
       config_master_host_name: "{{ result_ipareplica_prepare.config_master_host_name }}"
+      adtrust_netbios_name: "{{ result_ipareplica_prepare.adtrust_netbios_name }}"
+      adtrust_reset_netbios_name: "{{ result_ipareplica_prepare.adtrust_reset_netbios_name }}"
     when: result_ipareplica_test.setup_adtrust
 
   #- name: Install - Disconnect backend

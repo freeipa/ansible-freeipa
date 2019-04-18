@@ -184,6 +184,11 @@ def main():
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
             ### ad trust ###
+            enable_compat=dict(required=False, type='bool', default=False),
+            netbios_name=dict(required=False),
+            rid_base=dict(required=False, type='int', default=1000),
+            secondary_rid_base=dict(required=False, type='int',
+                                    default=100000000),
             ### additional ###
             server=dict(required=True),
             skip_conncheck=dict(required=False, type='bool'),
@@ -243,6 +248,11 @@ def main():
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validationdnssec_validation')
+    ### ad trust ###
+    options.enable_compat = ansible_module.params.get('enable_compat')
+    options.netbios_name = ansible_module.params.get('netbios_name')
+    options.rid_base = ansible_module.params.get('rid_base')
+    options.secondary_rid_base = ansible_module.params.get('secondary_rid_base')
 
     ### additional ###
     #options._host_name_overridden = ansible_module.params.get(
@@ -701,7 +711,12 @@ def main():
                              config_setup_ca=config.setup_ca,
                              config_master_host_name=config.master_host_name,
                              config_ca_host_name=config.ca_host_name,
-                             config_ips=[ str(ip) for ip in config.ips ])
+                             config_ips=[ str(ip) for ip in config.ips ],
+                             ### ad trust ###
+                             rid_base=options.rid_base,
+                             secondary_rid_base=options.secondary_rid_base,
+                             adtrust_netbios_name=adtrust.netbios_name,
+                             adtrust_reset_netbios_name=adtrust.reset_netbios_name)
 
 if __name__ == '__main__':
     main()

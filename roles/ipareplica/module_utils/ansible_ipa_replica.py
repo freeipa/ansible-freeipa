@@ -230,6 +230,10 @@ options.disable_dnssec_master = False
 options.kasp_db_file = None
 options.force = False
 
+# ServerMasterInstall
+options.add_sids = True
+options.add_agents = False
+
 # ServerReplicaInstall
 options.subject_base = None
 options.ca_subject = None
