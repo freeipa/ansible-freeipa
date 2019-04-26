@@ -123,19 +123,20 @@ def main():
 
         # Add CA certs to a temporary NSS database
         try:
-            if NUM_VERSION > 40404:
+            argspec = inspect.getargspec(tmp_db.create_db)
+            if "password_filename" not in argspec.args:
                 tmp_db.create_db()
-
-                for i, cert in enumerate(ca_certs):
-                    tmp_db.add_cert(cert,
-                                    'CA certificate %d' % (i + 1),
-                                    certdb.EXTERNAL_CA_TRUST_FLAGS)
             else:
                 pwd_file = write_tmp_file(ipa_generate_password())
                 tmp_db.create_db(pwd_file.name)
-
-                for i, cert in enumerate(ca_certs):
-                    tmp_db.add_cert(cert, 'CA certificate %d' % (i + 1), 'C,,')
+            for i, cert in enumerate(ca_certs):
+                if hasattr(certdb, "EXTERNAL_CA_TRUST_FLAGS"):
+                    tmp_db.add_cert(cert,
+                                    'CA certificate %d' % (i + 1),
+                                    certdb.EXTERNAL_CA_TRUST_FLAGS)
+                else:
+                    tmp_db.add_cert(cert, 'CA certificate %d' % (i + 1),
+                                    'C,,')
         except CalledProcessError as e:
             module.fail_json(msg="Failed to add CA to temporary NSS database.")
 
