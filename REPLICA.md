@@ -125,7 +125,7 @@ Cluster Specific Variables
 Requirements
 ------------
 
-freeipa-server v4.5 or later
+freeipa-server v4.6 or later
 
 Authors
 -------
