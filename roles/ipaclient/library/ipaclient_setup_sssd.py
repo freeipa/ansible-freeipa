@@ -163,7 +163,7 @@ def main():
     options.preserve_sssd = module.params.get('preserve_sssd')
 
     options.no_krb5_offline_passwords = module.params.get(
-        'krb5_offline_passwords')
+        'no_krb5_offline_passwords')
     options.krb5_offline_passwords = not options.no_krb5_offline_passwords
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
