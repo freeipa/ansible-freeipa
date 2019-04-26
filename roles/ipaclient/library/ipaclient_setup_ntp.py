@@ -154,7 +154,7 @@ def main():
                 ntp_servers = options.ntp_servers
 
             for s in ntp_servers:
-                synced_ntp = ntpconf.synconce_ntp(s, options.debug)
+                synced_ntp = timeconf.synconce_ntp(s, options.debug)
                 if synced_ntp:
                     break
 
