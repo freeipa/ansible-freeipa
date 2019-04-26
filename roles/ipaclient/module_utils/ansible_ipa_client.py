@@ -235,3 +235,19 @@ else:
 
     raise Exception("freeipa version '%s' is too old" % VERSION)
 
+
+def ansible_module_get_parsed_ip_addresses(ansible_module,
+                                           param='ip_addresses'):
+    ip_addresses = ansible_module.params.get(param)
+    if ip_addresses is None:
+        return None
+
+    ip_addrs = [ ]
+    for ip in ip_addresses:
+        try:
+            ip_parsed = ipautil.CheckedIPAddress(ip)
+        except Exception as e:
+            ansible_module.fail_json(msg="Invalid IP Address %s: %s" % (ip, e))
+        ip_addrs.append(ip_parsed)
+    return ip_addrs
+

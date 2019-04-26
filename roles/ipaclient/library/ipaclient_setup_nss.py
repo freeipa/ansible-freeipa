@@ -72,6 +72,67 @@ options:
     required: false
     type: bool
     default: no
+
+  enable_dns_updates:
+    description: Configures the machine to attempt dns updates when the ip address changes.
+    required: false
+    type: bool
+    default: no
+  all_ip_addresses:
+    description: All routable IP addresses configured on any interface will be added to DNS
+    required: false
+    type: bool
+    default: no
+  ip_addresses:
+    description: Specify IP addresses that should be added to DNS.
+    required: false
+    type: list
+    default: None
+  request_cert:
+    description: request certificate for the machine
+    required: false
+    type: bool
+    default: no
+  preserve_sssd:
+    description: Preserve old SSSD configuration if possible
+    required: false
+    type: bool
+    default: no
+  no_ssh:
+    description: Do not configure OpenSSH client
+    required: false
+    type: bool
+    default: no
+  no_sshd:
+    description: Do not configure OpenSSH server
+    required: false
+    type: bool
+    default: no
+  no_sudo:
+    description: Do not configure SSSD as data source for sudo
+    required: false
+    type: bool
+    default: no
+  fixed_primary:
+    description: Configure sssd to use fixed server as primary IPA server
+    required: false
+    type: bool
+    default: no
+  permit:
+    description: Disable access rules by default, permit all access.
+    required: false
+    type: bool
+    default: no
+  no_krb5_offline_passwords:
+    description: Configure SSSD not to store user password when the server is offline
+    required: false
+    type: bool
+    default: no
+  no_dns_sshfp:
+    description: Do not automatically create DNS SSHFP records
+    required: false
+    type: bool
+    default: no
 author:
     - Thomas Woerner
 '''
@@ -111,201 +172,328 @@ def main():
             ca_enabled=dict(required=True, type='bool'),
             mkhomedir=dict(required=False, type='bool'),
             on_master=dict(required=False, type='bool'),
+
+            enable_dns_updates=dict(required=False, type='bool'),
+            all_ip_addresses=dict(required=False, type='bool', default=False),
+            ip_addresses=dict(required=False, type='list', default=None),
+            request_cert=dict(required=False, type='bool', default=False),
+            preserve_sssd=dict(required=False, type='bool'),
+            no_ssh=dict(required=False, type='bool'),
+            no_sshd=dict(required=False, type='bool'),
+            no_sudo=dict(required=False, type='bool'),
+            fixed_primary=dict(required=False, type='bool'),
+            permit=dict(required=False, type='bool'),
+            no_krb5_offline_passwords=dict(required=False, type='bool'),
+            no_dns_sshfp=dict(required=False, type='bool', default=False),
         ),
         supports_check_mode = True,
     )
 
     module._ansible_debug = True
-    servers = module.params.get('servers')
-    realm = module.params.get('realm')
+    cli_server = module.params.get('servers')
+    cli_realm = module.params.get('realm')
     hostname = module.params.get('hostname')
-    basedn = module.params.get('basedn')
-    domain = module.params.get('domain')
-    principal = module.params.get('principal')
+    cli_basedn = module.params.get('basedn')
+    cli_domain = module.params.get('domain')
+    options.principal = module.params.get('principal')
     subject_base = module.params.get('subject_base')
     ca_enabled = module.params.get('ca_enabled')
-    mkhomedir = module.params.get('mkhomedir')
-    on_master = module.params.get('on_master')
+    options.mkhomedir = module.params.get('mkhomedir')
+    options.on_master = module.params.get('on_master')
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
 
     os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
-    
-    options.dns_updates = False
-    options.all_ip_addresses = False
-    options.ip_addresses = None
-    options.request_cert = False
+
+    options.dns_updates = module.params.get('enable_dns_updates')
+    options.all_ip_addresses = module.params.get('all_ip_addresses')
+    options.ip_addresses = ansible_module_get_parsed_ip_addresses(module)
+    options.request_cert = module.params.get('request_cert')
     options.hostname = hostname
-    options.preserve_sssd = False
-    options.on_master = False
-    options.conf_ssh = True
-    options.conf_sshd = True
-    options.conf_sudo = True
-    options.primary = False
-    options.permit = False
-    options.krb5_offline_passwords = False
-    options.create_sshfp = True
+    options.host_name = hostname
+    options.preserve_sssd = module.params.get('preserve_sssd')
+    options.no_ssh = module.params.get('no_ssh')
+    options.conf_ssh = not options.no_ssh
+    options.no_sshd = module.params.get('no_sshd')
+    options.conf_sshd = not options.no_sshd
+    options.no_sudo = module.params.get('no_sudo')
+    options.conf_sudo = not options.no_sudo
+    options.primary = module.params.get('fixed_primary')
+    options.permit = module.params.get('permit')
+    options.no_krb5_offline_passwords = module.params.get(
+        'no_krb5_offline_passwords')
+    options.krb5_offline_passwords = not options.no_krb5_offline_passwords
+    options.no_dns_sshfp = module.params.get('no_dns_sshfp')
+    options.create_sshfp = not options.no_dns_sshfp
+    options.no_sssd = False
+    options.sssd = not options.no_sssd
+    options.no_ac = False
+
+    CCACHE_FILE = paths.IPA_DNS_CCACHE
+
+    api.bootstrap(context='cli_installer',
+                  confdir=paths.ETC_IPA,
+                  debug=False,
+                  delegate=False)
+    api.finalize()
+
+    api.Backend.rpcclient.connect()
+    try:
+        api.Backend.rpcclient.forward('ping')
+    except errors.KerberosError as e:
+        # Cannot connect to the server due to Kerberos error, trying with
+        # delegate=True
+        api.Backend.rpcclient.disconnect()
+        api.Backend.rpcclient.connect(delegate=True)
+        api.Backend.rpcclient.forward('ping')
 
     ##########################################################################
 
-    # Create IPA NSS database
     try:
-        create_ipa_nssdb()
-    except ipautil.CalledProcessError as e:
-        module.fail_json(msg="Failed to create IPA NSS database: %s" % e)
 
-    # Get CA certificates from the certificate store
-    try:
-        ca_certs = get_certs_from_ldap(servers[0], basedn, realm,
-                                       ca_enabled)
-    except errors.NoCertificateError:
-        if ca_enabled:
-            ca_subject = DN(('CN', 'Certificate Authority'), subject_base)
+        # Create IPA NSS database
+        try:
+            create_ipa_nssdb()
+        except ipautil.CalledProcessError as e:
+            raise ScriptError(
+                "Failed to create IPA NSS database: %s" % e,
+                rval=CLIENT_INSTALL_ERROR)
+
+        # Get CA certificates from the certificate store
+        try:
+            ca_certs = get_certs_from_ldap(cli_server[0], cli_basedn, cli_realm,
+                                           ca_enabled)
+        except errors.NoCertificateError:
+            if ca_enabled:
+                ca_subject = DN(('CN', 'Certificate Authority'), subject_base)
+            else:
+                ca_subject = None
+            ca_certs = certstore.make_compat_ca_certs(ca_certs, cli_realm,
+                                                      ca_subject)
+        ca_certs_trust = [(c, n, certstore.key_policy_to_trust_flags(t, True, u))
+                          for (c, n, t, u) in ca_certs]
+
+        if hasattr(paths, "KDC_CA_BUNDLE_PEM"):
+            x509.write_certificate_list(
+                [c for c, n, t, u in ca_certs if t is not False],
+                paths.KDC_CA_BUNDLE_PEM,
+                # mode=0o644
+            )
+        if hasattr(paths, "CA_BUNDLE_PEM"):
+            x509.write_certificate_list(
+                [c for c, n, t, u in ca_certs if t is not False],
+                paths.CA_BUNDLE_PEM,
+                # mode=0o644
+            )
+
+        # Add the CA certificates to the IPA NSS database
+        logger.debug("Adding CA certificates to the IPA NSS database.")
+        ipa_db = certdb.NSSDatabase(paths.IPA_NSSDB_DIR)
+        for cert, nickname, trust_flags in ca_certs_trust:
+            try:
+                ipa_db.add_cert(cert, nickname, trust_flags)
+            except CalledProcessError as e:
+                raise ScriptError(
+                    "Failed to add %s to the IPA NSS database." % nickname,
+                    rval=CLIENT_INSTALL_ERROR)
+
+        # Add the CA certificates to the platform-dependant systemwide CA store
+        tasks.insert_ca_certs_into_systemwide_ca_store(ca_certs)
+
+        if not options.on_master:
+            client_dns(cli_server[0], hostname, options)
+            configure_certmonger(fstore, subject_base, cli_realm, hostname,
+                                 options, ca_enabled)
+
+        if hasattr(paths, "SSH_CONFIG_DIR"):
+            ssh_config_dir = paths.SSH_CONFIG_DIR
         else:
-            ca_subject = None
-        ca_certs = certstore.make_compat_ca_certs(ca_certs, realm,
-                                                  ca_subject)
-    ca_certs_trust = [(c, n, certstore.key_policy_to_trust_flags(t, True, u))
-                      for (c, n, t, u) in ca_certs]
-
-    if hasattr(paths, "KDC_CA_BUNDLE_PEM"):
-        x509.write_certificate_list(
-            [c for c, n, t, u in ca_certs if t is not False],
-            paths.KDC_CA_BUNDLE_PEM)
-    if hasattr(paths, "CA_BUNDLE_PEM"):
-        x509.write_certificate_list(
-            [c for c, n, t, u in ca_certs if t is not False],
-            paths.CA_BUNDLE_PEM)
-
-    # Add the CA certificates to the IPA NSS database
-    module.debug("Adding CA certificates to the IPA NSS database.")
-    ipa_db = certdb.NSSDatabase(paths.IPA_NSSDB_DIR)
-    for cert, nickname, trust_flags in ca_certs_trust:
-        try:
-            ipa_db.add_cert(cert, nickname, trust_flags)
-        except CalledProcessError as e:
-            module.fail_json(msg="Failed to add %s to the IPA NSS database." % nickname)
-
-    # Add the CA certificates to the platform-dependant systemwide CA store
-    tasks.insert_ca_certs_into_systemwide_ca_store(ca_certs)
-
-    if not on_master:
-        client_dns(servers[0], hostname, options)
-        configure_certmonger(fstore, subject_base, realm, hostname,
-                             options, ca_enabled)
-
-    if hasattr(paths, "SSH_CONFIG_DIR"):
-        ssh_config_dir = paths.SSH_CONFIG_DIR
-    else:
-        ssh_config_dir = services.knownservices.sshd.get_config_dir()
-    update_ssh_keys(hostname, ssh_config_dir, options.create_sshfp)
-
-    try:
-        os.remove(paths.IPA_DNS_CCACHE)
-    except Exception:
-        pass
-
-    ##########################################################################
-
-    # Name Server Caching Daemon. Disable for SSSD, use otherwise
-    # (if installed)
-    nscd = services.knownservices.nscd
-    if nscd.is_installed():
-        if NUM_VERSION < 40500:
-            save_state(nscd)
-        else:
-            save_state(nscd, statestore)
+            ssh_config_dir = services.knownservices.sshd.get_config_dir()
+        update_ssh_keys(hostname, ssh_config_dir, options.create_sshfp)
 
         try:
-            nscd_service_action = 'stop'
-            nscd.stop()
+            os.remove(CCACHE_FILE)
         except Exception:
-            module.warn("Failed to %s the %s daemon" %
-                        (nscd_service_action, nscd.service_name))
+            pass
 
-        try:
-            nscd.disable()
-        except Exception:
-            module.warn("Failed to disable %s daemon. Disable it manually." %
+        argspec_save_state = inspect.getargspec(save_state)
+
+        # Name Server Caching Daemon. Disable for SSSD, use otherwise
+        # (if installed)
+        nscd = services.knownservices.nscd
+        if nscd.is_installed():
+            if "statestore" in argspec_save_state.args:
+                save_state(nscd, statestore)
+            else:
+                save_state(nscd)
+            nscd_service_action = None
+            try:
+                if options.sssd:
+                    nscd_service_action = 'stop'
+                    nscd.stop()
+                else:
+                    nscd_service_action = 'restart'
+                    nscd.restart()
+            except Exception:
+                logger.warning(
+                    "Failed to %s the %s daemon",
+                    nscd_service_action, nscd.service_name)
+                if not options.sssd:
+                    logger.warning(
+                        "Caching of users/groups will not be available")
+
+            try:
+                if options.sssd:
+                    nscd.disable()
+                else:
+                    nscd.enable()
+            except Exception:
+                if not options.sssd:
+                    logger.warning(
+                        "Failed to configure automatic startup of the %s daemon",
+                        nscd.service_name)
+                    logger.info(
+                        "Caching of users/groups will not be "
+                        "available after reboot")
+                else:
+                    logger.warning(
+                        "Failed to disable %s daemon. Disable it manually.",
                         nscd.service_name)
 
-    nslcd = services.knownservices.nslcd
-    if nslcd.is_installed():
-        if NUM_VERSION < 40500:
-            save_state(nslcd)
         else:
-            save_state(nslcd, statestore)
+            # this is optional service, just log
+            if not options.sssd:
+                logger.info(
+                    "%s daemon is not installed, skip configuration",
+                    nscd.service_name)
 
-    ##########################################################################
-
-    # Modify nsswitch/pam stack
-    tasks.modify_nsswitch_pam_stack(sssd=True,
-                                    mkhomedir=mkhomedir,
-                                    statestore=statestore)
-
-    module.log("SSSD enabled")
-
-    argspec = inspect.getargspec(services.service)
-    if len(argspec.args) > 1:
-        sssd = services.service('sssd', api)
-    else:
-        sssd = services.service('sssd')
-    try:
-        sssd.restart()
-    except CalledProcessError:
-        module.warn("SSSD service restart was unsuccessful.")
-
-    try:
-        sssd.enable()
-    except CalledProcessError as e:
-        module.warn(
-            "Failed to enable automatic startup of the SSSD daemon: "
-            "%s", e)
-
-    if configure_openldap_conf(fstore, basedn, servers):
-        module.log("Configured /etc/openldap/ldap.conf")
-    else:
-        module.log("Failed to configure /etc/openldap/ldap.conf")
-
-    # Check that nss is working properly
-    if not on_master:
-        user = principal
-        if user is None or user == "":
-            user = "admin@%s" % domain
-            module.log("Principal is not set when enrolling with OTP"
-                       "; using principal '%s' for 'getent passwd'" % user)
-        elif '@' not in user:
-            user = "%s@%s" % (user, domain)
-        n = 0
-        found = False
-        # Loop for up to 10 seconds to see if nss is working properly.
-        # It can sometimes take a few seconds to connect to the remote
-        # provider.
-        # Particulary, SSSD might take longer than 6-8 seconds.
-        while n < 10 and not found:
-            try:
-                ipautil.run([paths.GETENT if hasattr(paths, "GETENT") else "getent", "passwd", user])
-                found = True
-            except Exception as e:
-                time.sleep(1)
-                n = n + 1
-
-        if not found:
-            module.fail_json(msg="Unable to find '%s' user with 'getent "
-                             "passwd %s'!" % (user.split("@")[0], user))
-            if conf:
-                module.log("Recognized configuration: %s" % conf)
+        nslcd = services.knownservices.nslcd
+        if nslcd.is_installed():
+            if "statestore" in argspec_save_state.args:
+                save_state(nslcd, statestore)
             else:
-                module.fail_json(msg=
-                                 "Unable to reliably detect "
-                                 "configuration. Check NSS setup manually.")
+                save_state(nslcd)
 
-            try:
-                hardcode_ldap_server(servers)
-            except Exception as e:
-                module.fail_json(msg="Adding hardcoded server name to "
-                                 "/etc/ldap.conf failed: %s" % str(e))
+        retcode, conf = (0, None)
+
+        if not options.no_ac:
+            # Modify nsswitch/pam stack
+            argspec = inspect.getargspec(tasks.modify_nsswitch_pam_stack)
+            if "sudo" in argspec.args:
+                tasks.modify_nsswitch_pam_stack(
+                    sssd=options.sssd,
+                    mkhomedir=options.mkhomedir,
+                    statestore=statestore,
+                    sudo=options.conf_sudo
+                )
+            else:
+                tasks.modify_nsswitch_pam_stack(
+                    sssd=options.sssd,
+                    mkhomedir=options.mkhomedir,
+                    statestore=statestore
+                )
+
+            if hasattr(paths, "AUTHSELECT") and paths.AUTHSELECT is not None:
+                # authselect is used
+                # if mkhomedir, make sure oddjobd is enabled and started
+                if options.mkhomedir:
+                    oddjobd = services.service('oddjobd', api)
+                    running = oddjobd.is_running()
+                    enabled = oddjobd.is_enabled()
+                    statestore.backup_state('oddjobd', 'running', running)
+                    statestore.backup_state('oddjobd', 'enabled', enabled)
+                    try:
+                        if not enabled:
+                            oddjobd.enable()
+                        if not running:
+                            oddjobd.start()
+                    except Exception as e:
+                        logger.critical("Unable to start oddjobd: %s", str(e))
+
+            logger.info("%s enabled", "SSSD" if options.sssd else "LDAP")
+
+            if options.sssd:
+                sssd = services.service('sssd', api)
+                try:
+                    sssd.restart()
+                except CalledProcessError:
+                    logger.warning("SSSD service restart was unsuccessful.")
+
+                try:
+                    sssd.enable()
+                except CalledProcessError as e:
+                    logger.warning(
+                        "Failed to enable automatic startup of the SSSD daemon: "
+                        "%s", e)
+
+            if not options.sssd:
+                tasks.modify_pam_to_use_krb5(statestore)
+                logger.info("Kerberos 5 enabled")
+
+            # Update non-SSSD LDAP configuration after authconfig calls as it would
+            # change its configuration otherways
+            if not options.sssd:
+                for configurer in [configure_ldap_conf, configure_nslcd_conf]:
+                    (retcode, conf, filenames) = configurer(
+                        fstore, cli_basedn, cli_realm,
+                        cli_domain, cli_server, dnsok,
+                        options, nosssd_files[configurer.__name__])
+                    if retcode:
+                        raise ScriptError(rval=CLIENT_INSTALL_ERROR)
+                    if conf:
+                        logger.info(
+                            "%s configured using configuration file(s) %s",
+                            conf, filenames)
+
+            if configure_openldap_conf(fstore, cli_basedn, cli_server):
+                logger.info("Configured /etc/openldap/ldap.conf")
+            else:
+                logger.info("Failed to configure /etc/openldap/ldap.conf")
+
+            # Check that nss is working properly
+            if not options.on_master:
+                user = options.principal
+                if user is None:
+                    user = "admin@%s" % cli_domain
+                    logger.info("Principal is not set when enrolling with OTP"
+                                "; using principal '%s' for 'getent passwd'",
+                                user)
+                elif '@' not in user:
+                    user = "%s@%s" % (user, cli_domain)
+                n = 0
+                found = False
+                # Loop for up to 10 seconds to see if nss is working properly.
+                # It can sometimes take a few seconds to connect to the remote
+                # provider.
+                # Particulary, SSSD might take longer than 6-8 seconds.
+                while n < 10 and not found:
+                    try:
+                        ipautil.run([paths.GETENT, "passwd", user])
+                        found = True
+                    except Exception as e:
+                        time.sleep(1)
+                        n = n + 1
+
+                if not found:
+                    logger.error("Unable to find '%s' user with 'getent "
+                                 "passwd %s'!", user.split("@")[0], user)
+                    if conf:
+                        logger.info("Recognized configuration: %s", conf)
+                    else:
+                        logger.error(
+                            "Unable to reliably detect "
+                            "configuration. Check NSS setup manually.")
+
+                    try:
+                        hardcode_ldap_server(cli_server)
+                    except Exception as e:
+                        logger.error(
+                            "Adding hardcoded server name to "
+                            "/etc/ldap.conf failed: %s", str(e))
+
+    except ScriptError as e:
+        module.fail_json(msg=str(e))
 
     ##########################################################################
 
