@@ -338,8 +338,8 @@
               and result_ipaclient_join.already_joined)))
 
   when: not ansible_check_mode and
-  not (result_ipaclient_test.client_already_configured and
-      not ipaclient_allow_repair | bool and not ipaclient_force_join | bool)
+        not (result_ipaclient_test.client_already_configured and
+            not ipaclient_allow_repair | bool and not ipaclient_force_join | bool)
 
   always:
   - name: Cleanup leftover ccache
