@@ -25,7 +25,7 @@
   when: ipaserver_install_packages | bool
 
 - name: Install - Include Python2/3 import test
-  import_tasks: "{{role_path}}/tasks/python_2_3_test.yml"
+  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
 
 - name: Install - Server installation test
   ipaserver_test:
@@ -244,7 +244,6 @@
       ca_subject: "{{ result_ipaserver_test.ca_subject }}"
       _ca_subject: "{{ result_ipaserver_test._ca_subject }}"
       ca_signing_algorithm: "{{ ipaserver_ca_signing_algorithm | default(omit) }}"
-
       reverse_zones: "{{ result_ipaserver_test.reverse_zones }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"

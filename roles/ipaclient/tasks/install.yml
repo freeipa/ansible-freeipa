@@ -9,7 +9,7 @@
   when: ipaclient_install_packages | bool
 
 - name: Install - Include Python2/3 import test
-  import_tasks: "{{role_path}}/tasks/python_2_3_test.yml"
+  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
 
 - name: Install - Set ipaclient_servers
   set_fact:
@@ -86,7 +86,6 @@
       ipaclient_use_otp: "no"
     when: ipaclient_use_otp | bool and result_ipaclient_test_keytab.krb5_keytab_ok and not ipaclient_force_join | bool
 
-
   # The following block is executed when using OTP to enroll IPA client
   # ie when ipaclient_use_otp is set.
   # It connects to ipaserver and add the host with --random option in order
@@ -102,7 +101,7 @@
         ipaclient_ansible_python_interpreter: "{{ ansible_python_interpreter }}"
 
     - name: Install - Include Python2/3 import test
-      import_tasks: "{{role_path}}/tasks/python_2_3_test.yml"
+      import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
       delegate_to: "{{ result_ipaclient_test.servers[0] }}"
 
     - name: Install - Get One-Time Password for client enrollment
@@ -314,4 +313,3 @@
     file:
       path: "/etc/ipa/.dns_ccache"
       state: absent
-

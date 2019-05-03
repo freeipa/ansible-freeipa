@@ -117,7 +117,7 @@ KRB5CONF_TEMPLATE = """
 
 [domain_realm]
  .{{ ipa_domain }} = {{ ipa_realm }}
- {{ ipa_domain }} = {{ ipa_realm}}
+ {{ ipa_domain }} = {{ ipa_realm }}
 """
 
 class ActionModule(ActionBase):
