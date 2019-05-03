@@ -111,7 +111,8 @@
     - name: Install - Use new master password
       no_log: yes
       set_fact:
-        ipaserver_master_password: "{{ result_ipaserver_master_password.password }}"
+        ipaserver_master_password:
+          "{{ result_ipaserver_master_password.password }}"
 
     when: ipaserver_master_password is undefined
 
@@ -120,7 +121,7 @@
       ### basic ###
       dm_password: "{{ ipadm_password }}"
       password: "{{ ipaadmin_password }}"
-      #ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
+      # ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
       domain: "{{ result_ipaserver_test.domain }}"
       realm: "{{ result_ipaserver_test.realm }}"
       hostname: "{{ result_ipaserver_test.hostname }}"
@@ -155,30 +156,31 @@
 
   - name: Install - Setup NTP
     ipaserver_setup_ntp:
-    when: not ipaclient_no_ntp | bool and (ipaserver_external_cert_files is undefined or ipaserver_external_cert_files|length < 1)
+    when: not ipaclient_no_ntp | bool and (ipaserver_external_cert_files
+          is undefined or ipaserver_external_cert_files|length < 1)
 
   - name: Install - Setup DS
     ipaserver_setup_ds:
       dm_password: "{{ ipadm_password }}"
       password: "{{ ipaadmin_password }}"
-      #master_password: "{{ ipaserver_master_password }}"
+      # master_password: "{{ ipaserver_master_password }}"
       domain: "{{ result_ipaserver_test.domain }}"
       realm: "{{ result_ipaserver_test.realm | default(omit) }}"
       hostname: "{{ result_ipaserver_test.hostname }}"
-      #ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
-      #reverse_zones: "{{ result_ipaserver_test.reverse_zones }}"
-      #setup_adtrust: "{{ result_ipaserver_test.setup_adtrust }}"
-      #setup_kra: "{{ result_ipaserver_test.setup_kra }}"
-      #setup_dns: "{{ ipaserver_setup_dns }}"
+      # ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
+      # reverse_zones: "{{ result_ipaserver_test.reverse_zones }}"
+      # setup_adtrust: "{{ result_ipaserver_test.setup_adtrust }}"
+      # setup_kra: "{{ result_ipaserver_test.setup_kra }}"
+      # setup_dns: "{{ ipaserver_setup_dns }}"
       setup_ca: "{{ result_ipaserver_test.setup_ca }}"
-      #no_host_dns: "{{ result_ipaserver_test.no_host_dns }}"
+      # no_host_dns: "{{ result_ipaserver_test.no_host_dns }}"
       dirsrv_config_file: "{{ ipaserver_dirsrv_config_file | default(omit) }}"
       dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default([]) }}"
       external_cert_files: "{{ ipaserver_external_cert_files | default([]) }}"
       subject_base: "{{ result_ipaserver_test.subject_base }}"
       ca_subject: "{{ result_ipaserver_test.ca_subject }}"
-      #no_reverse: "{{ ipaserver_no_reverse }}"
-      #auto_forwarders: "{{ ipaserver_auto_forwarders }}"
+      # no_reverse: "{{ ipaserver_no_reverse }}"
+      # auto_forwarders: "{{ ipaserver_auto_forwarders }}"
       no_pkinit: "{{ result_ipaserver_test.no_pkinit }}"
       no_hbac_allow: "{{ ipaserver_no_hbac_allow }}"
       idstart: "{{ result_ipaserver_test.idstart }}"
@@ -192,7 +194,7 @@
       domain: "{{ result_ipaserver_test.domain }}"
       realm: "{{ result_ipaserver_test.realm }}"
       hostname: "{{ result_ipaserver_test.hostname }}"
-      #ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
+      # ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
       reverse_zones: "{{ result_ipaserver_test.reverse_zones }}"
       setup_adtrust: "{{ result_ipaserver_test.setup_adtrust }}"
       setup_kra: "{{ result_ipaserver_test.setup_kra }}"
@@ -221,7 +223,7 @@
       dm_password: "{{ ipadm_password }}"
       password: "{{ ipaadmin_password }}"
       master_password: "{{ ipaserver_master_password }}"
-      #ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
+      # ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
       domain: "{{ result_ipaserver_test.domain }}"
       realm: "{{ result_ipaserver_test.realm }}"
       hostname: "{{ result_ipaserver_test.hostname }}"
@@ -243,7 +245,8 @@
       _subject_base: "{{ result_ipaserver_test._subject_base }}"
       ca_subject: "{{ result_ipaserver_test.ca_subject }}"
       _ca_subject: "{{ result_ipaserver_test._ca_subject }}"
-      ca_signing_algorithm: "{{ ipaserver_ca_signing_algorithm | default(omit) }}"
+      ca_signing_algorithm: "{{ ipaserver_ca_signing_algorithm |
+                                default(omit) }}"
       reverse_zones: "{{ result_ipaserver_test.reverse_zones }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"
@@ -262,7 +265,7 @@
       domain: "{{ result_ipaserver_test.domain }}"
       realm: "{{ result_ipaserver_test.realm }}"
       hostname: "{{ result_ipaserver_test.hostname }}"
-      #ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
+      # ip_addresses: "{{ result_ipaserver_test.ip_addresses }}"
       reverse_zones: "{{ result_ipaserver_test.reverse_zones }}"
       setup_adtrust: "{{ result_ipaserver_test.setup_adtrust }}"
       setup_kra: "{{ result_ipaserver_test.setup_kra }}"
@@ -318,7 +321,8 @@
       secondary_rid_base: "{{ result_ipaserver_test.secondary_rid_base }}"
       ### additional ###
       adtrust_netbios_name: "{{ result_ipaserver_test.adtrust_netbios_name }}"
-      adtrust_reset_netbios_name: "{{ result_ipaserver_test.adtrust_reset_netbios_name }}"
+      adtrust_reset_netbios_name:
+        "{{ result_ipaserver_test.adtrust_reset_netbios_name }}"
     when: result_ipaserver_test.setup_adtrust
 
   - name: Install - Set DS password
@@ -346,25 +350,27 @@
       ipaclient_on_master: yes
       ipaclient_domain: "{{ result_ipaserver_test.domain }}"
       ipaclient_realm: "{{ result_ipaserver_test.realm }}"
-      ipaclient_servers: [ "{{ result_ipaserver_test.hostname }}" ]
+      ipaclient_servers: ["{{ result_ipaserver_test.hostname }}"]
       ipaclient_hostname: "{{ result_ipaserver_test.hostname }}"
-      ipaclient_no_ntp: "{{ 'true' if result_ipaserver_test.ipa_python_version >= 40690 else 'false' }}"
+      ipaclient_no_ntp:
+        "{{ 'true' if result_ipaserver_test.ipa_python_version >= 40690
+             else 'false' }}"
       ipaclient_install_packages: "{{ ipaserver_install_packages }}"
 
-  #- name: Install - Setup client
-  #  command: >
-  #    /usr/sbin/ipa-client-install
-  #    --unattended
-  #    --on-master
-  #    --domain "{{ result_ipaserver_test.domain }}"
-  #    --realm "{{ result_ipaserver_test.realm }}"
-  #    --server "{{ result_ipaserver_test.hostname }}"
-  #    --hostname "{{ result_ipaserver_test.hostname }}"
-  #    {{ "--mkhomedir" if ipaclient_mkhomedir | bool else "" }}
-  #  #  {{ "--no-dns-sshfp" if ipaclient_no_dns_sshfp | bool else "" }}
-  #  #  {{ "--ssh-trust-dns" if ipaclient_ssh_trust_dns | bool else "" }}
-  #  #  {{ "--no-ssh" if ipaclient_no_ssh | bool else "" }}
-  #  #  {{ "--no-sshd" if ipaclient_no_sshd | bool else "" }}
+  # - name: Install - Setup client
+  #   command: >
+  #     /usr/sbin/ipa-client-install
+  #     --unattended
+  #     --on-master
+  #     --domain "{{ result_ipaserver_test.domain }}"
+  #     --realm "{{ result_ipaserver_test.realm }}"
+  #     --server "{{ result_ipaserver_test.hostname }}"
+  #     --hostname "{{ result_ipaserver_test.hostname }}"
+  #     {{ "--mkhomedir" if ipaclient_mkhomedir | bool else "" }}
+  #   #  {{ "--no-dns-sshfp" if ipaclient_no_dns_sshfp | bool else "" }}
+  #   #  {{ "--ssh-trust-dns" if ipaclient_ssh_trust_dns | bool else "" }}
+  #   #  {{ "--no-ssh" if ipaclient_no_ssh | bool else "" }}
+  #   #  {{ "--no-sshd" if ipaclient_no_sshd | bool else "" }}
 
   - name: Install - Enable IPA
     ipaserver_enable_ipa:
@@ -398,4 +404,7 @@
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
     when: ipaserver_setup_firewalld | bool
 
-  when: not ansible_check_mode and not (not result_ipaserver_test.changed and (result_ipaserver_test.client_already_configured is defined or result_ipaserver_test.server_already_configured is defined))
+  when: not ansible_check_mode and not
+        (not result_ipaserver_test.changed and
+         (result_ipaserver_test.client_already_configured is defined or
+          result_ipaserver_test.server_already_configured is defined))

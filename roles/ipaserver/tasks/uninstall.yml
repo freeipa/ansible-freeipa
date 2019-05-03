@@ -1,23 +1,24 @@
 ---
 # tasks to uninstall IPA server
 
-#- name: Uninstall - Include Python2/3 import test
-#  import: "{{ role_path }}/tasks/python_2_3_test.yml"
+# - name: Uninstall - Include Python2/3 import test
+#   import: "{{ role_path }}/tasks/python_2_3_test.yml"
 
 - name: Uninstall - Uninstall IPA server
   command: >
     /usr/sbin/ipa-server-install
     --uninstall
     -U
-    {{ '--ignore-topology-disconnect' if ipaserver_ignore_topology_disconnect | bool else '' }}
+    {{ '--ignore-topology-disconnect' if ipaserver_ignore_topology_disconnect
+       | bool else '' }}
     {{ '--ignore-last-of-role' if ipaserver_ignore_last_of_role | bool else ''}}
   register: uninstall
   # 1 means that uninstall failed because IPA server was not configured
   failed_when: uninstall.rc != 0 and uninstall.rc != 1
   changed_when: uninstall.rc == 0
 
-#- name: Remove IPA server packages
-#  package:
-#    name: "{{ item }}"
-#    state: absent
-#  with_items: "{{ ipaserver_packages }}"
+# - name: Remove IPA server packages
+#   package:
+#     name: "{{ item }}"
+#     state: absent
+#   with_items: "{{ ipaserver_packages }}"

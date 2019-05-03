@@ -1,22 +1,26 @@
 ---
 # tasks to uninstall IPA replica
 
-#- name: Uninstall - Include Python2/3 import test
-#  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
+# - name: Uninstall - Include Python2/3 import test
+#   import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
 
 - name: Uninstall - Uninstall IPA replica
   command: >
     /usr/sbin/ipa-server-install
     --uninstall
     -U
-    {{ "--ignore-topology-disconnect" if ipareplica_ignore_topology_disconnect | bool else "" }}
-    {{ "--ignore-last-of-role" if ipareplica_ignore_last_of_role | bool else "" }}
+    {{ "--ignore-topology-disconnect" if
+       ipareplica_ignore_topology_disconnect | bool else "" }}
+    {{ "--ignore-last-of-role" if ipareplica_ignore_last_of_role | bool
+       else "" }}
   register: result_uninstall
   # 2 means that uninstall failed because IPA replica was not configured
-  failed_when: result_uninstall.rc != 0 and "'Env' object has no attribute 'basedn'" not in result_uninstall.stderr
-  #IPA server is not configured on this system" not in result_uninstall.stdout_lines
-  #changed_when: result_uninstall.rc == 0
-  #until: result_uninstall.rc == 0
+  failed_when: result_uninstall.rc != 0 and "'Env' object
+    has no attribute 'basedn'" not in result_uninstall.stderr
+  # IPA server is not configured on this system" not in
+  #   result_uninstall.stdout_lines
+  # changed_when: result_uninstall.rc == 0
+  # until: result_uninstall.rc == 0
   retries: 2
   delay: 1
 
@@ -30,8 +34,8 @@
   failed_when: False
   delegate_to: "{{ groups.ipaserver[0] | default(fail) }}"
 
-#- name: Remove IPA replica packages
-#  package:
-#    name: "{{ item }}"
-#    state: absent
-#  with_items: "{{ ipareplica_packages }}"
+# - name: Remove IPA replica packages
+#   package:
+#     name: "{{ item }}"
+#     state: absent
+#   with_items: "{{ ipareplica_packages }}"
