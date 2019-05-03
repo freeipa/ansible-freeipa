@@ -1,3 +1,4 @@
+---
 - block:
   - name: Verify Python3 import
     script: py3test.py

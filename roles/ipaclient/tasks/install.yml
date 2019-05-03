@@ -19,9 +19,11 @@
 - name: Install - Set ipaclient_servers from cluster inventory
   set_fact:
     ipaclient_servers: "{{ groups['ipaserver'] | list }}"
-  when: ipaclient_no_dns_lookup | bool and groups.ipaserver is defined and ipaclient_servers is not defined
+  when: ipaclient_no_dns_lookup | bool and groups.ipaserver is defined and
+        ipaclient_servers is not defined
 
-- fail: msg="ipaadmin_principal and ipaadmin_keytab cannot be used together"
+- name: Install - Check that either principal or keytab is set
+  fail: msg="ipaadmin_principal and ipaadmin_keytab cannot be used together"
   when: ipaadmin_keytab is defined and ipaadmin_principal is defined
 
 - name: Install - Set default principal if no keytab is given
@@ -65,7 +67,7 @@
       ntp_servers: "{{ ipaclient_ntp_servers | default(omit) }}"
       ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
       no_ntp: "{{ ipaclient_no_ntp }}"
-      #force_ntpd: "{{ ipaclient_force_ntpd }}"
+      # force_ntpd: "{{ ipaclient_force_ntpd }}"
       on_master: "{{ ipaclient_on_master }}"
       ### additional ###
       servers: "{{ result_ipaclient_test.servers }}"
@@ -81,10 +83,13 @@
       kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
     register: result_ipaclient_test_keytab
 
-  - name: Install - Disable One-Time Password for client with working krb5.keytab
+  - name: Install - Disable One-Time Password for client with working
+          krb5.keytab
     set_fact:
       ipaclient_use_otp: "no"
-    when: ipaclient_use_otp | bool and result_ipaclient_test_keytab.krb5_keytab_ok and not ipaclient_force_join | bool
+    when: ipaclient_use_otp | bool and
+          result_ipaclient_test_keytab.krb5_keytab_ok and
+          not ipaclient_force_join | bool
 
   # The following block is executed when using OTP to enroll IPA client
   # ie when ipaclient_use_otp is set.
@@ -93,7 +98,8 @@
   # If a keytab is specified in the hostent, then the hostent will be disabled
   # if ipaclient_use_otp is set.
   - block:
-    - fail: msg="Keytab or password is required for otp"
+    - name: Install - Keytab or password is required for otp
+      fail: msg="Keytab or password is required for otp"
       when: ipaadmin_keytab is undefined and ipaadmin_password is undefined
 
     - name: Install - Save client ansible_python_interpreter setting
@@ -105,7 +111,7 @@
       delegate_to: "{{ result_ipaclient_test.servers[0] }}"
 
     - name: Install - Get One-Time Password for client enrollment
-      #no_log: yes
+      no_log: yes
       ipaclient_get_otp:
         state: present
         principal: "{{ ipaadmin_principal | default('admin') }}"
@@ -118,14 +124,17 @@
       register: result_ipaclient_get_otp
       # If the host is already enrolled, this command will exit on error
       # The error can be ignored
-      failed_when: result_ipaclient_get_otp is failed and "Password cannot be set on enrolled host" not in result_ipaclient_get_otp.msg
+      failed_when: result_ipaclient_get_otp is failed and
+                   "Password cannot be set on enrolled host" not
+                       in result_ipaclient_get_otp.msg
       delegate_to: "{{ result_ipaclient_test.servers[0] }}"
-      delegate_facts: True
+      delegate_facts: yes
 
     - name: Install - Store the previously obtained OTP
       no_log: yes
       set_fact:
-        ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword if result_ipaclient_get_otp.host is defined }}"
+        ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword
+                               if result_ipaclient_get_otp.host is defined }}"
 
     - name: Install - Restore client ansible_python_interpreter setting
       set_fact:
@@ -144,11 +153,14 @@
 
     - name: Install - Check if principal and keytab are set
       fail: msg="Principal and keytab cannot be used together"
-      when: ipaadmin_principal is defined and ipaadmin_principal != "" and ipaclient_keytab is defined and ipaclient_keytab != ""
+      when: ipaadmin_principal is defined and ipaadmin_principal|length > 0
+            and ipaclient_keytab is defined and ipaclient_keytab|length > 0
 
     - name: Install - Check if one of password and keytab are set
       fail: msg="At least one of password or keytab must be specified"
-      when: not result_ipaclient_test_keytab.krb5_keytab_ok and (ipaadmin_password is undefined or ipaadmin_password == "") and (ipaclient_keytab is undefined or ipaclient_keytab == "")
+      when: not result_ipaclient_test_keytab.krb5_keytab_ok and
+            (ipaadmin_password is undefined or ipaadmin_password == "") and
+            (ipaclient_keytab is undefined or ipaclient_keytab == "")
     when: not ipaclient_on_master | bool
 
   - name: Install - Purge {{ result_ipaclient_test.realm }} from host keytab
@@ -160,7 +172,8 @@
     # Do not fail on error codes 3 and 5:
     #   3 - Unable to open keytab
     #   5 - Principal name or realm not found in keytab
-    failed_when: result_ipa_rmkeytab.rc != 0 and result_ipa_rmkeytab.rc != 3 and result_ipa_rmkeytab.rc != 5
+    failed_when: result_ipa_rmkeytab.rc != 0 and
+                 result_ipa_rmkeytab.rc != 3 and result_ipa_rmkeytab.rc != 5
     when: ipaclient_use_otp | bool or ipaclient_force_join | bool
 
   - name: Install - Backup and set hostname
@@ -177,25 +190,36 @@
       basedn: "{{ result_ipaclient_test.basedn }}"
       hostname: "{{ result_ipaclient_test.hostname }}"
       force_join: "{{ ipaclient_force_join | default(omit) }}"
-      principal: "{{ ipaadmin_principal if not ipaclient_use_otp | bool and ipaclient_keytab is not defined else '' }}"
+      principal: "{{ ipaadmin_principal if not ipaclient_use_otp | bool and
+                     ipaclient_keytab is not defined else '' }}"
       password: "{{ ipaadmin_password | default(omit) }}"
       keytab: "{{ ipaclient_keytab | default(omit) }}"
-      #ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
+      # ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
       kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
     register: result_ipaclient_join
-    when: not ipaclient_on_master | bool and (not result_ipaclient_test_keytab.krb5_keytab_ok or ipaclient_force_join)
+    when: not ipaclient_on_master | bool and
+          (not result_ipaclient_test_keytab.krb5_keytab_ok or
+              ipaclient_force_join)
 
   - block:
     - fail:
-        msg: "The krb5 configuration is not correct, please enable allow_repair to fix this."
+        msg: >
+          The krb5 configuration is not correct, please enable allow_repair
+          to fix this.
       when: not result_ipaclient_test_keytab.krb5_conf_ok
     - fail:
         msg: "The IPA test failed, please enable allow_repair to fix this."
       when: not result_ipaclient_test_keytab.ping_test_ok
     - fail:
-        msg: "The ca.crt file is missing, please enable allow_repair to fix this."
+        msg: >
+          The ca.crt file is missing, please enable allow_repair to fix this.
       when: not result_ipaclient_test_keytab.ca_crt_exists
-    when: not ipaclient_on_master | bool and not result_ipaclient_join.changed and not ipaclient_allow_repair | bool and (result_ipaclient_test_keytab.krb5_keytab_ok or (result_ipaclient_join.already_joined is defined and result_ipaclient_join.already_joined))
+    when: not ipaclient_on_master | bool and
+          not result_ipaclient_join.changed and
+          not ipaclient_allow_repair | bool and
+          (result_ipaclient_test_keytab.krb5_keytab_ok or
+              (result_ipaclient_join.already_joined is defined and
+                  result_ipaclient_join.already_joined))
 
   - block:
     - name: Install - Configure IPA default.conf
@@ -235,7 +259,7 @@
         hostname: "{{ result_ipaclient_test.hostname }}"
         sssd: "{{ result_ipaclient_test.sssd }}"
         force: "{{ ipaclient_force }}"
-        #on_master: "{{ ipaclient_on_master }}"
+        # on_master: "{{ ipaclient_on_master }}"
       when: not ipaclient_on_master | bool
 
     - name: Install - IPA API calls for remaining enrollment parts
@@ -243,7 +267,7 @@
         servers: "{{ result_ipaclient_test.servers }}"
         realm: "{{ result_ipaclient_test.realm }}"
         hostname: "{{ result_ipaclient_test.hostname }}"
-        #debug: yes
+        # debug: yes
       register: result_ipaclient_api
 
     - name: Install - Fix IPA ca
@@ -252,7 +276,9 @@
         realm: "{{ result_ipaclient_test.realm }}"
         basedn: "{{ result_ipaclient_test.basedn }}"
         allow_repair: "{{ ipaclient_allow_repair }}"
-      when: not ipaclient_on_master | bool and result_ipaclient_test_keytab.krb5_keytab_ok and not result_ipaclient_test_keytab.ca_crt_exists
+      when: not ipaclient_on_master | bool and
+            result_ipaclient_test_keytab.krb5_keytab_ok and
+            not result_ipaclient_test_keytab.ca_crt_exists
 
     - name: Install - Create IPA NSS database
       ipaclient_setup_nss:
@@ -301,12 +327,19 @@
     - name: Install - Configure NIS
       ipaclient_setup_nis:
         domain: "{{ result_ipaclient_test.domain }}"
-        nisdomain: "{{ ipaclient_nisdomain | default(omit)}}"
+        nisdomain: "{{ ipaclient_nisdomain | default(omit) }}"
       when: not ipaclient_no_nisdomain | bool
 
-    when: not (not ipaclient_on_master | bool and not result_ipaclient_join.changed and not ipaclient_allow_repair | bool and (result_ipaclient_test_keytab.krb5_keytab_ok or (result_ipaclient_join.already_joined is defined and result_ipaclient_join.already_joined)))
+    when: not (not ipaclient_on_master | bool and
+          not result_ipaclient_join.changed and
+          not ipaclient_allow_repair | bool
+              and (result_ipaclient_test_keytab.krb5_keytab_ok
+              or (result_ipaclient_join.already_joined is defined
+              and result_ipaclient_join.already_joined)))
 
-  when: not ansible_check_mode and not (result_ipaclient_test.client_already_configured and not ipaclient_allow_repair | bool and not ipaclient_force_join | bool)
+  when: not ansible_check_mode and
+  not (result_ipaclient_test.client_already_configured and
+      not ipaclient_allow_repair | bool and not ipaclient_force_join | bool)
 
   always:
   - name: Cleanup leftover ccache
