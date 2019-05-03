@@ -159,8 +159,8 @@
     - name: Install - Check if one of password and keytab are set
       fail: msg="At least one of password or keytab must be specified"
       when: not result_ipaclient_test_keytab.krb5_keytab_ok and
-            (ipaadmin_password is undefined or ipaadmin_password == "") and
-            (ipaclient_keytab is undefined or ipaclient_keytab == "")
+            (ipaadmin_password is undefined or ipaadmin_password|length == 0)
+            and (ipaclient_keytab is undefined or ipaclient_keytab|lenth == 0)
     when: not ipaclient_on_master | bool
 
   - name: Install - Purge {{ result_ipaclient_test.realm }} from host keytab
