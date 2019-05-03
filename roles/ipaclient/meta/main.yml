@@ -1,24 +1,20 @@
+dependencies: []
+
 galaxy_info:
   author: Florence Blanc-Renaud, Thomas Woerner
   description: A role to join a machine to an IPA domain
   company: Red Hat, Inc
-
-  # issue_tracker_url: http://example.com/issue/tracker
-
   license: GPLv3
-
-  min_ansible_version: 2.3.1
-
-  #github_branch:
-
+  min_ansible_version: 2.5.0
   platforms:
   - name: Fedora
     versions:
-    - 25
-  - name: rhel
+    - all
+  - name: EL
     versions:
     - 7
-
-  galaxy_tags: [ 'identity', 'ipa']
-
-dependencies: []
+    - 8
+  galaxy_tags:
+    - identity
+    - ipa
+    - freeipa
