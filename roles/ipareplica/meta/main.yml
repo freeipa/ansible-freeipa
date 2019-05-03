@@ -1,5 +1,5 @@
-dependencies:
-  - role: t_woerner.ipaclient
+# dependencies:
+#   - role: t_woerner.ipaclient
 
 galaxy_info:
   author: Thomas Woerner
