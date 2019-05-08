@@ -306,8 +306,9 @@ def main():
 
     # Get domain from first server if domain is not set, but if there are
     # servers
-    if options.domain_name is None and len(options.servers) > 0:
-        options.domain_name = options.servers[0][options.servers[0].find(".")+1:]
+    if options.domain_name is None and options.servers is not None:
+        if len(options.servers) > 0:
+            options.domain_name = options.servers[0][options.servers[0].find(".")+1:]
 
     try:
         self = options
@@ -324,7 +325,8 @@ def main():
 
         ### ServiceInstallInterface ###
 
-        validate_domain_name(options.domain_name)
+        if options.domain_name:
+            validate_domain_name(options.domain_name)
 
         if options.realm_name:
             argspec = inspect.getargspec(validate_domain_name)
