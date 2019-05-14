@@ -121,11 +121,33 @@ This will create a chain from ```ipaserver.test.local <- ipareplica1.test.local 
 
 If you need to set more than one server for a replica (for fallbacks etc.), simply use a comma separated list for ```ipareplica_servers```:
 ```yaml
-[ipareplicas]
+[ipareplicas_tier1]
 ipareplica1.test.local
+
+[ipareplicas_tier2]
 ipareplica2.test.local ipareplica_servers=ipareplica1.test.local,ipaserver.test.local
 ```
 The first entry in ```ipareplica_servers``` will be used as the master.
+
+In this case you need to have separate tasks in the playbook to first deploy replicas from tier1 and then replicas from tier2:
+```yaml
+---
+- name: Playbook to configure IPA replicas (tier1)
+  hosts: ipareplicas_tier1
+  become: true
+
+  roles:
+  - role: ipareplica
+    state: present
+
+- name: Playbook to configure IPA replicas (tier2)
+  hosts: ipareplicas_tier2
+  become: true
+
+  roles:
+  - role: ipareplica
+    state: present
+```
 
 You can add settings for replica deployment:
 ```yaml
@@ -179,7 +201,7 @@ If you need to set more than one server for a client (for fallbacks etc.), simpl
 
 You can add settings for client deployment:
 ```yaml
-[ipareplicas:vars]
+[ipaclients:vars]
 ipaadmin_password=ADMPassword1
 ipaserver_domain=test.local
 ipaserver_realm=TEST.LOCAL
@@ -188,7 +210,7 @@ ipaserver_realm=TEST.LOCAL
 For enhanced security it is possible to use a auto-generated one-time-password (OTP). This will be generated on the controller using the (first) server. It is needed to have the Python gssapi bindings installed on the controller for this.
 To enable the generation of the one-time-password:
 ```yaml
-[ipareplicas:vars]
+[ipaclients:vars]
 ipaclient_use_otp=yes
 ```
 
