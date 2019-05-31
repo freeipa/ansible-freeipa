@@ -632,9 +632,6 @@
         "{{ result_ipareplica_prepare.adtrust_reset_netbios_name }}"
     when: result_ipareplica_test.setup_adtrust
 
-  # - name: Install - Disconnect backend
-  #   ipareplica_backend_disconnect:
-
   - name: Install - Enable IPA
     ipareplica_enable_ipa:
       hostname: "{{ result_ipareplica_test.hostname }}"
