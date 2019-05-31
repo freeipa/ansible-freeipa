@@ -96,7 +96,8 @@
       --permanent
       --add-service=freeipa-ldap
       --add-service=freeipa-ldaps
-      --add-service=freeipa-replication
+      {{ "--add-service=freeipa-trust" if ipaserver_setup_adtrust | bool
+         else "" }}
       {{ "--add-service=dns" if ipareplica_setup_dns | bool else "" }}
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
     when: ipareplica_setup_firewalld | bool
@@ -106,7 +107,8 @@
       firewall-cmd
       --add-service=freeipa-ldap
       --add-service=freeipa-ldaps
-      --add-service=freeipa-replication
+      {{ "--add-service=freeipa-trust" if ipaserver_setup_adtrust | bool
+         else "" }}
       {{ "--add-service=dns" if ipareplica_setup_dns | bool else "" }}
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
     when: ipareplica_setup_firewalld | bool
