@@ -293,10 +293,14 @@ def main():
 
     # pylint: disable=no-member
     xmlrpc_uri = 'https://{}/ipa/xml'.format(ipautil.format_netloc(env.host))
+    if hasattr(ipaldap, "realm_to_ldapi_uri"):
+        realm_to_ldapi_uri = ipaldap.realm_to_ldapi_uri
+    else:
+        realm_to_ldapi_uri = installutils.realm_to_ldapi_uri
     api.bootstrap(in_server=True,
                   context='installer',
                   confdir=paths.ETC_IPA,
-                  ldap_uri=installutils.realm_to_ldapi_uri(env.realm),
+                  ldap_uri=realm_to_ldapi_uri(env.realm),
                   xmlrpc_uri=xmlrpc_uri)
     # pylint: enable=no-member
     api.finalize()
@@ -308,13 +312,19 @@ def main():
     config.host_name = api.env.host
     config.domain_name = api.env.domain
     config.master_host_name = api.env.server
-    config.ca_host_name = api.env.ca_host
+    if not api.env.ca_host or api.env.ca_host == api.env.host:
+        # ca_host has not been configured explicitly, prefer source master
+        config.ca_host_name = api.env.server
+    else:
+        # default to ca_host from IPA config
+        config.ca_host_name = api.env.ca_host
     config.kra_host_name = config.ca_host_name
     config.ca_ds_port = 389
     config.setup_ca = options.setup_ca
     config.setup_kra = options.setup_kra
     config.dir = installer._top_dir
     config.basedn = api.env.basedn
+    #config.hidden_replica = options.hidden_replica
 
     # load and check certificates #
 
@@ -550,8 +560,11 @@ def main():
         ansible_log.debug("-- SEARCH FOR CA --")
 
         # Find if any server has a CA
-        ca_host = service.find_providing_server(
-                'CA', conn, config.ca_host_name)
+        if not hasattr(service, "find_providing_server"):
+            _host = [config.ca_host_name]
+        else:
+            _host = config.ca_host_name
+        ca_host = find_providing_server('CA', conn, _host)
         if ca_host is not None:
             config.ca_host_name = ca_host
             ca_enabled = True
@@ -574,14 +587,17 @@ def main():
 
         ansible_log.debug("-- SEARCH FOR KRA --")
 
-        kra_host = service.find_providing_server(
-                'KRA', conn, config.kra_host_name)
+        if not hasattr(service, "find_providing_server"):
+            _host = [config.kra_host_name]
+        else:
+            _host = config.kra_host_name
+        kra_host = find_providing_server('KRA', conn, _host)
         if kra_host is not None:
             config.kra_host_name = kra_host
             kra_enabled = True
         else:
             if options.setup_kra:
-                logger.error("There is no KRA server in the domain, "
+                logger.error("There is no active KRA server in the domain, "
                              "can't setup a KRA clone")
                 raise ScriptError(rval=3)
             kra_enabled = False
@@ -672,6 +688,10 @@ def main():
         finally:
             if add_to_ipaservers:
                 os.environ['KRB5CCNAME'] = ccache
+
+    if hasattr(tasks, "configure_pkcs11_modules"):
+        if tasks.configure_pkcs11_modules(fstore):
+            ansible_log.info("Disabled p11-kit-proxy")
 
     installer._ca_enabled = ca_enabled
     installer._kra_enabled = kra_enabled

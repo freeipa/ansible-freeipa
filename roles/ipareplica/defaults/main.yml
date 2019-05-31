@@ -4,6 +4,7 @@
 ### basic ###
 ipareplica_no_host_dns: no
 ipareplica_skip_conncheck: no
+ipareplica_hidden_replica: no
 ### server ###
 ipareplica_setup_adtrust: no
 ipareplica_setup_ca: no

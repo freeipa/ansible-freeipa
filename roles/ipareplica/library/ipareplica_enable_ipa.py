@@ -69,6 +69,7 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec = dict(
             hostname=dict(required=False),
+            hidden_replica=dict(required=False, type='bool', default=False),
             ### server ###
             ### certificate system ###
             subject_base=dict(required=True),
@@ -88,6 +89,7 @@ def main():
 
     options = installer
     options.host_name = ansible_module.params.get('hostname')
+    options.hidden_replica = ansible_module.params.get('hidden_replica')
     ### server ###
     ### certificate system ###
     options.subject_base = ansible_module.params.get('subject_base')
@@ -112,6 +114,7 @@ def main():
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)
     api_bootstrap_finalize(env)
+    config = gen_ReplicaConfig()
 
     remote_api = gen_remote_api(config_master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
@@ -122,11 +125,16 @@ def main():
     api.Backend.ldap2.connect()
 
     with redirect_stdout(ansible_log):
-        # Enable configured services and update DNS SRV records
-        service.enable_services(options.host_name)
+        if options.hidden_replica:
+            # Set services to hidden
+            service.hide_services(config.host_name)
+        else:
+            # Enable configured services
+            service.enable_services(config.host_name)
+        # update DNS SRV records. Although it's only really necessary in
+        # enabled-service case, also perform update in hidden replica case.
         api.Command.dns_update_system_records()
-        ca_servers = service.find_providing_servers('CA', api.Backend.ldap2,
-                                                    api)
+        ca_servers = find_providing_servers('CA', api.Backend.ldap2, api=api)
         api.Backend.ldap2.disconnect()
 
         # Everything installed properly, activate ipa service.

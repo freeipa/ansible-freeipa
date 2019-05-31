@@ -64,6 +64,7 @@ def main():
             realm=dict(required=False),
             hostname=dict(required=False),
             ca_cert_files=dict(required=False, type='list', default=[]),
+            hidden_replica=dict(required=False, type='bool', default=False),
             ### server ###
             setup_adtrust=dict(required=False, type='bool', default=False),
             setup_kra=dict(required=False, type='bool', default=False),
@@ -106,6 +107,7 @@ def main():
     options.realm_name = ansible_module.params.get('realm')
     options.host_name = ansible_module.params.get('hostname')
     options.ca_cert_files = ansible_module.params.get('ca_cert_files')
+    options.hidden_replica = ansible_module.params.get('hidden_replica')
     ### server ###
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_kra = ansible_module.params.get('setup_kra')
@@ -172,6 +174,10 @@ def main():
     #    #else:
     #    #  options.setup_kra = False
     #    #  ansible_module.warn(msg="kra is not supported, disabling")
+
+    if options.hidden_replica and not hasattr(service, "hide_services"):
+        ansible_module.fail_json(
+            msg="Hidden replica is not supported in this version.")
 
     # From ipa installer classes
 

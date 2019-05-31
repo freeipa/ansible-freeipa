@@ -79,6 +79,12 @@ if NUM_VERSION >= 40600:
         adtrust, bindinstance, ca, certs, dns, dsinstance, httpinstance,
         installutils, kra, krbinstance,
         otpdinstance, custodiainstance, service, upgradeinstance)
+    try:
+        from ipaserver.masters import (
+            find_providing_servers, find_providing_server)
+    except ImportError:
+        from ipaserver.install.service import (
+            find_providing_servers, find_providing_server)
     from ipaserver.install.installutils import (
         ReplicaConfig, load_pkcs12, is_ipa_configured)
     from ipaserver.install.replication import (
@@ -160,6 +166,9 @@ class AnsibleModuleLog():
         self.write(msg)
 
     def debug(self, msg):
+        self.module.debug(msg)
+
+    def info(self, msg):
         self.module.debug(msg)
 
     def write(self, msg):
