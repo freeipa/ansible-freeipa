@@ -278,9 +278,6 @@ def main():
     ## check selinux status, http and DS ports, NTP conflicting services
     #common_check(options.no_ntp)
 
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-
     installer._enrollment_performed = False
     installer._top_dir = tempfile.mkdtemp("ipa")
 
