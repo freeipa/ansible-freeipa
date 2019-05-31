@@ -138,6 +138,7 @@
     - name: Install - Store the previously obtained OTP
       no_log: yes
       set_fact:
+        ipaadmin_orig_password: "{{ ipaadmin_password }}"
         ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword
                                if result_ipaclient_get_otp.host is defined }}"
 
@@ -347,6 +348,12 @@
             not ipaclient_allow_repair | bool and not ipaclient_force_join | bool)
 
   always:
+  - name: Install - Restore original admin password if overwritten by OTP
+    no_log: yes
+    set_fact:
+        ipaadmin_password: "{{ ipaadmin_orig_password }}"
+    when: ipaclient_use_otp | bool and ipaadmin_orig_password is defined
+
   - name: Cleanup leftover ccache
     file:
       path: "/etc/ipa/.dns_ccache"
