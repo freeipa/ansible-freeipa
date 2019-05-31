@@ -17,7 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import gssapi
+try:
+    import gssapi
+except ImportError:
+    gssapi = None
 import os
 import shutil
 import subprocess
@@ -76,6 +79,9 @@ def kinit_keytab(principal, keytab, ccache_name, config):
     Perform kinit using principal/keytab, with the specified config file
     and store the TGT in ccache_name.
     """
+    if gssapi is None:
+        raise ImportError("gssapi is not available")
+
     old_config = os.environ.get('KRB5_CONFIG')
     os.environ['KRB5_CONFIG'] = config
     try:

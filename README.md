@@ -31,7 +31,7 @@ Requirements
 
 **Controller**
 * Ansible version: 2.5+
-* python3-gssapi is required on the controller if a one time password (OTP) is used to install the client.
+* python3-gssapi is required on the controller if a one time password (OTP) is used with keytab to install the client.
 
 **Node**
 * Supported FreeIPA version (see above)
