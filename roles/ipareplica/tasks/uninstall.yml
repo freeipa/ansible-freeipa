@@ -19,7 +19,7 @@
     has no attribute 'basedn'" not in result_uninstall.stderr
   # IPA server is not configured on this system" not in
   #   result_uninstall.stdout_lines
-  # changed_when: result_uninstall.rc == 0
+  changed_when: result_uninstall.rc == 0
   # until: result_uninstall.rc == 0
   retries: 2
   delay: 1
