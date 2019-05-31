@@ -101,7 +101,7 @@ def main():
             no_hbac_allow=dict(required=False, type='bool', default=False),
             no_pkinit=dict(required=False, type='bool', default=False),
             dirsrv_config_file=dict(required=False),
-            dirsrv_cert_files=dict(required=False),
+            dirsrv_cert_files=dict(required=False, type='list'),
             _dirsrv_pkcs12_info=dict(required=False),
             ### certificate system ###
             external_ca=dict(required=False, type='bool', default=False),

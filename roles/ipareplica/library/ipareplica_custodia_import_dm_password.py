@@ -107,7 +107,7 @@ def main():
             _pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
             dirman_password=dict(required=True, no_log=True),
-            config_setup_ca=dict(required=True),
+            config_setup_ca=dict(required=True, type='bool'),
             config_master_host_name=dict(required=True),
             config_ca_host_name=dict(required=True),
         ),

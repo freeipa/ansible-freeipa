@@ -119,7 +119,7 @@ def main():
             _http_pkcs12_info = dict(required=False),
             _pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
-            _add_to_ipaservers = dict(required=True),
+            _add_to_ipaservers = dict(required=True, type='bool'),
             _ca_subject=dict(required=True),
             _subject_base=dict(required=True),
         ),

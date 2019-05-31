@@ -124,7 +124,7 @@ def main():
             _ca_subject=dict(required=True),
             _subject_base=dict(required=True),
             dirman_password=dict(required=True, no_log=True),
-            config_setup_ca=dict(required=True),
+            config_setup_ca=dict(required=True, type='bool'),
             config_master_host_name=dict(required=True),
             config_ca_host_name=dict(required=True),
             config_ips=dict(required=False, type='list', default=[]),
