@@ -25,8 +25,8 @@
 
   when: ipareplica_install_packages | bool
 
-- name: Install - Include Python2/3 import test
-  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
+#- name: Install - Include Python2/3 import test
+#  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
 
 - name: Install - Set default principal if no keytab is given
   set_fact:
