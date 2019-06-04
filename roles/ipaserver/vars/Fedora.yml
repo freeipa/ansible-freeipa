@@ -1,3 +1,4 @@
 ipaserver_packages: [ "freeipa-server", "python3-libselinux" ]
 ipaserver_packages_dns: [ "freeipa-server-dns" ]
 ipaserver_packages_adtrust: [ "freeipa-server-trust-ad" ]
+gssapi_packages: [ "python2-gssapi.x86_64" ]

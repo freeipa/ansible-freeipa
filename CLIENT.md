@@ -91,7 +91,7 @@ If `ipaclient_domain` is not set, then it will be generated from the domain part
 
 The optional `ipaclient_realm` sets the Kerberos realm that will be used for client installation. Usually the Kerberos realm is an upper-cased name of the DNS domain.
 
-If `ipaclient_realm` is not set, then it will be generated from `ipaclient_domain` if this is set. If both are not set, then this 
+If `ipaclient_realm` is not set, then it will be generated from `ipaclient_domain` if this is set. If both are not set, then this
 
 
 ### `ipaclient_keytab`
@@ -165,6 +165,7 @@ Requirements
 ------------
 
 freeipa-client v4.4 or later
+gssapi on the Ansible controller
 
 Authors
 -------

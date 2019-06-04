@@ -27,6 +27,12 @@
 #- name: Install - Include Python2/3 import test
 #  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
 
+- name: Install - Ensure gssapi is installed on Ansible controller
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ gssapi_packages }}"
+
 - name: Install - Server installation test
   ipaserver_test:
     ### basic ###

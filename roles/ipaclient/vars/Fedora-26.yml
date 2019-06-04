@@ -1,2 +1,3 @@
 ipaclient_packages: [ "ipa-client", "libselinux-python" ]
+gssapi_packages: [ "python2-gssapi.x86_64" ]
 #ansible_python_interpreter: '/usr/bin/python2'

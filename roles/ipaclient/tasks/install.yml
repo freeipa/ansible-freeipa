@@ -115,6 +115,12 @@
     #  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
     #  delegate_to: "{{ result_ipaclient_test.servers[0] }}"
 
+    - name: Install - Ensure gssapi is installed on Ansible controller
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ gssapi_packages }}"
+      
     - name: Install - Get One-Time Password for client enrollment
       no_log: yes
       ipaclient_get_otp:
