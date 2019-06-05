@@ -1,0 +1,14 @@
+---
+- name: Playbook to handle topologysegment
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Reinitialize topology segment
+    ipatopologysegment:
+      password: MyPassword123
+      suffix: domain
+      left: ipareplica1.test.local
+      right: ipareplica2.test.local
+      direction: left-to-right
+      state: reinitialized

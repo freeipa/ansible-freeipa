@@ -1,0 +1,11 @@
+---
+- name: Playbook to handle topologysuffix
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Verify topology suffix
+    ipatopologysuffix:
+      password: MyPassword123
+      suffix: domain
+      state: verified

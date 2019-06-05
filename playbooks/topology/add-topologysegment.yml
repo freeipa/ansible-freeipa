@@ -1,0 +1,13 @@
+---
+- name: Playbook to handle topologysegment
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Add topology segment
+    ipatopologysegment:
+      password: MyPassword123
+      suffix: domain
+      left: ipareplica1.test.local
+      right: ipareplica2.test.local
+      state: present

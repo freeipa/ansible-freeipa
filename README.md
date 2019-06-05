@@ -11,6 +11,7 @@ Features
 * Cluster deployments: Server, replicas and clients in one playbook
 * One-time-password (OTP) support for client installation
 * Repair mode for clients
+* Modules for topology management
 
 Supported FreeIPA Versions
 --------------------------
@@ -307,3 +308,9 @@ Roles
 * [Server](roles/ipaserver/README.md)
 * [Replica](roles/ipareplica/README.md)
 * [Client](roles/ipaclient/README.md)
+
+Plugins in plugin/modules
+=========================
+
+* [ipatopologysegment](README-topology.md)
+* [ipatopologysuffix](README-topology.md)
