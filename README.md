@@ -236,16 +236,17 @@ All these settings will be available in the ```[ipaserver]```, ```[ipareplicas]`
 Playbooks
 =========
 
-The playbooks needed to deploy or undeploy server, replicas and clients are part of the repository. There are also playbooks to deploy and undeploy clusters. With them it is only needed to add an inventory file:
+The playbooks needed to deploy or undeploy server, replicas and clients are part of the repository and placed in the playbooks folder. There are also playbooks to deploy and undeploy clusters. With them it is only needed to add an inventory file:
 ```
-install-client.yml
-install-cluster.yml
-install-replica.yml
-install-server.yml
-uninstall-client.yml
-uninstall-cluster.yml
-uninstall-replica.yml
-uninstall-server.yml
+playbooks\
+        install-client.yml
+        install-cluster.yml
+        install-replica.yml
+        install-server.yml
+        uninstall-client.yml
+        uninstall-cluster.yml
+        uninstall-replica.yml
+        uninstall-server.yml
 ```
 
 How to deploy a master server
@@ -303,6 +304,6 @@ This will deploy the server, replicas and clients defined in the inventory file.
 Roles
 =====
 
-* [Server](SERVER.md)
-* [Replica](REPLICA.md)
-* [Client](CLIENT.md)
+* [Server](roles/ipaserver/README.md)
+* [Replica](roles/ipareplica/README.md)
+* [Client](roles/ipaclient/README.md)
