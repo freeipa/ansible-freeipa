@@ -1,0 +1,25 @@
+namespace: "freeipa"
+name: "ansible_freeipa"
+version: "0.1.1"
+description: ""
+
+authors:
+  - "Thomas Woerner <twoerner@redhat.com>"
+
+repository: "https://github.com/freeipa/ansible-freeipa"
+documentation: "https://github.com/freeipa/ansible-freeipa/blob/master/README.md"
+homepage: "https://github.com/freeipa/ansible-freeipa"
+issues: "https://github.com/freeipa/ansible-freeipa/issues"
+
+dependencies: {}
+
+readme: "README.md"
+license: "GPL-3.0-or-later"
+license_file: "COPYING"
+
+tags:
+  - "identity"
+  - "ipa"
+  - "freeipa"
+  - "cluster"
+  - "collection"
