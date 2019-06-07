@@ -171,6 +171,16 @@ class AnsibleModuleLog():
     def flush(self):
         pass
 
+    def log(self, msg):
+        #self.write(msg+"\n")
+        self.write(msg)
+
+    def debug(self, msg):
+        self.module.debug(msg)
+
+    def info(self, msg):
+        self.module.debug(msg)
+
     def write(self, msg):
         self.module.debug(msg)
         #self.module.warn(msg)
