@@ -183,7 +183,8 @@ def main():
                 subject_base=options.subject_base,
                 auto_redirect=not options.no_ui_redirect,
                 ca_is_configured=options.setup_ca)
-        tasks.restore_context(paths.CACHE_IPA_SESSIONS)
+        if hasattr(paths, "CACHE_IPA_SESSIONS"):
+            tasks.restore_context(paths.CACHE_IPA_SESSIONS)
 
         ca.set_subject_base_in_config(options.subject_base)
 
