@@ -529,6 +529,14 @@ def main():
                 "Invalid hostname, '{}' must not be used.".format(hostname),
                 rval=CLIENT_INSTALL_ERROR)
 
+        if hasattr(constants, "MAXHOSTNAMELEN"):
+            try:
+                validate_hostname(hostname, maxlen=constants.MAXHOSTNAMELEN)
+            except ValueError as e:
+                raise ScriptError(
+                    'invalid hostname: {}'.format(e),
+                    rval=CLIENT_INSTALL_ERROR)
+
         if hasattr(tasks, "is_nosssd_supported"):
             # --no-sssd is not supported any more for rhel-based distros
             if not tasks.is_nosssd_supported() and not options.sssd:

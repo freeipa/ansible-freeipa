@@ -81,6 +81,7 @@ if NUM_VERSION >= 40400:
     except ImportError:
         from ipaclient import ipadiscovery
     from ipalib import api, errors, x509
+    from ipalib import constants
     try:
         from ipalib.install import sysrestore
     except ImportError:
@@ -97,7 +98,8 @@ if NUM_VERSION >= 40400:
     from ipapython import certdb, ipautil
     from ipapython.admintool import ScriptError
     from ipapython.ipautil import CheckedIPAddress
-    from ipalib.util import validate_domain_name, normalize_hostname
+    from ipalib.util import validate_domain_name, normalize_hostname, \
+        validate_hostname
     from ipaplatform import services
     from ipaplatform.paths import paths
     from ipaplatform.tasks import tasks
