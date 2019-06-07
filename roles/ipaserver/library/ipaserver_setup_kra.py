@@ -58,6 +58,7 @@ def main():
             setup_ca=dict(required=True, type='bool'),
             setup_kra=dict(required=True, type='bool'),
             realm=dict(required=True),
+            pki_config_override=dict(required=False),
         ),
     )
 
@@ -71,6 +72,8 @@ def main():
     options.setup_ca = ansible_module.params.get('setup_ca')
     options.setup_kra = ansible_module.params.get('setup_kra')
     options.realm_name = ansible_module.params.get('realm')
+    options.pki_config_override = ansible_module.params.get(
+        'pki_config_override')
     options.promote = False  # first master, no promotion
 
     # init ##########################################################

@@ -129,6 +129,9 @@ Variables
 **ipaserver_no_host_dns** - Do not use DNS for hostname lookup during installation.
  (bool, optional)
               
+**ipaserver_pki_config_override** - Path to ini file with config overrides.
+ (string, optional)
+
 **ipaserver_no_dnssec_validation** - Disable DNSSEC validation on this server.
  (bool, optional)
  

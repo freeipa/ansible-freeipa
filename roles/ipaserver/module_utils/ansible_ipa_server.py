@@ -102,6 +102,10 @@ if NUM_VERSION >= 40500:
         check_dirsrv, validate_admin_password, validate_dm_password,
         write_cache)
     try:
+        from ipaserver.install.dogtaginstance import PKIIniLoader
+    except ImportError:
+        PKIIniLoader = None
+    try:
         from ipaserver.install.installutils import default_subject_base
     except ImportError:
         def default_subject_base(realm_name):

@@ -66,6 +66,7 @@ def main():
             hostname=dict(required=False),
             ca_cert_files=dict(required=False, type='list', default=[]),
             no_host_dns=dict(required=False, type='bool', default=False),
+            pki_config_override=dict(required=False),
             ### server ###
             setup_adtrust=dict(required=False, type='bool', default=False),
             setup_kra=dict(required=False, type='bool', default=False),
@@ -134,13 +135,13 @@ def main():
     options.dm_password = ansible_module.params.get('dm_password')
     options.admin_password = ansible_module.params.get('password')
     options.master_password = ansible_module.params.get('master_password')
-    options.ip_addresses = ansible_module_get_parsed_ip_addresses(
-        ansible_module)
     options.domain_name = ansible_module.params.get('domain')
     options.realm_name = ansible_module.params.get('realm')
     options.host_name = ansible_module.params.get('hostname')
     options.ca_cert_files = ansible_module.params.get('ca_cert_files')
     options.no_host_dns = ansible_module.params.get('no_host_dns')
+    options.pki_config_override = ansible_module.params.get(
+        'pki_config_override')
     ### server ###
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_dns = ansible_module.params.get('setup_dns')
@@ -212,6 +213,19 @@ def main():
         #else:
         #  options.setup_kra = False
         #  ansible_module.warn(msg="kra is not supported, disabling")
+
+    if options.pki_config_override is not None:
+        if PKIIniLoader is None:
+            ansible_module.warn("The use of pki_config_override is not "
+                                "supported for this IPA version")
+        else:
+            # From DogtagInstallInterface @pki_config_override.validator
+            try:
+                PKIIniLoader.verify_pki_config_override(
+                    options.pki_config_override)
+            except ValueError as e:
+                ansible_module.fail_json(
+                    msg="pki_config_override: %s" % str(e))
 
     # validation #############################################################
 
