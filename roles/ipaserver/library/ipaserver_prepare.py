@@ -109,7 +109,7 @@ def main():
             forwarders=dict(required=False, type='list', default=[]),
             no_forwarders=dict(required=False, type='bool', default=False),
             auto_forwarders=dict(required=False, type='bool', default=False),
-            forward_policy=dict(required=False),
+            forward_policy=dict(default=None, choices=['first', 'only']),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
             ### ad trust ###
@@ -180,6 +180,15 @@ def main():
 
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
     sstore = sysrestore.StateFile(paths.SYSRESTORE)
+
+    # subject_base
+    if not options.subject_base:
+        options.subject_base = str(default_subject_base(options.realm_name))
+        # set options.subject for old ipa releases
+        options.subject = options.subject_base
+
+    if not options.ca_subject:
+        options.ca_subject = str(default_ca_subject_dn(options.subject_base))
 
     # Configuration for ipalib, we will bootstrap and finalize later, after
     # we are sure we have the configuration file ready.
@@ -268,7 +277,29 @@ def main():
     if _update_hosts_file:
         update_hosts_file(ip_addresses, options.host_name, fstore)
 
-    ansible_module.exit_json(changed=True)
+    if hasattr(tasks, "configure_pkcs11_modules"):
+        if tasks.configure_pkcs11_modules(fstore):
+            ansible_log.info("Disabled p11-kit-proxy")
+
+    ansible_module.exit_json(changed=True,
+                             ### basic ###
+                             ip_addresses=[ str(ip) for ip in ip_addresses ],
+                             ### certificate system ###
+                             subject_base=options.subject_base,
+                             _subject_base=options._subject_base,
+                             ca_subject=options.ca_subject,
+                             _ca_subject=options._ca_subject,
+                             ### dns ###
+                             reverse_zones=options.reverse_zones,
+                             forward_policy=options.forward_policy,
+                             forwarders=options.forwarders,
+                             no_dnssec_validation=options.no_dnssec_validation,
+                             ### additional ###
+                             dns_ip_addresses=[ str(ip) for ip
+                                                in dns.ip_addresses ],
+                             dns_reverse_zones=dns.reverse_zones,
+                             adtrust_netbios_name=adtrust.netbios_name,
+                             adtrust_reset_netbios_name=adtrust.reset_netbios_name)
 
 if __name__ == '__main__':
     main()
