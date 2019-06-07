@@ -557,33 +557,39 @@ def main():
 
     # host name
     if options.host_name:
-        options.host_default = options.host_name
+        host_default = options.host_name
     else:
-        options.host_default = get_fqdn()
+        host_default = get_fqdn()
 
     try:
-        verify_fqdn(options.host_default, options.no_host_dns)
-        options.host_name = options.host_default
+        verify_fqdn(host_default, options.no_host_dns)
+        host_name = host_default
     except BadHostError as e:
         ansible_module.fail_json(msg=e)
-    options.host_name = options.host_name.lower()
+
+    host_name = host_name.lower()
 
     if not options.domain_name:
-        options.domain_name = options.host_name[options.host_name.find(".")+1:]
+        domain_name = host_name[host_name.find(".")+1:]
         try:
-            validate_domain_name(options.domain_name)
+            validate_domain_name(domain_name)
         except ValueError as e:
             ansible_module.fail_json(msg="Invalid domain name: %s" % unicode(e))
-    options.domain_name = options.domain_name.lower()
+    else:
+        domain_name = options.domain_name
+
+    domain_name = domain_name.lower()
 
     if not options.realm_name:
-        options.realm_name = options.domain_name
-    options.realm_name = options.realm_name.upper()
+        realm_name = domain_name.upper()
+    else:
+        realm_name = options.realm_name.upper()
+
     argspec = inspect.getargspec(validate_domain_name)
     if "entity" in argspec.args:
         # NUM_VERSION >= 40690:
         try:
-            validate_domain_name(options.realm_name, entity="realm")
+            validate_domain_name(realm_name, entity="realm")
         except ValueError as e:
             raise ScriptError("Invalid realm name: {}".format(unicode(e)))
 
@@ -591,7 +597,7 @@ def main():
         # If domain name and realm does not match, IPA server will not be able
         # to establish trust with Active Directory. Fail.
 
-        if options.domain_name.upper() != options.realm_name:
+        if domain_name.upper() != realm_name:
             ansible_module.warn(
                 "Realm name does not match the domain name: "
                 "You will not be able to establish trusts with Active "
@@ -618,7 +624,7 @@ def main():
             key_password=options.http_pin,
             key_nickname=options.http_cert_name,
             ca_cert_files=options.ca_cert_files,
-            host_name=options.host_name)
+            host_name=host_name)
         http_pkcs12_info = (http_pkcs12_file.name, options.http_pin)
 
     if options.dirsrv_cert_files:
@@ -630,7 +636,7 @@ def main():
             key_password=options.dirsrv_pin,
             key_nickname=options.dirsrv_cert_name,
             ca_cert_files=options.ca_cert_files,
-            host_name=options.host_name)
+            host_name=host_name)
         dirsrv_pkcs12_info = (dirsrv_pkcs12_file.name, options.dirsrv_pin)
 
     if options.pkinit_cert_files:
@@ -642,7 +648,7 @@ def main():
             key_password=options.pkinit_pin,
             key_nickname=options.pkinit_cert_name,
             ca_cert_files=options.ca_cert_files,
-            realm_name=options.realm_name)
+            realm_name=realm_name)
         pkinit_pkcs12_info = (pkinit_pkcs12_file.name, options.pkinit_pin)
 
     if (options.http_cert_files and options.dirsrv_cert_files and
@@ -657,18 +663,15 @@ def main():
             "Apache Server SSL certificate and PKINIT KDC "
             "certificate are not signed by the same CA certificate")
 
-    # Always set _host_name_overridden
-    options._host_name_overridden = bool(options.host_name)
-
     # done ##################################################################
 
     ansible_module.exit_json(changed=False,
                              ipa_python_version=IPA_PYTHON_VERSION,
                              ### basic ###
                              domain=options.domain_name,
-                             realm=options.realm_name,
-                             hostname=options.host_name,
-                             _hostname_overridden=options._host_name_overridden,
+                             realm=realm_name,
+                             hostname=host_name,
+                             _hostname_overridden=bool(options.host_name),
                              no_host_dns=options.no_host_dns,
                              ### server ###
                              setup_adtrust=options.setup_adtrust,
