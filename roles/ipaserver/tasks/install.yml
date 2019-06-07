@@ -357,21 +357,6 @@
              else 'false' }}"
       ipaclient_install_packages: "{{ ipaserver_install_packages }}"
 
-  # - name: Install - Setup client
-  #   command: >
-  #     /usr/sbin/ipa-client-install
-  #     --unattended
-  #     --on-master
-  #     --domain "{{ result_ipaserver_test.domain }}"
-  #     --realm "{{ result_ipaserver_test.realm }}"
-  #     --server "{{ result_ipaserver_test.hostname }}"
-  #     --hostname "{{ result_ipaserver_test.hostname }}"
-  #     {{ "--mkhomedir" if ipaclient_mkhomedir | bool else "" }}
-  #   #  {{ "--no-dns-sshfp" if ipaclient_no_dns_sshfp | bool else "" }}
-  #   #  {{ "--ssh-trust-dns" if ipaclient_ssh_trust_dns | bool else "" }}
-  #   #  {{ "--no-ssh" if ipaclient_no_ssh | bool else "" }}
-  #   #  {{ "--no-sshd" if ipaclient_no_sshd | bool else "" }}
-
   - name: Install - Enable IPA
     ipaserver_enable_ipa:
       hostname: "{{ result_ipaserver_test.hostname }}"
