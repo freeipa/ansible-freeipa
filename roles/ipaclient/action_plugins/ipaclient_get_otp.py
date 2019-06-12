@@ -155,8 +155,6 @@ class ActionModule(ActionBase):
         keytab = self._task.args.get('keytab', None)
         password = self._task.args.get('password', None)
         lifetime = self._task.args.get('lifetime', '1h')
-        ansible_python_interpreter = self._task.args.get('ansible_python_interpreter', None)
-        task_vars["ansible_python_interpreter"] = ansible_python_interpreter
 
         if (not keytab and not password):
             result['failed'] = True
@@ -169,7 +167,7 @@ class ActionModule(ActionBase):
             return result
 
         data = self._execute_module(module_name='ipaclient_get_facts', module_args=dict(),
-                                    task_vars={ "ansible_python_interpreter": ansible_python_interpreter })
+                                    task_vars=None)
         try:
             domain = data['ansible_facts']['ipa']['domain']
             realm = data['ansible_facts']['ipa']['realm']

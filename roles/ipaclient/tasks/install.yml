@@ -107,10 +107,6 @@
       fail: msg="Keytab or password is required for otp"
       when: ipaadmin_keytab is undefined and ipaadmin_password is undefined
 
-    - name: Install - Save client ansible_python_interpreter setting
-      set_fact:
-        ipaclient_ansible_python_interpreter: "{{ ansible_python_interpreter }}"
-
     #- name: Install - Include Python2/3 import test
     #  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
     #  delegate_to: "{{ result_ipaclient_test.servers[0] }}"
@@ -125,7 +121,6 @@
         fqdn: "{{ result_ipaclient_test.hostname }}"
         lifetime: "{{ ipaclient_lifetime | default(omit) }}"
         random: True
-        ansible_python_interpreter: "{{ ansible_python_interpreter }}"
       register: result_ipaclient_get_otp
       # If the host is already enrolled, this command will exit on error
       # The error can be ignored
@@ -141,10 +136,6 @@
         ipaadmin_orig_password: "{{ ipaadmin_password }}"
         ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword
                                if result_ipaclient_get_otp.host is defined }}"
-
-    - name: Install - Restore client ansible_python_interpreter setting
-      set_fact:
-        ansible_python_interpreter: "{{ ipaclient_ansible_python_interpreter }}"
 
     when: ipaclient_use_otp | bool
 

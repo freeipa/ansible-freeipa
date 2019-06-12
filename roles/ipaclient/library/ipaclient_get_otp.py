@@ -71,9 +71,6 @@ options:
   ipaddress:
     description: the IP address for the host
     required: false
-  ansible_python_interpreter:
-    desciption: The ansible python interpreter used in the action plugin part, ignored here
-    required: false
 
 requirements:
     - gssapi on the Ansible controller
@@ -318,7 +315,6 @@ def main():
             ipaddress = dict(required=False),
             random = dict(default=False, type='bool'),
             state = dict(default='present', choices=[ 'present', 'absent' ]),
-            ansible_python_interpreter = dict(required=False),
         ),
         supports_check_mode=True,
     )
