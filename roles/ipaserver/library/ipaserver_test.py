@@ -469,23 +469,30 @@ def main():
 
     # validate zonemgr
     if options.zonemgr:
-        try:
-            # IDNA support requires unicode
-            encoding = getattr(sys.stdin, 'encoding', None)
-            if encoding is None:
-                encoding = 'utf-8'
-            value = options.zonemgr.decode(encoding)
+        if six.PY3:
             with redirect_stdout(ansible_log):
-                bindinstance.validate_zonemgr_str(value)
-        except ValueError as e:
-            # FIXME we can do this in better way
-            # https://fedorahosted.org/freeipa/ticket/4804
-            # decode to proper stderr encoding
-            stderr_encoding = getattr(sys.stderr, 'encoding', None)
-            if stderr_encoding is None:
-                stderr_encoding = 'utf-8'
-            error = unicode(e).encode(stderr_encoding)
-            ansible_module.fail_json(msg=error)
+                bindinstance.validate_zonemgr_str(options.zonemgr)
+        else:
+            try:
+                # IDNA support requires unicode
+                encoding = getattr(sys.stdin, 'encoding', None)
+                if encoding is None:
+                    encoding = 'utf-8'
+                if not isinstance(value, unicode):
+                    value = options.zonemgr.decode(encoding)
+                else:
+                    value = options.zonemgr
+                with redirect_stdout(ansible_log):
+                    bindinstance.validate_zonemgr_str(value)
+            except ValueError as e:
+                # FIXME we can do this in better way
+                # https://fedorahosted.org/freeipa/ticket/4804
+                # decode to proper stderr encoding
+                stderr_encoding = getattr(sys.stderr, 'encoding', None)
+                if stderr_encoding is None:
+                    stderr_encoding = 'utf-8'
+                error = unicode(e).encode(stderr_encoding)
+                ansible_module.fail_json(msg=error)
 
     # external cert file paths are absolute
     for path in options.external_cert_files:
