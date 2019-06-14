@@ -60,6 +60,9 @@ options:
   password:
     description: The password to use if not using Kerberos to authenticate.
     required: false
+  admin_keytab:
+    description: The path to a local admin keytab.
+    required: false
   keytab:
     description: The path to a backed-up host keytab from previous enrollment.
     required: false
@@ -138,6 +141,7 @@ def main():
             principal=dict(required=False),
             password=dict(required=False, no_log=True),
             keytab=dict(required=False),
+            admin_keytab=dict(required=False),
             ca_cert_file=dict(required=False),
             force_join=dict(required=False, type='bool'),
             kinit_attempts=dict(required=False, type='int', default=5),
@@ -157,12 +161,16 @@ def main():
     principal = module.params.get('principal')
     password = module.params.get('password')
     keytab = module.params.get('keytab')
+    admin_keytab = module.params.get('admin_keytab')
     ca_cert_file = module.params.get('ca_cert_file')
     kinit_attempts = module.params.get('kinit_attempts')
     debug = module.params.get('debug')
 
     if password is not None and keytab is not None:
         module.fail_json(msg="Password and keytab cannot be used together")
+
+    if password is None and admin_keytab is None:
+        module.fail_json(msg="Password or admin_keytab is needed")
 
     client_domain = hostname[hostname.find(".")+1:]
     nolog = tuple()
@@ -209,12 +217,29 @@ def main():
         if principal is not None:
             if principal.find('@') == -1:
                 principal = '%s@%s' % (principal, realm)
-            try:
-                kinit_password(principal, password, ccache_name,
-                               config=krb_name)
-            except RuntimeError as e:
-                module.fail_json(
-                    msg="Kerberos authentication failed: {}".format(e))
+            if admin_keytab:
+                join_args.append("-f")
+                if not os.path.exists(admin_keytab):
+                    module.fail_json(
+                        msg="Keytab file could not be found: %s" % \
+                        admin_keytab)
+                try:
+                    kinit_keytab(principal,
+                                 admin_keytab,
+                                 ccache_name,
+                                 config=krb_name,
+                                 attempts=kinit_attempts)
+                except GSSError as e:
+                    module.fail_json(
+                        msg="Kerberos authentication failed: %s" % str(e))
+            else:
+                try:
+                    kinit_password(principal, password, ccache_name,
+                                   config=krb_name)
+                except RuntimeError as e:
+                    module.fail_json(
+                        msg="Kerberos authentication failed: {}".format(e))
+
         elif keytab:
             join_args.append("-f")
             if os.path.exists(keytab):
