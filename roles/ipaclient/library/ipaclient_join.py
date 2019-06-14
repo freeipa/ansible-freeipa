@@ -161,8 +161,7 @@ def main():
     kinit_attempts = module.params.get('kinit_attempts')
     debug = module.params.get('debug')
 
-    if password is not None and password != "" and \
-       keytab is not None and keytab != "":
+    if password is not None and keytab is not None:
         module.fail_json(msg="Password and keytab cannot be used together")
 
     client_domain = hostname[hostname.find(".")+1:]
@@ -174,7 +173,7 @@ def main():
 
     options.ca_cert_file = ca_cert_file
     options.unattended = True
-    options.principal = principal if principal != "" else None
+    options.principal = principal
     options.force = False
     options.password = password
 
@@ -207,7 +206,7 @@ def main():
             env['XMLRPC_TRACE_CURL'] = 'yes'
         if force_join:
             join_args.append("-f")
-        if principal:
+        if principal is not None:
             if principal.find('@') == -1:
                 principal = '%s@%s' % (principal, realm)
             try:

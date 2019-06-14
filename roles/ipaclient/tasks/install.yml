@@ -115,7 +115,7 @@
       no_log: yes
       ipaclient_get_otp:
         state: present
-        principal: "{{ ipaadmin_principal | default('admin') }}"
+        principal: "{{ ipaadmin_principal | default(omit) }}"
         password: "{{ ipaadmin_password | default(omit) }}"
         keytab: "{{ ipaadmin_keytab | default(omit) }}"
         fqdn: "{{ result_ipaclient_test.hostname }}"
@@ -150,14 +150,13 @@
 
     - name: Install - Check if principal and keytab are set
       fail: msg="Principal and keytab cannot be used together"
-      when: ipaadmin_principal is defined and ipaadmin_principal|length > 0
-            and ipaclient_keytab is defined and ipaclient_keytab|length > 0
+      when: ipaadmin_principal is defined and ipaclient_keytab is defined
 
-    - name: Install - Check if one of password and keytab are set
-      fail: msg="At least one of password or keytab must be specified"
-      when: not result_ipaclient_test_keytab.krb5_keytab_ok and
-            (ipaadmin_password is undefined or ipaadmin_password|length == 0)
-            and (ipaclient_keytab is undefined or ipaclient_keytab|length == 0)
+    - name: Install - Check if one of password or keytabs are set
+      fail: msg="At least one of password or keytabs must be specified"
+      when: not result_ipaclient_test_keytab.krb5_keytab_ok
+            and ipaadmin_password is undefined
+            and ipaclient_keytab is undefined
     when: not ipaclient_on_master | bool
 
   - name: Install - Purge {{ result_ipaclient_test.realm }} from host keytab
@@ -188,7 +187,7 @@
       hostname: "{{ result_ipaclient_test.hostname }}"
       force_join: "{{ ipaclient_force_join | default(omit) }}"
       principal: "{{ ipaadmin_principal if not ipaclient_use_otp | bool and
-                     ipaclient_keytab is not defined else '' }}"
+                     ipaclient_keytab is not defined else omit }}"
       password: "{{ ipaadmin_password | default(omit) }}"
       keytab: "{{ ipaclient_keytab | default(omit) }}"
       # ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
