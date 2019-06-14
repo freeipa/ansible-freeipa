@@ -111,11 +111,13 @@ Example playbook to setup the IPA client(s) using principal and password from in
 Playbooks
 =========
 
-The playbooks needed to deploy or undeploy a client are part of the repository. There are also playbooks to deploy and undeploy clusters.
+The playbooks needed to deploy or undeploy a client are part of the repository in the playbooks folder. There are also playbooks to deploy and undeploy clusters.
 ```
 install-client.yml
 uninstall-client.yml
 ```
+Please remember to link or copy the playbooks to the base directory of ansible-freeipa if you want to use the roles within the source archive.
+
 
 How to setup a client
 ---------------------
