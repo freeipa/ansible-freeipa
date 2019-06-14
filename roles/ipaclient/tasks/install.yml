@@ -133,7 +133,7 @@
     - name: Install - Store the previously obtained OTP
       no_log: yes
       set_fact:
-        ipaadmin_orig_password: "{{ ipaadmin_password }}"
+        ipaadmin_orig_password: "{{ ipaadmin_password | default(omit) }}"
         ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword
                                if result_ipaclient_get_otp.host is defined }}"
 
