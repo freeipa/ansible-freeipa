@@ -9,8 +9,41 @@ Changes made to any master are automatically replicated to other masters.
 
 This can be done in differnt ways using auto-discovery of the servers, domain and other settings or by specifying them.
 
+**Note**: The ansible playbooks and role require a configured ansible environment where the ansible nodes are reachable and are properly set up to have an IP address and a working package manager.
+
+
+Features
+--------
+* Replica deployment
+
+
+Supported FreeIPA Versions
+--------------------------
+
+FreeIPA versions 4.6 and up are supported by the replica role.
+
+
+Supported Distributions
+-----------------------
+
+* RHEL/CentOS 7.6+
+* Fedora 26+
+* Ubuntu
+
+
+Requirements
+------------
+
+**Controller**
+* Ansible version: 2.8+
+
+**Node**
+* Supported FreeIPA version (see above)
+* Supported distribution (needed for package installation only, see above)
+
+
 Usage
------
+=====
 
 Example inventory file with fixed principal using auto-discovery with DNS records:
 
@@ -68,68 +101,145 @@ Example playbook to setup the IPA client(s) using principal and password from in
       - role: ipareplica
         state: present
 
+
+Playbooks
+=========
+
+The playbooks needed to deploy or undeploy a replica are part of the repository in the playbooks folder. There are also playbooks to deploy and undeploy clusters.
+```
+install-replica.yml
+uninstall-replica.yml
+```
+Please remember to link or copy the playbooks to the base directory of ansible-freeipa if you want to use the roles within the source archive.
+
+
+How to setup replicas
+---------------------
+
+```bash
+ansible-playbook -v -i inventory/hosts install-replica.yml
+```
+This will deploy the replicas defined in the inventory file.
+
+
 Variables
----------
+=========
 
-**ipaserver** - Group with IPA server hostname.
- (list of strings, optional)
+Base Variables
+--------------
 
-**ipaclients** - Group of IPA client hostnames.
- (list of strings)
+Variable | Description | Required
+-------- | ----------- | --------
+`ipaserver` | This group with the single IPA server full qualified hostname. (list of strings) | no
+`ipaservers` | Group of IPA replica hostnames. (list of strings) | yes
+`ipaadmin_password` | The password for the IPA admin user (string) | no
+`ipareplica_ip_addresses` | The list of master server IP addresses. (list of strings) | no
+`ipareplica_domain` | The primary DNS domain of an existing IPA deployment. (string) | no
+`ipaserver_realm` | The Kerberos realm of an existing IPA deployment. (string) | no
+`ipaserver_hostname` | Fully qualified name of the server. (string) | no
+`ipaadmin_principal` | The authorized kerberos principal used to join the IPA realm. (string) | no
+`ipareplica_no_host_dns` | Do not use DNS for hostname lookup during installation. (bool, default: false) | no
+`ipareplica_skip_conncheck` | Skip connection check to remote master. (bool, default: false) | no
 
-**ipaadmin_keytab** - The path to the admin keytab used for alternative authentication.
- (string, optional)
+Server Vaiables
+---------------
 
-**ipaadmin_principal** - The authorized kerberos principal used to join the IPA realm.
- (string, optional)
+Variable | Description | Required
+-------- | ----------- | --------
+`ipadm_password` | The password for the Directory Manager. (string) | no
+`ipareplica_setup_adtrust` | Configure AD trust capability. (bool, default: false) | no
+`ipareplica_setup_ca` | Configure a dogtag CA. (bool, default: false) | no
+`ipareplica_setup_kra` | Configure a dogtag KRA. (bool, default: false) | no
+`ipareplica_setup_dns` | Configure bind with our zone. (bool, default: false) | no
+`ipareplica_no_pkinit` | Disables pkinit setup steps. (bool, default: false) | no
+`ipareplica_no_ui_redirect` | Do not automatically redirect to the Web UI. (bool, default: false) | no
+`ipareplica_dirsrv_config_file` | The path to LDIF file that will be used to modify configuration of dse.ldif during installation of the directory server instance. (string)| no
 
-**ipaadmin_password** - The password for the kerberos principal.
- (string, optional)
- 
-**ipaclient_domain** - The primary DNS domain of an existing IPA deployment.
- (string, optional)
+SSL certificate Variables
+-------------------------
 
-**ipaclient_realm** - The Kerberos realm of an existing IPA deployment.
- (string, optional)
+Variable | Description | Required
+-------- | ----------- | --------
+`ipareplica_dirsrv_cert_files` | Files containing the Directory Server SSL certificate and private keys. (list of strings) | no
+`ipareplica_http_cert_file` | File containing the Apache Server SSL certificate and private key. (string) | no
+`ipareplica_pkinit_cert_file` | File containing the Kerberos KDC SSL certificate and private key. (string) | no
+`ipareplica_dirsrv_pin` | The password to unlock the Directory Server private key. (string) | no
+`ipareplica_http_pin` | The password to unlock the Apache Server private key. (string) | no
+`ipareplica_pkinit_pin` | The password to unlock the Kerberos KDC private key. (string) | no
+`ipareplica_dirsrv_cert_name` | Name of the Directory Server SSL certificate to install. (string) | no
+`ipareplica_http_cert_name` | Name of the Apache Server SSL certificate to install. (string) | no
+`ipareplica_pkinit_cert_name` | Name of the Kerberos KDC SSL certificate to install. (string) | no
 
-**ipaclient_keytab** - The path to a backed-up host keytab from previous enrollment.
- (string, optional)
+Client Variables
+----------------
 
-**ipaclient_force_join** - Set force_join to yes to join the host even if it is already enrolled.
- (bool, optional)
+Variable | Description | Required
+-------- | ----------- | --------
+`ipaclient_keytab` | Path to backed up keytab from previous enrollment. (string) | no
+`ipaclient_mkhomedir` | Set to yes to configure PAM to create a users home directory if it does not exist. (string) | no
+`ipaclient_force-join` | Force client enrollment even if already enrolled. (bool, default: false) | no
+`ipaclient_ntp_servers` | The list defines the NTP servers to be used. (list of strings) | no
+`ipaclient_ntp_pool` | The string value defines the ntp server pool to be used. (string) | no
+`ipaclient_no_ntp` | The bool value defines if NTP will not be configured and enabled. (bool, default: false) | no
+`ipaclient_ssh_trust_dns` | The bool value defines if OpenSSH client will be configured to trust DNS SSHFP records. (bool, default: false) | no
+`ipaclient_no_ssh` | The bool value defines if OpenSSH client will be configured. (bool, default: false) | no
+`ipaclient_no_sshd` | The bool value defines if OpenSSH server will be configured. (bool, default: false) | no
+`ipaclient_no_sudo` | The bool value defines if SSSD will be configured as a data source for sudo. (bool, default: false) | no
+`ipaclient_no_dns_sshfp` | The bool value defines if DNS SSHFP records will not be created automatically. (bool, default: false) | no
 
-**ipaclient_use_otp** - Enforce the generation of a one time password to configure new and existing hosts. The enforcement on an existing host is not done if there is a working krb5.keytab on the host. If the generation of an otp is enforced for an existing host entry, then the host gets diabled and the containing keytab gets removed.
- (bool, optional)
+Certificate system Variables
+----------------------------
 
-**ipaclient_allow_repair** - Allow repair of already joined hosts. Contrary to ipaclient_force_join the host entry will not be changed on the server.
- (bool, optional)
+Variable | Description | Required
+-------- | ----------- | --------
+~~`ipareplica_skip_schema_check`~~ | ~~Skip check for updated CA DS schema on the remote master. (bool, default: false)~~ | ~~no~~
 
-**ipaclient_kinit_attempts** - Repeat the request for host Kerberos ticket X times if it fails.
- (int, optional)
+DNS Variables
+-------------
 
-**ipaclient_no_ntp** - Set to yes to not configure and enable NTP
- (bool, optional)
+Variable | Description | Required
+-------- | ----------- | --------
+`ipareplica_allow_zone_overlap` | Allow creation of (reverse) zone even if the zone is already resolvable. (bool, default: false) | no
+`ipareplica_reverse_zones` | The reverse DNS zones to use. (list of strings) | no
+`ipareplica_no_reverse` | Do not create reverse DNS zone. (bool, default: false) | no
+`ipareplica_auto_reverse` | Try to resolve reverse records and reverse zones for server IP addresses. (bool, default: false) | no
+`ipareplica_zonemgr` | The e-mail address of the DNS zone manager. (string, default: hostmaster@DOMAIN.) | no
+`ipareplica_forwarders` | Add DNS forwarders to the DNS configuration. (list of strings) | no
+`ipareplica_no_forwarders` | Do not add any DNS forwarders. Root DNS servers will be used instead. (bool, default: false) | no
+`ipareplica_auto_forwarders` | Add DNS forwarders configured in /etc/resolv.conf to the list of forwarders used by IPA DNS. (bool, default: false) | no
+`ipareplica_forward_policy` | DNS forwarding policy for global forwarders specified using other options. (choice: first|only) | no
+`ipareplica_no_dnssec_validation` | Disable DNSSEC validation on this server. (bool, default: false) | no
 
-**ipaclient_mkhomedir** - Set to yes to configure PAM to create a users home directory if it does not exist.
- (string, optional)
+AD trust Variables
+------------------
+
+Variable | Description | Required
+-------- | ----------- | --------
+~~`ipareplica_add_sids`~~ | ~~Add SIDs for existing users and groups as the final step. (bool, default: false)~~ | ~~no~~
+~~`ipareplica_add_agents`~~ | ~~Add IPA masters to a list of hosts allowed to serve information about users from trusted forests. (bool, default: false)~~ | ~~no~~
+`ipareplica_enable_compat`| Enables support for trusted domains users for old clients through Schema Compatibility plugin. (bool, default: false) | no
+`ipareplica_netbios_name` | The NetBIOS name for the IPA domain. (string) | no
+`ipareplica_rid_base` | First RID value of the local domain. (integer) | no
+`ipareplica_secondary_rid_base` | Start value of the secondary RID range. (integer) | no
 
 Cluster Specific Variables
 --------------------------
 
-**ipaclient_no_dns_lookup** - Set to 'yes' to use groups.ipaserver in cluster environments as servers for the clients. This deactivates DNS lookup in krb5.
- (bool, optional, default: 'no')
+Variable | Description | Required
+-------- | ----------- | --------
+`ipareplica_servers` | Manually override list of servers for example in a cluster environment on a per replica basis. The list of servers is normally taken from from groups.ipaserver in cluster environments. (list of strings) | no
+`ipaserver_domain` | Used if set in a cliuster environment to overload `ipareplica_domain` | no
 
-**ipareplica_servers** - Manually override list of servers for example in a cluster environment on a per client basis. The list of servers is normally taken from from groups.ipaserver in cluster environments.
- (list of strings, optional)
+Special Variables
+-----------------
 
-Requirements
-------------
+Variable | Description | Required
+-------- | ----------- | --------
+`ipareplica_install_packages` | The bool value defines if the needed packages are installed on the node. (bool, default: true) | no
+`ipareplica_setup_firewalld` | The value defines if the needed services will automatically be openen in the firewall managed by firewalld. (bool, default: true) | no
 
-freeipa-server v4.6 or later
 
 Authors
--------
-
-Florence Blanc-Renaud
+=======
 
 Thomas Woerner
