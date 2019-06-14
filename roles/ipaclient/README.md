@@ -16,8 +16,7 @@ Features
 Supported FreeIPA Versions
 --------------------------
 
-FreeIPA versions 4.5 and up are supported by the client role. There is also
-limited support for verison 4.4.
+FreeIPA versions 4.5 and up are supported by the client role. There is also limited support for verison 4.4.
 
 
 Supported Distributions
@@ -32,7 +31,7 @@ Requirements
 ------------
 
 **Controller**
-* Ansible version: 2.5+
+* Ansible version: 2.8+
 * python3-gssapi is required on the controller if a one time password (OTP) is used to install the client.
 
 **Node**
