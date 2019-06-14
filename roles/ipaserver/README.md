@@ -39,6 +39,16 @@ Requirements
 * Supported distribution (needed for package installation only, see above)
 
 
+Limitations
+-----------
+
+External CA
+
+External CA support is not supported or working. The currently needed two step process is an issue for the processing in the role. The configuration of the server is partly done already and needs to be continued after the CSR has been handled. This is for example breaking the deployment of a server with replicas or clients in one playbook.
+
+Work is planned to have a new method to handle CSR for external CAs in a separate step before starting the server installation.
+
+
 Usage
 =====
 
