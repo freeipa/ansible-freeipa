@@ -25,6 +25,11 @@
 #- name: Install - Include Python2/3 import test
 #  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
 
+- name: Install - Set ipareplica_servers
+  set_fact:
+    ipareplica_servers: "{{ groups['ipaservers'] | list }}"
+  when: groups.ipaservers is defined and ipareplica_servers is not defined
+
 - name: Install - Set default principal if no keytab is given
   set_fact:
     ipaadmin_principal: admin
@@ -38,8 +43,7 @@
     ip_addresses: "{{ ipareplica_ip_addresses | default([]) }}"
     domain: "{{ ipareplica_domain | default(ipaserver_domain) |
             default(omit) }}"
-    servers: "{{ groups.ipaservers | default(groups.ipaserver) |
-              default(omit) }}"
+    servers: "{{ ipareplica_servers | default(omit) }}"
     realm: "{{ ipareplica_realm | default(omit) }}"
     hostname: "{{ ipareplica_hostname | default(ansible_fqdn) }}"
     ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
