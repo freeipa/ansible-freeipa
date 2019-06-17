@@ -191,7 +191,7 @@
                      ipaclient_keytab is not defined else omit }}"
       password: "{{ ipaadmin_password | default(omit) }}"
       keytab: "{{ ipaclient_keytab | default(omit) }}"
-      admin_keytab: "{{ ipaadmin_keytab if not ipaclient_use_otp | bool and ipaadmin_keytab else omit }}"
+      admin_keytab: "{{ ipaadmin_keytab if ipaadmin_keytab is defined and not ipaclient_use_otp | bool else omit }}"
       # ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
       kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
     register: result_ipaclient_join
