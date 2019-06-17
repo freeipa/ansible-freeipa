@@ -177,7 +177,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaclient_keytab` | Path to backed up keytab from previous enrollment. (string) | no
 `ipaclient_mkhomedir` | Set to yes to configure PAM to create a users home directory if it does not exist. (string) | no
-`ipaclient_force-join` | Force client enrollment even if already enrolled. (bool, default: false) | no
+`ipaclient_force_join` | Force client enrollment even if already enrolled. (bool, default: false) | no
 `ipaclient_ntp_servers` | The list defines the NTP servers to be used. (list of strings) | no
 `ipaclient_ntp_pool` | The string value defines the ntp server pool to be used. (string) | no
 `ipaclient_no_ntp` | The bool value defines if NTP will not be configured and enabled. (bool, default: false) | no
@@ -207,7 +207,7 @@ Variable | Description | Required
 `ipareplica_forwarders` | Add DNS forwarders to the DNS configuration. (list of strings) | no
 `ipareplica_no_forwarders` | Do not add any DNS forwarders. Root DNS servers will be used instead. (bool, default: false) | no
 `ipareplica_auto_forwarders` | Add DNS forwarders configured in /etc/resolv.conf to the list of forwarders used by IPA DNS. (bool, default: false) | no
-`ipareplica_forward_policy` | DNS forwarding policy for global forwarders specified using other options. (choice: first|only) | no
+`ipareplica_forward_policy` | DNS forwarding policy for global forwarders specified using other options. (choice: first,only) | no
 `ipareplica_no_dnssec_validation` | Disable DNSSEC validation on this server. (bool, default: false) | no
 
 AD trust Variables
