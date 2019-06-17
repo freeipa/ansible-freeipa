@@ -60,7 +60,6 @@ def main():
     module = AnsibleModule(
         argument_spec = dict(
             #basic
-            dm_password=dict(required=True, no_log=True),
             master_password=dict(required=False, no_log=True),
         ),
         supports_check_mode = True,
@@ -68,20 +67,10 @@ def main():
 
     module._ansible_debug = True
 
-    options.dm_password = module.params.get('dm_password')
     options.master_password = module.params.get('master_password')
 
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
     sstore = sysrestore.StateFile(paths.SYSRESTORE)
-
-    # This will override any settings passed in on the cmdline
-    if os.path.isfile(paths.ROOT_IPA_CACHE):
-        # dm_password check removed, checked already
-        try:
-            cache_vars = read_cache(options.dm_password)
-            options.__dict__.update(cache_vars)
-        except Exception as e:
-            module.fail_json(msg="Cannot process the cache file: %s" % str(e))
 
     if not options.master_password:
         options.master_password = ipa_generate_password()

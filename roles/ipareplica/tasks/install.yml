@@ -178,7 +178,6 @@
   - name: Install - Create dirman password
     no_log: yes
     ipareplica_master_password:
-      dm_password: "{{ ipadm_password }}"
       master_password: "{{ ipareplica_master_password | default(omit) }}"
     register: result_ipareplica_master_password
 
