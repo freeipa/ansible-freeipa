@@ -1,7 +1,7 @@
 FreeIPA Ansible roles
 =====================
 
-This repository contains [Ansible](https://www.ansible.com/) roles and playbooks to install and uninstall [FreeIPA](https://www.freeipa.org/) `servers`, `replicas` and `clients`.
+This repository contains [Ansible](https://www.ansible.com/) roles and playbooks to install and uninstall [FreeIPA](https://www.freeipa.org/) `servers`, `replicas` and `clients`. Also modules for topology management.
 
 **Note**: The ansible playbooks and roles require a configured ansible environment where the ansible nodes are reachable and are properly set up to have an IP address and a working package manager.
 
@@ -301,6 +301,42 @@ ansible-playbook -v -i inventory/hosts install-cluster.yml
 ```
 This will deploy the server, replicas and clients defined in the inventory file.
 
+How to add tooplogy segments
+----------------------------
+
+With this playbook it is possible to add a list of topology segments using the `ipatopologysegment` module.
+
+
+```yaml
+---
+- name: Add topology segments
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  vars:
+    ipaadmin_password: password1
+    ipatopology_segments:
+    - {suffix: domain, left: replica1.test.local, right: replica2.test.local}
+    - {suffix: domain, left: replica2.test.local, right: replica3.test.local}
+    - {suffix: domain, left: replica3.test.local, right: replica4.test.local}
+    - {suffix: domain+ca, left: replica4.test.local, right: replica1.test.local}
+
+  tasks:
+  - name: Add topology segment
+    ipatopologysegment:
+      password: "{{ ipaadmin_password }}"
+      suffix: "{{ item.suffix }}"
+      name: "{{ item.name | default(omit) }}"
+      left: "{{ item.left }}"
+      right: "{{ item.right }}"
+      #state: present
+      #state: absent
+      #state: checked
+      state: reinitialized
+    loop: "{{ ipatopology_segments | default([]) }}"
+```
+
 
 Roles
 =====
@@ -309,7 +345,7 @@ Roles
 * [Replica](roles/ipareplica/README.md)
 * [Client](roles/ipaclient/README.md)
 
-Plugins in plugin/modules
+Modules in plugin/modules
 =========================
 
 * [ipatopologysegment](README-topology.md)
