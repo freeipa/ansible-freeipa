@@ -130,9 +130,9 @@ Base Variables
 
 Variable | Description | Required
 -------- | ----------- | --------
-`ipaserver` | This group with the single IPA server full qualified hostname. (list of strings) | no
-`ipaservers` | Group of IPA replica hostnames. (list of strings) | yes
-`ipaadmin_password` | The password for the IPA admin user (string) | no
+`ipaservers` | This group with the IPA master full qualified hostnames. (list of strings) | mostly
+`ipareplicas` | Group of IPA replica hostnames. (list of strings) | yes
+`ipaadmin_password` | The password for the IPA admin user (string) | mostly
 `ipareplica_ip_addresses` | The list of master server IP addresses. (list of strings) | no
 `ipareplica_domain` | The primary DNS domain of an existing IPA deployment. (string) | no
 `ipaserver_realm` | The Kerberos realm of an existing IPA deployment. (string) | no
@@ -146,7 +146,7 @@ Server Vaiables
 
 Variable | Description | Required
 -------- | ----------- | --------
-`ipadm_password` | The password for the Directory Manager. (string) | no
+`ipadm_password` | The password for the Directory Manager. (string) | mostly
 `ipareplica_setup_adtrust` | Configure AD trust capability. (bool, default: false) | no
 `ipareplica_setup_ca` | Configure a dogtag CA. (bool, default: false) | no
 `ipareplica_setup_kra` | Configure a dogtag KRA. (bool, default: false) | no
