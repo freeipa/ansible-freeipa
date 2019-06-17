@@ -305,7 +305,7 @@ def main():
                     elif direction == "right-to-left":
                         args["right"] = True
 
-                    command.append(["topologysegment_reinitialize", args])
+                    commands.append(["topologysegment_reinitialize", args])
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
