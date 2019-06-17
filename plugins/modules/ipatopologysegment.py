@@ -41,7 +41,7 @@ options:
   suffix:
     description: Topology suffix
     required: true
-    choices: ["domain", "ca"]
+    choices: ["domain", "ca", "domain+ca"]
   name:
     description: Topology segment name, unique identifier.
     required: false
@@ -59,7 +59,8 @@ options:
   state:
     description: State to ensure
     default: present
-    choices: ["present", "absent", "enabled", "disabled", "reinitialized"]
+    choices: ["present", "absent", "enabled", "disabled", "reinitialized"
+              "checked" ]
 author:
     - Thomas Woerner
 """
@@ -87,9 +88,29 @@ EXAMPLES = """
     name: ipaserver.test.local-to-replica1.test.local
     direction: left-to-right
     state: reinitialized
+
+- ipatopologysegment:
+    suffix: domain+ca
+    left: ipaserver.test.local
+    right: ipareplica1.test.local
+    state: absent
+
+- ipatopologysegment:
+    suffix: domain+ca
+    left: ipaserver.test.local
+    right: ipareplica1.test.local
+    state: checked
 """
 
 RETURN = """
+found:
+  description: List of found segments
+  returned: if state is checked
+  type: list
+not-found:
+  description: List of not found segments
+  returned: if state is checked
+  type: list
 """
 
 from ansible.module_utils.basic import AnsibleModule
@@ -128,13 +149,33 @@ def find_cn(module, suffix, name):
     else:
         return None
 
+def find_left_right_cn(module, suffix, left, right, name):
+    if left is not None and right is not None:
+        left_right = find_left_right(module, suffix, left, right)
+        if left_right is not None:
+            if name is not None and \
+               left_right["cn"][0] != to_text(name):
+                module.fail_json(
+                    msg="Left and right nodes do not match "
+                    "given name name (cn) '%s'" % name)
+            return left_right
+        # else: Nothing to change
+    elif name is not None:
+        cn = find_cn(module, suffix, name)
+        if cn is not None:
+            return cn
+        # else: Nothing to change
+    else:
+        module.fail_json(
+            msg="Either left and right or name need to be set.")
+    return None
 
 def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
             principal=dict(type="str", default="admin"),
             password=dict(type="str", required=False, no_log=True),
-            suffix=dict(choices=["domain", "ca"], required=True),
+            suffix=dict(choices=["domain", "ca", "domain+ca"], required=True),
             name=dict(type="str", aliases=["cn"], default=None),
             left=dict(type="str", aliases=["leftnode"], default=None),
             right=dict(type="str", aliases=["rightnode"], default=None),
@@ -142,7 +183,7 @@ def main():
                            choices=["left-to-right", "right-to-left"]),
             state=dict(type="str", default="present",
                        choices=["present", "absent", "enabled", "disabled",
-                                "reinitialized"]),
+                                "reinitialized", "checked"]),
         ),
         supports_check_mode=True,
     )
@@ -153,7 +194,7 @@ def main():
 
     principal = ansible_module.params.get("principal")
     password = ansible_module.params.get("password")
-    suffix = ansible_module.params.get("suffix")
+    suffixes = ansible_module.params.get("suffix")
     name = ansible_module.params.get("name")
     left = ansible_module.params.get("left")
     right = ansible_module.params.get("right")
@@ -169,6 +210,7 @@ def main():
     # Init
 
     changed = False
+    exit_args = { }
     ccache_dir = None
     ccache_name = None
     try:
@@ -176,100 +218,100 @@ def main():
             ccache_dir, ccache_name = temp_kinit(principal, password)
         api_connect()
 
-        command = None
+        commands = []
 
-        # Get name (cn) from left and right node if set for absent, disabled
-        # or reinitialized.
-        if state in ["absent", "disabled", "reinitialized"]:
-            if left is not None and right is not None:
-                left_right = find_left_right(ansible_module, suffix,
-                                             left, right)
-                if left_right is not None:
-                    if name is not None and \
-                       left_right["cn"][0] != to_text(name):
-                        ansible_module.fail_json(
-                            msg="Left and right nodes do not match "
-                            "given name name (cn) '%s'" % name)
-                    args = {
-                        "cn": left_right["cn"][0]
-                    }
-                # else: Nothing to change
-            elif name is not None:
-                result = find_cn(ansible_module, suffix, name)
-                if result is not None:
-                    args = {
-                        "cn": result["cn"][0]
-                    }
-                # else: Nothing to change
-            else:
-                ansible_module.fail_json(
-                    msg="Either left and right or name need to be set.")
+        for suffix in suffixes.split("+"):
+            # Create command
+            if state in ["present", "enabled"]:
+                # Make sure topology segment exists
 
-        # Create command
-        if state in ["present", "enabled"]:
-            # Make sure topology segment exists
-
-            if left is None or right is None:
-                ansible_module.fail_json(
-                    msg="Left and right need to be set.")
-            args = {
-                "iparepltoposegmentleftnode": to_text(left),
-                "iparepltoposegmentrightnode": to_text(right),
-            }
-            if name is not None:
-                args["cn"] = to_text(name)
-
-            res_left_right = find_left_right(ansible_module, suffix,
-                                             left, right)
-            if res_left_right is not None:
-                if name is not None and \
-                   res_left_right["cn"][0] != to_text(name):
+                if left is None or right is None:
                     ansible_module.fail_json(
-                        msg="Left and right nodes already used with "
-                        "different name (cn) '%s'" % res_left_right["cn"])
+                        msg="Left and right need to be set.")
+                args = {
+                    "iparepltoposegmentleftnode": to_text(left),
+                    "iparepltoposegmentrightnode": to_text(right),
+                }
+                if name is not None:
+                    args["cn"] = to_text(name)
 
-                # Left and right nodes and also the name can not be
-                # changed
-                for key in [ "iparepltoposegmentleftnode",
-                             "iparepltoposegmentrightnode" ]:
-                    if key in args:
-                        del args[key]
-                if len(args) > 1:
-                    # cn needs to be in args always
-                    command = "topologysegment_mod"
-                # else: Nothing to change
-            else:
-                if name is None:
-                    args["cn"] = to_text("%s-to-%s" % (left, right))
-                command = "topologysegment_add"
+                res_left_right = find_left_right(ansible_module, suffix,
+                                                 left, right)
+                if res_left_right is not None:
+                    if name is not None and \
+                       res_left_right["cn"][0] != to_text(name):
+                        ansible_module.fail_json(
+                            msg="Left and right nodes already used with "
+                            "different name (cn) '%s'" % res_left_right["cn"])
 
-        elif state in ["absent", "disabled"]:
-            # Make sure topology segment does not exist
-
-            if len(args) > 0:
-                # Either name defined or found name from left and right node
-                command = "topologysegment_del"
-
-        elif state == "reinitialized":
-            # Reinitialize segment
-
-            if len(args) > 0:
-                # Either name defined or found name from left and right node
-                command = "topologysegment_reinitialize"
-
-                if direction == "left-to-right":
-                    args["left"] = True
-                elif direction == "right-to-left":
-                    args["right"] = True
+                    # Left and right nodes and also the name can not be
+                    # changed
+                    for key in [ "iparepltoposegmentleftnode",
+                                 "iparepltoposegmentrightnode" ]:
+                        if key in args:
+                            del args[key]
+                    if len(args) > 1:
+                        # cn needs to be in args always
+                        commands.append(["topologysegment_mod", args])
+                    # else: Nothing to change
                 else:
+                    if name is None:
+                        args["cn"] = to_text("%s-to-%s" % (left, right))
+                    commands.append(["topologysegment_add", args])
+
+            elif state in ["absent", "disabled"]:
+                # Make sure topology segment does not exist
+
+                res_find = find_left_right_cn(ansible_module, suffix,
+                                              left, right, name)
+                if res_find is not None:
+                    # Found either given name or found name from left and right
+                    # node
+                    args = {
+                        "cn": res_find["cn"][0]
+                    }
+                    commands.append(["topologysegment_del", args])
+
+            elif state == "checked":
+                # Check if topology segment does exists
+
+                res_find = find_left_right_cn(ansible_module, suffix,
+                                              left, right, name)
+                if res_find is not None:
+                    # Found either given name or found name from left and right
+                    # node
+                    exit_args.setdefault("found", []).append(suffix)
+                else:
+                    # Not found
+                    exit_args.setdefault("not-found", []).append(suffix)
+
+            elif state == "reinitialized":
+                # Reinitialize segment
+
+                if direction not in [ "left-to-right", "right-to-left" ]:
                     ansible_module.fail_json(msg="Unknown direction '%s'" %
                                              direction)
-        else:
-            ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+                res_find = find_left_right_cn(ansible_module, suffix,
+                                              left, right, name)
+                if res_find is not None:
+                    # Found either given name or found name from left and right
+                    # node
+                    args = {
+                        "cn": res_find["cn"][0]
+                    }
+                    if direction == "left-to-right":
+                        args["left"] = True
+                    elif direction == "right-to-left":
+                        args["right"] = True
+
+                    command.append(["topologysegment_reinitialize", args])
+            else:
+                ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
         # Execute command
 
-        if command is not None:
+        for command, args in commands:
             result = api_command(ansible_module, command,
                                  to_text(suffix), args)
             changed = True
@@ -282,7 +324,7 @@ def main():
 
     # Done
 
-    ansible_module.exit_json(changed=changed)
+    ansible_module.exit_json(changed=changed, **exit_args)
 
 if __name__ == "__main__":
     main()
