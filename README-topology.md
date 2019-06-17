@@ -116,6 +116,38 @@ Example playbook to verify a topology suffix:
       state: verified
 ```
 
+Example playbook to add a list of topology segments:
+
+```yaml
+---
+- name: Add topology segments
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  vars:
+    ipaadmin_password: password1
+    ipatopology_segments:
+    - {suffix: domain, left: replica1.test.local, right: replica2.test.local}
+    - {suffix: domain, left: replica2.test.local, right: replica3.test.local}
+    - {suffix: domain, left: replica3.test.local, right: replica4.test.local}
+    - {suffix: domain+ca, left: replica4.test.local, right: replica1.test.local}
+
+  tasks:
+  - name: Add topology segment
+    ipatopologysegment:
+      password: "{{ ipaadmin_password }}"
+      suffix: "{{ item.suffix }}"
+      name: "{{ item.name | default(omit) }}"
+      left: "{{ item.left }}"
+      right: "{{ item.right }}"
+      #state: present
+      #state: absent
+      #state: checked
+      state: reinitialized
+    loop: "{{ ipatopology_segments | default([]) }}"
+```
+
 
 Variables
 =========
@@ -127,12 +159,12 @@ Variable | Description | Required
 -------- | ----------- | --------
 `principal` | The admin principal is a string and defaults to `admin` | no
 `password` | The admin password is a string and is required if there is no admin ticket available on the node | no
-`suffix` | The topology suffix to be used, this can either be `domain` or `ca` | yes
+`suffix` | The topology suffix to be used, this can either be `domain`, `ca` or `domain+ca` | yes
 `name` \| `cn` | The topology segment name (cn) is the unique identifier for a segment. | no
 `left` \| `leftnode` | The left replication node string - an IPA server | no
 `right` \| `rightnode` | The right replication node string - an IPA server | no
 `direction` | The direction a segment will be reinitialized. It can either be `left-to-right` or `right-to-left` and only used with `state: reinitialized` | 
-`state` | The state to ensure. It can be one of `present`, `absent`, `enabled`, `disabled` or `reinitialized` | yes
+`state` | The state to ensure. It can be one of `present`, `absent`, `enabled`, `disabled`, `checked` or `reinitialized` | yes
 
 
 ipatopologysuffix
