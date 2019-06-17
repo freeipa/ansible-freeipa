@@ -83,9 +83,9 @@
       name: ipaclient
     vars:
       state: present
-      ipaclient_domain: "{{ result_ipareplica_test.domain }}"
-      ipaclient_realm: "{{ result_ipareplica_test.realm }}"
-      ipaclient_servers: ["{{ result_ipareplica_test.server }}"]
+      ipaclient_domain: "{{ result_ipareplica_test.domain | default(omit) }}"
+      ipaclient_realm: "{{ result_ipareplica_test.realm | default(omit) }}"
+      ipaclient_servers: "{{ ipareplica_servers | default(omit) }}"
       ipaclient_hostname: "{{ result_ipareplica_test.hostname }}"
       ipaclient_no_ntp: "{{ result_ipareplica_test.ipa_python_version
                             < 40690 }}"
