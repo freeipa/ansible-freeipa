@@ -129,6 +129,13 @@
                        in result_ipaclient_get_otp.msg
       delegate_to: "{{ result_ipaclient_test.servers[0] }}"
       delegate_facts: yes
+      ignore_errors: yes
+
+    - name: Install - Report error for OTP generation
+      debug:
+        msg: "{{ result_ipaclient_get_otp.msg }}"
+      when: result_ipaclient_get_otp is failed
+      failed_when: yes
 
     - name: Install - Store the previously obtained OTP
       no_log: yes
