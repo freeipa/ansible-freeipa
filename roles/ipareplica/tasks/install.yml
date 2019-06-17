@@ -5,22 +5,19 @@
 
   - name: Install - Ensure IPA replica packages are installed
     package:
-      name: "{{ item }}"
+      name: "{{ ipareplica_packages }}"
       state: present
-    with_items: "{{ ipareplica_packages }}"
 
   - name: Install - Ensure IPA replica packages for dns are installed
     package:
-      name: "{{ item }}"
+      name: "{{ ipareplica_packages_dns }}"
       state: present
-    with_items: "{{ ipareplica_packages_dns }}"
     when: ipareplica_setup_dns | bool
 
   - name: Install - Ensure IPA replica packages for adtrust are installed
     package:
-      name: "{{ item }}"
+      name: "{{ ipareplica_packages_adtrust }}"
       state: present
-    with_items: "{{ ipareplica_packages_adtrust }}"
     when: ipareplica_setup_adtrust | bool
 
   when: ipareplica_install_packages | bool

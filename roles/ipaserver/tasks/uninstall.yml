@@ -17,8 +17,7 @@
   failed_when: uninstall.rc != 0 and uninstall.rc != 1
   changed_when: uninstall.rc == 0
 
-# - name: Remove IPA server packages
-#   package:
-#     name: "{{ item }}"
-#     state: absent
-#   with_items: "{{ ipaserver_packages }}"
+#- name: Remove IPA server packages
+#  package:
+#    name: "{{ ipaserver_packages }}"
+#    state: absent

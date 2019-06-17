@@ -34,8 +34,7 @@
 #  failed_when: False
 #  delegate_to: "{{ groups.ipaserver[0] | default(fail) }}"
 
-# - name: Remove IPA replica packages
-#   package:
-#     name: "{{ item }}"
-#     state: absent
-#   with_items: "{{ ipareplica_packages }}"
+#- name: Remove IPA replica packages
+#  package:
+#    name: "{{ ipareplica_packages }}"
+#    state: absent
