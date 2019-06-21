@@ -179,6 +179,14 @@ def main():
         ansible_module.fail_json(
             msg="Hidden replica is not supported in this version.")
 
+    # We need to point to the master in ipa default conf when certmonger
+    # asks for HTTP certificate in newer ipa versions. In these versions
+    # create_ipa_conf has the additional master argument.
+    change_master_for_certmonger = False
+    argspec = inspect.getargspec(create_ipa_conf)
+    if "master" in argspec.args:
+        change_master_for_certmonger = True
+
     # From ipa installer classes
 
     # pkinit is not supported on DL0, don't allow related options
@@ -332,18 +340,20 @@ def main():
 
     # done #
 
-    ansible_module.exit_json(changed=False,
-                             ipa_python_version=IPA_PYTHON_VERSION,
-                             ### basic ###
-                             domain=options.domain_name,
-                             realm=options.realm_name,
-                             hostname=options.host_name,
-                             ### server ###
-                             setup_adtrust=options.setup_adtrust,
-                             setup_kra=options.setup_kra,
-                             server=options.server,
-                             ### additional ###
-                             client_enrolled=client_enrolled,
+    ansible_module.exit_json(
+        changed=False,
+        ipa_python_version=IPA_PYTHON_VERSION,
+        ### basic ###
+        domain=options.domain_name,
+        realm=options.realm_name,
+        hostname=options.host_name,
+        ### server ###
+        setup_adtrust=options.setup_adtrust,
+        setup_kra=options.setup_kra,
+        server=options.server,
+        ### additional ###
+        client_enrolled=client_enrolled,
+        change_master_for_certmonger=change_master_for_certmonger,
     )
 
 if __name__ == '__main__':

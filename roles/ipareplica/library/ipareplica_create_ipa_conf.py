@@ -172,6 +172,7 @@ def main():
             ### additional ###
             server=dict(required=True),
             config_master_host_name=dict(required=True),
+            config_ca_host_name=dict(required=True),
             ccache=dict(required=True),
             installer_ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
@@ -183,6 +184,7 @@ def main():
             _add_to_ipaservers = dict(required=True, type='bool'),
             _ca_subject=dict(required=True),
             _subject_base=dict(required=True),
+            master=dict(required=False, default=None),
 
             dirman_password=dict(required=True, no_log=True),
         ),
@@ -227,6 +229,7 @@ def main():
     #    '_hostname_overridden')
     options.server = ansible_module.params.get('server')
     master_host_name = ansible_module.params.get('config_master_host_name')
+    ca_host_name = ansible_module.params.get('config_ca_host_name')
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
     #os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
@@ -246,6 +249,7 @@ def main():
 
     options._ca_subject = ansible_module.params.get('_ca_subject')
     options._subject_base = ansible_module.params.get('_subject_base')
+    master = ansible_module.params.get('master')
 
     dirman_password = ansible_module.params.get('dirman_password')
 
@@ -267,6 +271,7 @@ def main():
     config = gen_ReplicaConfig()
     config.subject_base = options.subject_base
     config.dirman_password = dirman_password
+    config.ca_host_name = ca_host_name
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
@@ -284,7 +289,7 @@ def main():
         # successful uninstallation
         # The configuration creation has to be here otherwise previous call
         # To config certmonger would try to connect to local server
-        create_ipa_conf(fstore, config, ca_enabled)
+        create_ipa_conf(fstore, config, ca_enabled, master)
 
     # done #
 
