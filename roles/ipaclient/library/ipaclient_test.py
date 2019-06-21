@@ -413,7 +413,6 @@ def main():
 
     # root_logger
     options.debug = False
-    options.unattended = not installer.interactive
     if options.domain_name:
         options.domain = normalize_hostname(installer.domain_name)
     else:

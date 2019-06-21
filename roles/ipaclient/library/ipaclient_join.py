@@ -180,7 +180,6 @@ def main():
     sssd = True
 
     options.ca_cert_file = ca_cert_file
-    options.unattended = True
     options.principal = principal
     options.force = False
     options.password = password

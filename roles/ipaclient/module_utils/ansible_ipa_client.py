@@ -64,6 +64,7 @@ installer = installer_obj()
 # Create options
 options = installer
 options.interactive = False
+options.unattended = not options.interactive
 
 if NUM_VERSION >= 40400:
     # IPA version >= 4.4

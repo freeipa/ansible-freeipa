@@ -90,7 +90,6 @@ def main():
     os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
 
     options.ca_cert_file = None
-    options.unattended = True
     options.principal = None
     options.force = False
     options.password = None
