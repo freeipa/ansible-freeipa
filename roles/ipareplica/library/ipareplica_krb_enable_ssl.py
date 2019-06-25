@@ -133,6 +133,8 @@ def main():
         krb.init_info(api.env.realm, api.env.host,
                       setup_pkinit=not options.no_pkinit,
                       subject_base=options.subject_base)
+        krb.pkcs12_info = options._pkinit_pkcs12_info
+        krb.master_fqdn = master_host_name
 
         ansible_log.debug("-- KRB ENABLE_SSL --")
 
