@@ -240,7 +240,7 @@ options.kasp_db_file = None
 options.force = False
 
 # ServerMasterInstall
-options.add_sids = True
+options.add_sids = False
 options.add_agents = False
 
 # ServerReplicaInstall
