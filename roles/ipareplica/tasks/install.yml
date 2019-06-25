@@ -508,6 +508,8 @@
         "{{ result_ipareplica_prepare.config_master_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
+      _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
+      _kra_host_name: "{{ result_ipareplica_prepare.config_kra_host_name }}"
       _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
@@ -527,6 +529,8 @@
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
       _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
+      _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
+      _kra_host_name: "{{ result_ipareplica_prepare.config_kra_host_name }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
@@ -609,6 +613,7 @@
       installer_ccache: "{{ result_ipareplica_prepare.installer_ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
       _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
+      _kra_host_name: "{{ result_ipareplica_prepare.config_kra_host_name }}"
       _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info }}"
       _http_pkcs12_info: "{{ result_ipareplica_prepare._http_pkcs12_info }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
@@ -653,6 +658,8 @@
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
       _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
+      _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
+      _kra_host_name: "{{ result_ipareplica_prepare.config_kra_host_name }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       dirman_password: "{{ ipareplica_dirman_password }}"
@@ -733,6 +740,8 @@
       hostname: "{{ result_ipareplica_test.hostname }}"
       hidden_replica: "{{ ipareplica_hidden_replica }}"
       ### server ###
+      ### replica ###
+      setup_kra: "{{ result_ipareplica_test.setup_kra }}"
       ### certificate system ###
       subject_base: "{{ result_ipareplica_prepare.subject_base }}"
       ### additional ###

@@ -64,6 +64,12 @@ options:
   _ca_file:
     description: 
     required: yes
+  _kra_enabled:
+    description: 
+    required: yes
+  _kra_host_name:
+    description: 
+    required: yes
   _dirsrv_pkcs12_info:
     description: 
     required: yes
@@ -103,6 +109,8 @@ def main():
             ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
             _ca_file=dict(required=False),
+            _kra_enabled=dict(required=False, type='bool'),
+            _kra_host_name=dict(required=False),
             _dirsrv_pkcs12_info = dict(required=False),
             _pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
@@ -135,6 +143,8 @@ def main():
     #os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
     #installer._ccache = ansible_module.params.get('installer_ccache')
     ca_enabled = ansible_module.params.get('_ca_enabled')
+    kra_enabled = ansible_module.params.get('_kra_enabled')
+    kra_host_name = ansible_module.params.get('_kra_host_name')
     dirsrv_pkcs12_info = ansible_module.params.get('_dirsrv_pkcs12_info')
     pkinit_pkcs12_info = ansible_module.params.get('_pkinit_pkcs12_info')
     options._top_dir = ansible_module.params.get('_top_dir')
@@ -161,6 +171,8 @@ def main():
     config.ca_host_name = config_ca_host_name
     config.subject_base = options.subject_base
     config.promote = installer.promote
+    config.kra_enabled = kra_enabled
+    config.kra_host_name = kra_host_name
 
     remote_api = gen_remote_api(config.master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api

@@ -49,6 +49,9 @@ options:
   setup_ca:
     description: Configure a dogtag CA
     required: yes
+  setup_kra:
+    description: Configure KRA
+    required: yes
   config_master_host_name:
     description: The master host name
     required: yes
@@ -77,6 +80,7 @@ def main():
             ccache=dict(required=True),
             _top_dir = dict(required=True),
             setup_ca=dict(required=True, type='bool'),
+            setup_kra=dict(required=True, type='bool'),
             config_master_host_name=dict(required=True),
         ),
         supports_check_mode = True,
@@ -100,6 +104,7 @@ def main():
     os.environ['KRB5CCNAME'] = ccache
     options._top_dir = ansible_module.params.get('_top_dir')
     options.setup_ca = ansible_module.params.get('setup_ca')
+    options.setup_kra = ansible_module.params.get('setup_kra')
     config_master_host_name = ansible_module.params.get('config_master_host_name')
 
     # init #

@@ -728,6 +728,7 @@ def main():
                              config_setup_ca=config.setup_ca,
                              config_master_host_name=config.master_host_name,
                              config_ca_host_name=config.ca_host_name,
+                             config_kra_host_name=config.kra_host_name,
                              config_ips=[ str(ip) for ip in config.ips ],
                              ### ad trust ###
                              rid_base=options.rid_base,

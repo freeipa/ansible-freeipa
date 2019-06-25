@@ -115,6 +115,7 @@ def main():
             installer_ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
             _kra_enabled=dict(required=False, type='bool'),
+            _kra_host_name=dict(required=False),
             _dirsrv_pkcs12_info = dict(required=False),
             _http_pkcs12_info = dict(required=False),
             _pkinit_pkcs12_info = dict(required=False),
@@ -176,6 +177,7 @@ def main():
     installer._ccache = ansible_module.params.get('installer_ccache')
     ca_enabled = ansible_module.params.get('_ca_enabled')
     kra_enabled = ansible_module.params.get('_kra_enabled')
+    kra_host_name = ansible_module.params.get('_kra_host_name')
 
     dirsrv_pkcs12_info = ansible_module.params.get('_dirsrv_pkcs12_info')
     http_pkcs12_info = ansible_module.params.get('_http_pkcs12_info')
@@ -206,6 +208,8 @@ def main():
     config = gen_ReplicaConfig()
     config.subject_base = options.subject_base
     config.promote = installer.promote
+    config.kra_enabled = kra_enabled
+    config.kra_host_name = kra_host_name
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api

@@ -64,6 +64,12 @@ options:
   _ca_file:
     description: 
     required: yes
+  _kra_enabled:
+    description:
+    required: yes
+  _kra_host_name:
+    description:
+    required: yes
   _top_dir:
     description: 
     required: yes
@@ -98,6 +104,8 @@ def main():
             ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
             _ca_file=dict(required=False),
+            _kra_enabled=dict(required=False, type='bool'),
+            _kra_host_name=dict(required=False),
             _dirsrv_pkcs12_info = dict(required=False),
             _pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
@@ -127,6 +135,8 @@ def main():
     #os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
     #installer._ccache = ansible_module.params.get('installer_ccache')
     ca_enabled = ansible_module.params.get('_ca_enabled')
+    kra_enabled = ansible_module.params.get('_kra_enabled')
+    kra_host_name = ansible_module.params.get('_kra_host_name')
     dirsrv_pkcs12_info = ansible_module.params.get('_dirsrv_pkcs12_info')
     options._pkinit_pkcs12_info = ansible_module.params.get('_pkinit_pkcs12_info')
     options._top_dir = ansible_module.params.get('_top_dir')
@@ -149,6 +159,8 @@ def main():
     config = gen_ReplicaConfig()
     config.dirman_password = dirman_password
     config.promote = installer.promote
+    config.kra_enabled = kra_enabled
+    config.kra_host_name = kra_host_name
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     #installer._remote_api = remote_api
@@ -174,7 +186,10 @@ def main():
                 ansible_log.debug("-- CUSTODIA CREATE_INSTANCE --")
                 custodia.create_instance()
         else:
-            if ca_enabled:
+            if kra_enabled:
+                # A KRA peer always provides a CA, too.
+                mode = custodiainstance.CustodiaModes.KRA_PEER
+            elif ca_enabled:
                 mode = custodiainstance.CustodiaModes.CA_PEER
             else:
                 mode = custodiainstance.CustodiaModes.MASTER_PEER
