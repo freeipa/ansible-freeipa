@@ -1,0 +1,12 @@
+- name: Install - Initialize ipaserver_external_cert_files
+  set_fact:
+     ipaserver_external_cert_files: []
+  when: ipaserver_external_cert_files is undefined
+- name: Install - Copy "{{ item }}" "{{ inventory_hostname }}':/root/'{{ item }}"
+  copy:
+    src: "{{ item }}"
+    dest: "/root/{{ item }}"
+    force: yes
+- name: Install - Extend ipaserver_external_cert_files with "/root/{{ item }}"
+  set_fact:
+    ipaserver_external_cert_files: "{{ ipaserver_external_cert_files }} + [ '/root/{{ item }}' ]"

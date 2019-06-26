@@ -106,7 +106,9 @@ def main():
             _dirsrv_pkcs12_info=dict(required=False),
             ### certificate system ###
             external_ca=dict(required=False, type='bool', default=False),
-            external_cert_files=dict(required=False, type='list', default=[]),
+            external_ca_type=dict(required=False),
+            external_ca_profile=dict(required=False),
+            external_cert_files=dict(required=False, type='list', default=None),
             subject_base=dict(required=False),
             _subject_base=dict(required=False),
             ca_subject=dict(required=False),
@@ -154,6 +156,9 @@ def main():
         '_dirsrv_pkcs12_info')
     ### certificate system ###
     options.external_ca = ansible_module.params.get('external_ca')
+    options.external_ca_type = ansible_module.params.get('external_ca_type')
+    options.external_ca_profile = ansible_module.params.get(
+        'external_ca_profile')
     options.external_cert_files = ansible_module.params.get(
         'external_cert_files')
     options.subject_base = ansible_module.params.get('subject_base')
@@ -175,6 +180,13 @@ def main():
 
     options.promote = False  # first master, no promotion
 
+    # Repeat from ca.install_check
+    # ca.external_cert_file and ca.external_ca_file need to be set
+    if options.external_cert_files:
+        ca.external_cert_file, ca.external_ca_file = \
+            installutils.load_external_cert(
+                options.external_cert_files, options._ca_subject)
+
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
 
     api_Backend_ldap2(options.host_name, options.setup_ca, connect=True)
@@ -190,53 +202,61 @@ def main():
 
     # setup CA ##############################################################
 
-    with redirect_stdout(ansible_log):
-        if hasattr(custodiainstance, "get_custodia_instance"):
-            if hasattr(custodiainstance.CustodiaModes, "FIRST_MASTER"):
-                mode = custodiainstance.CustodiaModes.FIRST_MASTER
-            else:
-                mode = custodiainstance.CustodiaModes.MASTER_PEER
-            custodia = custodiainstance.get_custodia_instance(options, mode)
+    if hasattr(custodiainstance, "get_custodia_instance"):
+        if hasattr(custodiainstance.CustodiaModes, "FIRST_MASTER"):
+            mode = custodiainstance.CustodiaModes.FIRST_MASTER
+        else:
+            mode = custodiainstance.CustodiaModes.MASTER_PEER
+        custodia = custodiainstance.get_custodia_instance(options, mode)
+        custodia.set_output(ansible_log)
+        with redirect_stdout(ansible_log):
             custodia.create_instance()
 
-        if options.setup_ca:
-            if not options.external_cert_files and options.external_ca:
-                # stage 1 of external CA installation
-                cache_vars = {n: options.__dict__[n] for o, n in options.knobs()
-                              if n in options.__dict__}
-                write_cache(cache_vars)
+    if options.setup_ca:
+        if not options.external_cert_files and options.external_ca:
+            # stage 1 of external CA installation
+            cache_vars = {n: options.__dict__[n] for o, n in options.knobs()
+                          if n in options.__dict__}
+            write_cache(cache_vars)
 
-            if hasattr(custodiainstance, "get_custodia_instance"):
-                ca.install_step_0(False, None, options, custodia=custodia)
-            else:
-                ca.install_step_0(False, None, options)
+        try:
+            with redirect_stdout(ansible_log):
+                if hasattr(custodiainstance, "get_custodia_instance"):
+                    ca.install_step_0(False, None, options, custodia=custodia)
+                else:
+                    ca.install_step_0(False, None, options)
+        except SystemExit:
+            ansible_module.exit_json(changed=True,
+                                     csr_generated=True)
+    else:
+        # Put the CA cert where other instances expect it
+        x509.write_certificate(options._http_ca_cert, paths.IPA_CA_CRT)
+        os.chmod(paths.IPA_CA_CRT, 0o444)
+
+        if not options.no_pkinit:
+            x509.write_certificate(options._http_ca_cert,
+                                   paths.KDC_CA_BUNDLE_PEM)
         else:
-            # Put the CA cert where other instances expect it
-            x509.write_certificate(options._http_ca_cert, paths.IPA_CA_CRT)
-            os.chmod(paths.IPA_CA_CRT, 0o444)
+            with open(paths.KDC_CA_BUNDLE_PEM, 'w'):
+                pass
+        os.chmod(paths.KDC_CA_BUNDLE_PEM, 0o444)
 
-            if not options.no_pkinit:
-                x509.write_certificate(options._http_ca_cert,
-                                       paths.KDC_CA_BUNDLE_PEM)
-            else:
-                with open(paths.KDC_CA_BUNDLE_PEM, 'w'):
-                    pass
-            os.chmod(paths.KDC_CA_BUNDLE_PEM, 0o444)
+        x509.write_certificate(options._http_ca_cert, paths.CA_BUNDLE_PEM)
+        os.chmod(paths.CA_BUNDLE_PEM, 0o444)
 
-            x509.write_certificate(options._http_ca_cert, paths.CA_BUNDLE_PEM)
-            os.chmod(paths.CA_BUNDLE_PEM, 0o444)
-
+    with redirect_stdout(ansible_log):
         # we now need to enable ssl on the ds
         ds.enable_ssl()
 
-        if options.setup_ca:
-            with redirect_stdout(ansible_log):
-                if hasattr(custodiainstance, "get_custodia_instance"):
-                    ca.install_step_1(False, None, options, custodia=custodia)
-                else:
-                    ca.install_step_1(False, None, options)
+    if options.setup_ca:
+        with redirect_stdout(ansible_log):
+            if hasattr(custodiainstance, "get_custodia_instance"):
+                ca.install_step_1(False, None, options, custodia=custodia)
+            else:
+                ca.install_step_1(False, None, options)
 
-    ansible_module.exit_json(changed=True)
+    ansible_module.exit_json(changed=True,
+                             csr_generated=False)
 
 if __name__ == '__main__':
     main()

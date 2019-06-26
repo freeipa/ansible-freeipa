@@ -77,15 +77,15 @@ def main():
             # no_ui_redirect
             dirsrv_config_file=dict(required=False),
             ### ssl certificate ###
-            dirsrv_cert_files=dict(required=False, type='list', default=[]),
-            http_cert_files=dict(required=False, type='list', default=[]),
-            pkinit_cert_files=dict(required=False, type='list', default=[]),
-            # dirsrv_pin
-            # http_pin
-            # pkinit_pin
-            # dirsrv_name
-            # http_name
-            # pkinit_name
+            dirsrv_cert_files=dict(required=False, type='list', default=None),
+            http_cert_files=dict(required=False, type='list', defaullt=None),
+            pkinit_cert_files=dict(required=False, type='list', default=None),
+            dirsrv_pin=dict(required=False),
+            http_pin=dict(required=False),
+            pkinit_pin=dict(required=False),
+            dirsrv_cert_name=dict(required=False),
+            http_cert_name=dict(required=False),
+            pkinit_cert_name=dict(required=False),
             ### client ###
             # mkhomedir
             no_ntp=dict(required=False, type='bool', default=False),
@@ -96,7 +96,8 @@ def main():
             ### certificate system ###
             external_ca=dict(required=False, type='bool', default=False),
             external_ca_type=dict(required=False),
-            external_cert_files=dict(required=False, type='list', default=[]),
+            external_ca_profile=dict(required=False),
+            external_cert_files=dict(required=False, type='list', default=None),
             subject_base=dict(required=False),
             ca_subject=dict(required=False),
             # ca_signing_algorithm
@@ -155,12 +156,12 @@ def main():
     options.dirsrv_cert_files = ansible_module.params.get('dirsrv_cert_files')
     options.http_cert_files = ansible_module.params.get('http_cert_files')
     options.pkinit_cert_files = ansible_module.params.get('pkinit_cert_files')
-    # dirsrv_pin
-    # http_pin
-    # pkinit_pin
-    # dirsrv_name
-    # http_name
-    # pkinit_name
+    options.dirsrv_pin = ansible_module.params.get('dirsrv_pin'),
+    options.http_pin = ansible_module.params.get('http_pin'),
+    options.pkinit_pin = ansible_module.params.get('pkinit_pin'),
+    options.dirsrv_cert_name = ansible_module.params.get('dirsrv_cert_name'),
+    options.http_cert_name = ansible_module.params.get('http_cert_name'),
+    options.pkinit_cert_name = ansible_module.params.get('pkinit_cert_name'),
     ### client ###
     # mkhomedir
     options.no_ntp = ansible_module.params.get('no_ntp')
@@ -171,6 +172,8 @@ def main():
     ### certificate system ###
     options.external_ca = ansible_module.params.get('external_ca')
     options.external_ca_type = ansible_module.params.get('external_ca_type')
+    options.external_ca_profile = ansible_module.params.get(
+        'external_ca_profile')
     options.external_cert_files = ansible_module.params.get(
         'external_cert_files')
     options.subject_base = ansible_module.params.get('subject_base')
@@ -226,25 +229,6 @@ def main():
                 ansible_module.fail_json(
                     msg="pki_config_override: %s" % str(e))
 
-    # validation #############################################################
-
-    if options.dm_password is None:
-        ansible_module.fail_json(msg="Directory Manager password required")
-
-    if options.admin_password is None:
-        ansible_module.fail_json(msg="IPA admin password required")
-
-    # This will override any settings passed in on the cmdline
-    if os.path.isfile(paths.ROOT_IPA_CACHE):
-        # dm_password check removed, checked already
-        try:
-            cache_vars = read_cache(options.dm_password)
-            options.__dict__.update(cache_vars)
-            if cache_vars.get('external_ca', False):
-                options.external_ca = False
-                options.interactive = False
-        except Exception as e:
-            ansible_module.fail_json(msg="Cannot process the cache file: %s" % str(e))
     # default values ########################################################
 
     # idstart and idmax
@@ -253,50 +237,190 @@ def main():
     if options.idmax is None or options.idmax == 0:
         options.idmax = options.idstart + 199999
 
-    # validation ############################################################
+    #class ServerInstallInterface(ServerCertificateInstallInterface,
+    #                             client.ClientInstallInterface,
+    #                             ca.CAInstallInterface,
+    #                             kra.KRAInstallInterface,
+    #                             dns.DNSInstallInterface,
+    #                             adtrust.ADTrustInstallInterface,
+    #                             conncheck.ConnCheckInterface,
+    #                             ServerUninstallInterface):
 
-    # domain_level
-    if options.domain_level < MIN_DOMAIN_LEVEL:
-        ansible_module.fail_json(
-            msg="Domain Level cannot be lower than %d" % MIN_DOMAIN_LEVEL)
-    elif options.domain_level > MAX_DOMAIN_LEVEL:
-        ansible_module.fail_json(
-            msg="Domain Level cannot be higher than %d" % MAX_DOMAIN_LEVEL)
+    # ServerInstallInterface.__init__ #######################################
+    try:
+        self = options
 
-    # dirsrv_config_file
-    if options.dirsrv_config_file is not None:
-        if not os.path.exists(options.dirsrv_config_file):
-            ansible_module.fail_json(
-                msg="File %s does not exist." % options.dirsrv_config_file)
+        # If any of the key file options are selected, all are required.
+        cert_file_req = (self.dirsrv_cert_files, self.http_cert_files)
+        cert_file_opt = (self.pkinit_cert_files,)
+        if not self.no_pkinit:
+            cert_file_req += cert_file_opt
+        if self.no_pkinit and self.pkinit_cert_files:
+            raise RuntimeError(
+                "--no-pkinit and --pkinit-cert-file cannot be specified "
+                "together"
+            )
+        if any(cert_file_req + cert_file_opt) and not all(cert_file_req):
+            raise RuntimeError(
+                "--dirsrv-cert-file, --http-cert-file, and --pkinit-cert-file "
+                "or --no-pkinit are required if any key file options are used."
+            )
 
-    # domain_name
-    if (options.setup_dns and not options.allow_zone_overlap and \
-        options.domain_name is not None):
-        try:
-            check_zone_overlap(options.domain_name, False)
-        except ValueError as e:
-            ansible_module.fail_json(msg=str(e))
+        if not self.interactive:
+            if self.dirsrv_cert_files and self.dirsrv_pin is None:
+                raise RuntimeError(
+                    "You must specify --dirsrv-pin with --dirsrv-cert-file")
+            if self.http_cert_files and self.http_pin is None:
+                raise RuntimeError(
+                    "You must specify --http-pin with --http-cert-file")
+            if self.pkinit_cert_files and self.pkinit_pin is None:
+                raise RuntimeError(
+                    "You must specify --pkinit-pin with --pkinit-cert-file")
 
-    # dm_password
-    with redirect_stdout(ansible_log):
-        validate_dm_password(options.dm_password)
+        if not self.setup_dns:
+            if self.forwarders:
+                raise RuntimeError(
+                    "You cannot specify a --forwarder option without the "
+                    "--setup-dns option")
+            if self.auto_forwarders:
+                raise RuntimeError(
+                    "You cannot specify a --auto-forwarders option without "
+                    "the --setup-dns option")
+            if self.no_forwarders:
+                raise RuntimeError(
+                    "You cannot specify a --no-forwarders option without the "
+                    "--setup-dns option")
+            if self.forward_policy:
+                raise RuntimeError(
+                    "You cannot specify a --forward-policy option without the "
+                    "--setup-dns option")
+            if self.reverse_zones:
+                raise RuntimeError(
+                    "You cannot specify a --reverse-zone option without the "
+                    "--setup-dns option")
+            if self.auto_reverse:
+                raise RuntimeError(
+                    "You cannot specify a --auto-reverse option without the "
+                    "--setup-dns option")
+            if self.no_reverse:
+                raise RuntimeError(
+                    "You cannot specify a --no-reverse option without the "
+                    "--setup-dns option")
+            if self.no_dnssec_validation:
+                raise RuntimeError(
+                    "You cannot specify a --no-dnssec-validation option "
+                    "without the --setup-dns option")
+        elif self.forwarders and self.no_forwarders:
+            raise RuntimeError(
+                "You cannot specify a --forwarder option together with "
+                "--no-forwarders")
+        elif self.auto_forwarders and self.no_forwarders:
+            raise RuntimeError(
+                "You cannot specify a --auto-forwarders option together with "
+                "--no-forwarders")
+        elif self.reverse_zones and self.no_reverse:
+            raise RuntimeError(
+                "You cannot specify a --reverse-zone option together with "
+                "--no-reverse")
+        elif self.auto_reverse and self.no_reverse:
+            raise RuntimeError(
+                "You cannot specify a --auto-reverse option together with "
+                "--no-reverse")
 
-    # admin_password
-    with redirect_stdout(ansible_log):
-        validate_admin_password(options.admin_password)
+        if not self.setup_adtrust:
+            if self.add_agents:
+                raise RuntimeError(
+                    "You cannot specify an --add-agents option without the "
+                    "--setup-adtrust option")
 
-    # pkinit is not supported on DL0, don't allow related options
+            if self.enable_compat:
+                raise RuntimeError(
+                    "You cannot specify an --enable-compat option without the "
+                    "--setup-adtrust option")
 
-    # replica install: if not self.replica_file is None:
-    if (not options._replica_install and \
-        not options.domain_level > DOMAIN_LEVEL_0) or \
-        (options._replica_install and self.replica_file is not None):
-        if (options.no_pkinit or options.pkinit_cert_files is not None or
-                options.pkinit_pin is not None):
-            ansible_module.fail_json(
-                msg="pkinit on domain level 0 is not supported. Please "
-                "don't use any pkinit-related options.")
-        options.no_pkinit = True
+            if self.netbios_name:
+                raise RuntimeError(
+                    "You cannot specify a --netbios-name option without the "
+                    "--setup-adtrust option")
+
+            if self.no_msdcs:
+                raise RuntimeError(
+                    "You cannot specify a --no-msdcs option without the "
+                    "--setup-adtrust option")
+
+        if not hasattr(self, 'replica_install'):
+            if self.external_cert_files and self.dirsrv_cert_files:
+                raise RuntimeError(
+                    "Service certificate file options cannot be used with the "
+                    "external CA options.")
+
+            if self.external_ca_type and not self.external_ca:
+                raise RuntimeError(
+                    "You cannot specify --external-ca-type without "
+                    "--external-ca")
+
+            if self.external_ca_profile and not self.external_ca:
+                raise RuntimeError(
+                    "You cannot specify --external-ca-profile without "
+                    "--external-ca")
+
+            if self.uninstalling:
+                if (self.realm_name or self.admin_password or
+                        self.master_password):
+                    raise RuntimeError(
+                        "In uninstall mode, -a, -r and -P options are not "
+                        "allowed")
+            elif not self.interactive:
+                if (not self.realm_name or not self.dm_password or
+                        not self.admin_password):
+                    raise RuntimeError(
+                        "In unattended mode you need to provide at least -r, "
+                        "-p and -a options")
+                if self.setup_dns:
+                    if (not self.forwarders and
+                            not self.no_forwarders and
+                            not self.auto_forwarders):
+                        raise RuntimeError(
+                            "You must specify at least one of --forwarder, "
+                            "--auto-forwarders, or --no-forwarders options")
+
+            any_ignore_option_true = any(
+                [self.ignore_topology_disconnect, self.ignore_last_of_role])
+            if any_ignore_option_true and not self.uninstalling:
+                raise RuntimeError(
+                    "'--ignore-topology-disconnect/--ignore-last-of-role' "
+                    "options can be used only during uninstallation")
+
+            if self.idmax < self.idstart:
+                raise RuntimeError(
+                    "idmax (%s) cannot be smaller than idstart (%s)" %
+                    (self.idmax, self.idstart))
+        else:
+            # replica installers
+            if self.servers and not self.domain_name:
+                raise RuntimeError(
+                    "The --server option cannot be used without providing "
+                    "domain via the --domain option")
+
+            if self.setup_dns:
+                if (not self.forwarders and
+                        not self.no_forwarders and
+                        not self.auto_forwarders):
+                    raise RuntimeError(
+                        "You must specify at least one of --forwarder, "
+                        "--auto-forwarders, or --no-forwarders options")
+
+    except RuntimeError as e:
+        ansible_module.fail_json(msg=e)
+
+
+
+
+
+
+
+
+    # #######################################################################
 
     # If any of the key file options are selected, all are required.
     cert_file_req = (options.dirsrv_cert_files, options.http_cert_files)
@@ -351,7 +475,7 @@ def main():
         ansible_module.fail_json(
             msg="You cannot specify auto-reverse together with no-reverse")
 
-    if not options._replica_install:
+    if not hasattr(self, 'replica_install'):
         if options.external_cert_files and options.dirsrv_cert_files:
             ansible_module.fail_json(
                 msg="Service certificate file options cannot be used with the "
@@ -403,34 +527,63 @@ def main():
             ansible_module.fail_json(
                 msg="idmax (%s) cannot be smaller than idstart (%s)" %
                 (options.idmax, options.idstart))
-    else:
-        # replica install
-        if options.replica_file is None:
-            if options.servers and not options.domain_name:
-                ansible_module.fail_json(
-                    msg="servers cannot be used without providing domain")
 
-        else:
-            if not os.path.isfile(options.replica_file):
-                ansible_module.fail_json(
-                    msg="Replica file %s does not exist" % options.replica_file)
+    # validation #############################################################
 
-            if any(cert_file_req + cert_file_opt):
-                ansible_module.fail_json(
-                    msg="You cannot specify dirsrv-cert-file, http-cert-file, "
-                    "or pkinit-cert-file together with replica file")
+    if options.dm_password is None:
+        ansible_module.fail_json(msg="Directory Manager password required")
 
-            conflicting = { "realm": options.realm_name,
-                            "domain": options.domain_name,
-                            "hostname": options.host_name,
-                            "servers": options.servers,
-                            "principal": options.principal }
-            conflicting_names = [ name for name in conflicting
-                                  if conflicting[name] is not None ]
-            if len(conflicting_names) > 0:
-                ansible_module.fail_json(
-                    msg="You cannot specify %s option(s) with replica file." % \
-                    ", ".join(conflicting_names))
+    if options.admin_password is None:
+        ansible_module.fail_json(msg="IPA admin password required")
+
+    # validation ############################################################
+
+    # domain_level
+    if options.domain_level < MIN_DOMAIN_LEVEL:
+        ansible_module.fail_json(
+            msg="Domain Level cannot be lower than %d" % MIN_DOMAIN_LEVEL)
+    elif options.domain_level > MAX_DOMAIN_LEVEL:
+        ansible_module.fail_json(
+            msg="Domain Level cannot be higher than %d" % MAX_DOMAIN_LEVEL)
+
+    # dirsrv_config_file
+    if options.dirsrv_config_file is not None:
+        if not os.path.exists(options.dirsrv_config_file):
+            ansible_module.fail_json(
+                msg="File %s does not exist." % options.dirsrv_config_file)
+
+    # domain_name
+    if (options.setup_dns and not options.allow_zone_overlap and \
+        options.domain_name is not None):
+        try:
+            check_zone_overlap(options.domain_name, False)
+        except ValueError as e:
+            ansible_module.fail_json(str(e))
+
+    # dm_password
+    with redirect_stdout(ansible_log):
+        validate_dm_password(options.dm_password)
+
+    # admin_password
+    with redirect_stdout(ansible_log):
+        validate_admin_password(options.admin_password)
+
+    # pkinit is not supported on DL0, don't allow related options
+
+    """
+    # replica install: if not options.replica_file is None:
+    if (not options._replica_install and \
+        not options.domain_level > DOMAIN_LEVEL_0) or \
+        (options._replica_install and options.replica_file is not None):
+        if (options.no_pkinit or options.pkinit_cert_files is not None or
+                options.pkinit_pin is not None):
+            ansible_module.fail_json(
+                msg="pkinit on domain level 0 is not supported. Please "
+                "don't use any pkinit-related options.")
+        options.no_pkinit = True
+    """
+
+
 
     if options.setup_dns:
         if len(options.forwarders) < 1 and not options.no_forwarders and \
@@ -439,11 +592,12 @@ def main():
                 msg="You must specify at least one of forwarders, "
                 "auto-forwarders or no-forwarders")
 
-    if NUM_VERSION >= 40200 and options.master_password:
-        ansible_module.warn("Specifying master-password is deprecated")
+    if NUM_VERSION >= 40200 and options.master_password and \
+       not options.external_cert_files:
+        ansible_module.warn("Specifying kerberos master-password is deprecated")
 
     options._installation_cleanup = True
-    if not options.external_ca and len(options.external_cert_files) < 1 and \
+    if not options.external_ca and not options.external_cert_files and \
        is_ipa_configured():
         options._installation_cleanup = False
         ansible_module.log(
@@ -495,10 +649,11 @@ def main():
                 ansible_module.fail_json(msg=error)
 
     # external cert file paths are absolute
-    for path in options.external_cert_files:
-        if not os.path.isabs(path):
-            ansible_module.fail_json(
-                msg="External cert file '%s' must use an absolute path" % path)
+    if options.external_cert_files:
+        for path in options.external_cert_files:
+            if not os.path.isabs(path):
+                ansible_module.fail_json(
+                    msg="External cert file '%s' must use an absolute path" % path)
 
     options.setup_ca = True
     # We only set up the CA if the PKCS#12 options are not given.
@@ -516,6 +671,18 @@ def main():
     if not options.setup_ca and options.setup_kra:
         ansible_module.fail_json(msg=
             "--setup-kra cannot be used with CA-less installation")
+
+    # This will override any settings passed in on the cmdline
+    if os.path.isfile(paths.ROOT_IPA_CACHE):
+        # dm_password check removed, checked already
+        try:
+            cache_vars = read_cache(options.dm_password)
+            options.__dict__.update(cache_vars)
+            if cache_vars.get('external_ca', False):
+                options.external_ca = False
+                options.interactive = False
+        except Exception as e:
+            ansible_module.fail_json(msg="Cannot process the cache file: %s" % str(e))
 
     # ca_subject
     if options.ca_subject:
@@ -697,6 +864,10 @@ def main():
                              _pkinit_pkcs12_file=pkinit_pkcs12_file,
                              _pkinit_pkcs12_info=pkinit_pkcs12_info,
                              _pkinit_ca_cert=pkinit_ca_cert,
+                             ### certificate system ###
+                             external_ca=options.external_ca,
+                             external_ca_type=options.external_ca_type,
+                             external_ca_profile=options.external_ca_profile,
                              ### ad trust ###
                              rid_base=options.rid_base,
                              secondary_rid_base=options.secondary_rid_base,

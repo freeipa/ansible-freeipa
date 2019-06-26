@@ -42,11 +42,11 @@ Requirements
 Limitations
 -----------
 
-External CA
+External signed CA
 
-External CA support is not supported or working. The currently needed two step process is an issue for the processing in the role. The configuration of the server is partly done already and needs to be continued after the CSR has been handled. This is for example breaking the deployment of a server with replicas or clients in one playbook.
+External signed CA is now supported. But the currently needed two step process is an issue for the processing in a simple playbook.
 
-Work is planned to have a new method to handle CSR for external CAs in a separate step before starting the server installation.
+Work is planned to have a new method to handle CSR for external signed CAs in a separate step before starting the server installation.
 
 
 Usage
@@ -105,6 +105,56 @@ Example playbook to setup the IPA server using admin and dirman passwords from i
       roles:
       - role: ipaserver
         state: present
+
+Example playbook to setup the IPA primary with external signed CA using the previous inventory file:
+
+Server installation step 1: Generate CSR, copy to controller as `<ipaserver hostname>-ipa.csr`
+
+```yaml
+---
+- name: Playbook to configure IPA server step1
+  hosts: ipaserver
+  become: true
+  vars:
+    ipaserver_external_ca: yes
+
+  roles:
+  - role: ipaserver
+    state: present
+
+  post_tasks:
+  - name: Copy CSR /root/ipa.csr from node to "{{ groups.ipaserver[0] + '-ipa.csr' }}"
+    fetch:
+      src: /root/ipa.csr
+      dest: "{{ groups.ipaserver[0] + '-ipa.csr' }}"
+      flat: yes
+```
+
+Sign with CA: This is up to you
+
+Server installatin step 2: Copy `<ipaserver hostname>-chain.crt` to the IPA server and continue with installation of the primary.
+
+```yaml
+- name: Playbook to configure IPA server step3
+  hosts: ipaserver
+  become: true
+  vars:
+    ipaserver_external_cert_files: "/root/chain.crt"
+
+  pre_tasks:
+  - name: Copy "{{ groups.ipaserver[0] + '-chain.crt' }}" to /root/chain.crt on node
+    copy:
+      src: "{{ groups.ipaserver[0] + '-chain.crt' }}"
+      dest: "/root/chain.crt"
+      force: yes
+
+  roles:
+  - role: ipaserver
+    state: present
+```
+
+The files can also be copied automatically: Set `ipaserver_copy_csr_to_controller` to true in the server installation step 1 and set `ipaserver_external_cert_files_from_controller` to point to the `chain.crt` file in the server installatin step 2.
+
 
 Playbooks
 =========
@@ -192,13 +242,13 @@ Certificate system Variables
 
 Variable | Description | Required
 -------- | ----------- | --------
-~~`ipaserver_external_ca`~~ | ~~Generate a CSR for the IPA CA certificate to be signed by an external CA. (bool, default: false)~~ | ~~no~~
-~~`ipaserver_external_ca_type`~~ | ~~Type of the external CA. (choice: generic,ms-cs)~~ | ~~no~~
-~~`ipaserver_external_ca_profile`~~ | ~~Specify the certificate profile/template to use at the external CA. (string)~~ | ~~no~~
-~~`ipaserver_external_cert_files`~~ | ~~Files containing the IPA CA certificates and the external CA certificate chains (list of string)~~ | ~~no~~
+`ipaserver_external_ca` | Generate a CSR for the IPA CA certificate to be signed by an external CA. (bool, default: false) | no
+`ipaserver_external_ca_type` | Type of the external CA. (choice: generic,ms-cs) | no
+`ipaserver_external_ca_profile` | Specify the certificate profile/template to use at the external CA. (string) | no
+`ipaserver_external_cert_files` | Files containing the IPA CA certificates and the external CA certificate chains (list of string) | no
 `ipaserver_subject_base` | The certificate subject base (default O=<realm-name>). RDNs are in LDAP order (most specific RDN first). (string) | no
 `ipaserver_ca_subject` | The CA certificate subject DN (default CN=Certificate Authority,O=<realm-name>). RDNs are in LDAP order (most specific RDN first). (string) | no
-~~`ipaserver_ca_signing_algorithm`~~ | ~~Signing algorithm of the IPA CA certificate. (choice: SHA1withRSA,SHA256withRSA,SHA512withRSA)~~ | ~~no~~
+`ipaserver_ca_signing_algorithm` | Signing algorithm of the IPA CA certificate. (choice: SHA1withRSA,SHA256withRSA,SHA512withRSA) | no
 
 DNS Variables
 -------------
@@ -233,7 +283,8 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaserver_install_packages` | The bool value defines if the needed packages are installed on the node. (bool, default: true) | no
 `ipaserver_setup_firewalld` | The value defines if the needed services will automatically be openen in the firewall managed by firewalld. (bool, default: true) | no
-
+`ipaserver_external_cert_files_from_controller` | Files containing the IPA CA certificates and the external CA certificate chains on the controller that will be copied to the ipaserver host to `/root` folder. (list of string) | no
+`ipaserver_copy_csr_to_controller` | Copy the generated CSR from the ipaserver to the controller as `"{{ inventory_hostname }}-ipa.csr"`. (bool) | no
 
 Authors
 =======

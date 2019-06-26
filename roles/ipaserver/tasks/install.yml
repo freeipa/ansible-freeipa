@@ -24,6 +24,12 @@
 #- name: Install - Include Python2/3 import test
 #  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
 
+- include_tasks: "{{ role_path }}/tasks/copy_external_cert.yml"
+  with_items: "{{ ipaserver_external_cert_files_from_controller }}"
+  when: ipaserver_external_cert_files_from_controller is defined and
+        ipaserver_external_cert_files_from_controller|length > 0 and
+        not ipaserver_external_cert_files is defined
+
 - name: Install - Server installation test
   ipaserver_test:
     ### basic ###
@@ -47,9 +53,9 @@
     # no_ui_redirect: "{{ ipaserver_no_ui_redirect }}"
     dirsrv_config_file: "{{ ipaserver_dirsrv_config_file | default(omit) }}"
     ### ssl certificate ###
-    dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default([]) }}"
-    http_cert_files: "{{ ipaserver_http_cert_files | default([]) }}"
-    pkinit_cert_files: "{{ ipaserver_pkinit_cert_files | default([]) }}"
+    dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default(omit) }}"
+    http_cert_files: "{{ ipaserver_http_cert_files | default(omit) }}"
+    pkinit_cert_files: "{{ ipaserver_pkinit_cert_files | default(omit) }}"
     # dirsrv_pin
     # http_pin
     # pkinit_pin
@@ -66,7 +72,8 @@
     ### certificate system ###
     external_ca: "{{ ipaserver_external_ca }}"
     external_ca_type: "{{ ipaserver_external_ca_type | default(omit) }}"
-    external_cert_files: "{{ ipaserver_external_cert_files | default([]) }}"
+    external_ca_profile: "{{ ipaserver_external_ca_profile | default(omit) }}"
+    external_cert_files: "{{ ipaserver_external_cert_files | default(omit) }}"
     subject_base: "{{ ipaserver_subject_base | default(omit) }}"
     ca_subject: "{{ ipaserver_ca_subject | default(omit) }}"
     # ca_signing_algorithm
@@ -128,8 +135,12 @@
       setup_kra: "{{ ipaserver_setup_kra }}"
       setup_dns: "{{ ipaserver_setup_dns }}"
       ### certificate system ###
-      # external_ca
-      # external_cert_files
+      external_ca: "{{ ipaserver_external_ca }}"
+      external_ca_type: "{{ ipaserver_external_ca_type | default(omit) }}"
+      external_ca_profile:
+        "{{ ipaserver_external_ca_profile | default(omit) }}"
+      external_cert_files:
+        "{{ ipaserver_external_cert_files | default(omit) }}"
       subject_base: "{{ ipaserver_subject_base | default(omit) }}"
       ca_subject: "{{ ipaserver_ca_subject | default(omit) }}"
       ### dns ###
@@ -174,8 +185,9 @@
       setup_ca: "{{ result_ipaserver_test.setup_ca }}"
       # no_host_dns: "{{ result_ipaserver_test.no_host_dns }}"
       dirsrv_config_file: "{{ ipaserver_dirsrv_config_file | default(omit) }}"
-      dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default([]) }}"
-      external_cert_files: "{{ ipaserver_external_cert_files | default([]) }}"
+      dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default(omit) }}"
+      external_cert_files:
+        "{{ ipaserver_external_cert_files | default(omit) }}"
       subject_base: "{{ result_ipaserver_prepare.subject_base }}"
       ca_subject: "{{ result_ipaserver_prepare.ca_subject }}"
       # no_reverse: "{{ ipaserver_no_reverse }}"
@@ -200,7 +212,8 @@
       setup_dns: "{{ ipaserver_setup_dns }}"
       setup_ca: "{{ result_ipaserver_test.setup_ca }}"
       no_host_dns: "{{ result_ipaserver_test.no_host_dns }}"
-      external_cert_files: "{{ ipaserver_external_cert_files | default([]) }}"
+      external_cert_files:
+        "{{ ipaserver_external_cert_files | default(omit) }}"
       subject_base: "{{ result_ipaserver_prepare.subject_base }}"
       ca_subject: "{{ result_ipaserver_prepare.ca_subject }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
@@ -241,7 +254,11 @@
       dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default([]) }}"
       _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info }}"
       external_ca: "{{ ipaserver_external_ca }}"
-      external_cert_files: "{{ ipaserver_external_cert_files | default([]) }}"
+      external_ca_type: "{{ ipaserver_external_ca_type | default(omit) }}"
+      external_ca_profile:
+        "{{ ipaserver_external_ca_profile | default(omit) }}"
+      external_cert_files:
+        "{{ ipaserver_external_cert_files | default(omit) }}"
       subject_base: "{{ result_ipaserver_prepare.subject_base }}"
       _subject_base: "{{ result_ipaserver_prepare._subject_base }}"
       ca_subject: "{{ result_ipaserver_prepare.ca_subject }}"
@@ -251,150 +268,163 @@
       reverse_zones: "{{ result_ipaserver_prepare.reverse_zones }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"
+    register: result_ipaserver_setup_ca
 
-  - name: Install - Setup otpd
-    ipaserver_setup_otpd:
-      realm: "{{ result_ipaserver_test.realm }}"
-      hostname: "{{ result_ipaserver_test.hostname }}"
-      setup_ca: "{{ result_ipaserver_test.setup_ca }}"
+  - name: Copy /root/ipa.csr to "{{ inventory_hostname }}-ipa.csr"
+    fetch:
+      src: /root/ipa.csr
+      dest: "{{ inventory_hostname }}-ipa.csr"
+      flat: yes
+    when: result_ipaserver_setup_ca.csr_generated | bool and
+          ipaserver_copy_csr_to_controller | bool
 
-  - name: Install - Setup HTTP
-    ipaserver_setup_http:
-      dm_password: "{{ ipadm_password }}"
-      password: "{{ ipaadmin_password }}"
-      master_password: "{{ ipaserver_master_password }}"
-      domain: "{{ result_ipaserver_test.domain }}"
-      realm: "{{ result_ipaserver_test.realm }}"
-      hostname: "{{ result_ipaserver_test.hostname }}"
-      # ip_addresses: "{{ result_ipaserver_prepare.ip_addresses }}"
-      reverse_zones: "{{ result_ipaserver_prepare.reverse_zones }}"
-      setup_adtrust: "{{ result_ipaserver_test.setup_adtrust }}"
-      setup_kra: "{{ result_ipaserver_test.setup_kra }}"
-      setup_dns: "{{ ipaserver_setup_dns }}"
-      setup_ca: "{{ result_ipaserver_test.setup_ca }}"
-      no_host_dns: "{{ result_ipaserver_test.no_host_dns }}"
-      dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default([]) }}"
-      external_cert_files: "{{ ipaserver_external_cert_files | default([]) }}"
-      subject_base: "{{ result_ipaserver_prepare.subject_base }}"
-      _subject_base: "{{ result_ipaserver_prepare._subject_base }}"
-      ca_subject: "{{ result_ipaserver_prepare.ca_subject }}"
-      _ca_subject: "{{ result_ipaserver_prepare._ca_subject }}"
-      no_reverse: "{{ ipaserver_no_reverse }}"
-      auto_forwarders: "{{ ipaserver_auto_forwarders }}"
-      no_pkinit: "{{ result_ipaserver_test.no_pkinit }}"
-      no_hbac_allow: "{{ ipaserver_no_hbac_allow }}"
-      idstart: "{{ result_ipaserver_test.idstart }}"
-      idmax: "{{ result_ipaserver_test.idmax }}"
-      http_cert_files: "{{ ipaserver_http_cert_files | default([]) }}"
-      no_ui_redirect: "{{ ipaserver_no_ui_redirect }}"
+  - block:
+    - name: Install - Setup otpd
+      ipaserver_setup_otpd:
+        realm: "{{ result_ipaserver_test.realm }}"
+        hostname: "{{ result_ipaserver_test.hostname }}"
+        setup_ca: "{{ result_ipaserver_test.setup_ca }}"
 
-  - name: Install - Setup KRA
-    ipaserver_setup_kra:
-      hostname: "{{ result_ipaserver_test.hostname }}"
-      setup_ca: "{{ result_ipaserver_test.setup_ca }}"
-      dm_password: "{{ ipadm_password }}"
-      setup_kra: "{{ result_ipaserver_test.setup_kra }}"
-      realm: "{{ result_ipaserver_test.realm }}"
-      pki_config_override: "{{ ipaserver_pki_config_override |
-                               default(omit) }}"
-    when: result_ipaserver_test.setup_kra | bool
+    - name: Install - Setup HTTP
+      ipaserver_setup_http:
+        dm_password: "{{ ipadm_password }}"
+        password: "{{ ipaadmin_password }}"
+        master_password: "{{ ipaserver_master_password }}"
+        domain: "{{ result_ipaserver_test.domain }}"
+        realm: "{{ result_ipaserver_test.realm }}"
+        hostname: "{{ result_ipaserver_test.hostname }}"
+        # ip_addresses: "{{ result_ipaserver_prepare.ip_addresses }}"
+        reverse_zones: "{{ result_ipaserver_prepare.reverse_zones }}"
+        setup_adtrust: "{{ result_ipaserver_test.setup_adtrust }}"
+        setup_kra: "{{ result_ipaserver_test.setup_kra }}"
+        setup_dns: "{{ ipaserver_setup_dns }}"
+        setup_ca: "{{ result_ipaserver_test.setup_ca }}"
+        no_host_dns: "{{ result_ipaserver_test.no_host_dns }}"
+        dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default([]) }}"
+        external_cert_files:
+          "{{ ipaserver_external_cert_files | default(omit) }}"
+        subject_base: "{{ result_ipaserver_prepare.subject_base }}"
+        _subject_base: "{{ result_ipaserver_prepare._subject_base }}"
+        ca_subject: "{{ result_ipaserver_prepare.ca_subject }}"
+        _ca_subject: "{{ result_ipaserver_prepare._ca_subject }}"
+        no_reverse: "{{ ipaserver_no_reverse }}"
+        auto_forwarders: "{{ ipaserver_auto_forwarders }}"
+        no_pkinit: "{{ result_ipaserver_test.no_pkinit }}"
+        no_hbac_allow: "{{ ipaserver_no_hbac_allow }}"
+        idstart: "{{ result_ipaserver_test.idstart }}"
+        idmax: "{{ result_ipaserver_test.idmax }}"
+        http_cert_files: "{{ ipaserver_http_cert_files | default([]) }}"
+        no_ui_redirect: "{{ ipaserver_no_ui_redirect }}"
 
-  - name: Install - Setup DNS
-    ipaserver_setup_dns:
-      hostname: "{{ result_ipaserver_test.hostname }}"
-      setup_ca: "{{ result_ipaserver_test.setup_ca }}"
-      setup_dns: "{{ ipaserver_setup_dns }}"
-      forwarders: "{{ result_ipaserver_prepare.forwarders }}"
-      forward_policy: "{{ result_ipaserver_prepare.forward_policy }}"
-      zonemgr: "{{ ipaserver_zonemgr | default(omit) }}"
-      no_dnssec_validation: "{{ result_ipaserver_prepare.no_dnssec_validation }}"
-      ### additional ###
-      dns_ip_addresses: "{{ result_ipaserver_prepare.dns_ip_addresses }}"
-      dns_reverse_zones: "{{ result_ipaserver_prepare.dns_reverse_zones }}"
-    when: ipaserver_setup_dns | bool
+    - name: Install - Setup KRA
+      ipaserver_setup_kra:
+        hostname: "{{ result_ipaserver_test.hostname }}"
+        setup_ca: "{{ result_ipaserver_test.setup_ca }}"
+        dm_password: "{{ ipadm_password }}"
+        setup_kra: "{{ result_ipaserver_test.setup_kra }}"
+        realm: "{{ result_ipaserver_test.realm }}"
+        pki_config_override: "{{ ipaserver_pki_config_override |
+                                 default(omit) }}"
+      when: result_ipaserver_test.setup_kra | bool
 
-  - name: Install - Setup ADTRUST
-    ipaserver_setup_adtrust:
-      hostname: "{{ result_ipaserver_test.hostname }}"
-      setup_ca: "{{ result_ipaserver_test.setup_ca }}"
-      setup_adtrust: "{{ result_ipaserver_test.setup_adtrust }}"
-      ### ad trust ###
-      enable_compat: "{{ ipaserver_enable_compat }}"
-      rid_base: "{{ result_ipaserver_test.rid_base }}"
-      secondary_rid_base: "{{ result_ipaserver_test.secondary_rid_base }}"
-      ### additional ###
-      adtrust_netbios_name: "{{ result_ipaserver_prepare.adtrust_netbios_name }}"
-      adtrust_reset_netbios_name:
-        "{{ result_ipaserver_prepare.adtrust_reset_netbios_name }}"
-    when: result_ipaserver_test.setup_adtrust
+    - name: Install - Setup DNS
+      ipaserver_setup_dns:
+        hostname: "{{ result_ipaserver_test.hostname }}"
+        setup_ca: "{{ result_ipaserver_test.setup_ca }}"
+        setup_dns: "{{ ipaserver_setup_dns }}"
+        forwarders: "{{ result_ipaserver_prepare.forwarders }}"
+        forward_policy: "{{ result_ipaserver_prepare.forward_policy }}"
+        zonemgr: "{{ ipaserver_zonemgr | default(omit) }}"
+        no_dnssec_validation: "{{ result_ipaserver_prepare.no_dnssec_validation }}"
+        ### additional ###
+        dns_ip_addresses: "{{ result_ipaserver_prepare.dns_ip_addresses }}"
+        dns_reverse_zones: "{{ result_ipaserver_prepare.dns_reverse_zones }}"
+      when: ipaserver_setup_dns | bool
 
-  - name: Install - Set DS password
-    ipaserver_set_ds_password:
-      dm_password: "{{ ipadm_password }}"
-      password: "{{ ipaadmin_password }}"
-      domain: "{{ result_ipaserver_test.domain }}"
-      realm: "{{ result_ipaserver_test.realm }}"
-      hostname: "{{ result_ipaserver_test.hostname }}"
-      setup_ca: "{{ result_ipaserver_test.setup_ca }}"
-      subject_base: "{{ result_ipaserver_prepare.subject_base }}"
-      ca_subject: "{{ result_ipaserver_prepare.ca_subject }}"
-      no_pkinit: "{{ result_ipaserver_test.no_pkinit }}"
-      no_hbac_allow: "{{ ipaserver_no_hbac_allow }}"
-      idstart: "{{ result_ipaserver_test.idstart }}"
-      idmax: "{{ result_ipaserver_test.idmax }}"
-      dirsrv_config_file: "{{ ipaserver_dirsrv_config_file | default(omit) }}"
-      _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info }}"
+    - name: Install - Setup ADTRUST
+      ipaserver_setup_adtrust:
+        hostname: "{{ result_ipaserver_test.hostname }}"
+        setup_ca: "{{ result_ipaserver_test.setup_ca }}"
+        setup_adtrust: "{{ result_ipaserver_test.setup_adtrust }}"
+        ### ad trust ###
+        enable_compat: "{{ ipaserver_enable_compat }}"
+        rid_base: "{{ result_ipaserver_test.rid_base }}"
+        secondary_rid_base: "{{ result_ipaserver_test.secondary_rid_base }}"
+        ### additional ###
+        adtrust_netbios_name: "{{ result_ipaserver_prepare.adtrust_netbios_name }}"
+        adtrust_reset_netbios_name:
+          "{{ result_ipaserver_prepare.adtrust_reset_netbios_name }}"
+      when: result_ipaserver_test.setup_adtrust
 
-  - name: Install - Setup client
-    include_role:
-      name: ipaclient
-    vars:
-      state: present
-      ipaclient_on_master: yes
-      ipaclient_domain: "{{ result_ipaserver_test.domain }}"
-      ipaclient_realm: "{{ result_ipaserver_test.realm }}"
-      ipaclient_servers: ["{{ result_ipaserver_test.hostname }}"]
-      ipaclient_hostname: "{{ result_ipaserver_test.hostname }}"
-      ipaclient_no_ntp:
-        "{{ 'true' if result_ipaserver_test.ipa_python_version >= 40690
-             else 'false' }}"
-      ipaclient_install_packages: "{{ ipaserver_install_packages }}"
+    - name: Install - Set DS password
+      ipaserver_set_ds_password:
+        dm_password: "{{ ipadm_password }}"
+        password: "{{ ipaadmin_password }}"
+        domain: "{{ result_ipaserver_test.domain }}"
+        realm: "{{ result_ipaserver_test.realm }}"
+        hostname: "{{ result_ipaserver_test.hostname }}"
+        setup_ca: "{{ result_ipaserver_test.setup_ca }}"
+        subject_base: "{{ result_ipaserver_prepare.subject_base }}"
+        ca_subject: "{{ result_ipaserver_prepare.ca_subject }}"
+        no_pkinit: "{{ result_ipaserver_test.no_pkinit }}"
+        no_hbac_allow: "{{ ipaserver_no_hbac_allow }}"
+        idstart: "{{ result_ipaserver_test.idstart }}"
+        idmax: "{{ result_ipaserver_test.idmax }}"
+        dirsrv_config_file: "{{ ipaserver_dirsrv_config_file | default(omit) }}"
+        _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info }}"
 
-  - name: Install - Enable IPA
-    ipaserver_enable_ipa:
-      hostname: "{{ result_ipaserver_test.hostname }}"
-      setup_dns: "{{ ipaserver_setup_dns }}"
-      setup_ca: "{{ result_ipaserver_test.setup_ca }}"
-    register: result_ipaserver_enable_ipa
+    - name: Install - Setup client
+      include_role:
+        name: ipaclient
+      vars:
+        state: present
+        ipaclient_on_master: yes
+        ipaclient_domain: "{{ result_ipaserver_test.domain }}"
+        ipaclient_realm: "{{ result_ipaserver_test.realm }}"
+        ipaclient_servers: ["{{ result_ipaserver_test.hostname }}"]
+        ipaclient_hostname: "{{ result_ipaserver_test.hostname }}"
+        ipaclient_no_ntp:
+          "{{ 'true' if result_ipaserver_test.ipa_python_version >= 40690
+               else 'false' }}"
+        ipaclient_install_packages: "{{ ipaserver_install_packages }}"
 
-  - name: Install - Cleanup root IPA cache
-    file:
-      path: "/root/.ipa_cache"
-      state: absent
-    when: result_ipaserver_enable_ipa.changed
+    - name: Install - Enable IPA
+      ipaserver_enable_ipa:
+        hostname: "{{ result_ipaserver_test.hostname }}"
+        setup_dns: "{{ ipaserver_setup_dns }}"
+        setup_ca: "{{ result_ipaserver_test.setup_ca }}"
+      register: result_ipaserver_enable_ipa
 
-  - name: Install - Configure firewalld
-    command: >
-      firewall-cmd
-      --permanent
-      --add-service=freeipa-ldap
-      --add-service=freeipa-ldaps
-      {{ "--add-service=freeipa-trust" if ipaserver_setup_adtrust | bool
-         else "" }}
-      {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
-      {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
-    when: ipaserver_setup_firewalld | bool
+    - name: Install - Cleanup root IPA cache
+      file:
+        path: "/root/.ipa_cache"
+        state: absent
+      when: result_ipaserver_enable_ipa.changed
 
-  - name: Install - Configure firewalld runtime
-    command: >
-      firewall-cmd
-      --add-service=freeipa-ldap
-      --add-service=freeipa-ldaps
-      {{ "--add-service=freeipa-trust" if ipaserver_setup_adtrust | bool
-         else "" }}
-      {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
-      {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
-    when: ipaserver_setup_firewalld | bool
+    - name: Install - Configure firewalld
+      command: >
+        firewall-cmd
+        --permanent
+        --add-service=freeipa-ldap
+        --add-service=freeipa-ldaps
+        {{ "--add-service=freeipa-trust" if ipaserver_setup_adtrust | bool
+           else "" }}
+        {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
+        {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
+      when: ipaserver_setup_firewalld | bool
+
+    - name: Install - Configure firewalld runtime
+      command: >
+        firewall-cmd
+        --add-service=freeipa-ldap
+        --add-service=freeipa-ldaps
+        {{ "--add-service=freeipa-trust" if ipaserver_setup_adtrust | bool
+           else "" }}
+        {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
+        {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
+      when: ipaserver_setup_firewalld | bool
+
+    when: not result_ipaserver_setup_ca.csr_generated | bool
 
   when: not ansible_check_mode and not
         (not result_ipaserver_test.changed and

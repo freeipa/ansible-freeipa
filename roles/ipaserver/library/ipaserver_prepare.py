@@ -97,7 +97,9 @@ def main():
             ### ssl certificate ###
             ### client ###
             ### certificate system ###
-            external_ca=dict(required=False),
+            external_ca=dict(required=False, type='bool'),
+            external_ca_type=dict(required=False),
+            external_ca_profile=dict(required=False),
             external_cert_files=dict(required=False, type='list', default=[]),
             subject_base=dict(required=False),
             ca_subject=dict(required=False),
@@ -152,6 +154,9 @@ def main():
     #options.no_ntp = ansible_module.params.get('no_ntp')
     ### certificate system ###
     options.external_ca = ansible_module.params.get('external_ca')
+    options.external_ca_type = ansible_module.params.get('external_ca_type')
+    options.external_ca_profile = ansible_module.params.get(
+        'external_ca_profile')
     options.external_cert_files = ansible_module.params.get(
         'external_cert_files')
     options.subject_base = ansible_module.params.get('subject_base')

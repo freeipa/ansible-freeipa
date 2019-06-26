@@ -100,7 +100,7 @@ if NUM_VERSION >= 40500:
         update_hosts_file)
     from ipaserver.install.server.install import (
         check_dirsrv, validate_admin_password, validate_dm_password,
-        write_cache)
+        read_cache, write_cache)
     try:
         from ipaserver.install.dogtaginstance import PKIIniLoader
     except ImportError:
@@ -217,6 +217,39 @@ installer = options
 options.add_sids = True
 options.add_agents = False
 
+
+# Installable
+options.uninstalling = False
+
+# ServerInstallInterface
+options.description = "Server"
+
+options.kinit_attempts = 1
+options.fixed_primary = True
+options.permit = False
+options.enable_dns_updates = False
+options.no_krb5_offline_passwords = False
+options.preserve_sssd = False
+options.no_sssd = False
+
+# ServerMasterInstall
+options.force_join = False
+options.servers = None
+options.no_wait_for_dns = True
+options.host_password = None
+options.keytab = None
+options.setup_ca = True
+# always run sidgen task and do not allow adding agents on first master
+options.add_sids = True
+options.add_agents = False
+
+# ADTrustInstallInterface
+# no_msdcs is deprecated
+options.no_msdcs = False
+
+# Uninstall
+options.ignore_topology_disconnect = False
+options.ignore_last_of_role = False
 
 def api_Backend_ldap2(host_name, setup_ca, connect=False):
     # we are sure we have the configuration file ready.
