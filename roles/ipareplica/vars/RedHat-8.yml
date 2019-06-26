@@ -1,0 +1,5 @@
+# defaults file for ipareplica
+# vars/RedHat-8.yml
+ipareplica_packages: [ "@idm:DL1/server" ]
+ipareplica_packages_dns: [ "@idm:DL1/dns" ]
+ipareplica_packages_adtrust: [ "@idm:DL1/adtrust" ]

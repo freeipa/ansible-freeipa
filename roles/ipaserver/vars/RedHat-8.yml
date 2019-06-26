@@ -1,0 +1,5 @@
+# defaults file for ipaserver
+# vars/RedHat-8.yml
+ipaserver_packages: [ "@idm:DL1/server" ]
+ipaserver_packages_dns: [ "@idm:DL1/dns" ]
+ipaserver_packages_adtrust: [ "@idm:DL1/adtrust" ]

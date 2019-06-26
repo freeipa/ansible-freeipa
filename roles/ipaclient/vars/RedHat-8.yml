@@ -1,0 +1,3 @@
+# defaults file for ipaclient
+# vars/RedHat-8.yml
+ipaclient_packages: [ "@idm:DL1/client" ]
