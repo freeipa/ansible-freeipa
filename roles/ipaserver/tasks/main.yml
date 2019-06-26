@@ -10,9 +10,9 @@
     - "vars/default.yml"
 
 - name: Install IPA server
-  include_tasks: tasks/install.yml
+  include_tasks: install.yml
   when: state|default('present') == 'present'
 
 - name: Uninstall IPA server
-  include_tasks: tasks/uninstall.yml
+  include_tasks: uninstall.yml
   when: state|default('present') == 'absent'
