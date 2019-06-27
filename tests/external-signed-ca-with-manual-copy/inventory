@@ -1,0 +1,8 @@
+[ipaserver]
+ipaserver.test.local
+
+[ipaservcer:vars]
+ipaadmin_password=SomeADMINpassword
+ipadm_password=SomeDMpassword
+ipaserver_domain=test.local
+ipaserver_realm=TEST.LOCAL

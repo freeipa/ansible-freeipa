@@ -1,0 +1,36 @@
+---
+- name: Playbook to configure IPA server step1
+  hosts: ipaserver
+  become: true
+  vars:
+    ipaserver_external_ca: yes
+    ipaserver_copy_csr_to_controller: yes
+
+  roles:
+  - role: ipaserver
+    state: present
+
+- name: Create CA, get /root/ipa.csr signed by your CA, ..
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+  - name: Run external-ca.sh
+    command: >
+      /bin/bash
+      external-ca.sh
+      "{{ groups.ipaserver[0] }}"
+      "{{ ipaserver_domain | default(groups.ipaserver[0].split('.')[1:] | join ('.')) }}"
+    args:
+      chdir: "{{ playbook_dir }}"
+
+- name: Playbook to configure IPA server step2
+  hosts: ipaserver
+  become: true
+  vars:
+    ipaserver_external_cert_files_from_controller: "{{ groups.ipaserver[0] + '-chain.crt' }}"
+    #ipaserver_external_ca_file: "{{ groups.ipaserver[0] + '-cacert.asc' }}"
+
+  roles:
+  - role: ipaserver
+    state: present
