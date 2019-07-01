@@ -32,10 +32,10 @@ module: ipatopologysuffix
 short description: Verify FreeIPA topology suffix
 description: Verify FreeIPA topology suffix
 options:
-  principal:
+  ipaadmin_principal:
     description: The admin principal
     default: admin
-  password:
+  ipaadmin_password:
     description: The admin password
     required: false
   suffix:
@@ -66,8 +66,8 @@ from ansible.module_utils.ansible_freeipa_module import execute_api_command
 def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
-            principal=dict(type="str", default="admin"),
-            password=dict(type="str", required=False, no_log=True),
+            ipaadmin_principal=dict(type="str", default="admin"),
+            ipaadmin_password=dict(type="str", required=False, no_log=True),
             suffix=dict(choices=["domain", "ca"], required=True),
             state=dict(type="str", default="verified",
                        choices=["verified"]),
@@ -79,8 +79,8 @@ def main():
 
     # Get parameters
 
-    principal = ansible_module.params.get("principal")
-    password = ansible_module.params.get("password")
+    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
+    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
     suffix = ansible_module.params.get("suffix")
     state = ansible_module.params.get("state")
 
@@ -98,7 +98,7 @@ def main():
 
     # Execute command
 
-    execute_api_command(ansible_module, principal, password,
+    execute_api_command(ansible_module, ipaadmin_principal, ipaadmin_password,
                         command, to_text(suffix), args)
 
     # Done

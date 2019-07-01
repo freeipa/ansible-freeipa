@@ -50,7 +50,7 @@ Example playbook to add a topology segment wiht default name (cn):
   tasks:
   - name: Add topology segment
     ipatopologysegment:
-      password: MyPassword123
+      ipaadmin_password: MyPassword123
       suffix: domain
       left: ipareplica1.test.local
       right: ipareplica2.test.local
@@ -70,7 +70,7 @@ Example playbook to delete a topology segment:
   tasks:
   - name: Delete topology segment
     ipatopologysegment:
-      password: MyPassword123
+      ipaadmin_password: MyPassword123
       suffix: domain
       left: ipareplica1.test.local
       right: ipareplica2.test.local
@@ -90,7 +90,7 @@ Example playbook to reinitialize a topology segment:
   tasks:
   - name: Reinitialize topology segment
     ipatopologysegment:
-      password: MyPassword123
+      ipaadmin_password: MyPassword123
       suffix: domain
       left: ipareplica1.test.local
       right: ipareplica2.test.local
@@ -111,7 +111,7 @@ Example playbook to verify a topology suffix:
   tasks:
   - name: Verify topology suffix
     ipatopologysuffix:
-      password: MyPassword123
+      ipaadmin_password: MyPassword123
       suffix: domain
       state: verified
 ```
@@ -136,7 +136,7 @@ Example playbook to add a list of topology segments:
   tasks:
   - name: Add topology segment
     ipatopologysegment:
-      password: "{{ ipaadmin_password }}"
+      ipaadmin_password: "{{ ipaadmin_password }}"
       suffix: "{{ item.suffix }}"
       name: "{{ item.name | default(omit) }}"
       left: "{{ item.left }}"
@@ -157,8 +157,8 @@ ipatopologysegment
 
 Variable | Description | Required
 -------- | ----------- | --------
-`principal` | The admin principal is a string and defaults to `admin` | no
-`password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
+`ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `suffix` | The topology suffix to be used, this can either be `domain`, `ca` or `domain+ca` | yes
 `name` \| `cn` | The topology segment name (cn) is the unique identifier for a segment. | no
 `left` \| `leftnode` | The left replication node string - an IPA server | no
@@ -174,8 +174,8 @@ Verify FreeIPA topology suffix
 
 Variable | Description | Required
 -------- | ----------- | --------
-`principal` | The admin principal is a string and defaults to `admin` | no
-`password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
+`ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `suffix` | The topology suffix to be used, this can either be `domain` or `ca` | yes
 `state` | The state to ensure. It can only be `verified` | yes
 

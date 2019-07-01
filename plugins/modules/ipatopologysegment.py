@@ -32,10 +32,10 @@ module: ipatopologysegment
 short description: Manage FreeIPA topology segments
 description: Manage FreeIPA topology segments
 options:
-  principal:
+  ipaadmin_principal:
     description: The admin principal
     default: admin
-  password:
+  ipaadmin_password:
     description: The admin password
     required: false
   suffix:
@@ -173,8 +173,8 @@ def find_left_right_cn(module, suffix, left, right, name):
 def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
-            principal=dict(type="str", default="admin"),
-            password=dict(type="str", required=False, no_log=True),
+            ipaadmin_principal=dict(type="str", default="admin"),
+            ipaadmin_password=dict(type="str", required=False, no_log=True),
             suffix=dict(choices=["domain", "ca", "domain+ca"], required=True),
             name=dict(type="str", aliases=["cn"], default=None),
             left=dict(type="str", aliases=["leftnode"], default=None),
@@ -192,8 +192,8 @@ def main():
 
     # Get parameters
 
-    principal = ansible_module.params.get("principal")
-    password = ansible_module.params.get("password")
+    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
+    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
     suffixes = ansible_module.params.get("suffix")
     name = ansible_module.params.get("name")
     left = ansible_module.params.get("left")
@@ -214,8 +214,9 @@ def main():
     ccache_dir = None
     ccache_name = None
     try:
-        if not valid_creds(principal):
-            ccache_dir, ccache_name = temp_kinit(principal, password)
+        if not valid_creds(ipaadmin_principal):
+            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
+                                                 ipaadmin_password)
         api_connect()
 
         commands = []
