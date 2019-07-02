@@ -195,96 +195,102 @@ def main():
     if not options.ca_subject:
         options.ca_subject = str(default_ca_subject_dn(options.subject_base))
 
-    # Configuration for ipalib, we will bootstrap and finalize later, after
-    # we are sure we have the configuration file ready.
-    cfg = dict(
-        context='installer',
-        confdir=paths.ETC_IPA,
-        in_server=True,
-        # make sure host name specified by user is used instead of default
-        host=options.host_name,
-    )
-    if options.setup_ca:
-        # we have an IPA-integrated CA
-        cfg['ca_host'] = options.host_name
+    try:
 
-    # Create the management framework config file and finalize api
-    target_fname = paths.IPA_DEFAULT_CONF
-    fd = open(target_fname, "w")
-    fd.write("[global]\n")
-    fd.write("host=%s\n" % options.host_name)
-    fd.write("basedn=%s\n" % ipautil.realm_to_suffix(options.realm_name))
-    fd.write("realm=%s\n" % options.realm_name)
-    fd.write("domain=%s\n" % options.domain_name)
-    fd.write("xmlrpc_uri=https://%s/ipa/xml\n" % \
-             ipautil.format_netloc(options.host_name))
-    fd.write("ldap_uri=ldapi://%%2fvar%%2frun%%2fslapd-%s.socket\n" % \
-             installutils.realm_to_serverid(options.realm_name))
-    if options.setup_ca:
-        fd.write("enable_ra=True\n")
-        fd.write("ra_plugin=dogtag\n")
-        fd.write("dogtag_version=10\n")
-    else:
-        fd.write("enable_ra=False\n")
-        fd.write("ra_plugin=none\n")
-    fd.write("mode=production\n")
-    fd.close()
+        # Configuration for ipalib, we will bootstrap and finalize later, after
+        # we are sure we have the configuration file ready.
+        cfg = dict(
+            context='installer',
+            confdir=paths.ETC_IPA,
+            in_server=True,
+            # make sure host name specified by user is used instead of default
+            host=options.host_name,
+        )
+        if options.setup_ca:
+            # we have an IPA-integrated CA
+            cfg['ca_host'] = options.host_name
 
-    # Must be readable for everyone
-    os.chmod(target_fname, 0o644)
+        # Create the management framework config file and finalize api
+        target_fname = paths.IPA_DEFAULT_CONF
+        fd = open(target_fname, "w")
+        fd.write("[global]\n")
+        fd.write("host=%s\n" % options.host_name)
+        fd.write("basedn=%s\n" % ipautil.realm_to_suffix(options.realm_name))
+        fd.write("realm=%s\n" % options.realm_name)
+        fd.write("domain=%s\n" % options.domain_name)
+        fd.write("xmlrpc_uri=https://%s/ipa/xml\n" % \
+                 ipautil.format_netloc(options.host_name))
+        fd.write("ldap_uri=ldapi://%%2fvar%%2frun%%2fslapd-%s.socket\n" % \
+                 installutils.realm_to_serverid(options.realm_name))
+        if options.setup_ca:
+            fd.write("enable_ra=True\n")
+            fd.write("ra_plugin=dogtag\n")
+            fd.write("dogtag_version=10\n")
+        else:
+            fd.write("enable_ra=False\n")
+            fd.write("ra_plugin=none\n")
+        fd.write("mode=production\n")
+        fd.close()
 
-    api.bootstrap(**cfg)
-    api.finalize()
+        # Must be readable for everyone
+        os.chmod(target_fname, 0o644)
 
-    if options.setup_ca:
-        with redirect_stdout(ansible_log):
-            ca.install_check(False, None, options)
-    if options.setup_kra:
-        with redirect_stdout(ansible_log):
-            kra.install_check(api, None, options)
+        api.bootstrap(**cfg)
+        api.finalize()
 
-    if options.setup_dns:
-        with redirect_stdout(ansible_log):
-            dns.install_check(False, api, False, options, options.host_name)
-        ip_addresses = dns.ip_addresses
-    else:
-        ip_addresses = get_server_ip_address(options.host_name,
-                                             not options.interactive, False,
-                                             options.ip_addresses)
+        if options.setup_ca:
+            with redirect_stdout(ansible_log):
+                ca.install_check(False, None, options)
+        if options.setup_kra:
+            with redirect_stdout(ansible_log):
+                kra.install_check(api, None, options)
 
-        # check addresses here, dns module is doing own check
-        no_matching_interface_for_ip_address_warning(ip_addresses)
-    options.ip_addresses = ip_addresses
-    options.reverse_zones = dns.reverse_zones
+        if options.setup_dns:
+            with redirect_stdout(ansible_log):
+                dns.install_check(False, api, False, options, options.host_name)
+            ip_addresses = dns.ip_addresses
+        else:
+            ip_addresses = get_server_ip_address(options.host_name,
+                                                 not options.interactive, False,
+                                                 options.ip_addresses)
 
-    instance_name = "-".join(options.realm_name.split("."))
-    dirsrv = services.knownservices.dirsrv
-    if (options.external_cert_files
-           and dirsrv.is_installed(instance_name)
-           and not dirsrv.is_running(instance_name)):
-        logger.debug('Starting Directory Server')
-        services.knownservices.dirsrv.start(instance_name)
+            # check addresses here, dns module is doing own check
+            no_matching_interface_for_ip_address_warning(ip_addresses)
+        options.ip_addresses = ip_addresses
+        options.reverse_zones = dns.reverse_zones
 
-    if options.setup_adtrust:
-        with redirect_stdout(ansible_log):
-            adtrust.install_check(False, options, api)
+        instance_name = "-".join(options.realm_name.split("."))
+        dirsrv = services.knownservices.dirsrv
+        if (options.external_cert_files
+               and dirsrv.is_installed(instance_name)
+               and not dirsrv.is_running(instance_name)):
+            logger.debug('Starting Directory Server')
+            services.knownservices.dirsrv.start(instance_name)
 
-    _update_hosts_file = False
-    # options needs to update hosts file when DNS subsystem will be
-    # installed or custom addresses are used
-    if options.ip_addresses or options.setup_dns:
-        _update_hosts_file = True
+        if options.setup_adtrust:
+            with redirect_stdout(ansible_log):
+                adtrust.install_check(False, options, api)
 
-    if options._host_name_overridden:
-        tasks.backup_hostname(fstore, sstore)
-        tasks.set_hostname(options.host_name)
+        _update_hosts_file = False
+        # options needs to update hosts file when DNS subsystem will be
+        # installed or custom addresses are used
+        if options.ip_addresses or options.setup_dns:
+            _update_hosts_file = True
 
-    if _update_hosts_file:
-        update_hosts_file(ip_addresses, options.host_name, fstore)
+        if options._host_name_overridden:
+            tasks.backup_hostname(fstore, sstore)
+            tasks.set_hostname(options.host_name)
 
-    if hasattr(tasks, "configure_pkcs11_modules"):
-        if tasks.configure_pkcs11_modules(fstore):
-            ansible_log.info("Disabled p11-kit-proxy")
+        if _update_hosts_file:
+            update_hosts_file(ip_addresses, options.host_name, fstore)
+
+        if hasattr(tasks, "configure_pkcs11_modules"):
+            if tasks.configure_pkcs11_modules(fstore):
+                ansible_log.info("Disabled p11-kit-proxy")
+
+    except (RuntimeError, ValueError, ScriptError,
+            ipautil.CalledProcessError) as e:
+        ansible_module.fail_json(msg=str(e))
 
     ansible_module.exit_json(changed=True,
                              ### basic ###
