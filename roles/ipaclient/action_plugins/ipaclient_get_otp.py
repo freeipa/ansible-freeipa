@@ -52,7 +52,8 @@ def run_cmd(args, stdin=None):
                          close_fds=True)
     stdout, stderr = p.communicate(stdin)
 
-    return p.returncode
+    if p.returncode != 0:
+        raise RuntimeError(stderr)
 
 
 def kinit_password(principal, password, ccache_name, config):
@@ -197,12 +198,14 @@ class ActionModule(ActionBase):
             f.write(content)
 
         if password:
-            # perform kinit -c ccache_name -l 1h principal
-            res = kinit_password(principal, password, ccache_name,
-                                 krb5conf_name)
-            if res:
+            try:
+                # perform kinit -c ccache_name -l 1h principal
+                kinit_password(principal, password, ccache_name,
+                               krb5conf_name)
+            except Exception as e:
                 result['failed'] = True
-                result['msg'] = 'kinit %s with password failed' % principal
+                result['msg'] = 'kinit %s with password failed: %s' % \
+                    (principal, to_native(e))
                 return result
 
         else:
