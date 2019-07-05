@@ -32,6 +32,7 @@ Requirements
 
 **Controller**
 * Ansible version: 2.8+ (ansible-freeipa is an Ansible Collection)
+* /usr/bin/kinit is required on the controller if a one time password (OTP) is used
 * python3-gssapi is required on the controller if a one time password (OTP) is used with keytab to install the client.
 
 **Node**
