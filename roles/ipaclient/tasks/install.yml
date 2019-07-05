@@ -63,8 +63,8 @@
   - name: Install - Configure NTP
     ipaclient_setup_ntp:
       ### basic ###
-      ntp_servers: "{{ ipaclient_ntp_servers | default(omit) }}"
-      ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
+      ntp_servers: "{{ result_ipaclient_test.ntp_servers | default(omit) }}"
+      ntp_pool: "{{ result_ipaclient_test.ntp_pool | default(omit) }}"
       no_ntp: "{{ ipaclient_no_ntp }}"
       # force_ntpd: "{{ ipaclient_force_ntpd }}"
       on_master: "{{ ipaclient_on_master }}"

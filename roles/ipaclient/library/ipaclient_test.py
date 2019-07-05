@@ -492,9 +492,10 @@ def main():
             try:
                 timeconf.check_timedate_services()
             except timeconf.NTPConflictingService as e:
-                logger.info("WARNING: conflicting time&date synchronization service '{}'"
-                            " will be disabled".format(e.conflicting_service))
-                logger.info("in favor of chronyd")
+                logger.info(
+                    "WARNING: conflicting time&date synchronization service "
+                    "'%s' will be disabled in favor of chronyd" % \
+                    e.conflicting_service)
                 logger.info("")
             except timeconf.NTPConfigurationError:
                 pass
@@ -800,6 +801,13 @@ def main():
         #            "Proceed with fixed values and no DNS discovery?", False):
         #        raise ScriptError(rval=CLIENT_INSTALL_ERROR)
 
+        # Do not ask for time source
+        #if options.conf_ntp:
+        #    if not options.on_master and not options.unattended and not (
+        #            options.ntp_servers or options.ntp_pool):
+        #        options.ntp_servers, options.ntp_pool = \
+        #            timeconf.get_time_source()
+
         cli_realm = ds.realm
         cli_realm_source = ds.realm_source
         logger.debug("will use discovered realm: %s", cli_realm)
@@ -828,6 +836,14 @@ def main():
         logger.debug("IPA Server source: %s", cli_server_source)
         logger.info("BaseDN: %s", cli_basedn)
         logger.debug("BaseDN source: %s", cli_basedn_source)
+
+        if not options.on_master:
+            if options.ntp_servers:
+                for server in options.ntp_servers:
+                    logger.info("NTP server: %s", server)
+
+            if options.ntp_pool:
+                logger.info("NTP pool: %s", options.ntp_pool)
 
         # ipa-join would fail with IP address instead of a FQDN
         for srv in cli_server:
@@ -894,6 +910,8 @@ def main():
                      client_domain=client_domain,
                      dnsok=dnsok,
                      sssd=options.sssd,
+                     ntp_servers=options.ntp_servers,
+                     ntp_pool=options.ntp_pool,
                      client_already_configured=client_already_configured,
                      ipa_python_version=IPA_PYTHON_VERSION)
 

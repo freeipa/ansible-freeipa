@@ -124,7 +124,12 @@ def main():
     if sync_time is not None:
         if options.conf_ntp:
             # Attempt to configure and sync time with NTP server (chrony).
-            synced_ntp = sync_time(options, fstore, statestore)
+            argspec = inspect.getargspec(sync_time)
+            if "options" not in argspec.args:
+                synced_ntp = sync_time(options.ntp_servers, options.ntp_pool,
+                                       fstore, statestore)
+            else:
+                synced_ntp = sync_time(options, fstore, statestore)
         elif options.on_master:
             # If we're on master skipping the time sync here because it was done
             # in ipa-server-install
