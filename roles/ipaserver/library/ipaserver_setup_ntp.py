@@ -51,11 +51,19 @@ from ansible.module_utils.ansible_ipa_server import *
 
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(),
+        argument_spec = dict(
+            ntp_servers=dict(required=False, type='list', default=None),
+            ntp_pool=dict(required=False, default=None),
+        ),
     )
 
     ansible_module._ansible_debug = True
     ansible_log = AnsibleModuleLog(ansible_module)
+
+    # set values ############################################################
+
+    options.ntp_servers = ansible_module.params.get('ntp_servers')
+    options.ntp_pool = ansible_module.params.get('ntp_pool')
 
     # init ##########################################################
 
@@ -70,14 +78,19 @@ def main():
         # chrony will be handled here in uninstall() method as well by invoking
         # the ipa-server-install --uninstall
         ansible_module.log("Synchronizing time")
-        options.ntp_servers = None
-        options.ntp_pool = None
-        if sync_time(options, fstore, sstore):
-            ansible_module.log("Time synchronization was successful.")
+
+        argspec = inspect.getargspec(sync_time)
+        if "options" not in argspec.args:
+            synced_ntp = sync_time(options.ntp_servers, options.ntp_pool,
+                                   fstore, sstore)
         else:
-            ansible_module.warn("IPA was unable to sync time with chrony!")
-            ansible_module.warn("Time synchronization is required for IPA "
-                                "to work correctly")
+            synced_ntp = sync_time(options, fstore, sstore)
+        if not synced_ntp:
+            ansible_module.log(
+                "Warning: IPA was unable to sync time with chrony!")
+            ansible_module.log(
+                "         Time synchronization is required for IPA "
+                "to work correctly")
     else:
         # Configure ntpd
         timeconf.force_ntpd(sstore)

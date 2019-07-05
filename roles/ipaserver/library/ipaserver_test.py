@@ -88,6 +88,8 @@ def main():
             pkinit_cert_name=dict(required=False),
             ### client ###
             # mkhomedir
+            ntp_servers=dict(required=False, type='list', default=None),
+            ntp_pool=dict(required=False, default=None),
             no_ntp=dict(required=False, type='bool', default=False),
             # ssh_trust_dns
             # no_ssh
@@ -164,6 +166,8 @@ def main():
     options.pkinit_cert_name = ansible_module.params.get('pkinit_cert_name'),
     ### client ###
     # mkhomedir
+    options.ntp_servers = ansible_module.params.get('ntp_servers')
+    options.ntp_pool = ansible_module.params.get('ntp_pool')
     options.no_ntp = ansible_module.params.get('no_ntp')
     # ssh_trust_dns
     # no_ssh
@@ -705,9 +709,10 @@ def main():
         try:
             timeconf.check_timedate_services()
         except timeconf.NTPConflictingService as e:
-            ansible_module.log("Conflicting time&date synchronization service '%s'"
-                       " will be disabled in favor of %s" % \
-                       (e.conflicting_service, time_service))
+            ansible_module.log(
+                "WARNING: conflicting time&date synchronization service "
+                "'%s' will be disabled in favor of chronyd" % \
+                e.conflicting_service)
         except timeconf.NTPConfigurationError:
             pass
 
@@ -776,6 +781,11 @@ def main():
                 "Realm name does not match the domain name: "
                 "You will not be able to establish trusts with Active "
                 "Directory.")
+
+    # Do not ask for time source
+    #if not options.no_ntp and not options.unattended and not (
+    #        options.ntp_servers or options.ntp_pool):
+    #    options.ntp_servers, options.ntp_pool = timeconf.get_time_source()
 
     #########################################################################
 
@@ -871,6 +881,9 @@ def main():
                              ### ad trust ###
                              rid_base=options.rid_base,
                              secondary_rid_base=options.secondary_rid_base,
+                             ### client ###
+                             ntp_servers=options.ntp_servers,
+                             ntp_pool=options.ntp_pool,
                              ### additional ###
                              _installation_cleanup=_installation_cleanup,
                              domainlevel=options.domainlevel)

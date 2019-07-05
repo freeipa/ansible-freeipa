@@ -64,6 +64,8 @@
     # pkinit_name
     ### client ###
     # mkhomedir
+    ntp_servers: "{{ ipaclient_ntp_servers | default(omit) }}"
+    ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
     no_ntp: "{{ ipaclient_no_ntp }}"
     # ssh_trust_dns
     # no_ssh
@@ -166,6 +168,8 @@
 
   - name: Install - Setup NTP
     ipaserver_setup_ntp:
+      ntp_servers: "{{ result_ipaserver_test.ntp_servers | default(omit) }}"
+      ntp_pool: "{{ result_ipaserver_test.ntp_pool | default(omit) }}"
     when: not ipaclient_no_ntp | bool and (ipaserver_external_cert_files
           is undefined or ipaserver_external_cert_files|length < 1)
 
