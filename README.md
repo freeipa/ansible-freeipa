@@ -1,7 +1,7 @@
 FreeIPA Ansible roles
 =====================
 
-This repository contains [Ansible](https://www.ansible.com/) roles and playbooks to install and uninstall [FreeIPA](https://www.freeipa.org/) `servers`, `replicas` and `clients`. Also modules for topology management.
+This repository contains [Ansible](https://www.ansible.com/) roles and playbooks to install and uninstall [FreeIPA](https://www.freeipa.org/) `servers`, `replicas` and `clients`. Also modules for group, topology and user management.
 
 **Note**: The ansible playbooks and roles require a configured ansible environment where the ansible nodes are reachable and are properly set up to have an IP address and a working package manager.
 
@@ -11,7 +11,9 @@ Features
 * Cluster deployments: Server, replicas and clients in one playbook
 * One-time-password (OTP) support for client installation
 * Repair mode for clients
+* Modules for group management
 * Modules for topology management
+* Modules for user management
 
 Supported FreeIPA Versions
 --------------------------
@@ -67,7 +69,7 @@ The roles provided by ansible-freeipa are not available in ansible galaxy so far
 Ansible inventory file
 ----------------------
 
-The most important parts of the inventory file is the definition of the nodes, settings and the topology. Please remember to use [Ansible vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) for passwords. The examples here are not using vault for better readability.
+The most important parts of the inventory file is the definition of the nodes, settings and the management modules. Please remember to use [Ansible vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) for passwords. The examples here are not using vault for better readability.
 
 **Master server**
 
@@ -349,5 +351,7 @@ Roles
 Modules in plugin/modules
 =========================
 
+* [ipagroup](README-group.md)
 * [ipatopologysegment](README-topology.md)
 * [ipatopologysuffix](README-topology.md)
+* [ipauser](README-user.md)
