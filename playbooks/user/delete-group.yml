@@ -1,0 +1,11 @@
+---
+- name: Playbook to handle groups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Remove goups sysops, appops and ops
+  - ipagroup:
+      ipaadmin_password: MyPassword123
+      name: sysops,appops,ops
+      state: absent

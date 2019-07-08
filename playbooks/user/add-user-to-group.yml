@@ -1,0 +1,13 @@
+---
+- name: Playbook to handle groups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Add user member brain to group sysops
+  - ipagroup:
+      ipaadmin_password: MyPassword123
+      name: sysops
+      action: member
+      user:
+      - brain
