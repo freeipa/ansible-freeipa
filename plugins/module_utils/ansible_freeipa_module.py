@@ -25,9 +25,10 @@ import os
 import sys
 import tempfile
 import shutil
+from datetime import datetime
 from ipalib import api, errors
 from ipalib.config import Env
-from ipalib.constants import DEFAULT_CONFIG
+from ipalib.constants import DEFAULT_CONFIG, LDAP_GENERALIZED_TIME_FORMAT
 try:
     from ipalib.install.kinit import kinit_password
 except ImportError:
@@ -35,7 +36,6 @@ except ImportError:
 from ipapython.ipautil import run
 from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
-
 
 def valid_creds(principal):
     """
@@ -120,3 +120,40 @@ def execute_api_command(module, principal, password, command, name, args):
 
     finally:
         temp_kdestroy(ccache_dir, ccache_name)
+
+
+def date_format(value):
+    accepted_date_formats = [
+        LDAP_GENERALIZED_TIME_FORMAT,  # generalized time
+        '%Y-%m-%dT%H:%M:%SZ',  # ISO 8601, second precision
+        '%Y-%m-%dT%H:%MZ',     # ISO 8601, minute precision
+        '%Y-%m-%dZ',           # ISO 8601, date only
+        '%Y-%m-%d %H:%M:%SZ',  # non-ISO 8601, second precision
+        '%Y-%m-%d %H:%MZ',     # non-ISO 8601, minute precision
+    ]
+
+    for date_format in accepted_date_formats:
+        try:
+            return datetime.strptime(value, date_format)
+        except ValueError:
+            pass
+    raise ValueError("Invalid date '%s'" % value)
+
+
+def compare_args_ipa(module, args, ipa):
+    for key in args.keys():
+        if key not in ipa:
+            return False
+        else:
+            arg = args[key]
+            ipa_arg = ipa[key]
+            # If ipa_arg is a list and arg is not, replace arg
+            # with list containing arg. Most args in a find result
+            # are lists, but not all.
+            if isinstance(ipa_arg, list) and not isinstance(arg, list):
+                arg = [arg]
+            #module.warn("%s <=> %s" % (arg, ipa_arg))
+            if arg != ipa_arg:
+                return False
+
+    return True
