@@ -4,21 +4,21 @@
   become: true
 
   tasks:
-  # Create group ops with gid 1234
-  - ipagroup:
+  - name: Create group ops with gid 1234
+    ipagroup:
       ipaadmin_password: MyPassword123
       name: ops
       gidnumber: 1234
 
-  # Create group sysops
-  - ipagroup:
+  - name: Create group sysops
+    ipagroup:
       ipaadmin_password: MyPassword123
       name: sysops
       user:
       - pinky
 
-  # Create group appops
-  - ipagroup:
+  - name: Create group appops
+    ipagroup:
       ipaadmin_password: MyPassword123
       name: appops
 

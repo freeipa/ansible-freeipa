@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  # Add user member brain to group sysops
-  - ipagroup:
+  - name: Add user member brain to group sysops
+    ipagroup:
       ipaadmin_password: MyPassword123
       name: sysops
       action: member

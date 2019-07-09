@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  # Add group members sysops and appops to group sysops
-  - ipagroup:
+  - name: Add group members sysops and appops to group sysops
+    ipagroup:
       ipaadmin_password: MyPassword123
       name: ops
       group:
