@@ -9,4 +9,4 @@
       ipaadmin_password: MyPassword123
       name: pinky
       preserve: yes
-      state: disabled
+      state: absent

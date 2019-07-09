@@ -8,4 +8,4 @@
     ipauser:
       ipaadmin_password: MyPassword123
       name: pinky
-      state: disabled
+      state: enabled

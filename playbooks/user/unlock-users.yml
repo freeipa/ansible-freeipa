@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  - name: Remove user pinky and brain
+  - name: Unlock users pinky and brain
     ipauser:
       ipaadmin_password: MyPassword123
-      name: pinky
-      state: absent
+      name: pinky,brain
+      state: unlocked
