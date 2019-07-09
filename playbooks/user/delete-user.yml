@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  # Remove user pinky and brain
-  - ipauser:
+  - name: Remove user pinky and brain
+    ipauser:
       ipaadmin_password: MyPassword123
       name: pinky
       state: disabled

@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  # Create user pinky
-  - ipauser:
+  - name: Create user pinky
+    ipauser:
       ipaadmin_password: MyPassword123
       name: pinky
       first: pinky

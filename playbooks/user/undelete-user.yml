@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  # Remove user pinky and brain
-  - ipauser:
+  - name: Undelete preserved user pinky
+    ipauser:
       ipaadmin_password: MyPassword123
       name: pinky
       state: undeleted
