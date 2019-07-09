@@ -171,7 +171,7 @@ Variable | Description | Required
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `name` | The list of user name strings. | no
-`first` \| ¸givenname` | The first name string. | no
+`first` \| `givenname` | The first name string. | no
 `last` | The last name | no
 `fullname` \| `cn` | The full name string. | no
 `displayname` | The display name string. | no
