@@ -83,16 +83,16 @@ Example playbook to delete a user, but preserve it:
   become: true
 
   tasks:
-  # Remove user pinky and brain
+  # Remove but preserve user pinky
   - ipauser:
       ipaadmin_password: MyPassword123
       name: pinky
       preserve: yes
-      state: disabled
+      state: absent
 ```
 
 
-Example playbook to undelete a user.
+Example playbook to undelete a preserved user.
 
 ```yaml
 ---
@@ -101,7 +101,7 @@ Example playbook to undelete a user.
   become: true
 
   tasks:
-  # Remove user pinky and brain
+  # Undelete preserved user pinky
   - ipauser:
       ipaadmin_password: MyPassword123
       name: pinky
@@ -118,7 +118,7 @@ Example playbook to disable a user:
   become: true
 
   tasks:
-  # Remove user pinky and brain
+  # Disable user pinky
   - ipauser:
       ipaadmin_password: MyPassword123
       name: pinky
@@ -126,7 +126,7 @@ Example playbook to disable a user:
 ```
 
 
-Example playbook to enable a users:
+Example playbook to enable users:
 
 ```yaml
 ---
@@ -135,11 +135,28 @@ Example playbook to enable a users:
   become: true
 
   tasks:
-  # Remove user pinky and brain
+  # Enable user pinky and brain
   - ipauser:
       ipaadmin_password: MyPassword123
       name: pinky,brain
-      state: disabled
+      state: enabled
+```
+
+
+Example playbook to unlock users:
+
+```yaml
+---
+- name: Playbook to handle users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Unlock user pinky and brain
+  - ipauser:
+      ipaadmin_password: MyPassword123
+      name: pinky,brain
+      state: unlocked
 ```
 
 
@@ -156,7 +173,7 @@ Example playbook to delete users:
   - ipauser:
       ipaadmin_password: MyPassword123
       name: pinky,brain
-      state: disabled
+      state: absent
 ```
 
 
