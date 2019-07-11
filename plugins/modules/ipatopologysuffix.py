@@ -60,8 +60,9 @@ RETURN = """
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_bytes, to_native, to_text
+from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import execute_api_command
+
 
 def main():
     ansible_module = AnsibleModule(
@@ -104,6 +105,7 @@ def main():
     # Done
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == "__main__":
     main()

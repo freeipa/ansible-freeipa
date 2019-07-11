@@ -39,7 +39,7 @@ options:
     description: The admin password
     required: false
   name:
-    description: The list of users (internally uid). 
+    description: The list of users (internally uid).
     required: false
   first:
     description: The first name
@@ -101,7 +101,8 @@ options:
   #  aliases: ["ipasshpubkey"]
   # ..
   update_password:
-    description: Set password for a user in present state only on creation or always
+    description:
+      Set password for a user in present state only on creation or always
     default: 'always'
     choices: ["always", "on_create"]
   preserve:
@@ -175,14 +176,13 @@ RETURN = """
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_bytes, to_native, to_text
+from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, date_format, \
     compare_args_ipa
 
 
 def find_user(module, name, preserved=False):
-    #module.warn("find_user(.., %s)" % to_text(name))
     _args = {
         "all": True,
         "uid": to_text(name),
@@ -199,6 +199,7 @@ def find_user(module, name, preserved=False):
         return _result["result"][0]
     else:
         return None
+
 
 def gen_args(first, last, fullname, displayname, homedir, shell, emails,
              principalname, passwordexpiration, password, uid, gid,
@@ -246,7 +247,7 @@ def main():
             ipaadmin_password=dict(type="str", required=False, no_log=True),
 
             name=dict(type="list", aliases=["login"], default=None,
-                       required=True),
+                      required=True),
             # present
             first=dict(type="str", aliases=["givenname"], default=None),
             last=dict(type="str", default=None),
@@ -265,8 +266,8 @@ def main():
             gid=dict(type="int", aliases=["gidnumber"], default=None),
             phone=dict(type="list", aliases=["telephonenumber"], default=None),
             title=dict(type="str", default=None),
-            #sshpubkey=dict(type="list", aliases=["ipasshpubkey"],
-            #               default=None),
+            # sshpubkey=dict(type="list", aliases=["ipasshpubkey"],
+            #                default=None),
             update_password=dict(type='str', default=None,
                                  choices=['always', 'on_create']),
             # deleted
@@ -329,26 +330,26 @@ def main():
         if len(names) < 1:
             ansible_module.fail_json(
                 msg="No name given.")
-        for x in [ "first", "last", "fullname", "displayname", "homedir",
-                   "shell", "emails", "principalname", "passwordexpiration",
-                   "password", "uid", "gid", "phones", "title", "sshpubkey",
-                   "update_password" ]:
+        for x in ["first", "last", "fullname", "displayname", "homedir",
+                  "shell", "emails", "principalname", "passwordexpiration",
+                  "password", "uid", "gid", "phones", "title", "sshpubkey",
+                  "update_password"]:
             if vars()[x] is not None:
                 ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" % \
+                    msg="Argument '%s' can not be used with state '%s'" %
                     (x, state))
     else:
         if preserve is not None:
             ansible_module.fail_json(
                 msg="Preserve is only possible for state=absent")
-                
+
     if update_password is None:
         update_password = "always"
 
     # Init
 
     changed = False
-    exit_args = { }
+    exit_args = {}
     ccache_dir = None
     ccache_name = None
     try:
@@ -365,7 +366,6 @@ def main():
             # Also search for preserved user
             res_find_preserved = find_user(ansible_module, name,
                                            preserved=True)
-            #ansible_module.warn("res_find: %s" % repr(res_find))
 
             # Create command
             if state == "present":
@@ -379,7 +379,7 @@ def main():
                 if res_find is None and res_find_preserved is not None:
                     res_find = res_find_preserved
 
-                # Found the user    
+                # Found the user
                 if res_find is not None:
                     # Ignore password with update_password == on_create
                     if update_password == "on_create" and \
@@ -413,14 +413,14 @@ def main():
 
             elif state == "enabled":
                 if res_find is not None:
-                    if res_find["nsaccountlock"] == True:
+                    if res_find["nsaccountlock"]:
                         commands.append([name, "user_enable", {}])
                 else:
                     raise ValueError("No disabled user '%s'" % name)
 
             elif state == "disabled":
                 if res_find is not None:
-                    if res_find["nsaccountlock"] == False:
+                    if not res_find["nsaccountlock"]:
                         commands.append([name, "user_disable", {}])
                 else:
                     raise ValueError("No user '%s'" % name)
@@ -436,8 +436,7 @@ def main():
 
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command,
-                                     to_text(name), args)
+                api_command(ansible_module, command, to_text(name), args)
                 changed = True
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
@@ -452,6 +451,7 @@ def main():
     # Done
 
     ansible_module.exit_json(changed=changed, **exit_args)
+
 
 if __name__ == "__main__":
     main()

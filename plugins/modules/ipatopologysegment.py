@@ -114,9 +114,10 @@ not-found:
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_bytes, to_native, to_text
+from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command
+
 
 def find_left_right(module, suffix, left, right):
     _args = {
@@ -149,6 +150,7 @@ def find_cn(module, suffix, name):
     else:
         return None
 
+
 def find_left_right_cn(module, suffix, left, right, name):
     if left is not None and right is not None:
         left_right = find_left_right(module, suffix, left, right)
@@ -169,6 +171,7 @@ def find_left_right_cn(module, suffix, left, right, name):
         module.fail_json(
             msg="Either left and right or name need to be set.")
     return None
+
 
 def main():
     ansible_module = AnsibleModule(
@@ -210,7 +213,7 @@ def main():
     # Init
 
     changed = False
-    exit_args = { }
+    exit_args = {}
     ccache_dir = None
     ccache_name = None
     try:
@@ -247,8 +250,8 @@ def main():
 
                     # Left and right nodes and also the name can not be
                     # changed
-                    for key in [ "iparepltoposegmentleftnode",
-                                 "iparepltoposegmentrightnode" ]:
+                    for key in ["iparepltoposegmentleftnode",
+                                "iparepltoposegmentrightnode"]:
                         if key in args:
                             del args[key]
                     if len(args) > 1:
@@ -289,7 +292,7 @@ def main():
             elif state == "reinitialized":
                 # Reinitialize segment
 
-                if direction not in [ "left-to-right", "right-to-left" ]:
+                if direction not in ["left-to-right", "right-to-left"]:
                     ansible_module.fail_json(msg="Unknown direction '%s'" %
                                              direction)
 
@@ -313,8 +316,7 @@ def main():
         # Execute command
 
         for command, args in commands:
-            result = api_command(ansible_module, command,
-                                 to_text(suffix), args)
+            api_command(ansible_module, command, to_text(suffix), args)
             changed = True
 
     except Exception as e:
@@ -326,6 +328,7 @@ def main():
     # Done
 
     ansible_module.exit_json(changed=changed, **exit_args)
+
 
 if __name__ == "__main__":
     main()

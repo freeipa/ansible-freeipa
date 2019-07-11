@@ -137,14 +137,12 @@ RETURN = """
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_bytes, to_native, to_text
+from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, date_format, \
-    compare_args_ipa
+    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa
 
 
 def find_group(module, name):
-    #module.warn("find_group(.., %s)" % to_text(name))
     _args = {
         "all": True,
         "cn": to_text(name),
@@ -197,7 +195,7 @@ def main():
             ipaadmin_password=dict(type="str", required=False, no_log=True),
 
             name=dict(type="list", aliases=["cn"], default=None,
-                       required=True),
+                      required=True),
             # present
             description=dict(type="str", default=None),
             gid=dict(type="int", aliases=["gidnumber"], default=None),
@@ -246,8 +244,8 @@ def main():
             ansible_module.fail_json(
                 msg="Onle one group can be added at a time.")
         if action == "member":
-            invalid = [ "description", "gid", "nonposix", "external",
-                        "nomembers" ]
+            invalid = ["description", "gid", "nonposix", "external",
+                       "nomembers"]
             for x in invalid:
                 if vars()[x] is not None:
                     ansible_module.fail_json(
@@ -258,19 +256,19 @@ def main():
         if len(names) < 1:
             ansible_module.fail_json(
                 msg="No name given.")
-        invalid = [ "description", "gid", "nonposix", "external", "nomembers" ]
+        invalid = ["description", "gid", "nonposix", "external", "nomembers"]
         if action == "group":
             invalid.extend(["user", "group", "service"])
         for x in invalid:
             if vars()[x] is not None:
                 ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" % \
+                    msg="Argument '%s' can not be used with state '%s'" %
                     (x, state))
 
     # Init
 
     changed = False
-    exit_args = { }
+    exit_args = {}
     ccache_dir = None
     ccache_name = None
     try:
@@ -284,7 +282,6 @@ def main():
         for name in names:
             # Make sure group exists
             res_find = find_group(ansible_module, name)
-            #ansible_module.warn("res_find: %s" % repr(res_find))
 
             # Create command
             if state == "present":
@@ -311,7 +308,7 @@ def main():
                                             res_find):
                         # Generate addition and removal lists
                         user_add = list(
-                            set(user or []) - 
+                            set(user or []) -
                             set(res_find.get("member_user", [])))
                         user_del = list(
                             set(res_find.get("member_user", [])) -
@@ -349,7 +346,7 @@ def main():
                                              }])
                 elif action == "member":
                     user_add = list(
-                        set(user or []) - 
+                        set(user or []) -
                         set(res_find.get("member_user", [])))
                     group_add = list(
                         set(group or []) -
@@ -376,7 +373,7 @@ def main():
                 elif action == "member":
                     # Remove intersection member
                     user_del = list(
-                        set(user or []) & 
+                        set(user or []) &
                         set(res_find.get("member_user", [])))
                     group_del = list(
                         set(group or []) &
@@ -401,15 +398,14 @@ def main():
 
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command,
-                                     to_text(name), args)
+                api_command(ansible_module, command, to_text(name), args)
                 changed = True
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(e)))
 
-    #except Exception as e:
-    #    ansible_module.fail_json(msg=str(e))
+    except Exception as e:
+        ansible_module.fail_json(msg=str(e))
 
     finally:
         temp_kdestroy(ccache_dir, ccache_name)
@@ -417,6 +413,7 @@ def main():
     # Done
 
     ansible_module.exit_json(changed=changed, **exit_args)
+
 
 if __name__ == "__main__":
     main()

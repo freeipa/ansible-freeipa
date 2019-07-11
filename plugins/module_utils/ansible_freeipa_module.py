@@ -22,11 +22,10 @@
 
 
 import os
-import sys
 import tempfile
 import shutil
 from datetime import datetime
-from ipalib import api, errors
+from ipalib import api
 from ipalib.config import Env
 from ipalib.constants import DEFAULT_CONFIG, LDAP_GENERALIZED_TIME_FORMAT
 try:
@@ -36,6 +35,7 @@ except ImportError:
 from ipapython.ipautil import run
 from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
+
 
 def valid_creds(principal):
     """
@@ -152,7 +152,7 @@ def compare_args_ipa(module, args, ipa):
             # are lists, but not all.
             if isinstance(ipa_arg, list) and not isinstance(arg, list):
                 arg = [arg]
-            #module.warn("%s <=> %s" % (arg, ipa_arg))
+            # module.warn("%s <=> %s" % (arg, ipa_arg))
             if arg != ipa_arg:
                 return False
 
