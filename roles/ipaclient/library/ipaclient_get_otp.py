@@ -265,6 +265,8 @@ def ensure_host_present(module, api, ipahost):
 
         # Must add the user
         module_host = get_module_host(module)
+        # force creation of host even if there is no DNS record
+        module_host["force"] = True
         result = api.Command.host_add(fqdn, **module_host)
         # Save random password as it is not displayed by host-show
         if module.params.get('random'):
