@@ -116,7 +116,7 @@ Example playbook to verify a topology suffix:
       state: verified
 ```
 
-Example playbook to add a list of topology segments:
+Example playbook to add or remove or check or reinitialize a list of topology segments:
 
 ```yaml
 ---
@@ -141,10 +141,10 @@ Example playbook to add a list of topology segments:
       name: "{{ item.name | default(omit) }}"
       left: "{{ item.left }}"
       right: "{{ item.right }}"
-      #state: present
+      state: present
       #state: absent
       #state: checked
-      state: reinitialized
+      #state: reinitialized
     loop: "{{ ipatopology_segments | default([]) }}"
 ```
 
