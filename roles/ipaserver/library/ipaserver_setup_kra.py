@@ -87,9 +87,11 @@ def main():
 
     with redirect_stdout(ansible_log):
         if hasattr(custodiainstance, "get_custodia_instance"):
-            custodia = custodiainstance.get_custodia_instance(
-                options, custodiainstance.CustodiaModes.MASTER_PEER)
-            custodia.create_instance()
+            if hasattr(custodiainstance.CustodiaModes, "FIRST_MASTER"):
+                mode = custodiainstance.CustodiaModes.FIRST_MASTER
+            else:
+                mode = custodiainstance.CustodiaModes.MASTER_PEER
+            custodia = custodiainstance.get_custodia_instance(options, mode)
 
             kra.install(api, None, options, custodia=custodia)
         else:
