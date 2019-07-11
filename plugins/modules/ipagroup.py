@@ -345,6 +345,9 @@ def main():
                                                  "service": service_del,
                                              }])
                 elif action == "member":
+                    if res_find is None:
+                        ansible_module.fail_json(msg="No group '%s'" % name)
+
                     user_add = list(
                         set(user or []) -
                         set(res_find.get("member_user", [])))
@@ -371,6 +374,9 @@ def main():
                         commands.append([name, "group_del", {}])
 
                 elif action == "member":
+                    if res_find is None:
+                        ansible_module.fail_json(msg="No group '%s'" % name)
+
                     # Remove intersection member
                     user_del = list(
                         set(user or []) &
