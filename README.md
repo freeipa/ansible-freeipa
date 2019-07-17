@@ -104,7 +104,7 @@ ipaserver_setup_firewalld=no
 ```
 The installation of packages and also the configuration of the firewall are by default enabled.
 
-For more server settings, please have a look at the [server role documentation](SERVER.md).
+For more server settings, please have a look at the [server role documentation](roles/ipaserver/README.md).
 
 **Replica**
 
