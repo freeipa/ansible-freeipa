@@ -46,6 +46,9 @@ options:
   no_pkinit:
     description: 
     required: yes
+  pki_config_override:
+    description: 
+    required: yes
   subject_base:
     description: 
     required: yes
@@ -118,6 +121,8 @@ from ansible.module_utils.ansible_ipa_replica import (
 def main():
     ansible_module = AnsibleModule(
         argument_spec = dict(
+            ### basic ###
+            pki_config_override=dict(required=False),
             #### server ###
             setup_ca=dict(required=False, type='bool'),
             setup_kra=dict(required=False, type='bool'),
@@ -150,6 +155,9 @@ def main():
     # get parameters #
 
     options = installer
+    ### basic ###
+    options.pki_config_override = ansible_module.params.get(
+        'pki_config_override')
     ### server ###
     options.setup_ca = ansible_module.params.get('setup_ca')
     options.setup_kra = ansible_module.params.get('setup_kra')

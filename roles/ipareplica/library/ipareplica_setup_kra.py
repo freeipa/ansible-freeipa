@@ -105,6 +105,7 @@ def main():
             hostname=dict(required=False),
             ca_cert_files=dict(required=False, type='list', default=[]),
             no_host_dns=dict(required=False, type='bool', default=False),
+            pki_config_override=dict(required=False),
             ### server ###
             setup_adtrust=dict(required=False, type='bool'),
             setup_ca=dict(required=False, type='bool'),
@@ -148,6 +149,8 @@ def main():
     options.host_name = ansible_module.params.get('hostname')
     options.ca_cert_files = ansible_module.params.get('ca_cert_files')
     options.no_host_dns = ansible_module.params.get('no_host_dns')
+    options.pki_config_override = ansible_module.params.get(
+        'pki_config_override')
     ### server ###
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_ca = ansible_module.params.get('setup_ca')

@@ -140,6 +140,7 @@ Variable | Description | Required
 `ipaadmin_principal` | The authorized kerberos principal used to join the IPA realm. (string) | no
 `ipareplica_no_host_dns` | Do not use DNS for hostname lookup during installation. (bool, default: false) | no
 `ipareplica_skip_conncheck` | Skip connection check to remote master. (bool, default: false) | no
+`ipareplica_pki_config_override` | Path to ini file with config overrides. This is only usable with recent FreeIPA versions. (string) | no
 
 Server Vaiables
 ---------------
