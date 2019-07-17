@@ -197,7 +197,7 @@ Variable | Description | Required
 `ipaclient_use_otp` | The bool value defines if a one-time password will be generated to join a new or existing host. `ipaclient_use_otp` defaults to `no`. The enforcement on an existing host is not done if there is a working krb5.keytab on the host. If the generation of an otp is enforced for an existing host entry, then the host gets diabled and the containing keytab gets removed. | no
 `ipaclient_allow_repair` | The bool value defines if an already joined or partly set-up client can be repaired. `ipaclient_allow_repair` defaults to `no`. Contrary to `ipaclient_force_join=yes` the host entry will not be changed on the server. | no
 `ipaclient_install_packages` | The bool value defines if the needed packages are installed on the node. `ipaclient_install_packages` defaults to `yes`. | no
-`ipaclient_on_master` | The bool value is only used in the server installation process to install the client part. It should not be set otherwise. `ipaclient_on_master` defaults to `no`. | no
+`ipaclient_on_master` | The bool value is only used in the server and replica installation process to install the client part. It should not be set otherwise. `ipaclient_on_master` defaults to `no`. | no
 
 
 Authors
