@@ -559,7 +559,7 @@ def main():
                    "command on the master and use a prep file to install "
                    "this replica.")
             logger.error("%s", msg)
-            raise ScriptError(rval=3)
+            raise ScriptError(msg, rval=3)
 
         ansible_log.debug("-- CHECK DNS_MASTERS --")
 
@@ -597,21 +597,24 @@ def main():
             config.ca_host_name = ca_host
             ca_enabled = True
             if options.dirsrv_cert_files:
-                logger.error("Certificates could not be provided when "
-                             "CA is present on some master.")
-                raise ScriptError(rval=3)
+                msg = ("Certificates could not be provided when "
+                       "CA is present on some master.")
+                logger.error(msg)
+                raise ScriptError(msg, rval=3)
         else:
             if options.setup_ca:
-                logger.error("The remote master does not have a CA "
-                             "installed, can't set up CA")
-                raise ScriptError(rval=3)
+                msg = ("The remote master does not have a CA "
+                       "installed, can't set up CA")
+                logger.error(msg)
+                raise ScriptError(msg, rval=3)
             ca_enabled = False
             if not options.dirsrv_cert_files:
-                logger.error("Cannot issue certificates: a CA is not "
-                             "installed. Use the --http-cert-file, "
-                             "--dirsrv-cert-file options to provide "
-                             "custom certificates.")
-                raise ScriptError(rval=3)
+                msg = ("Cannot issue certificates: a CA is not "
+                       "installed. Use the --http-cert-file, "
+                       "--dirsrv-cert-file options to provide "
+                       "custom certificates.")
+                logger.error(msg)
+                raise ScriptError(msg, rval=3)
 
         ansible_log.debug("-- SEARCH FOR KRA --")
 
@@ -625,9 +628,10 @@ def main():
             kra_enabled = True
         else:
             if options.setup_kra:
-                logger.error("There is no active KRA server in the domain, "
-                             "can't setup a KRA clone")
-                raise ScriptError(rval=3)
+                msg = ("There is no active KRA server in the domain, "
+                       "can't setup a KRA clone")
+                logger.error(msg)
+                raise ScriptError(msg, rval=3)
             kra_enabled = False
 
         ansible_log.debug("-- CHECK CA --")
@@ -676,15 +680,18 @@ def main():
 
     except errors.ACIError:
         logger.debug("%s", traceback.format_exc())
-        raise ScriptError("\nInsufficient privileges to promote the server."
-                          "\nPossible issues:"
-                          "\n- A user has insufficient privileges"
-                          "\n- This client has insufficient privileges "
-                          "to become an IPA replica")
+        ansible_module.fail_json(
+            msg = ("\nInsufficient privileges to promote the server."
+                   "\nPossible issues:"
+                   "\n- A user has insufficient privileges"
+                   "\n- This client has insufficient privileges "
+                   "to become an IPA replica"))
     except errors.LDAPError:
         logger.debug("%s", traceback.format_exc())
-        raise ScriptError("\nUnable to connect to LDAP server %s" %
-                          config.master_host_name)
+        ansible_module.fail_json(msg="\nUnable to connect to LDAP server %s" %
+                                 config.master_host_name)
+    except ScriptError as e:
+        ansible_module.fail_json(msg=str(e))
     finally:
         if replman and replman.conn:
             ansible_log.debug("-- UNBIND REPLMAN--")
