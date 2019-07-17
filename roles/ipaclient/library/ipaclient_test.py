@@ -451,7 +451,7 @@ def main():
         dnsok = False
         cli_domain = None
         cli_server = None
-        subject_base = None
+        # subject_base = None
         cli_realm = None
         cli_kdc = None
         client_domain = None
@@ -467,7 +467,7 @@ def main():
         cli_domain_source = 'Unknown source'
         cli_server_source = 'Unknown source'
 
-        fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
+        # fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
 
         if not os.getegid() == 0:
             raise ScriptError(
@@ -824,7 +824,7 @@ def main():
         cli_basedn = ds.basedn
         cli_basedn_source = ds.basedn_source
         logger.debug("will use discovered basedn: %s", cli_basedn)
-        subject_base = DN(('O', cli_realm))
+        # subject_base = DN(('O', cli_realm))
 
         logger.info("Client hostname: %s", hostname)
         logger.debug("Hostname source: %s", hostname_source)
@@ -876,8 +876,6 @@ def main():
     #########################################################################
 
     ### client._install ###
-
-    statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
 
     # May not happen in here at this time
     #if not options.on_master:

@@ -128,11 +128,6 @@ def main():
             server=dict(required=True),
             ccache=dict(required=True),
             installer_ccache=dict(required=True),
-            _ca_enabled=dict(required=False, type='bool'),
-            _kra_enabled=dict(required=False, type='bool'),
-            _dirsrv_pkcs12_info = dict(required=False),
-            _http_pkcs12_info = dict(required=False),
-            _pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
             _add_to_ipaservers = dict(required=True, type='bool'),
             _ca_subject=dict(required=True),
@@ -186,11 +181,6 @@ def main():
     os.environ['KRB5CCNAME'] = ccache
     #os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
     installer._ccache = ansible_module.params.get('installer_ccache')
-    ca_enabled = ansible_module.params.get('_ca_enabled')
-    kra_enabled = ansible_module.params.get('_kra_enabled')
-    dirsrv_pkcs12_info = ansible_module.params.get('_dirsrv_pkcs12_info')
-    http_pkcs12_info = ansible_module.params.get('_http_pkcs12_info')
-    pkinit_pkcs12_info = ansible_module.params.get('_pkinit_pkcs12_info')
     options.subject_base = ansible_module.params.get('subject_base')
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
@@ -206,9 +196,6 @@ def main():
                                                         "config_ips")
 
     # init #
-
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
 
     ansible_log.debug("== INSTALLER ==")
 

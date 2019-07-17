@@ -96,7 +96,7 @@ def main():
             ntp_servers=dict(required=False, type='list', default=None),
             ntp_pool=dict(required=False, default=None),
             no_ntp=dict(required=False, type='bool', default=False),
-            #force_ntpd=dict(required=False, type='bool', default=False),
+            # force_ntpd=dict(required=False, type='bool', default=False),
             on_master=dict(required=False, type='bool', default=False),
             ### additional ###
             servers=dict(required=False, type='list', default=None),
@@ -109,7 +109,7 @@ def main():
     options.ntp_servers = module.params.get('ntp_servers')
     options.ntp_pool = module.params.get('ntp_pool')
     options.no_ntp = module.params.get('no_ntp')
-    #options.force_ntpd = module.params.get('force_ntpd')
+    # options.force_ntpd = module.params.get('force_ntpd')
     options.on_master = module.params.get('on_master')
     cli_server = module.params.get('servers')
     cli_domain = module.params.get('domain')

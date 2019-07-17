@@ -106,7 +106,6 @@ def main():
             _ca_file=dict(required=False),
             _kra_enabled=dict(required=False, type='bool'),
             _kra_host_name=dict(required=False),
-            _dirsrv_pkcs12_info = dict(required=False),
             _pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
             dirman_password=dict(required=True, no_log=True),
@@ -137,21 +136,16 @@ def main():
     ca_enabled = ansible_module.params.get('_ca_enabled')
     kra_enabled = ansible_module.params.get('_kra_enabled')
     kra_host_name = ansible_module.params.get('_kra_host_name')
-    dirsrv_pkcs12_info = ansible_module.params.get('_dirsrv_pkcs12_info')
     options._pkinit_pkcs12_info = ansible_module.params.get('_pkinit_pkcs12_info')
     options._top_dir = ansible_module.params.get('_top_dir')
     dirman_password = ansible_module.params.get('dirman_password')
 
     # init #
 
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
-
     ansible_log.debug("== INSTALL ==")
 
     options = installer
     promote = installer.promote
-    pkinit_pkcs12_info = installer._pkinit_pkcs12_info
 
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)
@@ -163,7 +157,6 @@ def main():
     config.kra_host_name = kra_host_name
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
-    #installer._remote_api = remote_api
 
     conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']

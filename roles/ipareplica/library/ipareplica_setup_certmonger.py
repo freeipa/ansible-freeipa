@@ -62,8 +62,6 @@ def main():
 
     # get parameters #
 
-    options = installer
-
     with redirect_stdout(ansible_log):
         ansible_log.debug("-- CONFIGURE_CERTMONGER --")
 

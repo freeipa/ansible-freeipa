@@ -143,14 +143,10 @@ def main():
 
     # init #
 
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
-
     ansible_log.debug("== INSTALL ==")
 
     options = installer
     promote = installer.promote
-    pkinit_pkcs12_info = installer._pkinit_pkcs12_info
 
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)

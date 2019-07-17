@@ -71,9 +71,6 @@ def main():
     options.dm_password = module.params.get('dm_password')
     options.master_password = module.params.get('master_password')
 
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
-
     # This will override any settings passed in on the cmdline
     if os.path.isfile(paths.ROOT_IPA_CACHE):
         # dm_password check removed, checked already

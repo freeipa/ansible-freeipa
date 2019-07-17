@@ -109,12 +109,7 @@ def main():
 
     # init #
 
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
-
     ansible_log.debug("== INSTALL ==")
-
-    promote = installer.promote
 
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)
@@ -124,7 +119,6 @@ def main():
     remote_api = gen_remote_api(config_master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
 
-    conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']
 
     api.Backend.ldap2.connect()

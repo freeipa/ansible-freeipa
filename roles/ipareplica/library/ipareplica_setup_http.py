@@ -137,11 +137,9 @@ def main():
     # init #
 
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
 
     ansible_log.debug("== INSTALL ==")
 
-    options = installer
     promote = installer.promote
 
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,

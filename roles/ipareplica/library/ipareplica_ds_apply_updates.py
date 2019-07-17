@@ -105,14 +105,10 @@ def main():
 
     # init #
 
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
-
     ansible_log.debug("== INSTALL ==")
 
     options = installer
     promote = installer.promote
-    pkinit_pkcs12_info = installer._pkinit_pkcs12_info
 
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)
@@ -122,7 +118,6 @@ def main():
     config.subject_base = options.subject_base
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
-    #installer._remote_api = remote_api
 
     conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']
@@ -132,7 +127,6 @@ def main():
     api.Backend.ldap2.connect()
     conn.connect(ccache=ccache)
 
-    cafile = paths.IPA_CA_CRT
     with redirect_stdout(ansible_log):
         ds = replica_ds_init_info(ansible_log,
                                   config, options, ca_enabled,

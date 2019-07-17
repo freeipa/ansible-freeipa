@@ -70,12 +70,6 @@ options:
   _kra_host_name:
     description: 
     required: yes
-  _dirsrv_pkcs12_info:
-    description: 
-    required: yes
-  _pkinit_pkcs12_info:
-    description: 
-    required: yes
   _top_dir:
     description: 
     required: yes
@@ -111,8 +105,6 @@ def main():
             _ca_file=dict(required=False),
             _kra_enabled=dict(required=False, type='bool'),
             _kra_host_name=dict(required=False),
-            _dirsrv_pkcs12_info = dict(required=False),
-            _pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
             dirman_password=dict(required=True, no_log=True),
             config_setup_ca=dict(required=True, type='bool'),
@@ -145,17 +137,12 @@ def main():
     ca_enabled = ansible_module.params.get('_ca_enabled')
     kra_enabled = ansible_module.params.get('_kra_enabled')
     kra_host_name = ansible_module.params.get('_kra_host_name')
-    dirsrv_pkcs12_info = ansible_module.params.get('_dirsrv_pkcs12_info')
-    pkinit_pkcs12_info = ansible_module.params.get('_pkinit_pkcs12_info')
     options._top_dir = ansible_module.params.get('_top_dir')
     dirman_password = ansible_module.params.get('dirman_password')
     config_setup_ca = ansible_module.params.get('config_setup_ca')
     config_ca_host_name = ansible_module.params.get('config_ca_host_name')
 
     # init #
-
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
 
     ansible_log.debug("== INSTALL ==")
 
@@ -177,7 +164,6 @@ def main():
     remote_api = gen_remote_api(config.master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
 
-    conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']
 
     # do the work #

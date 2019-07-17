@@ -94,18 +94,6 @@ options:
   _ca_enabled:
     description: 
     required: yes
-  _kra_enabled:
-    description: 
-    required: yes
-  _dirsrv_pkcs12_info:
-    description: 
-    required: yes
-  _http_pkcs12_info:
-    description: 
-    required: yes
-  _pkinit_pkcs12_info:
-    description: 
-    required: yes
   _top_dir:
     description: 
     required: yes
@@ -176,10 +164,6 @@ def main():
             ccache=dict(required=True),
             installer_ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
-            _kra_enabled=dict(required=False, type='bool'),
-            _dirsrv_pkcs12_info = dict(required=False),
-            _http_pkcs12_info = dict(required=False),
-            _pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
             _add_to_ipaservers = dict(required=True, type='bool'),
             _ca_subject=dict(required=True),
@@ -235,11 +219,6 @@ def main():
     #os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
     installer._ccache = ansible_module.params.get('installer_ccache')
     ca_enabled = ansible_module.params.get('_ca_enabled')
-    kra_enabled = ansible_module.params.get('_kra_enabled')
-
-    dirsrv_pkcs12_info = ansible_module.params.get('_dirsrv_pkcs12_info')
-    http_pkcs12_info = ansible_module.params.get('_http_pkcs12_info')
-    pkinit_pkcs12_info = ansible_module.params.get('_pkinit_pkcs12_info')
 
     options.subject_base = ansible_module.params.get('subject_base')
     if options.subject_base is not None:
@@ -256,7 +235,6 @@ def main():
     # init #
 
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
 
     # prepare (install prepare, install checks) #
 
@@ -276,10 +254,7 @@ def main():
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
 
-    conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']
-
-    cafile = paths.IPA_CA_CRT
 
     if promote:
         ansible_log.debug("-- CREATE_IPA_CONF --")

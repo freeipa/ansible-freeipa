@@ -88,26 +88,6 @@ EXAMPLES = '''
     ipaddress: 192.168.100.23
     random: True
   register: result_ipaclient_get_otp
-
-# Add a new host, authenticate with a keytab stored on the controller node
-- ipaclient_get_otp:
-    keytab: admin.keytab
-    fqdn: ipaclient.ipa.domain.com
-
-# Remove a host, authenticate using principal/password
-- ipaclient_get_otp:
-    principal: admin
-    password: MySecretPassword
-    fqdn: ipaclient.ipa.domain.com
-    state: absent
-
-# Modify a host, add ssh public key:
-- ipaclient_get_otp:
-    principal: admin
-    password: MySecretPassword
-    fqdn: ipaclient.ipa.domain.com
-    sshpubkey: ssh-rsa AAAA...
-
 '''
 
 RETURN = '''

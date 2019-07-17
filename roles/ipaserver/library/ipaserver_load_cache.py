@@ -59,7 +59,6 @@ def main():
     )
 
     ansible_module._ansible_debug = True
-    ansible_log = AnsibleModuleLog(ansible_module)
 
     # set values ############################################################
 

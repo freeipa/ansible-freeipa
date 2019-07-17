@@ -67,16 +67,13 @@ def main():
 
     module._ansible_debug = True
 
-    options.master_password = module.params.get('master_password')
+    master_password = module.params.get('master_password')
 
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
-
-    if not options.master_password:
-        options.master_password = ipa_generate_password()
+    if not master_password:
+        master_password = ipa_generate_password()
 
     module.exit_json(changed=True,
-                     password=options.master_password)
+                     password=master_password)
 
 if __name__ == '__main__':
     main()

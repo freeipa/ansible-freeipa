@@ -63,10 +63,7 @@ def main():
             #### additional ###
             config_master_host_name=dict(required=True),
             ccache=dict(required=True),
-            _ca_enabled=dict(required=False, type='bool'),
             _ca_file=dict(required=False),
-            _dirsrv_pkcs12_info = dict(required=False),
-            #_pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
             dirman_password=dict(required=True, no_log=True),
         ),
@@ -91,24 +88,16 @@ def main():
     master_host_name = ansible_module.params.get('config_master_host_name')
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
-    #os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
-    #installer._ccache = ansible_module.params.get('installer_ccache')
-    ca_enabled = ansible_module.params.get('_ca_enabled')
-    dirsrv_pkcs12_info = ansible_module.params.get('_dirsrv_pkcs12_info')
-    #pkinit_pkcs12_info = ansible_module.params.get('_pkinit_pkcs12_info')
     options._top_dir = ansible_module.params.get('_top_dir')
     dirman_password = ansible_module.params.get('dirman_password')
 
     # init #
 
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
 
     ansible_log.debug("== INSTALL ==")
 
     options = installer
-    promote = installer.promote
-    #pkinit_pkcs12_info = installer._pkinit_pkcs12_info
 
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)
@@ -117,7 +106,6 @@ def main():
     config.dirman_password = dirman_password
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
-    #installer._remote_api = remote_api
 
     conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']

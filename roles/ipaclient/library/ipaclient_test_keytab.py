@@ -100,10 +100,6 @@ ping_test_ok:
   type: bool
 '''
 
-class Object(object):
-    pass
-options = Object()
-
 import os
 import tempfile
 

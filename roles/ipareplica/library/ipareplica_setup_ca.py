@@ -46,9 +46,6 @@ options:
   no_pkinit:
     description: 
     required: yes
-  no_ui_redirect:
-    description: 
-    required: yes
   subject_base:
     description: 
     required: yes
@@ -117,7 +114,6 @@ def main():
             setup_ca=dict(required=False, type='bool'),
             setup_kra=dict(required=False, type='bool'),
             no_pkinit=dict(required=False, type='bool'),
-            no_ui_redirect=dict(required=False, type='bool'),
             #### certificate system ###
             subject_base=dict(required=True),
             #### additional ###
@@ -180,14 +176,9 @@ def main():
 
     # init #
 
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
-
     ansible_log.debug("== INSTALL ==")
 
     options = installer
-    promote = installer.promote
-    pkinit_pkcs12_info = installer._pkinit_pkcs12_info
 
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)
@@ -206,7 +197,6 @@ def main():
     remote_api = gen_remote_api(config.master_host_name, paths.ETC_IPA)
     options._remote_api = remote_api
 
-    conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']
 
     # There is a api.Backend.ldap2.connect call somewhere in ca, ds, dns or

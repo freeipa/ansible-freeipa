@@ -116,9 +116,6 @@ def main():
             _ca_enabled=dict(required=False, type='bool'),
             _kra_enabled=dict(required=False, type='bool'),
             _kra_host_name=dict(required=False),
-            _dirsrv_pkcs12_info = dict(required=False),
-            _http_pkcs12_info = dict(required=False),
-            _pkinit_pkcs12_info = dict(required=False),
             _top_dir = dict(required=True),
             _add_to_ipaservers = dict(required=True, type='bool'),
             _ca_subject=dict(required=True),
@@ -179,10 +176,6 @@ def main():
     kra_enabled = ansible_module.params.get('_kra_enabled')
     kra_host_name = ansible_module.params.get('_kra_host_name')
 
-    dirsrv_pkcs12_info = ansible_module.params.get('_dirsrv_pkcs12_info')
-    http_pkcs12_info = ansible_module.params.get('_http_pkcs12_info')
-    pkinit_pkcs12_info = ansible_module.params.get('_pkinit_pkcs12_info')
-
     options.subject_base = ansible_module.params.get('subject_base')
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
@@ -194,13 +187,9 @@ def main():
 
     # init #
 
-    fstore = sysrestore.FileStore(paths.SYSRESTORE)
-    sstore = sysrestore.StateFile(paths.SYSRESTORE)
-
     ansible_log.debug("== INSTALL ==")
 
     options = installer
-    promote = installer.promote
 
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)
@@ -214,7 +203,6 @@ def main():
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
 
-    conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']
 
     with redirect_stdout(ansible_log):
