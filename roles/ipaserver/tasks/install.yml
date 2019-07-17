@@ -54,14 +54,14 @@
     dirsrv_config_file: "{{ ipaserver_dirsrv_config_file | default(omit) }}"
     ### ssl certificate ###
     dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default(omit) }}"
+    dirsrv_cert_name: "{{ ipaserver_dirsrv_cert_name | default(omit) }}"
+    dirsrv_pin: "{{ ipaserver_dirsrv_pin | default(omit) }}"
     http_cert_files: "{{ ipaserver_http_cert_files | default(omit) }}"
+    http_cert_name: "{{ ipaserver_http_cert_name | default(omit) }}"
+    http_pin: "{{ ipaserver_http_pin | default(omit) }}"
     pkinit_cert_files: "{{ ipaserver_pkinit_cert_files | default(omit) }}"
-    # dirsrv_pin
-    # http_pin
-    # pkinit_pin
-    # dirsrv_name
-    # http_name
-    # pkinit_name
+    pkinit_cert_name: "{{ ipaserver_pkinit_cert_name | default(omit) }}"
+    pkinit_pin: "{{ ipaserver_pkinit_pin | default(omit) }}"
     ### client ###
     # mkhomedir
     ntp_servers: "{{ ipaclient_ntp_servers | default(omit) }}"
