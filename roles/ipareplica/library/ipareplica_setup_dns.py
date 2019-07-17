@@ -93,6 +93,8 @@ def main():
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
             ### additional ###
+            dns_ip_addresses=dict(required=True, type='list'),
+            dns_reverse_zones=dict(required=True, type='list'),
             ccache=dict(required=True),
             _top_dir = dict(required=True),
             setup_ca=dict(required=True, type='bool'),
@@ -121,6 +123,9 @@ def main():
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validationdnssec_validation')
     ### additional ###
+    dns.ip_addresses = ansible_module_get_parsed_ip_addresses(
+        ansible_module, 'dns_ip_addresses')
+    dns.reverse_zones = ansible_module.params.get('dns_reverse_zones')
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
     options._top_dir = ansible_module.params.get('_top_dir')

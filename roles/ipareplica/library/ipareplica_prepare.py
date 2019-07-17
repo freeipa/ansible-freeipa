@@ -750,10 +750,14 @@ def main():
                              config_kra_host_name=config.kra_host_name,
                              config_ips=[ str(ip) for ip in config.ips ],
                              ### ad trust ###
+                             dns_ip_addresses=[ str(ip) for ip
+                                                in dns.ip_addresses ],
+                             dns_reverse_zones=dns.reverse_zones,
                              rid_base=options.rid_base,
                              secondary_rid_base=options.secondary_rid_base,
                              adtrust_netbios_name=adtrust.netbios_name,
                              adtrust_reset_netbios_name=adtrust.reset_netbios_name)
+
 
 if __name__ == '__main__':
     main()

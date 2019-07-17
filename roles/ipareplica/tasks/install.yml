@@ -682,6 +682,8 @@
                           not none else omit }}"
       no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
       ### additional ###
+      dns_ip_addresses: "{{ result_ipareplica_prepare.dns_ip_addresses }}"
+      dns_reverse_zones: "{{ result_ipareplica_prepare.dns_reverse_zones }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
