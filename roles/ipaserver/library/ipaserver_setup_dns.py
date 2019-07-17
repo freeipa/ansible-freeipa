@@ -64,6 +64,9 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec = dict(
             ### basic ###
+            ip_addresses=dict(required=False, type='list', default=[]),
+            domain=dict(required=True),
+            realm=dict(required=True),
             hostname=dict(required=True),
             ### server ###
             setup_dns=dict(required=True, type='bool'),
@@ -86,6 +89,10 @@ def main():
     # set values ############################################################
 
     ### basic ###
+    options.ip_addresses = ansible_module_get_parsed_ip_addresses(
+        ansible_module)
+    options.domain_name = ansible_module.params.get('domain')
+    options.realm_name = ansible_module.params.get('realm')
     options.host_name = ansible_module.params.get('hostname')
     ### server ###
     options.setup_dns = ansible_module.params.get('setup_dns')
@@ -116,8 +123,9 @@ def main():
             # Create a BIND instance
             bind = bindinstance.BindInstance(fstore)
             bind.set_output(ansible_log)
-            bind.setup(host_name, ip_addresses, realm_name,
-                       domain_name, (), 'first', (),
+            bind.setup(options.host_name, options.ip_addresses,
+                       options.realm_name,
+                       options.domain_name, (), 'first', (),
                        zonemgr=options.zonemgr,
                        no_dnssec_validation=options.no_dnssec_validation)
             bind.create_file_with_system_records()

@@ -333,6 +333,9 @@
 
     - name: Install - Setup DNS
       ipaserver_setup_dns:
+        ip_addresses: "{{ ipaserver_ip_addresses | default([]) }}"
+        domain: "{{ result_ipaserver_test.domain }}"
+        realm: "{{ result_ipaserver_test.realm }}"
         hostname: "{{ result_ipaserver_test.hostname }}"
         setup_ca: "{{ result_ipaserver_test.setup_ca }}"
         setup_dns: "{{ ipaserver_setup_dns }}"
