@@ -123,7 +123,7 @@ def main():
     ccache = os.environ['KRB5CCNAME']
 
     # There is a api.Backend.ldap2.connect call somewhere in ca, ds, dns or
-    # ntpinstance 
+    # ntpinstance
     api.Backend.ldap2.connect()
     conn.connect(ccache=ccache)
 

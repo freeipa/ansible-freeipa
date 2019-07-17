@@ -461,7 +461,7 @@ def main():
         ### client.install_check ###
 
         logger.info("This program will set up FreeIPA client.")
-        logger.info("Version {}".format(version.VERSION))
+        logger.info("Version %s", version.VERSION)
         logger.info("")
 
         cli_domain_source = 'Unknown source'
@@ -494,7 +494,7 @@ def main():
             except timeconf.NTPConflictingService as e:
                 logger.info(
                     "WARNING: conflicting time&date synchronization service "
-                    "'%s' will be disabled in favor of chronyd" % \
+                    "'%s' will be disabled in favor of chronyd",
                     e.conflicting_service)
                 logger.info("")
             except timeconf.NTPConfigurationError:
@@ -563,6 +563,7 @@ def main():
                     rval=CLIENT_INSTALL_ERROR)
 
             (nssldap_installed, nosssd_files) = nssldap_exists()
+            (nssldap_installed, __temp) = nssldap_exists()
             if not nssldap_installed:
                 raise ScriptError(
                     "One of these packages must be installed: nss_ldap or "

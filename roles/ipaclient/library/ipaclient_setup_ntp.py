@@ -139,7 +139,7 @@ def main():
             logger.info("Skipping chrony configuration")
 
     else:
-        ntp_srv_servers = [ ]
+        ntp_srv_servers = []
         if not options.on_master and options.conf_ntp:
             # Attempt to sync time with IPA server.
             # If we're skipping NTP configuration, we also skip the time sync here.
@@ -175,6 +175,7 @@ def main():
 
     # Done
     module.exit_json(changed=synced_ntp)
+
 
 if __name__ == '__main__':
     main()

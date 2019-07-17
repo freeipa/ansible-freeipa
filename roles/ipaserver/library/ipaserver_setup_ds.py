@@ -127,7 +127,7 @@ def main():
     # Make sure tmpfiles dir exist before installing components
     if NUM_VERSION == 40504:
         tasks.create_tmpfiles_dirs(IPAAPI_USER)
-    elif NUM_VERSION >= 40500 and NUM_VERSION <= 40503:
+    elif 40500 <= NUM_VERSION <= 40503:
         tasks.create_tmpfiles_dirs()
 
     # Create a directory server instance
@@ -138,7 +138,7 @@ def main():
         ds.set_output(ansible_log)
 
         if options.dirsrv_cert_files:
-            _dirsrv_pkcs12_info=options.dirsrv_pkcs12_info
+            _dirsrv_pkcs12_info=options._dirsrv_pkcs12_info
         else:
             _dirsrv_pkcs12_info=None
 

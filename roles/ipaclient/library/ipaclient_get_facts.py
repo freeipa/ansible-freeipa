@@ -8,6 +8,7 @@ from six.moves.configparser import RawConfigParser
 
 from ansible.module_utils.basic import AnsibleModule
 
+# pylint: disable=unused-import
 try:
     from ipalib import api
 except ImportError:
@@ -126,7 +127,7 @@ def get_ipa_version():
             version=version.VERSION,
             version_info=version_info
             )
-        
+
 def main():
     module = AnsibleModule(
         argument_spec = dict(),

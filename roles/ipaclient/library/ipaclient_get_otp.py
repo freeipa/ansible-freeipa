@@ -327,7 +327,7 @@ def main():
         except errors.NotFound:
             host = None
 
-        if state == 'present' or state == 'disabled':
+        if state in ['present','disabled']:
             changed = ensure_host_present(module, api, host)
         elif state == 'absent':
             changed = ensure_host_absent(module, api, host)

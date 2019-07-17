@@ -158,12 +158,12 @@ def main():
     options.dirsrv_cert_files = ansible_module.params.get('dirsrv_cert_files')
     options.http_cert_files = ansible_module.params.get('http_cert_files')
     options.pkinit_cert_files = ansible_module.params.get('pkinit_cert_files')
-    options.dirsrv_pin = ansible_module.params.get('dirsrv_pin'),
-    options.http_pin = ansible_module.params.get('http_pin'),
-    options.pkinit_pin = ansible_module.params.get('pkinit_pin'),
-    options.dirsrv_cert_name = ansible_module.params.get('dirsrv_cert_name'),
-    options.http_cert_name = ansible_module.params.get('http_cert_name'),
-    options.pkinit_cert_name = ansible_module.params.get('pkinit_cert_name'),
+    options.dirsrv_pin = ansible_module.params.get('dirsrv_pin')
+    options.http_pin = ansible_module.params.get('http_pin')
+    options.pkinit_pin = ansible_module.params.get('pkinit_pin')
+    options.dirsrv_cert_name = ansible_module.params.get('dirsrv_cert_name')
+    options.http_cert_name = ansible_module.params.get('http_cert_name')
+    options.pkinit_cert_name = ansible_module.params.get('pkinit_cert_name')
     ### client ###
     # mkhomedir
     options.ntp_servers = ansible_module.params.get('ntp_servers')
@@ -562,7 +562,7 @@ def main():
         try:
             check_zone_overlap(options.domain_name, False)
         except ValueError as e:
-            ansible_module.fail_json(str(e))
+            ansible_module.fail_json(msg=str(e))
 
     # dm_password
     with redirect_stdout(ansible_log):

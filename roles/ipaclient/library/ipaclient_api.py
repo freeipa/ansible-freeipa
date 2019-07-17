@@ -97,9 +97,9 @@ def main():
 
     host_principal = 'host/%s@%s' % (hostname, realm)
     os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
-    
+
     ca_certs = x509.load_certificate_list_from_file(paths.IPA_CA_CRT)
-    if NUM_VERSION >= 40500 and NUM_VERSION < 40590:
+    if 40500 <= NUM_VERSION < 40590:
         ca_certs = [ cert.public_bytes(serialization.Encoding.DER)
                      for cert in ca_certs ]
     elif NUM_VERSION < 40500:

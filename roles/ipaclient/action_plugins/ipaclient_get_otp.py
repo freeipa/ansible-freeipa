@@ -45,7 +45,7 @@ def run_cmd(args, stdin=None):
 
     p = subprocess.Popen(args, stdin=p_in, stdout=p_out, stderr=p_err,
                          close_fds=True)
-    stdout, stderr = p.communicate(stdin)
+    __temp, stderr = p.communicate(stdin)
 
     if p.returncode != 0:
         raise RuntimeError(stderr)

@@ -137,7 +137,7 @@ def main():
             realm=dict(required=True),
             hostname=dict(required=True),
             kdc=dict(required=True),
-            basedn=dict(required=True),            
+            basedn=dict(required=True),
             principal=dict(required=False),
             password=dict(required=False, no_log=True),
             keytab=dict(required=False),

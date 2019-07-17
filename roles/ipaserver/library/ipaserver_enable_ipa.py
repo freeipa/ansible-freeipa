@@ -88,7 +88,7 @@ def main():
 
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
 
-    if NUM_VERSION < 40600:
+    if hasattr(tasks, "configure_tmpfiles"):
         # Make sure the files we crated in /var/run are recreated at startup
         tasks.configure_tmpfiles()
 

@@ -159,7 +159,7 @@ def main():
                 ping_test_ok = True
         except OSError:
             pass
-    except GSSError as e:
+    except GSSError:
         pass
 
     # Second try: Validate krb5 keytab with temporary krb5
@@ -197,7 +197,7 @@ def main():
               except OSError:
                   pass
 
-          except GSSError as e:
+          except GSSError:
               pass
 
       finally:

@@ -71,7 +71,7 @@ def main():
         if options.dm_password is None:
             ansible_module.fail_json(msg="Directory Manager password required")
         try:
-            cache_vars = read_cache(dm_password)
+            cache_vars = read_cache(options.dm_password)
             options.__dict__.update(cache_vars)
             if cache_vars.get('external_ca', False):
                 options.external_ca = False
@@ -83,7 +83,7 @@ def main():
         kwargs = { "changed": True }
         for name in options.__dict__:
             kwargs[name] = options.__dict__[name]
-        ansible_module.exit_json(kwargs)
+        ansible_module.exit_json(**kwargs)
 
     # done ##################################################################
 
