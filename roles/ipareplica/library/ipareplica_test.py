@@ -294,7 +294,7 @@ def main():
     if installer.ip_addresses is not None:
         for value in installer.ip_addresses:
             try:
-                CheckedIPAddress(value)
+                ipautil.CheckedIPAddress(value)
             except Exception as e:
                 ansible_module.fail_json(msg="invalid IP address {0}: {1}".format(
                     value, e))
