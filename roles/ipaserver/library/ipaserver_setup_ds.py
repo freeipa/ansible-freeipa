@@ -82,6 +82,7 @@ def main():
             dirsrv_config_file=dict(required=False),
             ### ssl certificate ###
             dirsrv_cert_files=dict(required=False, type='list', default=[]),
+            _dirsrv_pkcs12_info=dict(required=False),
             ### certificate system ###
             external_cert_files=dict(required=False, type='list', default=[]),
             subject_base=dict(required=False),
@@ -108,6 +109,8 @@ def main():
     options.no_pkinit = ansible_module.params.get('no_pkinit')
     options.no_hbac_allow = ansible_module.params.get('no_hbac_allow')
     options.dirsrv_config_file = ansible_module.params.get('dirsrv_config_file')
+    options._dirsrv_pkcs12_info = ansible_module.params.get(
+        '_dirsrv_pkcs12_info')
     ### ssl certificate ###
     options.dirsrv_cert_files = ansible_module.params.get('dirsrv_cert_files')
     ### certificate system ###

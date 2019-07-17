@@ -97,6 +97,7 @@ def main():
 
             #_update_hosts_file=dict(required=False, type='bool', default=False),
             _dirsrv_pkcs12_info=dict(required=False),
+            _http_pkcs12_info=dict(required=False),
         ),
     )
 
@@ -146,6 +147,8 @@ def main():
     #options._update_hosts_file = ansible_module.params.get('_update_hosts_file')
     options._dirsrv_pkcs12_info = ansible_module.params.get(
         '_dirsrv_pkcs12_info')
+    options._http_pkcs12_info = ansible_module.params.get(
+        '_http_pkcs12_info')
 
     # init ##################################################################
 

@@ -821,7 +821,7 @@ def main():
             key_nickname=options.http_cert_name,
             ca_cert_files=options.ca_cert_files,
             host_name=host_name)
-        http_pkcs12_info = (http_pkcs12_file.name, options.http_pin)
+        http_pkcs12_info = (http_pkcs12_file.name, http_pin)
 
     if options.dirsrv_cert_files:
         if options.dirsrv_pin is None:
@@ -833,7 +833,7 @@ def main():
             key_nickname=options.dirsrv_cert_name,
             ca_cert_files=options.ca_cert_files,
             host_name=host_name)
-        dirsrv_pkcs12_info = (dirsrv_pkcs12_file.name, options.dirsrv_pin)
+        dirsrv_pkcs12_info = (dirsrv_pkcs12_file.name, dirsrv_pin)
 
     if options.pkinit_cert_files:
         if options.pkinit_pin is None:
@@ -845,7 +845,7 @@ def main():
             key_nickname=options.pkinit_cert_name,
             ca_cert_files=options.ca_cert_files,
             realm_name=realm_name)
-        pkinit_pkcs12_info = (pkinit_pkcs12_file.name, options.pkinit_pin)
+        pkinit_pkcs12_info = (pkinit_pkcs12_file.name, pkinit_pin)
 
     if (options.http_cert_files and options.dirsrv_cert_files and
         http_ca_cert != dirsrv_ca_cert):
