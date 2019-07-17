@@ -133,10 +133,13 @@
       setup_dns: "{{ ipareplica_setup_dns }}"
       ### ssl certificate ###
       dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
+      dirsrv_cert_name: "{{ ipareplica_dirsrv_cert_name | default(omit) }}"
       dirsrv_pin: "{{ ipareplica_dirsrv_pin | default(omit) }}"
       http_cert_files: "{{ ipareplica_http_cert_files | default([]) }}"
+      http_cert_name: "{{ ipareplica_http_cert_name | default(omit) }}"
       http_pin: "{{ ipareplica_http_pin | default(omit) }}"
       pkinit_cert_files: "{{ ipareplica_pkinit_cert_files | default([]) }}"
+      pkinit_cert_name: "{{ ipareplica_pkinit_cert_name | default(omit) }}"
       pkinit_pin: "{{ ipareplica_pkinit_pin | default(omit) }}"
       ### client ###
       keytab: "{{ ipaclient_keytab | default(omit) }}"

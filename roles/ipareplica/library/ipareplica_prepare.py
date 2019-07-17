@@ -175,10 +175,13 @@ def main():
             setup_dns=dict(required=False, type='bool'),
             ### ssl certificate ###
             dirsrv_cert_files=dict(required=False, type='list', default=[]),
+            dirsrv_cert_name=dict(required=False),
             dirsrv_pin=dict(required=False),
             http_cert_files=dict(required=False, type='list', default=[]),
+            http_cert_name=dict(required=False),
             http_pin=dict(required=False),
             pkinit_cert_files=dict(required=False, type='list', default=[]),
+            pkinit_cert_name=dict(required=False),
             pkinit_pin=dict(required=False),
             ### client ###
             keytab=dict(required=False),
@@ -238,8 +241,14 @@ def main():
     options.setup_dns = ansible_module.params.get('setup_dns')
     ### ssl certificate ###
     options.dirsrv_cert_files = ansible_module.params.get('dirsrv_cert_files')
+    options.dirsrv_cert_name = ansible_module.params.get('dirsrv_cert_name')
+    options.dirsrv_pin = ansible_module.params.get('dirsrv_pin')
     options.http_cert_files = ansible_module.params.get('http_cert_files')
+    options.http_cert_name = ansible_module.params.get('http_cert_name')
+    options.http_pin = ansible_module.params.get('http_pin')
     options.pkinit_cert_files = ansible_module.params.get('pkinit_cert_files')
+    options.pkinit_cert_name = ansible_module.params.get('pkinit_cert_name')
+    options.pkinit_pin = ansible_module.params.get('pkinit_pin')
     ### client ###
     options.keytab = ansible_module.params.get('keytab')
     options.mkhomedir = ansible_module.params.get('mkhomedir')
