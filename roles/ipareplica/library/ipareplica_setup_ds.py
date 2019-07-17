@@ -331,6 +331,9 @@ def main():
         if ntpinstance is not None:
             ntpinstance.ntp_ldap_enable(config.host_name, ds.suffix,
                                         remote_api.env.realm)
+
+    except (ScriptError, RuntimeError) as e:
+        ansible_module.fail_json(msg=str(e))
     finally:
         if conn.isconnected():
             ansible_log.debug("-- DISCONNECT --")
