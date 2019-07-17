@@ -180,6 +180,7 @@ def main():
             ca_enabled=dict(required=True, type='bool'),
             mkhomedir=dict(required=False, type='bool'),
             on_master=dict(required=False, type='bool'),
+            dnsok=dict(required=False, type='bool', default=False),
 
             enable_dns_updates=dict(required=False, type='bool'),
             all_ip_addresses=dict(required=False, type='bool', default=False),
@@ -208,6 +209,7 @@ def main():
     ca_enabled = module.params.get('ca_enabled')
     options.mkhomedir = module.params.get('mkhomedir')
     options.on_master = module.params.get('on_master')
+    dnsok = module.params.get('dnsok')
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
