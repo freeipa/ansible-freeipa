@@ -62,8 +62,19 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
+import os
+import six
+
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_replica import *
+from ansible.module_utils.ansible_ipa_replica import (
+    AnsibleModuleLog, installer, paths,
+    gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
+    gen_remote_api, api
+)
+
+if six.PY3:
+    unicode = str
+
 
 def main():
     ansible_module = AnsibleModule(

@@ -202,10 +202,18 @@ ipa_python_version:
 
 import os
 import socket
+import inspect
 
 from six.moves.configparser import RawConfigParser
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
+from ansible.module_utils.ansible_ipa_client import (
+    paths, sysrestore, options, CheckedIPAddress, validate_domain_name,
+    logger, x509, normalize_hostname, installer, version, ScriptError,
+    CLIENT_INSTALL_ERROR, tasks, check_ldap_conf, timeconf, constants,
+    validate_hostname, nssldap_exists, gssapi, remove_file,
+    check_ip_addresses, ipadiscovery, print_port_conf_info,
+    IPA_PYTHON_VERSION
+)
 
 def get_cert_path(cert_path):
     """

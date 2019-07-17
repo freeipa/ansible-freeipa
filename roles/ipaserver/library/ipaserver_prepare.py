@@ -74,8 +74,17 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
+import os
+
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_server import *
+from ansible.module_utils.ansible_ipa_server import (
+    AnsibleModuleLog, options, sysrestore, paths,
+    ansible_module_get_parsed_ip_addresses,
+    redirect_stdout, adtrust, api, default_subject_base,
+    default_ca_subject_dn, ipautil, installutils, ca, kra, dns,
+    get_server_ip_address, no_matching_interface_for_ip_address_warning,
+    services, logger, tasks, update_hosts_file, ScriptError
+)
 
 def main():
     ansible_module = AnsibleModule(

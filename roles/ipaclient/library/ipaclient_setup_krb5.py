@@ -58,10 +58,10 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-import os
-
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
+from ansible.module_utils.ansible_ipa_client import (
+    sysrestore, paths, configure_krb5_conf, logger
+)
 
 def main():
     module = AnsibleModule(

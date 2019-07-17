@@ -55,7 +55,6 @@ if NUM_VERSION >= 40600:
     import traceback
 
     from pkg_resources import parse_version
-    import six
 
     from ipaclient.install.ipachangeconf import IPAChangeConf
     from ipalib.install import certstore, sysrestore
@@ -104,9 +103,6 @@ if NUM_VERSION >= 40600:
     )
     import SSSDConfig
     from subprocess import CalledProcessError
-
-    if six.PY3:
-        unicode = str
 
     try:
         from ipaclient.install import timeconf

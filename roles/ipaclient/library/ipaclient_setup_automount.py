@@ -55,10 +55,11 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-import os
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
+from ansible.module_utils.ansible_ipa_client import (
+    options, configure_automount
+)
 
 def main():
     module = AnsibleModule(

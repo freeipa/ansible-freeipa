@@ -57,7 +57,9 @@ RETURN = '''
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
+from ansible.module_utils.ansible_ipa_client import (
+    sysrestore, paths, options, configure_firefox
+)
 
 def main():
     module = AnsibleModule(

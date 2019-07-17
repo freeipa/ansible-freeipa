@@ -54,10 +54,12 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-import os
+import inspect
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
+from ansible.module_utils.ansible_ipa_client import (
+    options,  sysrestore, paths, configure_nisdomain
+)
 
 def main():
     module = AnsibleModule(

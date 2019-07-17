@@ -75,10 +75,10 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-import os
-
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
+from ansible.module_utils.ansible_ipa_client import (
+    options, sysrestore, paths, configure_ssh_config, configure_sshd_config
+)
 
 def main():
     module = AnsibleModule(

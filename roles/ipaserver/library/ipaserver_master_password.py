@@ -54,7 +54,9 @@ password:
 import os
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_server import *
+from ansible.module_utils.ansible_ipa_server import (
+    options, paths, read_cache, ipa_generate_password
+)
 
 def main():
     module = AnsibleModule(

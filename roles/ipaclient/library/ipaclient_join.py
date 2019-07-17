@@ -127,7 +127,11 @@ import os
 import tempfile
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
+from ansible.module_utils.ansible_ipa_client import (
+    SECURE_PATH, sysrestore, paths, options, configure_krb5_conf,
+    realm_to_suffix, kinit_keytab, GSSError, kinit_password, NUM_VERSION,
+    get_ca_cert, get_ca_certs, errors, run
+)
 
 def main():
     module = AnsibleModule(

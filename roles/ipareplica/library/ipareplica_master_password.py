@@ -51,10 +51,10 @@ password:
   returned: always
 '''
 
-import os
-
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_replica import *
+from ansible.module_utils.ansible_ipa_replica import (
+    ipa_generate_password
+)
 
 def main():
     module = AnsibleModule(

@@ -155,9 +155,17 @@ RETURN = '''
 
 import os
 import time
+import inspect
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
+from ansible.module_utils.ansible_ipa_client import (
+    options, sysrestore, paths, ansible_module_get_parsed_ip_addresses,
+    api, errors, create_ipa_nssdb, ipautil, ScriptError, CLIENT_INSTALL_ERROR,
+    get_certs_from_ldap, DN, certstore, x509, logger, certdb,
+    CalledProcessError, tasks, client_dns, configure_certmonger, services,
+    update_ssh_keys, save_state, configure_ldap_conf, configure_nslcd_conf,
+    nosssd_files, configure_openldap_conf, hardcode_ldap_server
+)
 
 def main():
     module = AnsibleModule(

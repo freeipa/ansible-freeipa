@@ -46,11 +46,23 @@ RETURN = '''
 
 import os
 import sys
-import logging
-import tempfile, shutil
+import six
+import inspect
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_server import *
+from ansible.module_utils.ansible_ipa_server import (
+    AnsibleModuleLog, options, adtrust_imported, kra_imported, PKIIniLoader,
+    random, MIN_DOMAIN_LEVEL, MAX_DOMAIN_LEVEL, check_zone_overlap,
+    redirect_stdout, validate_dm_password, validate_admin_password,
+    NUM_VERSION, is_ipa_configured, sysrestore, paths, bindinstance,
+    read_cache, ca, tasks, check_ldap_conf, timeconf, httpinstance,
+    check_dirsrv, ScriptError, get_fqdn, verify_fqdn, BadHostError,
+    validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION
+)
+
+if six.PY3:
+    unicode = str
+
 
 def main():
     ansible_module = AnsibleModule(

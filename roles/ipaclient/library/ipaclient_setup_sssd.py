@@ -116,7 +116,9 @@ RETURN = '''
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
+from ansible.module_utils.ansible_ipa_client import (
+    options, sysrestore, paths, configure_sssd_conf, logger
+)
 
 def main():
     module = AnsibleModule(

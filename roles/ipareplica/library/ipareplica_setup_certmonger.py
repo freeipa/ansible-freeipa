@@ -48,7 +48,9 @@ RETURN = '''
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_replica import *
+from ansible.module_utils.ansible_ipa_replica import (
+    AnsibleModuleLog, redirect_stdout, configure_certmonger
+)
 
 def main():
     ansible_module = AnsibleModule(

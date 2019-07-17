@@ -74,8 +74,6 @@ if NUM_VERSION >= 40400:
     import gssapi
     import logging
 
-    import six
-
     from ipapython import version
     try:
         from ipaclient.install import ipadiscovery
@@ -104,8 +102,10 @@ if NUM_VERSION >= 40400:
     from ipaplatform import services
     from ipaplatform.paths import paths
     from ipaplatform.tasks import tasks
-    if NUM_VERSION >= 40500 and NUM_VERSION < 40590:
+    try:
         from cryptography.hazmat.primitives import serialization
+    except ImportError:
+        serialization = None
     from ipapython.ipautil import CalledProcessError, write_tmp_file, \
         ipa_generate_password
     from ipapython.dn import DN
@@ -126,7 +126,9 @@ if NUM_VERSION >= 40400:
             CLIENT_INSTALL_ERROR, is_ipa_client_installed, \
             CLIENT_ALREADY_CONFIGURED, nssldap_exists, remove_file, \
             check_ip_addresses, print_port_conf_info, configure_ipa_conf, \
-            purge_host_keytab, configure_sssd_conf
+            purge_host_keytab, configure_sssd_conf, configure_ldap_conf, \
+            configure_nslcd_conf, nosssd_files
+        get_ca_cert = None
     except ImportError:
         # Create temporary copy of ipa-client-install script (as
         # ipa_client_install.py) to be able to import the script easily
@@ -135,7 +137,8 @@ if NUM_VERSION >= 40400:
         # needed in the next step.
         # This is done in a temporary directory that gets removed right
         # after ipa_client_install has been imported.
-        import shutil, tempfile
+        import shutil
+        import tempfile
         temp_dir = tempfile.mkdtemp(dir="/tmp")
         sys.path.append(temp_dir)
         temp_file = "%s/ipa_client_install.py" % temp_dir
@@ -169,6 +172,7 @@ if NUM_VERSION >= 40400:
             get_ca_cert = ipa_client_install.get_ca_cert
             get_ca_certs = None
         else:
+            get_ca_cert = None
             get_ca_certs = ipa_client_install.get_ca_certs
         SECURE_PATH = ("/bin:/sbin:/usr/kerberos/bin:/usr/kerberos/sbin:/usr/bin:/usr/sbin")
 
@@ -192,15 +196,16 @@ if NUM_VERSION >= 40400:
             def configure_nisdomain(options, domain, statestore=None):
                 return ipa_client_install.configure_nisdomain(options, domain)
 
+        configure_ldap_conf = ipa_client_install.configure_ldap_conf
+        configure_nslcd_conf = ipa_client_install.configure_nslcd_conf
+        nosssd_files = ipa_client_install.nosssd_files
+
         configure_ssh_config = ipa_client_install.configure_ssh_config
         configure_sshd_config = ipa_client_install.configure_sshd_config
         configure_automount = ipa_client_install.configure_automount
         configure_firefox = ipa_client_install.configure_firefox
 
     from ipapython.ipautil import realm_to_suffix, run
-
-    if six.PY3:
-        unicode = str
 
     try:
         from ipaclient.install import timeconf
@@ -253,4 +258,3 @@ def ansible_module_get_parsed_ip_addresses(ansible_module,
             ansible_module.fail_json(msg="Invalid IP Address %s: %s" % (ip, e))
         ip_addrs.append(ip_parsed)
     return ip_addrs
-

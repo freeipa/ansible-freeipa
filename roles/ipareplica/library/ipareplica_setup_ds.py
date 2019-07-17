@@ -134,8 +134,17 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
+import os
+import inspect
+
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_replica import *
+from ansible.module_utils.ansible_ipa_replica import (
+    AnsibleModuleLog, installer, DN, paths, sysrestore,
+    ansible_module_get_parsed_ip_addresses,
+    gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
+    gen_ReplicaConfig, gen_remote_api, redirect_stdout, ipaldap,
+    install_replica_ds, install_dns_records, ntpinstance, ScriptError
+)
 
 def main():
     ansible_module = AnsibleModule(

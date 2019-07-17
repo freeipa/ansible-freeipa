@@ -133,8 +133,27 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
+import os
+import tempfile
+import traceback
+import six
+
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_replica import *
+from ansible.module_utils.ansible_ipa_replica import (
+    AnsibleModuleLog, options, installer, DN, paths, sysrestore,
+    ansible_module_get_parsed_ip_addresses, Env, ipautil, ipaldap,
+    installutils, ReplicaConfig, load_pkcs12, kinit_keytab, create_api,
+    rpc_client, check_remote_version, parse_version, check_remote_fips_mode,
+    ReplicationManager, promotion_check_ipa_domain, current_domain_level,
+    check_domain_level_is_supported, errors, ScriptError,
+    logger, check_dns_resolution, service, find_providing_server, ca, kra,
+    dns, no_matching_interface_for_ip_address_warning, adtrust,
+    constants, api, redirect_stdout, replica_conn_check, tasks
+)
+
+if six.PY3:
+    unicode = str
+
 
 def main():
     ansible_module = AnsibleModule(

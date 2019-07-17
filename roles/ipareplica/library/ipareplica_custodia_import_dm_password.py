@@ -86,8 +86,15 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
+import os
+import inspect
+
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_replica import *
+from ansible.module_utils.ansible_ipa_replica import (
+    AnsibleModuleLog, installer, DN, paths,
+    gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
+    gen_ReplicaConfig, gen_remote_api, redirect_stdout, custodiainstance
+)
 
 def main():
     ansible_module = AnsibleModule(

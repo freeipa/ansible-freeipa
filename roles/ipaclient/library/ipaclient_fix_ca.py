@@ -67,8 +67,11 @@ RETURN = '''
 import os
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
-    
+from ansible.module_utils.ansible_ipa_client import (
+    SECURE_PATH, paths, sysrestore, options, NUM_VERSION, get_ca_cert,
+    get_ca_certs, errors
+)
+
 def main():
     module = AnsibleModule(
         argument_spec = dict(

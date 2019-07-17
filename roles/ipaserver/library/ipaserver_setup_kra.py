@@ -47,7 +47,10 @@ RETURN = '''
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_server import *
+from ansible.module_utils.ansible_ipa_server import (
+    AnsibleModuleLog, options,
+    api_Backend_ldap2, redirect_stdout, api, custodiainstance, kra
+)
 
 def main():
     ansible_module = AnsibleModule(

@@ -52,7 +52,9 @@ RETURN = '''
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_ipa_client import *
+from ansible.module_utils.ansible_ipa_client import (
+    paths, sysrestore
+)
 
 def main():
     module = AnsibleModule(

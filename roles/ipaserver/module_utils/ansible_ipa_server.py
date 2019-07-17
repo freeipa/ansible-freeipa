@@ -50,8 +50,6 @@ if NUM_VERSION >= 40500:
     import textwrap
     import random
 
-    import six
-
     if NUM_VERSION >= 40690:
         from ipaclient.install.ipachangeconf import IPAChangeConf
     from ipalib.install import certmonger, sysrestore
@@ -66,9 +64,12 @@ if NUM_VERSION >= 40500:
     from ipaplatform.paths import paths
     from ipaplatform.tasks import tasks
     from ipalib import api, errors, x509
-    from ipalib.constants import DOMAIN_LEVEL_0, MIN_DOMAIN_LEVEL, MAX_DOMAIN_LEVEL
-    if NUM_VERSION == 40504:
+    from ipalib.constants import DOMAIN_LEVEL_0, MIN_DOMAIN_LEVEL, \
+        MAX_DOMAIN_LEVEL
+    try:
         from ipalib.constants import IPAAPI_USER
+    except ImportError:
+        IPAAPI_USER = None
     from ipalib.util import (
         validate_domain_name,
         no_matching_interface_for_ip_address_warning,
@@ -87,6 +88,7 @@ if NUM_VERSION >= 40500:
             from ipaclient import ntpconf as timeconf
         from ipaserver.install import ntpinstance
         time_service = "ntpd"
+        sync_time = None
     from ipaserver.install import (
         adtrust, bindinstance, ca, dns, dsinstance,
         httpinstance, installutils, kra, krbinstance,
@@ -115,9 +117,6 @@ if NUM_VERSION >= 40500:
     except ImportError:
         def default_ca_subject_dn(subject_base):
             return DN(('CN', 'Certificate Authority'), subject_base)
-
-    if six.PY3:
-        unicode = str
 
     try:
         from ipaserver.install import adtrustinstance
