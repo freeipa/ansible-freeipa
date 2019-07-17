@@ -204,6 +204,7 @@ class installer_obj(object):
         self.unattended = not self.interactive
         #self.promote = self.replica_file is None
         self.promote = True
+        self.skip_schema_check = None
 
     #def __getattribute__(self, attr):
     #    value = super(installer_obj, self).__getattribute__(attr)
