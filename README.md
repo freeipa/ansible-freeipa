@@ -83,7 +83,7 @@ ansible-freeipa/plugins/module_utils to ~/.ansible/plugins/
 
 **RPM package**
 
-There are RPM packages available for Fedora 29+. These are installing the roles and modules into the global Ansible directories for `roles`, `plugins/modules` and `plugings/module_utils` in the `/usr/share/ansible` diretory. Therefore is it possible to use the roles and modules without adapting the names like it is done in the example playbooks.
+There are RPM packages available for Fedora 29+. These are installing the roles and modules into the global Ansible directories for `roles`, `plugins/modules` and `plugings/module_utils` in the `/usr/share/ansible` directory. Therefore is it possible to use the roles and modules without adapting the names like it is done in the example playbooks.
 
 **Ansible galaxy**
 
