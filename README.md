@@ -87,7 +87,7 @@ There are RPM packages available for Fedora 29+. These are installing the roles 
 
 **Ansible galaxy**
 
-Please use the git repo or the RPM for now or create links to the `~/.ansible/` directories.
+Please use the git repo or the RPM for now or create links for roles and plugins to the `~/.ansible/` directories.
 
 There are currently some limitations with Ansible collections that are making the use of ansible-freeipa roles with galaxy not simply possible. Modules and module_utils that are part of a role need to be placed in the global `plugins/modules` and `plugins/module_utils` directory. Modules used in the roles can be found after adding the `freeipa.ansible_freeipa.` prefix, but the also needed module_utils can not be found. Not in the global `plugins/module_utils` directory and also not in the role specific `module_utils` directory.
 
