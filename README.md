@@ -232,7 +232,7 @@ ipareplica_setup_firewalld=no
 
 The installation of packages and also the configuration of the firewall are by default enabled.
 
-For more replica settings, please have a look at the [replica role documentation](REPLICA.md).
+For more replica settings, please have a look at the [replica role documentation](roles/ipareplica/README.md).
 
 
 **Client**
@@ -271,7 +271,7 @@ To enable the generation of the one-time-password:
 ipaclient_use_otp=yes
 ```
 
-For more client settings, please have a look at the [client role documentation](CLIENT.md).
+For more client settings, please have a look at the [client role documentation](roles/ipaclient/README.md).
 
 **Cluster**
 
