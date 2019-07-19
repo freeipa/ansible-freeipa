@@ -1,5 +1,5 @@
-FreeIPA Ansible roles
-=====================
+FreeIPA Ansible collection
+==========================
 
 This repository contains [Ansible](https://www.ansible.com/) roles and playbooks to install and uninstall [FreeIPA](https://www.freeipa.org/) `servers`, `replicas` and `clients`. Also modules for group, topology and user management.
 
@@ -57,14 +57,67 @@ Usage
 How to use ansible-freeipa
 --------------------------
 
+**GIT repo**
+
 The simplest method for now is to clone this repository on the contoller from github directly and to start the deployment from the ansible-freeipa directory:
 
 ```bash
 git clone https://github.com/freeipa/ansible-freeipa.git
 cd ansible-freeipa
 ```
+You can use the roles directly within the top directory of the git repo, but to be able to use the management modules in the plugins subdirectory, you have to either adapt `anisble.cfg` or create links for the modules or directories.
 
-The roles provided by ansible-freeipa are not available in ansible galaxy so far.
+You can either adapt ansible.cfg:
+
+```
+library      = /my/dir/ansible-freeipa/plugins/modules
+module_utils = /my/dir/ansible-freeipa/plugins/module_utils
+```
+
+Or you can link the directories:
+
+```
+ansible-freeipa/plugins/modules to ~/.ansible/plugins/
+ansible-freeipa/plugins/module_utils to ~/.ansible/plugins/
+```
+
+**RPM package**
+
+There are RPM packages available for Fedora 29+. These are installing the roles and modules into the global Ansible directories for `roles`, `plugins/modules` and `plugings/module_utils` in the `/usr/share/ansible` diretory. Therefore is it possible to use the roles and modules without adapting the names like it is done in the example playbooks.
+
+**Ansible galaxy**
+
+Please use the git repo or the RPM for now or create links to the `~/.ansible/` directories.
+
+There are currently some limitations with Ansible collections that are making the use of ansible-freeipa roles with galaxy not simply possible. Modules and module_utils that are part of a role need to be placed in the global `plugins/modules` and `plugins/module_utils` directory. Modules used in the roles can be found after adding the `freeipa.ansible_freeipa.` prefix, but the also needed module_utils can not be found. Not in the global `plugins/module_utils` directory and also not in the role specific `module_utils` directory.
+
+>This command will get the whole collection from galaxy:
+>
+>```bash
+>mazer install freeipa.ansible_freeipa
+>```
+>
+>Ansible galaxy does not support the use of dash ('-') in a name and is automatically replacing this with an underscore ('\_'). Therefore the name is `ansible_freeipa`. The ansible_freeipa collection will be placed in the directory `~/.ansible/collections/ansible_collections/freeipa/ansible_freeipa`.
+>
+>**Important:** Using Ansible galaxy is it needed to add the collection prefix to the role and module names in the playbook:
+>
+>Example 1:
+>```diff
+>   roles:
+>-  - role: ipaserver
+>+  - role: freeipa.ansible_freeipa.ipaserver
+>     state: present
+>```
+>
+>Example 2:
+>```diff
+>   tasks:
+>   - name: Add topology segment
+>-    ipatopologysegment:
+>+    freeipa.ansible_freeipa.ipatopologysegment:
+>       ipaadmin_password: MyPassword123
+>```
+
 
 Ansible inventory file
 ----------------------
