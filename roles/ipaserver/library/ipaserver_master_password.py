@@ -58,14 +58,15 @@ from ansible.module_utils.ansible_ipa_server import (
     options, paths, read_cache, ipa_generate_password
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
-            #basic
+        argument_spec=dict(
+            # basic
             dm_password=dict(required=True, no_log=True),
             master_password=dict(required=False, no_log=True),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -87,6 +88,7 @@ def main():
 
     module.exit_json(changed=True,
                      password=options.master_password)
+
 
 if __name__ == '__main__':
     main()

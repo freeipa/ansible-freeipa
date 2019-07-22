@@ -94,26 +94,27 @@ from ansible.module_utils.ansible_ipa_replica import (
     install_http
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            #### server ###
+        argument_spec=dict(
+            # server
             setup_ca=dict(required=False, type='bool'),
             setup_kra=dict(required=False, type='bool'),
             no_pkinit=dict(required=False, type='bool'),
             no_ui_redirect=dict(required=False, type='bool'),
-            #### certificate system ###
+            # certificate system
             subject_base=dict(required=True),
             config_master_host_name=dict(required=True),
             config_ca_host_name=dict(required=True),
             ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
             _ca_file=dict(required=False),
-            _http_pkcs12_info = dict(required=False),
-            _top_dir = dict(required=True),
+            _http_pkcs12_info=dict(required=False),
+            _top_dir=dict(required=True),
             dirman_password=dict(required=True, no_log=True),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
@@ -126,17 +127,17 @@ def main():
     options.setup_kra = ansible_module.params.get('setup_kra')
     options.no_pkinit = ansible_module.params.get('no_pkinit')
     options.no_ui_redirect = ansible_module.params.get('no_ui_redirect')
-    ### certificate system ###
+    # certificate system
     options.subject_base = ansible_module.params.get('subject_base')
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
-    ### additional ###
+    # additional
     master_host_name = ansible_module.params.get('config_master_host_name')
     ca_host_name = ansible_module.params.get('config_master_host_name')
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
-    #os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
-    #installer._ccache = ansible_module.params.get('installer_ccache')
+    # os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
+    # installer._ccache = ansible_module.params.get('installer_ccache')
     ca_enabled = ansible_module.params.get('_ca_enabled')
     http_pkcs12_info = ansible_module.params.get('_http_pkcs12_info')
     options._top_dir = ansible_module.params.get('_top_dir')
@@ -157,12 +158,12 @@ def main():
     config.subject_base = options.subject_base
     config.dirman_password = dirman_password
     config.setup_ca = options.setup_ca
-    #config.master_host_name = master_host_name
+    # config.master_host_name = master_host_name
     config.ca_host_name = ca_host_name
     config.promote = installer.promote
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
-    #installer._remote_api = remote_api
+    # installer._remote_api = remote_api
 
     conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']
@@ -226,6 +227,7 @@ def main():
     # done #
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

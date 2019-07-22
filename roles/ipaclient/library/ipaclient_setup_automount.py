@@ -61,17 +61,18 @@ from ansible.module_utils.ansible_ipa_client import (
     options, configure_automount
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             sssd=dict(required=False, type='bool', default='yes'),
             automount_location=dict(required=False, default=None),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
-    #os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
+    # os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
 
     module._ansible_debug = True
     options.servers = module.params.get('servers')
@@ -84,6 +85,7 @@ def main():
         configure_automount(options)
 
     module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

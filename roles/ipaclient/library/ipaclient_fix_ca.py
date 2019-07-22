@@ -72,9 +72,10 @@ from ansible.module_utils.ansible_ipa_client import (
     get_ca_certs, errors
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             realm=dict(required=True),
             basedn=dict(required=True),
@@ -101,7 +102,7 @@ def main():
     if not os.path.exists(paths.IPA_CA_CRT):
         if not allow_repair:
             module.fail_json(
-                msg="%s missing, enable allow_repair to fix it." % \
+                msg="%s missing, enable allow_repair to fix it." %
                 paths.IPA_CA_CRT)
 
         # Repair missing ca.crt file
@@ -120,6 +121,7 @@ def main():
             module.fail_json(msg="Cannot obtain CA certificate\n%s" % e)
 
     module.exit_json(changed=changed)
+
 
 if __name__ == '__main__':
     main()

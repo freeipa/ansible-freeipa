@@ -108,9 +108,10 @@ from ansible.module_utils.ansible_ipa_client import (
     SECURE_PATH, paths, kinit_keytab, run, GSSError, configure_krb5_conf
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             domain=dict(required=True),
             realm=dict(required=True),
@@ -118,7 +119,7 @@ def main():
             kdc=dict(required=True),
             kinit_attempts=dict(required=False, type='int', default=5),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -167,52 +168,53 @@ def main():
     # Second try: Validate krb5 keytab with temporary krb5
     # configuration
     if not krb5_conf_ok:
-      try:
-          (krb_fd, krb_name) = tempfile.mkstemp()
-          os.close(krb_fd)
-          configure_krb5_conf(
-              cli_realm=realm,
-              cli_domain=domain,
-              cli_server=servers,
-              cli_kdc=kdc,
-              dnsok=False,
-              filename=krb_name,
-              client_domain=client_domain,
-              client_hostname=hostname,
-              configure_sssd=sssd,
-              force=False)
+        try:
+            (krb_fd, krb_name) = tempfile.mkstemp()
+            os.close(krb_fd)
+            configure_krb5_conf(
+                cli_realm=realm,
+                cli_domain=domain,
+                cli_server=servers,
+                cli_kdc=kdc,
+                dnsok=False,
+                filename=krb_name,
+                client_domain=client_domain,
+                client_hostname=hostname,
+                configure_sssd=sssd,
+                force=False)
 
-          try:
-              kinit_keytab(host_principal, paths.KRB5_KEYTAB,
-                           paths.IPA_DNS_CCACHE,
-                           config=krb_name,
-                           attempts=kinit_attempts)
-              krb5_keytab_ok = True
+            try:
+                kinit_keytab(host_principal, paths.KRB5_KEYTAB,
+                             paths.IPA_DNS_CCACHE,
+                             config=krb_name,
+                             attempts=kinit_attempts)
+                krb5_keytab_ok = True
 
-              # Test IPA
-              env['KRB5_CONFIG'] = krb_name
-              try:
-                  result = run(["/usr/bin/ipa", "ping"], raiseonerr=False,
-                               env=env)
-                  if result.returncode == 0:
-                      ping_test_ok = True
-              except OSError:
-                  pass
+                # Test IPA
+                env['KRB5_CONFIG'] = krb_name
+                try:
+                    result = run(["/usr/bin/ipa", "ping"], raiseonerr=False,
+                                 env=env)
+                    if result.returncode == 0:
+                        ping_test_ok = True
+                except OSError:
+                    pass
 
-          except GSSError:
-              pass
+            except GSSError:
+                pass
 
-      finally:
-          try:
-              os.remove(krb_name)
-          except OSError:
-              module.fail_json(msg="Could not remove %s" % krb_name)
+        finally:
+            try:
+                os.remove(krb_name)
+            except OSError:
+                module.fail_json(msg="Could not remove %s" % krb_name)
 
     module.exit_json(changed=False,
                      krb5_keytab_ok=krb5_keytab_ok,
                      krb5_conf_ok=krb5_conf_ok,
                      ca_crt_exists=ca_crt_exists,
                      ping_test_ok=ping_test_ok)
+
 
 if __name__ == '__main__':
     main()

@@ -51,14 +51,14 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    #AnsibleModuleLog,
     options, paths, read_cache
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            ### basic ###
+        argument_spec=dict(
+            # basic
             dm_password=dict(required=True, no_log=True),
         ),
     )
@@ -67,7 +67,7 @@ def main():
 
     # set values ############################################################
 
-    ### basic ###
+    # basic
     options.dm_password = ansible_module.params.get('dm_password')
 
     # restore cache #########################################################
@@ -85,7 +85,7 @@ def main():
             ansible_module.fail_json(
                 msg="Cannot process the cache file: %s" % str(e))
 
-        kwargs = { "changed": True }
+        kwargs = {"changed": True}
         for name in options.__dict__:
             kwargs[name] = options.__dict__[name]
         ansible_module.exit_json(**kwargs)
@@ -93,6 +93,7 @@ def main():
     # done ##################################################################
 
     ansible_module.exit_json(changed=False)
+
 
 if __name__ == '__main__':
     main()

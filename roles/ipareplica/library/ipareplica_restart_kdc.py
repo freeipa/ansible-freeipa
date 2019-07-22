@@ -57,24 +57,25 @@ from ansible.module_utils.ansible_ipa_replica import (
     krbinstance
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            #### server ###
+        argument_spec=dict(
+            # server
             setup_ca=dict(required=False, type='bool'),
             setup_kra=dict(required=False, type='bool'),
             no_pkinit=dict(required=False, type='bool'),
             no_ui_redirect=dict(required=False, type='bool'),
-            #### certificate system ###
+            # certificate system
             subject_base=dict(required=True),
-            #### additional ###
+            # additional
             config_master_host_name=dict(required=True),
             ccache=dict(required=True),
             _ca_file=dict(required=False),
-            _top_dir = dict(required=True),
+            _top_dir=dict(required=True),
             dirman_password=dict(required=True, no_log=True),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
@@ -83,15 +84,15 @@ def main():
     # get parameters #
 
     options = installer
-    ### server ###
+    # server
     options.setup_ca = ansible_module.params.get('setup_ca')
     options.setup_kra = ansible_module.params.get('setup_kra')
     options.no_pkinit = ansible_module.params.get('no_pkinit')
-    ### certificate system ###
+    # certificate system
     options.subject_base = ansible_module.params.get('subject_base')
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
-    ### additional ###
+    # additional
     master_host_name = ansible_module.params.get('config_master_host_name')
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
@@ -138,6 +139,7 @@ def main():
     # done #
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

@@ -52,9 +52,10 @@ from ansible.module_utils.ansible_ipa_server import (
     api_Backend_ldap2, redirect_stdout, api, custodiainstance, kra
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             # basic
             dm_password=dict(required=True, no_log=True),
             hostname=dict(required=True),
@@ -100,6 +101,7 @@ def main():
     # done ##########################################################
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

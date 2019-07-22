@@ -33,7 +33,7 @@ from ipapython.version import NUM_VERSION, VERSION
 
 if NUM_VERSION < 30201:
     # See ipapython/version.py
-    IPA_MAJOR,IPA_MINOR,IPA_RELEASE = [ int(x) for x in VERSION.split(".", 2) ]
+    IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in VERSION.split(".", 2)]
     IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
 else:
     IPA_PYTHON_VERSION = NUM_VERSION
@@ -92,13 +92,13 @@ if NUM_VERSION >= 40600:
         make_pkcs12_info, install_replica_ds, install_krb, install_ca_cert,
         install_http, install_dns_records, create_ipa_conf, check_dirsrv,
         check_dns_resolution, configure_certmonger, remove_replica_info_dir,
-        #common_cleanup,
+        # common_cleanup,
         preserve_enrollment_state, uninstall_client,
         promote_sssd, promote_openldap_conf, rpc_client,
         check_remote_fips_mode, check_remote_version, common_check,
         current_domain_level, check_domain_level_is_supported,
-        #enroll_dl0_replica,
-        #ensure_enrolled,
+        # enroll_dl0_replica,
+        # ensure_enrolled,
         promotion_check_ipa_domain
     )
     import SSSDConfig
@@ -124,10 +124,11 @@ else:
 
 
 logger = logging.getLogger("ipa-server-install")
-#logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 standard_logging_setup(
     paths.IPAREPLICA_INSTALL_LOG, verbose=False, debug=False,
     filemode='a', console_format='%(message)s')
+
 
 @contextlib_contextmanager
 def redirect_stdout(f):
@@ -158,7 +159,7 @@ class AnsibleModuleLog():
         pass
 
     def log(self, msg):
-        #self.write(msg+"\n")
+        # self.write(msg+"\n")
         self.write(msg)
 
     def debug(self, msg):
@@ -169,7 +170,7 @@ class AnsibleModuleLog():
 
     def write(self, msg):
         self.module.debug(msg)
-        #self.module.warn(msg)
+        # self.module.warn(msg)
 
 
 class installer_obj(object):
@@ -191,34 +192,34 @@ class installer_obj(object):
         # others
         self._ccache = None
         self.password = None
-        self.reverse_zones = [ ]
-        #def _is_promote(self):
-        #    return self.replica_file is None
-        #self.skip_conncheck = False
+        self.reverse_zones = []
+        # def _is_promote(self):
+        #     return self.replica_file is None
+        # self.skip_conncheck = False
         self._replica_install = False
-        #self.dnssec_master = False # future unknown
-        #self.disable_dnssec_master = False # future unknown
-        #self.domainlevel = MAX_DOMAIN_LEVEL # deprecated
-        #self.domain_level = self.domainlevel # deprecated
+        # self.dnssec_master = False # future unknown
+        # self.disable_dnssec_master = False # future unknown
+        # self.domainlevel = MAX_DOMAIN_LEVEL # deprecated
+        # self.domain_level = self.domainlevel # deprecated
         self.interactive = False
         self.unattended = not self.interactive
-        #self.promote = self.replica_file is None
+        # self.promote = self.replica_file is None
         self.promote = True
         self.skip_schema_check = None
 
-    #def __getattribute__(self, attr):
-    #    value = super(installer_obj, self).__getattribute__(attr)
-    #    if not attr.startswith("--") and not attr.endswith("--"):
-    #        logger.debug(
-    #            "  <-- Accessing installer.%s (%s)" % (attr, repr(value)))
-    #    return value
+    # def __getattribute__(self, attr):
+    #     value = super(installer_obj, self).__getattribute__(attr)
+    #     if not attr.startswith("--") and not attr.endswith("--"):
+    #         logger.debug(
+    #             "  <-- Accessing installer.%s (%s)" % (attr, repr(value)))
+    #     return value
 
     def __getattr__(self, attr):
-        logger.info("  --> ADDING missing installer.%s" % attr)
+        logger.info("  --> ADDING missing installer.%s", attr)
         setattr(self, attr, None)
         return getattr(self, attr)
 
-    #def __setattr__(self, attr, value):
+    # def __setattr__(self, attr, value):
     #    logger.debug("  --> Setting installer.%s to %s" % (attr, repr(value)))
     #    return super(installer_obj, self).__setattr__(attr, value)
 
@@ -245,25 +246,10 @@ options.subject_base = None
 options.ca_subject = None
 
 
-def api_Backend_ldap2(host_name, setup_ca, connect=False):
-    # we are sure we have the configuration file ready.
-    cfg = dict(context='installer', confdir=paths.ETC_IPA, in_server=True,
-               host=host_name,
-    )
-    if setup_ca:
-        # we have an IPA-integrated CA
-        cfg['ca_host'] = host_name
-
-    api.bootstrap(**cfg)
-    api.finalize()
-    if connect:
-        api.Backend.ldap2.connect()
-
-
 def gen_env_boostrap_finalize_core(etc_ipa, default_config):
     env = Env()
-    #env._bootstrap(context='installer', confdir=paths.ETC_IPA, log=None)
-    #env._finalize_core(**dict(constants.DEFAULT_CONFIG))
+    # env._bootstrap(context='installer', confdir=paths.ETC_IPA, log=None)
+    # env._finalize_core(**dict(constants.DEFAULT_CONFIG))
     env._bootstrap(context='installer', confdir=etc_ipa, log=None)
     env._finalize_core(**dict(default_config))
     return env
@@ -286,26 +272,27 @@ def gen_ReplicaConfig():
         def __init__(self, top_dir=None):
             super(ExtendedReplicaConfig, self).__init__(top_dir)
 
-        #def __getattribute__(self, attr):
+        # def __getattribute__(self, attr):
         #    value = super(ExtendedReplicaConfig, self).__getattribute__(attr)
-        #    if attr not in [ "__dict__", "knobs" ]:
-        #        logger.debug("  <== Accessing config.%s (%s)" % (attr, repr(value)))
+        #    if attr not in ["__dict__", "knobs"]:
+        #        logger.debug("  <== Accessing config.%s (%s)" %
+        #                     (attr, repr(value)))
         #    return value
 
         def __getattr__(self, attr):
-            logger.info("  ==> ADDING missing config.%s" % attr)
+            logger.info("  ==> ADDING missing config.%s", attr)
             setattr(self, attr, None)
             return getattr(self, attr)
 
-        #def __setattr__(self, attr, value):
-        #    logger.debug("  ==> Setting config.%s to %s" % (attr, repr(value)))
-        #    return super(ExtendedReplicaConfig, self).__setattr__(attr, value)
+        # def __setattr__(self, attr, value):
+        #   logger.debug("  ==> Setting config.%s to %s" % (attr, repr(value)))
+        #   return super(ExtendedReplicaConfig, self).__setattr__(attr, value)
 
         def knobs(self):
             for name in self.__dict__:
                 yield self, name
 
-    #config = ReplicaConfig()
+    # config = ReplicaConfig()
     config = ExtendedReplicaConfig()
     config.realm_name = api.env.realm
     config.host_name = api.env.host
@@ -318,7 +305,7 @@ def gen_ReplicaConfig():
     config.setup_kra = options.setup_kra
     config.dir = options._top_dir
     config.basedn = api.env.basedn
-    #config.subject_base = options.subject_base
+    # config.subject_base = options.subject_base
 
     return config
 
@@ -373,10 +360,10 @@ def replica_ds_init_info(ansible_log,
 
     # during replica install, this gets invoked before local DS is
     # available, so use the remote api.
-    #if ca_is_configured:
-    #    ca_subject = ca.lookup_ca_subject(_api, config.subject_base)
-    #else:
-    #    ca_subject = installutils.default_ca_subject_dn(config.subject_base)
+    # if ca_is_configured:
+    #     ca_subject = ca.lookup_ca_subject(_api, config.subject_base)
+    # else:
+    #     ca_subject = installutils.default_ca_subject_dn(config.subject_base)
     ca_subject = ds_ca_subject
 
     ds = dsinstance.DsInstance(
@@ -527,7 +514,7 @@ def replica_krb_init_info(ansible_log, fstore, realm_name, master_host_name,
 
 def ansible_module_get_parsed_ip_addresses(ansible_module,
                                            param='ip_addresses'):
-    ip_addrs = [ ]
+    ip_addrs = []
     for ip in ansible_module.params.get(param):
         try:
             ip_parsed = ipautil.CheckedIPAddress(ip)
@@ -539,7 +526,8 @@ def ansible_module_get_parsed_ip_addresses(ansible_module,
 
 def gen_remote_api(master_host_name, etc_ipa):
     ldapuri = 'ldaps://%s' % ipautil.format_netloc(master_host_name)
-    xmlrpc_uri = 'https://{}/ipa/xml'.format(ipautil.format_netloc(master_host_name))
+    xmlrpc_uri = 'https://{}/ipa/xml'.format(
+        ipautil.format_netloc(master_host_name))
     remote_api = create_api(mode=None)
     remote_api.bootstrap(in_server=True,
                          context='installer',

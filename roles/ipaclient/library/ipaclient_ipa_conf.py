@@ -76,16 +76,17 @@ from ansible.module_utils.ansible_ipa_client import (
     paths, sysrestore, configure_ipa_conf
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             domain=dict(required=True, default=None),
             servers=dict(required=True, type='list', default=None),
             realm=dict(required=True, default=None),
             hostname=dict(required=True, default=None),
             basedn=dict(required=True),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -100,6 +101,7 @@ def main():
     configure_ipa_conf(fstore, basedn, realm, domain, servers, hostname)
 
     module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

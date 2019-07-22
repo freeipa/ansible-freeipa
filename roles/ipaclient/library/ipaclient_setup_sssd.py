@@ -120,9 +120,10 @@ from ansible.module_utils.ansible_ipa_client import (
     options, sysrestore, paths, configure_sssd_conf, logger
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             domain=dict(required=True),
             realm=dict(required=True),
@@ -139,10 +140,10 @@ def main():
             preserve_sssd=dict(required=False, type='bool'),
             no_krb5_offline_passwords=dict(required=False, type='bool'),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
-    #ansible_log = AnsibleModuleLog(module, logger)
-    #options.set_logger(ansible_log)
+    # ansible_log = AnsibleModuleLog(module, logger)
+    # options.set_logger(ansible_log)
 
     module._ansible_debug = True
     cli_server = module.params.get('servers')
@@ -177,6 +178,7 @@ def main():
     logger.info("Configured /etc/sssd/sssd.conf")
 
     module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

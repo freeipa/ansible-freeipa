@@ -146,10 +146,11 @@ from ansible.module_utils.ansible_ipa_replica import (
     install_replica_ds, install_dns_records, ntpinstance, ScriptError
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            ### basic ###
+        argument_spec=dict(
+            # basic
             dm_password=dict(required=False, no_log=True),
             password=dict(required=False, no_log=True),
             ip_addresses=dict(required=False, type='list', default=[]),
@@ -158,27 +159,27 @@ def main():
             hostname=dict(required=False),
             ca_cert_files=dict(required=False, type='list', default=[]),
             no_host_dns=dict(required=False, type='bool', default=False),
-            ### server ###
+            # server
             setup_adtrust=dict(required=False, type='bool'),
             setup_ca=dict(required=False, type='bool'),
             setup_kra=dict(required=False, type='bool'),
             setup_dns=dict(required=False, type='bool'),
             no_pkinit=dict(required=False, type='bool', default=False),
             dirsrv_config_file=dict(required=False),
-            ### ssl certificate ###
+            # ssl certificate
             dirsrv_cert_files=dict(required=False, type='list', default=[]),
-            ### client ###
+            # client
             force_join=dict(required=False, type='bool'),
-            ### certificate system ###
+            # certificate system
             subject_base=dict(required=True),
-            ### additional ###
+            # additional
             server=dict(required=True),
             ccache=dict(required=True),
             installer_ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
-            _dirsrv_pkcs12_info = dict(required=False),
-            _top_dir = dict(required=True),
-            _add_to_ipaservers = dict(required=True, type='bool'),
+            _dirsrv_pkcs12_info=dict(required=False),
+            _top_dir=dict(required=True),
+            _add_to_ipaservers=dict(required=True, type='bool'),
             _ca_subject=dict(required=True),
             _subject_base=dict(required=True),
             dirman_password=dict(required=True, no_log=True),
@@ -187,7 +188,7 @@ def main():
             config_ca_host_name=dict(required=True),
             config_ips=dict(required=False, type='list', default=[]),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
@@ -206,18 +207,19 @@ def main():
     options.host_name = ansible_module.params.get('hostname')
     options.ca_cert_files = ansible_module.params.get('ca_cert_files')
     options.no_host_dns = ansible_module.params.get('no_host_dns')
-    ### server ###
+    # server
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_ca = ansible_module.params.get('setup_ca')
     options.setup_kra = ansible_module.params.get('setup_kra')
     options.setup_dns = ansible_module.params.get('setup_dns')
     options.no_pkinit = ansible_module.params.get('no_pkinit')
-    options.dirsrv_config_file = ansible_module.params.get('dirsrv_config_file')
-    ### ssl certificate ###
+    options.dirsrv_config_file = ansible_module.params.get(
+        'dirsrv_config_file')
+    # ssl certificate
     options.dirsrv_cert_files = ansible_module.params.get('dirsrv_cert_files')
-    ### client ###
+    # client
     options.force_join = ansible_module.params.get('force_join')
-    ### certificate system ###
+    # certificate system
     options.external_ca = ansible_module.params.get('external_ca')
     options.external_cert_files = ansible_module.params.get(
         'external_cert_files')
@@ -225,14 +227,14 @@ def main():
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
     options.ca_subject = ansible_module.params.get('ca_subject')
-    ### additional ###
-    #options._host_name_overridden = ansible_module.params.get(
-    #    '_hostname_overridden')
+    # additional
+    # options._host_name_overridden = ansible_module.params.get(
+    #     '_hostname_overridden')
     options.server = ansible_module.params.get('server')
     master_host_name = ansible_module.params.get('config_master_host_name')
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
-    #os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
+    # os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
     installer._ccache = ansible_module.params.get('installer_ccache')
     ca_enabled = ansible_module.params.get('_ca_enabled')
 
@@ -242,14 +244,16 @@ def main():
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
     options._top_dir = ansible_module.params.get('_top_dir')
-    options._add_to_ipaservers = ansible_module.params.get('_add_to_ipaservers')
+    options._add_to_ipaservers = ansible_module.params.get(
+        '_add_to_ipaservers')
 
     options._ca_subject = ansible_module.params.get('_ca_subject')
     options._subject_base = ansible_module.params.get('_subject_base')
 
     dirman_password = ansible_module.params.get('dirman_password')
     config_setup_ca = ansible_module.params.get('config_setup_ca')
-    config_master_host_name = ansible_module.params.get('config_master_host_name')
+    config_master_host_name = ansible_module.params.get(
+        'config_master_host_name')
     config_ca_host_name = ansible_module.params.get('config_ca_host_name')
     config_ips = ansible_module_get_parsed_ip_addresses(ansible_module,
                                                         "config_ips")
@@ -344,6 +348,7 @@ def main():
     ansible_module.exit_json(changed=True,
                              ds_suffix=str(ds.suffix),
                              ds_ca_subject=str(ds.ca_subject))
+
 
 if __name__ == '__main__':
     main()

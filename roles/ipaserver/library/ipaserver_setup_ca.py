@@ -86,10 +86,11 @@ from ansible.module_utils.ansible_ipa_server import (
     custodiainstance, write_cache, x509
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            ### basic ###
+        argument_spec=dict(
+            # basic
             dm_password=dict(required=True, no_log=True),
             password=dict(required=True, no_log=True),
             master_password=dict(required=True, no_log=True),
@@ -99,7 +100,7 @@ def main():
             hostname=dict(required=False),
             no_host_dns=dict(required=False, type='bool', default=False),
             pki_config_override=dict(required=False),
-            ### server ###
+            # server
             setup_adtrust=dict(required=False, type='bool', default=False),
             setup_kra=dict(required=False, type='bool', default=False),
             setup_dns=dict(required=False, type='bool', default=False),
@@ -111,21 +112,22 @@ def main():
             dirsrv_config_file=dict(required=False),
             dirsrv_cert_files=dict(required=False, type='list'),
             _dirsrv_pkcs12_info=dict(required=False),
-            ### certificate system ###
+            # certificate system
             external_ca=dict(required=False, type='bool', default=False),
             external_ca_type=dict(required=False),
             external_ca_profile=dict(required=False),
-            external_cert_files=dict(required=False, type='list', default=None),
+            external_cert_files=dict(required=False, type='list',
+                                     default=None),
             subject_base=dict(required=False),
             _subject_base=dict(required=False),
             ca_subject=dict(required=False),
             _ca_subject=dict(required=False),
             ca_signing_algorithm=dict(required=False),
-            ### dns ###
+            # dns
             reverse_zones=dict(required=False, type='list', default=[]),
             no_reverse=dict(required=False, type='bool', default=False),
             auto_forwarders=dict(required=False, type='bool', default=False),
-            ### additional ###
+            # additional
             domainlevel=dict(required=False, type='int'),
             _http_ca_cert=dict(required=False),
         ),
@@ -136,7 +138,7 @@ def main():
 
     # set values ############################################################
 
-    ### basic ###
+    # basic
     options.dm_password = ansible_module.params.get('dm_password')
     options.admin_password = ansible_module.params.get('password')
     options.master_password = ansible_module.params.get('master_password')
@@ -148,7 +150,7 @@ def main():
     options.no_host_dns = ansible_module.params.get('no_host_dns')
     options.pki_config_override = ansible_module.params.get(
         'pki_config_override')
-    ### server ###
+    # server
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_kra = ansible_module.params.get('setup_kra')
     options.setup_dns = ansible_module.params.get('setup_dns')
@@ -157,11 +159,12 @@ def main():
     options.idmax = ansible_module.params.get('idmax')
     options.no_hbac_allow = ansible_module.params.get('no_hbac_allow')
     options.no_pkinit = ansible_module.params.get('no_pkinit')
-    options.dirsrv_config_file = ansible_module.params.get('dirsrv_config_file')
+    options.dirsrv_config_file = ansible_module.params.get(
+        'dirsrv_config_file')
     options.dirsrv_cert_files = ansible_module.params.get('dirsrv_cert_files')
     options._dirsrv_pkcs12_info = ansible_module.params.get(
         '_dirsrv_pkcs12_info')
-    ### certificate system ###
+    # certificate system
     options.external_ca = ansible_module.params.get('external_ca')
     options.external_ca_type = ansible_module.params.get('external_ca_type')
     options.external_ca_profile = ansible_module.params.get(
@@ -174,14 +177,15 @@ def main():
     options._ca_subject = ansible_module.params.get('_ca_subject')
     options.ca_signing_algorithm = ansible_module.params.get(
         'ca_signing_algorithm')
-    ### dns ###
+    # dns
     options.reverse_zones = ansible_module.params.get('reverse_zones')
     options.no_reverse = ansible_module.params.get('no_reverse')
     options.auto_forwarders = ansible_module.params.get('auto_forwarders')
-    ### additional ###
+    # additional
     options.domainlevel = ansible_module.params.get('domainlevel')
     options._http_ca_cert = ansible_module.params.get('_http_ca_cert')
-    #options._update_hosts_file = ansible_module.params.get('update_hosts_file')
+    # tions._update_hosts_file = ansible_module.params.get(
+    #   'update_hosts_file')
 
     # init #################################################################
 
@@ -264,6 +268,7 @@ def main():
 
     ansible_module.exit_json(changed=True,
                              csr_generated=False)
+
 
 if __name__ == '__main__':
     main()

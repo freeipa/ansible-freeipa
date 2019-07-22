@@ -54,9 +54,10 @@ from ansible.module_utils.ansible_ipa_server import (
     redirect_stdout, time_service, sync_time, ntpinstance, timeconf
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             ntp_servers=dict(required=False, type='list', default=None),
             ntp_pool=dict(required=False, default=None),
         ),
@@ -108,6 +109,7 @@ def main():
     # done ##########################################################
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

@@ -60,10 +60,10 @@ from ansible.module_utils.ansible_ipa_client import (
 
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             hostname=dict(required=True),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True

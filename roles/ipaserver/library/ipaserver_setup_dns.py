@@ -60,24 +60,25 @@ from ansible.module_utils.ansible_ipa_server import (
     redirect_stdout, bindinstance
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            ### basic ###
+        argument_spec=dict(
+            # basic
             ip_addresses=dict(required=False, type='list', default=[]),
             domain=dict(required=True),
             realm=dict(required=True),
             hostname=dict(required=True),
-            ### server ###
+            # server
             setup_dns=dict(required=True, type='bool'),
             setup_ca=dict(required=True, type='bool'),
-            ### dns ###
+            # dns
             zonemgr=dict(required=False),
             forwarders=dict(required=True, type='list'),
             forward_policy=dict(default='first', choices=['first', 'only']),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
-            ### additional ###
+            # additional
             dns_ip_addresses=dict(required=True, type='list'),
             dns_reverse_zones=dict(required=True, type='list'),
         ),
@@ -88,22 +89,22 @@ def main():
 
     # set values ############################################################
 
-    ### basic ###
+    # basic
     options.ip_addresses = ansible_module_get_parsed_ip_addresses(
         ansible_module)
     options.domain_name = ansible_module.params.get('domain')
     options.realm_name = ansible_module.params.get('realm')
     options.host_name = ansible_module.params.get('hostname')
-    ### server ###
+    # server
     options.setup_dns = ansible_module.params.get('setup_dns')
     options.setup_ca = ansible_module.params.get('setup_ca')
-    ### dns ###
+    # dns
     options.zonemgr = ansible_module.params.get('zonemgr')
     options.forwarders = ansible_module.params.get('forwarders')
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validation')
-    ### additional ###
+    # additional
     dns.ip_addresses = ansible_module_get_parsed_ip_addresses(
         ansible_module, 'dns_ip_addresses')
     dns.reverse_zones = ansible_module.params.get('dns_reverse_zones')
@@ -133,6 +134,7 @@ def main():
     # done ##################################################################
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

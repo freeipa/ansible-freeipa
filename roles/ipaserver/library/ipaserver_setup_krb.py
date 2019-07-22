@@ -53,9 +53,10 @@ from ansible.module_utils.ansible_ipa_server import (
     api_Backend_ldap2, redirect_stdout, krbinstance
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             # basic
             dm_password=dict(required=True, no_log=True),
             password=dict(required=True, no_log=True),
@@ -129,7 +130,8 @@ def main():
     options._pkinit_pkcs12_info = ansible_module.params.get(
         '_pkinit_pkcs12_info')
 
-    #options._update_hosts_file = ansible_module.params.get('update_hosts_file')
+    # options._update_hosts_file = ansible_module.params.get(
+    #     'update_hosts_file')
 
     # init ##################################################################
 
@@ -155,6 +157,7 @@ def main():
                           subject_base=options.subject_base)
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

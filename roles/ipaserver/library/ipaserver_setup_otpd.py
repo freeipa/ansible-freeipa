@@ -48,13 +48,14 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, options, # sysrestore, paths,
+    AnsibleModuleLog, options,
     api_Backend_ldap2, redirect_stdout, otpdinstance, ipautil
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             # basic
             realm=dict(required=True),
             hostname=dict(required=False),
@@ -86,6 +87,7 @@ def main():
     # done ##########################################################
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

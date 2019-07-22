@@ -157,8 +157,8 @@ if six.PY3:
 
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            ### basic ###
+        argument_spec=dict(
+            # basic
             dm_password=dict(required=False, no_log=True),
             password=dict(required=False, no_log=True),
             ip_addresses=dict(required=False, type='list', default=[]),
@@ -168,12 +168,12 @@ def main():
             principal=dict(required=True),
             ca_cert_files=dict(required=False, type='list', default=[]),
             no_host_dns=dict(required=False, type='bool', default=False),
-            ### server ###
+            # server
             setup_adtrust=dict(required=False, type='bool'),
             setup_ca=dict(required=False, type='bool'),
             setup_kra=dict(required=False, type='bool'),
             setup_dns=dict(required=False, type='bool'),
-            ### ssl certificate ###
+            # ssl certificate
             dirsrv_cert_files=dict(required=False, type='list', default=[]),
             dirsrv_cert_name=dict(required=False),
             dirsrv_pin=dict(required=False),
@@ -183,7 +183,7 @@ def main():
             pkinit_cert_files=dict(required=False, type='list', default=[]),
             pkinit_cert_name=dict(required=False),
             pkinit_pin=dict(required=False),
-            ### client ###
+            # client
             keytab=dict(required=False),
             mkhomedir=dict(required=False, type='bool'),
             force_join=dict(required=False, type='bool'),
@@ -192,11 +192,12 @@ def main():
             no_ssh=dict(required=False, type='bool'),
             no_sshd=dict(required=False, type='bool'),
             no_dns_sshfp=dict(required=False, type='bool'),
-            ### certificate system ###
-            #subject_base=dict(required=False),
-            ### dns ###
-            allow_zone_overlap=dict(required=False, type='bool', default=False),
-            reverse_zones=dict(required=False,type='list',default=[]),
+            # certificate system
+            # subject_base=dict(required=False),
+            # dns
+            allow_zone_overlap=dict(required=False, type='bool',
+                                    default=False),
+            reverse_zones=dict(required=False, type='list', default=[]),
             no_reverse=dict(required=False, type='bool', default=False),
             auto_reverse=dict(required=False, type='bool', default=False),
             forwarders=dict(required=False, type='list', default=[]),
@@ -205,17 +206,17 @@ def main():
             forward_policy=dict(default=None, choices=['first', 'only']),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
-            ### ad trust ###
+            # ad trust
             enable_compat=dict(required=False, type='bool', default=False),
             netbios_name=dict(required=False),
             rid_base=dict(required=False, type='int', default=1000),
             secondary_rid_base=dict(required=False, type='int',
                                     default=100000000),
-            ### additional ###
+            # additional
             server=dict(required=True),
             skip_conncheck=dict(required=False, type='bool'),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
@@ -234,12 +235,12 @@ def main():
     options.principal = ansible_module.params.get('principal')
     options.ca_cert_files = ansible_module.params.get('ca_cert_files')
     options.no_host_dns = ansible_module.params.get('no_host_dns')
-    ### server ###
+    # server
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_ca = ansible_module.params.get('setup_ca')
     options.setup_kra = ansible_module.params.get('setup_kra')
     options.setup_dns = ansible_module.params.get('setup_dns')
-    ### ssl certificate ###
+    # ssl certificate
     options.dirsrv_cert_files = ansible_module.params.get('dirsrv_cert_files')
     options.dirsrv_cert_name = ansible_module.params.get('dirsrv_cert_name')
     options.dirsrv_pin = ansible_module.params.get('dirsrv_pin')
@@ -249,7 +250,7 @@ def main():
     options.pkinit_cert_files = ansible_module.params.get('pkinit_cert_files')
     options.pkinit_cert_name = ansible_module.params.get('pkinit_cert_name')
     options.pkinit_pin = ansible_module.params.get('pkinit_pin')
-    ### client ###
+    # client
     options.keytab = ansible_module.params.get('keytab')
     options.mkhomedir = ansible_module.params.get('mkhomedir')
     options.force_join = ansible_module.params.get('force_join')
@@ -258,15 +259,17 @@ def main():
     options.no_ssh = ansible_module.params.get('no_ssh')
     options.no_sshd = ansible_module.params.get('no_sshd')
     options.no_dns_sshfp = ansible_module.params.get('no_dns_sshfp')
-    ### certificate system ###
+    # certificate system
     options.external_ca = ansible_module.params.get('external_ca')
     options.external_cert_files = ansible_module.params.get(
         'external_cert_files')
-    #options.subject_base = ansible_module.params.get('subject_base')
-    #options.ca_subject = ansible_module.params.get('ca_subject')
-    options.no_dnssec_validation = ansible_module.params.get('no_dnssec_validation')
-    ### dns ###
-    options.allow_zone_overlap = ansible_module.params.get('allow_zone_overlap')
+    # options.subject_base = ansible_module.params.get('subject_base')
+    # options.ca_subject = ansible_module.params.get('ca_subject')
+    options.no_dnssec_validation = ansible_module.params.get(
+        'no_dnssec_validation')
+    # dns
+    options.allow_zone_overlap = ansible_module.params.get(
+        'allow_zone_overlap')
     options.reverse_zones = ansible_module.params.get('reverse_zones')
     options.no_reverse = ansible_module.params.get('no_reverse')
     options.auto_reverse = ansible_module.params.get('auto_reverse')
@@ -276,15 +279,16 @@ def main():
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validationdnssec_validation')
-    ### ad trust ###
+    # ad trust
     options.enable_compat = ansible_module.params.get('enable_compat')
     options.netbios_name = ansible_module.params.get('netbios_name')
     options.rid_base = ansible_module.params.get('rid_base')
-    options.secondary_rid_base = ansible_module.params.get('secondary_rid_base')
+    options.secondary_rid_base = ansible_module.params.get(
+        'secondary_rid_base')
 
-    ### additional ###
-    #options._host_name_overridden = ansible_module.params.get(
-    #    '_hostname_overridden')
+    # additional
+    # options._host_name_overridden = ansible_module.params.get(
+    #     '_hostname_overridden')
     options.server = ansible_module.params.get('server')
     options.skip_conncheck = ansible_module.params.get('skip_conncheck')
 
@@ -301,15 +305,15 @@ def main():
 
     ansible_log.debug("== PROMOTE CHECK ==")
 
-    #ansible_log.debug("-- NO_NTP --") # already done in test
+    # ansible_log.debug("-- NO_NTP --") # already done in test
 
-    ## check selinux status, http and DS ports, NTP conflicting services
-    #common_check(options.no_ntp)
+    # check selinux status, http and DS ports, NTP conflicting services
+    # common_check(options.no_ntp)
 
     installer._enrollment_performed = False
     installer._top_dir = tempfile.mkdtemp("ipa")
 
-    #with ipautil.private_ccache():
+    # with ipautil.private_ccache():
     dir_path = tempfile.mkdtemp(prefix='krbcc')
     os.environ['KRB5CCNAME'] = os.path.join(dir_path, 'ccache')
 
@@ -352,7 +356,7 @@ def main():
     config.setup_kra = options.setup_kra
     config.dir = installer._top_dir
     config.basedn = api.env.basedn
-    #config.hidden_replica = options.hidden_replica
+    # config.hidden_replica = options.hidden_replica
 
     # load and check certificates #
 
@@ -371,8 +375,8 @@ def main():
     if options.http_cert_files:
         ansible_log.debug("-- HTTP_CERT_FILES --")
         if options.http_pin is None:
-            ansible_module.fail_json(msg=
-                "Apache Server private key unlock password required")
+            ansible_module.fail_json(
+                msg="Apache Server private key unlock password required")
         http_pkcs12_file, http_pin, http_ca_cert = load_pkcs12(
             cert_files=options.http_cert_files,
             key_password=options.http_pin,
@@ -384,8 +388,8 @@ def main():
     if options.dirsrv_cert_files:
         ansible_log.debug("-- DIRSRV_CERT_FILES --")
         if options.dirsrv_pin is None:
-            ansible_module.fail_json(msg=
-                "Directory Server private key unlock password required")
+            ansible_module.fail_json(
+                msg="Directory Server private key unlock password required")
         dirsrv_pkcs12_file, dirsrv_pin, dirsrv_ca_cert = load_pkcs12(
             cert_files=options.dirsrv_cert_files,
             key_password=options.dirsrv_pin,
@@ -397,8 +401,8 @@ def main():
     if options.pkinit_cert_files:
         ansible_log.debug("-- PKINIT_CERT_FILES --")
         if options.pkinit_pin is None:
-            ansible_module.fail_json(msg=
-                "Kerberos KDC private key unlock password required")
+            ansible_module.fail_json(
+                msg="Kerberos KDC private key unlock password required")
         pkinit_pkcs12_file, pkinit_pin, pkinit_ca_cert = load_pkcs12(
             cert_files=options.pkinit_cert_files,
             key_password=options.pkinit_pin,
@@ -483,8 +487,8 @@ def main():
         check_domain_level_is_supported(domain_level)
         if domain_level < constants.MIN_DOMAIN_LEVEL:
             ansible_module.fail_json(
-                msg=
-                "Cannot promote this client to a replica. The domain level "
+                msg="Cannot promote this client to a replica. The domain "
+                "level "
                 "must be raised to {mindomainlevel} before the replica can be "
                 "installed".format(
                     mindomainlevel=constants.MIN_DOMAIN_LEVEL))
@@ -641,8 +645,10 @@ def main():
             options.host_name = config.host_name
             ca.install_check(False, config, options)
 
-            ansible_log.debug("  ca.external_cert_file=%s" % repr(ca.external_cert_file))
-            ansible_log.debug("  ca.external_ca_file=%s" % repr(ca.external_ca_file))
+            ansible_log.debug("  ca.external_cert_file=%s" %
+                              repr(ca.external_cert_file))
+            ansible_log.debug("  ca.external_ca_file=%s" %
+                              repr(ca.external_ca_file))
 
             # TODO
             # TODO
@@ -681,11 +687,11 @@ def main():
     except errors.ACIError:
         logger.debug("%s", traceback.format_exc())
         ansible_module.fail_json(
-            msg = ("\nInsufficient privileges to promote the server."
-                   "\nPossible issues:"
-                   "\n- A user has insufficient privileges"
-                   "\n- This client has insufficient privileges "
-                   "to become an IPA replica"))
+            msg=("\nInsufficient privileges to promote the server."
+                 "\nPossible issues:"
+                 "\n- A user has insufficient privileges"
+                 "\n- This client has insufficient privileges "
+                 "to become an IPA replica"))
     except errors.LDAPError:
         logger.debug("%s", traceback.format_exc())
         ansible_module.fail_json(msg="\nUnable to connect to LDAP server %s" %
@@ -738,41 +744,42 @@ def main():
 
     # done #
 
-    ansible_module.exit_json(changed=True,
-                             ccache=ccache,
-                             installer_ccache=installer._ccache,
-                             subject_base=str(config.subject_base),
-                             forward_policy=options.forward_policy,
-                             _ca_enabled=ca_enabled,
-                             _ca_subject=str(options._ca_subject),
-                             _subject_base=str(options._subject_base) if options._subject_base is not None else None,
-                             _kra_enabled=kra_enabled,
-                             _ca_file=cafile,
-                             _top_dir=installer._top_dir,
-                             _add_to_ipaservers=add_to_ipaservers,
-                             _dirsrv_pkcs12_file=dirsrv_pkcs12_file,
-                             _dirsrv_pkcs12_info=dirsrv_pkcs12_info,
-                             _dirsrv_ca_cert=dirsrv_ca_cert,
-                             _http_pkcs12_file=http_pkcs12_file,
-                             _http_pkcs12_info=http_pkcs12_info,
-                             _http_ca_cert=http_ca_cert,
-                             _pkinit_pkcs12_file=pkinit_pkcs12_file,
-                             _pkinit_pkcs12_info=pkinit_pkcs12_info,
-                             _pkinit_ca_cert=pkinit_ca_cert,
-                             no_dnssec_validation=options.no_dnssec_validation,
-                             config_setup_ca=config.setup_ca,
-                             config_master_host_name=config.master_host_name,
-                             config_ca_host_name=config.ca_host_name,
-                             config_kra_host_name=config.kra_host_name,
-                             config_ips=[ str(ip) for ip in config.ips ],
-                             ### ad trust ###
-                             dns_ip_addresses=[ str(ip) for ip
-                                                in dns.ip_addresses ],
-                             dns_reverse_zones=dns.reverse_zones,
-                             rid_base=options.rid_base,
-                             secondary_rid_base=options.secondary_rid_base,
-                             adtrust_netbios_name=adtrust.netbios_name,
-                             adtrust_reset_netbios_name=adtrust.reset_netbios_name)
+    ansible_module.exit_json(
+        changed=True,
+        ccache=ccache,
+        installer_ccache=installer._ccache,
+        subject_base=str(config.subject_base),
+        forward_policy=options.forward_policy,
+        _ca_enabled=ca_enabled,
+        _ca_subject=str(options._ca_subject),
+        _subject_base=str(options._subject_base) if options._subject_base
+        is not None else None,
+        _kra_enabled=kra_enabled,
+        _ca_file=cafile,
+        _top_dir=installer._top_dir,
+        _add_to_ipaservers=add_to_ipaservers,
+        _dirsrv_pkcs12_file=dirsrv_pkcs12_file,
+        _dirsrv_pkcs12_info=dirsrv_pkcs12_info,
+        _dirsrv_ca_cert=dirsrv_ca_cert,
+        _http_pkcs12_file=http_pkcs12_file,
+        _http_pkcs12_info=http_pkcs12_info,
+        _http_ca_cert=http_ca_cert,
+        _pkinit_pkcs12_file=pkinit_pkcs12_file,
+        _pkinit_pkcs12_info=pkinit_pkcs12_info,
+        _pkinit_ca_cert=pkinit_ca_cert,
+        no_dnssec_validation=options.no_dnssec_validation,
+        config_setup_ca=config.setup_ca,
+        config_master_host_name=config.master_host_name,
+        config_ca_host_name=config.ca_host_name,
+        config_kra_host_name=config.kra_host_name,
+        config_ips=[str(ip) for ip in config.ips],
+        # ad trust
+        dns_ip_addresses=[str(ip) for ip in dns.ip_addresses],
+        dns_reverse_zones=dns.reverse_zones,
+        rid_base=options.rid_base,
+        secondary_rid_base=options.secondary_rid_base,
+        adtrust_netbios_name=adtrust.netbios_name,
+        adtrust_reset_netbios_name=adtrust.reset_netbios_name)
 
 
 if __name__ == '__main__':

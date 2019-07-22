@@ -63,9 +63,10 @@ from ansible.module_utils.ansible_ipa_client import (
     sysrestore, paths, configure_krb5_conf, logger
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             domain=dict(required=False, default=None),
             servers=dict(required=False, type='list', default=None),
             realm=dict(required=False, default=None),
@@ -75,9 +76,9 @@ def main():
             client_domain=dict(required=False, default=None),
             sssd=dict(required=False, type='bool', default=False),
             force=dict(required=False, type='bool', default=False),
-            #on_master=dict(required=False, type='bool', default=False),
+            # on_master=dict(required=False, type='bool', default=False),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -90,21 +91,21 @@ def main():
     client_domain = module.params.get('client_domain')
     sssd = module.params.get('sssd')
     force = module.params.get('force')
-    #on_master = module.params.get('on_master')
+    # on_master = module.params.get('on_master')
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
 
-    #if options.on_master:
-    #    # If on master assume kerberos is already configured properly.
-    #    # Get the host TGT.
-    #    try:
-    #        kinit_keytab(host_principal, paths.KRB5_KEYTAB, CCACHE_FILE,
-    #                     attempts=options.kinit_attempts)
-    #        os.environ['KRB5CCNAME'] = CCACHE_FILE
-    #    except gssapi.exceptions.GSSError as e:
-    #        logger.error("Failed to obtain host TGT: %s", e)
-    #        raise ScriptError(rval=CLIENT_INSTALL_ERROR)
-    #else:
+    # if options.on_master:
+    #     # If on master assume kerberos is already configured properly.
+    #     # Get the host TGT.
+    #     try:
+    #         kinit_keytab(host_principal, paths.KRB5_KEYTAB, CCACHE_FILE,
+    #                      attempts=options.kinit_attempts)
+    #         os.environ['KRB5CCNAME'] = CCACHE_FILE
+    #     except gssapi.exceptions.GSSError as e:
+    #         logger.error("Failed to obtain host TGT: %s", e)
+    #         raise ScriptError(rval=CLIENT_INSTALL_ERROR)
+    # else:
 
     # Configure krb5.conf
     fstore.backup_file(paths.KRB5_CONF)
@@ -124,6 +125,7 @@ def main():
         "Configured /etc/krb5.conf for IPA realm %s", realm)
 
     module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

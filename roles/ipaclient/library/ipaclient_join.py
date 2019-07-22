@@ -133,9 +133,10 @@ from ansible.module_utils.ansible_ipa_client import (
     get_ca_cert, get_ca_certs, errors, run
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             domain=dict(required=True),
             realm=dict(required=True),
@@ -151,7 +152,7 @@ def main():
             kinit_attempts=dict(required=False, type='int', default=5),
             debug=dict(required=False, type='bool'),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -224,7 +225,7 @@ def main():
                 join_args.append("-f")
                 if not os.path.exists(admin_keytab):
                     module.fail_json(
-                        msg="Keytab file could not be found: %s" % \
+                        msg="Keytab file could not be found: %s" %
                         admin_keytab)
                 try:
                     kinit_keytab(principal,
@@ -298,7 +299,8 @@ def main():
 
         # Fail for missing krb5.keytab on already joined host
         if already_joined and not os.path.exists(paths.KRB5_KEYTAB):
-            module.fail_json(msg="krb5.keytab missing! Retry with ipaclient_force_join=yes to generate a new one.")
+            module.fail_json(msg="krb5.keytab missing! Retry with "
+                             "ipaclient_force_join=yes to generate a new one.")
 
         if principal:
             run([paths.KDESTROY], raiseonerr=False, env=env)
@@ -336,6 +338,7 @@ def main():
 
     module.exit_json(changed=changed,
                      already_joined=already_joined)
+
 
 if __name__ == '__main__':
     main()

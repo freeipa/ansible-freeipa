@@ -54,9 +54,10 @@ from ansible.module_utils.ansible_ipa_server import (
     krbinstance, httpinstance, ca, service, tasks
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             # basic
             dm_password=dict(required=True, no_log=True),
             password=dict(required=True, no_log=True),
@@ -95,7 +96,8 @@ def main():
             no_reverse=dict(required=False, type='bool', default=False),
             auto_forwarders=dict(required=False, type='bool', default=False),
 
-            #_update_hosts_file=dict(required=False, type='bool', default=False),
+            # _update_hosts_file=dict(required=False, type='bool',
+            #                         default=False),
             _dirsrv_pkcs12_info=dict(required=False),
             _http_pkcs12_info=dict(required=False),
         ),
@@ -141,10 +143,12 @@ def main():
     options.idstart = ansible_module.params.get('idstart')
     options.idmax = ansible_module.params.get('idmax')
     options.domainlevel = ansible_module.params.get('domainlevel')
-    options.dirsrv_config_file = ansible_module.params.get('dirsrv_config_file')
+    options.dirsrv_config_file = ansible_module.params.get(
+        'dirsrv_config_file')
     options.dirsrv_cert_files = ansible_module.params.get('dirsrv_cert_files')
 
-    #options._update_hosts_file = ansible_module.params.get('_update_hosts_file')
+    # options._update_hosts_file = ansible_module.params.get(
+    #     '_update_hosts_file')
     options._dirsrv_pkcs12_info = ansible_module.params.get(
         '_dirsrv_pkcs12_info')
     options._http_pkcs12_info = ansible_module.params.get(
@@ -181,13 +185,16 @@ def main():
     with redirect_stdout(ansible_log):
         if options.http_cert_files:
             http.create_instance(
-                options.realm_name, options.host_name, options.domain_name, options.dm_password,
-                pkcs12_info=options._http_pkcs12_info, subject_base=options.subject_base,
+                options.realm_name, options.host_name, options.domain_name,
+                options.dm_password,
+                pkcs12_info=options._http_pkcs12_info,
+                subject_base=options.subject_base,
                 auto_redirect=not options.no_ui_redirect,
                 ca_is_configured=options.setup_ca)
         else:
             http.create_instance(
-                options.realm_name, options.host_name, options.domain_name, options.dm_password,
+                options.realm_name, options.host_name, options.domain_name,
+                options.dm_password,
                 subject_base=options.subject_base,
                 auto_redirect=not options.no_ui_redirect,
                 ca_is_configured=options.setup_ca)
@@ -211,6 +218,7 @@ def main():
     # done ##################################################################
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

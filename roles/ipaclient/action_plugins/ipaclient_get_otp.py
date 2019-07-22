@@ -56,13 +56,12 @@ def kinit_password(principal, password, ccache_name, config):
     Perform kinit using principal/password, with the specified config file
     and store the TGT in ccache_name.
     """
-    args = [ "/usr/bin/kinit", principal, '-c', ccache_name]
+    args = ["/usr/bin/kinit", principal, '-c', ccache_name]
     old_config = os.environ.get('KRB5_CONFIG')
     os.environ['KRB5_CONFIG'] = config
 
     try:
-        result = run_cmd(args, stdin=password.encode())
-        return result
+        return run_cmd(args, stdin=password.encode())
     finally:
         if old_config is not None:
             os.environ['KRB5_CONFIG'] = old_config
@@ -122,6 +121,7 @@ KRB5CONF_TEMPLATE = """
  {{ ipa_domain }} = {{ ipa_realm }}
 """
 
+
 class ActionModule(ActionBase):
 
     def run(self, tmp=None, task_vars=None):
@@ -162,8 +162,8 @@ class ActionModule(ActionBase):
             result['msg'] = "principal is required"
             return result
 
-        data = self._execute_module(module_name='ipaclient_get_facts', module_args=dict(),
-                                    task_vars=None)
+        data = self._execute_module(module_name='ipaclient_get_facts',
+                                    module_args=dict(), task_vars=None)
         try:
             domain = data['ansible_facts']['ipa']['domain']
             realm = data['ansible_facts']['ipa']['realm']
@@ -217,7 +217,8 @@ class ActionModule(ActionBase):
                 kinit_keytab(principal, keytab, ccache_name, krb5conf_name)
             except Exception as e:
                 result['failed'] = True
-                result['msg'] = 'kinit %s with keytab %s failed' % (principal, keytab)
+                result['msg'] = 'kinit %s with keytab %s failed: %s' % \
+                    (principal, keytab, str(e))
                 return result
 
         try:

@@ -167,9 +167,10 @@ from ansible.module_utils.ansible_ipa_client import (
     nosssd_files, configure_openldap_conf, hardcode_ldap_server
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             domain=dict(required=True),
             realm=dict(required=True),
@@ -195,7 +196,7 @@ def main():
             no_krb5_offline_passwords=dict(required=False, type='bool'),
             no_dns_sshfp=dict(required=False, type='bool', default=False),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -251,7 +252,7 @@ def main():
     api.Backend.rpcclient.connect()
     try:
         api.Backend.rpcclient.forward('ping')
-    except errors.KerberosError as e:
+    except errors.KerberosError:
         # Cannot connect to the server due to Kerberos error, trying with
         # delegate=True
         api.Backend.rpcclient.disconnect()
@@ -272,8 +273,8 @@ def main():
 
         # Get CA certificates from the certificate store
         try:
-            ca_certs = get_certs_from_ldap(cli_server[0], cli_basedn, cli_realm,
-                                           ca_enabled)
+            ca_certs = get_certs_from_ldap(cli_server[0], cli_basedn,
+                                           cli_realm, ca_enabled)
         except errors.NoCertificateError:
             if ca_enabled:
                 ca_subject = DN(('CN', 'Certificate Authority'), subject_base)
@@ -281,7 +282,8 @@ def main():
                 ca_subject = None
             ca_certs = certstore.make_compat_ca_certs(ca_certs, cli_realm,
                                                       ca_subject)
-        ca_certs_trust = [(c, n, certstore.key_policy_to_trust_flags(t, True, u))
+        ca_certs_trust = [(c, n,
+                           certstore.key_policy_to_trust_flags(t, True, u))
                           for (c, n, t, u) in ca_certs]
 
         if hasattr(paths, "KDC_CA_BUNDLE_PEM"):
@@ -303,12 +305,13 @@ def main():
         for cert, nickname, trust_flags in ca_certs_trust:
             try:
                 ipa_db.add_cert(cert, nickname, trust_flags)
-            except CalledProcessError as e:
+            except CalledProcessError:
                 raise ScriptError(
                     "Failed to add %s to the IPA NSS database." % nickname,
                     rval=CLIENT_INSTALL_ERROR)
 
-        # Add the CA certificates to the platform-dependant systemwide CA store
+        # Add the CA certificates to the platform-dependant systemwide CA
+        # store
         tasks.insert_ca_certs_into_systemwide_ca_store(ca_certs)
 
         if not options.on_master:
@@ -361,7 +364,8 @@ def main():
             except Exception:
                 if not options.sssd:
                     logger.warning(
-                        "Failed to configure automatic startup of the %s daemon",
+                        "Failed to configure automatic startup of the %s "
+                        "daemon",
                         nscd.service_name)
                     logger.info(
                         "Caching of users/groups will not be "
@@ -434,15 +438,15 @@ def main():
                     sssd.enable()
                 except CalledProcessError as e:
                     logger.warning(
-                        "Failed to enable automatic startup of the SSSD daemon: "
-                        "%s", e)
+                        "Failed to enable automatic startup of the SSSD "
+                        "daemon: %s", e)
 
             if not options.sssd:
                 tasks.modify_pam_to_use_krb5(statestore)
                 logger.info("Kerberos 5 enabled")
 
-            # Update non-SSSD LDAP configuration after authconfig calls as it would
-            # change its configuration otherways
+            # Update non-SSSD LDAP configuration after authconfig calls as it
+            # would change its configuration otherways
             if not options.sssd:
                 for configurer in [configure_ldap_conf, configure_nslcd_conf]:
                     (retcode, conf, filenames) = configurer(
@@ -479,9 +483,9 @@ def main():
                 # Particulary, SSSD might take longer than 6-8 seconds.
                 while n < 10 and not found:
                     try:
-                        ipautil.run([paths.GETENT, "passwd", user])
+                        ipautil.run([getent_cmd, "passwd", user])
                         found = True
-                    except Exception as e:
+                    except Exception:
                         time.sleep(1)
                         n = n + 1
 
@@ -509,6 +513,7 @@ def main():
 
     module.exit_json(changed=True,
                      ca_enabled_ra=ca_enabled)
+
 
 if __name__ == '__main__':
     main()

@@ -86,10 +86,11 @@ from ansible.module_utils.ansible_ipa_server import (
     services, logger, tasks, update_hosts_file, ScriptError
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            ### basic ###
+        argument_spec=dict(
+            # basic
             force=dict(required=False, type='bool', default=False),
             dm_password=dict(required=True, no_log=True),
             password=dict(required=True, no_log=True),
@@ -99,21 +100,22 @@ def main():
             hostname=dict(required=False),
             ca_cert_files=dict(required=False, type='list', default=[]),
             no_host_dns=dict(required=False, type='bool', default=False),
-            ### server ###
+            # server
             setup_adtrust=dict(required=False, type='bool', default=False),
             setup_kra=dict(required=False, type='bool', default=False),
             setup_dns=dict(required=False, type='bool', default=False),
-            ### ssl certificate ###
-            ### client ###
-            ### certificate system ###
+            # ssl certificate
+            # client
+            # certificate system
             external_ca=dict(required=False, type='bool'),
             external_ca_type=dict(required=False),
             external_ca_profile=dict(required=False),
             external_cert_files=dict(required=False, type='list', default=[]),
             subject_base=dict(required=False),
             ca_subject=dict(required=False),
-            ### dns ###
-            allow_zone_overlap=dict(required=False, type='bool', default=False),
+            # dns
+            allow_zone_overlap=dict(required=False, type='bool',
+                                    default=False),
             reverse_zones=dict(required=False, type='list', default=[]),
             no_reverse=dict(required=False, type='bool', default=False),
             auto_reverse=dict(required=False, type='bool', default=False),
@@ -123,18 +125,18 @@ def main():
             forward_policy=dict(default=None, choices=['first', 'only']),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
-            ### ad trust ###
+            # ad trust
             enable_compat=dict(required=False, type='bool', default=False),
             netbios_name=dict(required=False),
             rid_base=dict(required=False, type='int'),
             secondary_rid_base=dict(required=False, type='int'),
 
-            ### additional ###
+            # additional
             setup_ca=dict(required=False, type='bool', default=False),
             _hostname_overridden=dict(required=False, type='bool',
-                                       default=False),
+                                      default=False),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
@@ -152,16 +154,17 @@ def main():
     options.host_name = ansible_module.params.get('hostname')
     options.ca_cert_files = ansible_module.params.get('ca_cert_files')
     options.no_host_dns = ansible_module.params.get('no_host_dns')
-    ### server ###
+    # server
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_kra = ansible_module.params.get('setup_kra')
     options.setup_dns = ansible_module.params.get('setup_dns')
-    #options.no_pkinit = ansible_module.params.get('no_pkinit')
-    ### ssl certificate ###
-    #options.dirsrv_cert_files = ansible_module.params.get('dirsrv_cert_files')
-    ### client ###
-    #options.no_ntp = ansible_module.params.get('no_ntp')
-    ### certificate system ###
+    # options.no_pkinit = ansible_module.params.get('no_pkinit')
+    # ssl certificate
+    # options.dirsrv_cert_files = ansible_module.params.get(
+    #     'dirsrv_cert_files')
+    # client
+    # options.no_ntp = ansible_module.params.get('no_ntp')
+    # certificate system
     options.external_ca = ansible_module.params.get('external_ca')
     options.external_ca_type = ansible_module.params.get('external_ca_type')
     options.external_ca_profile = ansible_module.params.get(
@@ -170,8 +173,9 @@ def main():
         'external_cert_files')
     options.subject_base = ansible_module.params.get('subject_base')
     options.ca_subject = ansible_module.params.get('ca_subject')
-    ### dns ###
-    options.allow_zone_overlap = ansible_module.params.get('allow_zone_overlap')
+    # dns
+    options.allow_zone_overlap = ansible_module.params.get(
+        'allow_zone_overlap')
     options.reverse_zones = ansible_module.params.get('reverse_zones')
     options.no_reverse = ansible_module.params.get('no_reverse')
     options.auto_reverse = ansible_module.params.get('auto_reverse')
@@ -181,10 +185,10 @@ def main():
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validation')
-    ### ad trust ###
+    # ad trust
     options.enable_compat = ansible_module.params.get('enable_compat')
     options.netbios_name = ansible_module.params.get('netbios_name')
-    ### additional ###
+    # additional
     options.setup_ca = ansible_module.params.get('setup_ca')
     options._host_name_overridden = ansible_module.params.get(
         '_hostname_overridden')
@@ -227,9 +231,9 @@ def main():
         fd.write("basedn=%s\n" % ipautil.realm_to_suffix(options.realm_name))
         fd.write("realm=%s\n" % options.realm_name)
         fd.write("domain=%s\n" % options.domain_name)
-        fd.write("xmlrpc_uri=https://%s/ipa/xml\n" % \
+        fd.write("xmlrpc_uri=https://%s/ipa/xml\n" %
                  ipautil.format_netloc(options.host_name))
-        fd.write("ldap_uri=ldapi://%%2fvar%%2frun%%2fslapd-%s.socket\n" % \
+        fd.write("ldap_uri=ldapi://%%2fvar%%2frun%%2fslapd-%s.socket\n" %
                  installutils.realm_to_serverid(options.realm_name))
         if options.setup_ca:
             fd.write("enable_ra=True\n")
@@ -256,11 +260,13 @@ def main():
 
         if options.setup_dns:
             with redirect_stdout(ansible_log):
-                dns.install_check(False, api, False, options, options.host_name)
+                dns.install_check(False, api, False, options,
+                                  options.host_name)
             ip_addresses = dns.ip_addresses
         else:
             ip_addresses = get_server_ip_address(options.host_name,
-                                                 not options.interactive, False,
+                                                 not options.interactive,
+                                                 False,
                                                  options.ip_addresses)
 
             # check addresses here, dns module is doing own check
@@ -270,9 +276,9 @@ def main():
 
         instance_name = "-".join(options.realm_name.split("."))
         dirsrv = services.knownservices.dirsrv
-        if (options.external_cert_files
-               and dirsrv.is_installed(instance_name)
-               and not dirsrv.is_running(instance_name)):
+        if options.external_cert_files \
+           and dirsrv.is_installed(instance_name) \
+           and not dirsrv.is_running(instance_name):
             logger.debug('Starting Directory Server')
             services.knownservices.dirsrv.start(instance_name)
 
@@ -301,25 +307,27 @@ def main():
             ipautil.CalledProcessError) as e:
         ansible_module.fail_json(msg=str(e))
 
-    ansible_module.exit_json(changed=True,
-                             ### basic ###
-                             ip_addresses=[ str(ip) for ip in ip_addresses ],
-                             ### certificate system ###
-                             subject_base=options.subject_base,
-                             _subject_base=options._subject_base,
-                             ca_subject=options.ca_subject,
-                             _ca_subject=options._ca_subject,
-                             ### dns ###
-                             reverse_zones=options.reverse_zones,
-                             forward_policy=options.forward_policy,
-                             forwarders=options.forwarders,
-                             no_dnssec_validation=options.no_dnssec_validation,
-                             ### additional ###
-                             dns_ip_addresses=[ str(ip) for ip
-                                                in dns.ip_addresses ],
-                             dns_reverse_zones=dns.reverse_zones,
-                             adtrust_netbios_name=adtrust.netbios_name,
-                             adtrust_reset_netbios_name=adtrust.reset_netbios_name)
+    ansible_module.exit_json(
+        changed=True,
+        # basic
+        ip_addresses=[str(ip) for ip in ip_addresses],
+        # certificate system
+        subject_base=options.subject_base,
+        _subject_base=options._subject_base,
+        ca_subject=options.ca_subject,
+        _ca_subject=options._ca_subject,
+        # dns
+        reverse_zones=options.reverse_zones,
+        forward_policy=options.forward_policy,
+        forwarders=options.forwarders,
+        no_dnssec_validation=options.no_dnssec_validation,
+        # additional
+        dns_ip_addresses=[str(ip) for ip
+                          in dns.ip_addresses],
+        dns_reverse_zones=dns.reverse_zones,
+        adtrust_netbios_name=adtrust.netbios_name,
+        adtrust_reset_netbios_name=adtrust.reset_netbios_name)
+
 
 if __name__ == '__main__':
     main()

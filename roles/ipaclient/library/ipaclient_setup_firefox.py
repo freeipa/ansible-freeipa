@@ -61,13 +61,14 @@ from ansible.module_utils.ansible_ipa_client import (
     sysrestore, paths, options, configure_firefox
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             domain=dict(required=True),
             firefox_dir=dict(required=False),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -79,6 +80,7 @@ def main():
     configure_firefox(options, statestore, domain)
 
     module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

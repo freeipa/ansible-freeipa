@@ -56,12 +56,13 @@ from ansible.module_utils.ansible_ipa_replica import (
     IPA_PYTHON_VERSION
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            ### basic ###
-            #dm_password=dict(required=False, no_log=True),
-            #password=dict(required=False, no_log=True),
+        argument_spec=dict(
+            # basic
+            # dm_password=dict(required=False, no_log=True),
+            # password=dict(required=False, no_log=True),
             ip_addresses=dict(required=False, type='list', default=[]),
             domain=dict(required=False),
             servers=dict(required=False, type='list', default=[]),
@@ -69,21 +70,21 @@ def main():
             hostname=dict(required=False),
             ca_cert_files=dict(required=False, type='list', default=[]),
             hidden_replica=dict(required=False, type='bool', default=False),
-            ### server ###
+            # server
             setup_adtrust=dict(required=False, type='bool', default=False),
             setup_kra=dict(required=False, type='bool', default=False),
             setup_dns=dict(required=False, type='bool', default=False),
             no_pkinit=dict(required=False, type='bool', default=False),
             dirsrv_config_file=dict(required=False),
-            ### ssl certificate ###
+            # ssl certificate
             dirsrv_cert_files=dict(required=False, type='list', default=[]),
             http_cert_files=dict(required=False, type='list', default=[]),
             pkinit_cert_files=dict(required=False, type='list', default=[]),
-            ### client ###
+            # client
             no_ntp=dict(required=False, type='bool', default=False),
             ntp_servers=dict(required=False, type='list', default=[]),
             ntp_pool=dict(required=False),
-            ### dns ###
+            # dns
             no_reverse=dict(required=False, type='bool', default=False),
             auto_reverse=dict(required=False, type='bool', default=False),
             forwarders=dict(required=False, type='list', default=[]),
@@ -100,10 +101,10 @@ def main():
 
     # get parameters #
 
-    ### basic ###
-    #options.dm_password = ansible_module.params.get('dm_password')
-    ##options.password = ansible_module.params.get('password')
-    #options.password = options.dm_password
+    # basic
+    # options.dm_password = ansible_module.params.get('dm_password')
+    # # options.password = ansible_module.params.get('password')
+    # options.password = options.dm_password
     options.ip_addresses = ansible_module_get_parsed_ip_addresses(
         ansible_module)
     options.domain_name = ansible_module.params.get('domain')
@@ -112,21 +113,22 @@ def main():
     options.host_name = ansible_module.params.get('hostname')
     options.ca_cert_files = ansible_module.params.get('ca_cert_files')
     options.hidden_replica = ansible_module.params.get('hidden_replica')
-    ### server ###
+    # server
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_kra = ansible_module.params.get('setup_kra')
     options.setup_dns = ansible_module.params.get('setup_dns')
     options.no_pkinit = ansible_module.params.get('no_pkinit')
-    options.dirsrv_config_file = ansible_module.params.get('dirsrv_config_file')
-    ### ssl certificate ###
+    options.dirsrv_config_file = ansible_module.params.get(
+        'dirsrv_config_file')
+    # ssl certificate
     options.dirsrv_cert_files = ansible_module.params.get('dirsrv_cert_files')
     options.http_cert_files = ansible_module.params.get('http_cert_files')
     options.pkinit_cert_files = ansible_module.params.get('pkinit_cert_files')
-    ### client ###
+    # client
     options.no_ntp = ansible_module.params.get('no_ntp')
     options.ntp_servers = ansible_module.params.get('ntp_servers')
     options.ntp_pool = ansible_module.params.get('ntp_pool')
-    ### dns ###
+    # dns
     options.no_reverse = ansible_module.params.get('no_reverse')
     options.auto_reverse = ansible_module.params.get('auto_reverse')
     options.forwarders = ansible_module.params.get('forwarders')
@@ -145,12 +147,12 @@ def main():
     else:
         installer.server = None
     # TODO: Kills ipa-client-install
-    #if installer.replica_file is None:
-    #    installer.password = installer.admin_password
-    #else:
-    #    installer.password = installer.dm_password
+    # if installer.replica_file is None:
+    #     installer.password = installer.admin_password
+    # else:
+    #     installer.password = installer.dm_password
 
-    #installer._ccache = os.environ.get('KRB5CCNAME')
+    # installer._ccache = os.environ.get('KRB5CCNAME')
 
     # If not defined, set domain from server name
     if installer.domain_name is None and installer.server is not None:
@@ -165,17 +167,17 @@ def main():
 
     # version specific tests #
 
-    #if options.setup_adtrust and not adtrust_imported:
-    #    #if "adtrust" not in options._allow_missing:
+    # if options.setup_adtrust and not adtrust_imported:
+    #    # if "adtrust" not in options._allow_missing:
     #    ansible_module.fail_json(msg="adtrust can not be imported")
-    #    #else:
+    #    # else:
     #    #  options.setup_adtrust = False
     #    #  ansible_module.warn(msg="adtrust is not supported, disabling")
 
-    #if options.setup_kra and not kra_imported:
-    #    #if "kra" not in options._allow_missing:
+    # if options.setup_kra and not kra_imported:
+    #    # if "kra" not in options._allow_missing:
     #    ansible_module.fail_json(msg="kra can not be imported")
-    #    #else:
+    #    # else:
     #    #  options.setup_kra = False
     #    #  ansible_module.warn(msg="kra is not supported, disabling")
 
@@ -276,32 +278,38 @@ def main():
                 msg="You must specify at least one of --forwarder, "
                 "--auto-forwarders, or --no-forwarders options")
 
-    if installer.dirsrv_config_file is not None and not os.path.exists(installer.dirsrv_config_file):
-        ansible_module.fail_json(msg="File %s does not exist." % installer.dirsrv_config_file)
+    if installer.dirsrv_config_file is not None and \
+       not os.path.exists(installer.dirsrv_config_file):
+        ansible_module.fail_json(
+            msg="File %s does not exist." % installer.dirsrv_config_file)
 
     if installer.ca_cert_files is not None:
         if not isinstance(installer.ca_cert_files, list):
-            ansible_module.fail_json(msg="Expected list, got {!r}".format(installer.ca_cert_files))
+            ansible_module.fail_json(
+                msg="Expected list, got {!r}".format(installer.ca_cert_files))
         for cert in installer.ca_cert_files:
             if not os.path.exists(cert):
                 ansible_module.fail_json(msg="'%s' does not exist" % cert)
             if not os.path.isfile(cert):
                 ansible_module.fail_json(msg="'%s' is not a file" % cert)
             if not os.path.isabs(cert):
-                ansible_module.fail_json(msg="'%s' is not an absolute file path" % cert)
+                ansible_module.fail_json(
+                    msg="'%s' is not an absolute file path" % cert)
 
             try:
                 x509.load_certificate_from_file(cert)
             except Exception:
-                ansible_module.fail_json(msg="'%s' is not a valid certificate file" % cert)
+                ansible_module.fail_json(
+                    msg="'%s' is not a valid certificate file" % cert)
 
     if installer.ip_addresses is not None:
         for value in installer.ip_addresses:
             try:
                 ipautil.CheckedIPAddress(value)
             except Exception as e:
-                ansible_module.fail_json(msg="invalid IP address {0}: {1}".format(
-                    value, e))
+                ansible_module.fail_json(
+                    msg="invalid IP address {0}: {1}".format(
+                        value, e))
 
     if installer.domain_name is not None:
         validate_domain_name(installer.domain_name)
@@ -314,7 +322,7 @@ def main():
     try:
         with redirect_stdout(ansible_log):
             common_check(options.no_ntp)
-    except Exception as msg: #ScriptError as msg:
+    except Exception as msg:  # ScriptError as msg:
         _msg = str(msg)
         if "server is already configured" in _msg:
             ansible_module.exit_json(changed=False,
@@ -330,8 +338,8 @@ def main():
     client_enrolled = client_fstore.has_files()
 
     if not client_enrolled:
-        ## One-step replica installation
-        #if options.dm_password and options.password:
+        # # One-step replica installation
+        # if options.dm_password and options.password:
         #    ansible_module.fail_json(
         #        msg="--password and --admin-password options are "
         #        "mutually exclusive")
@@ -347,18 +355,19 @@ def main():
     ansible_module.exit_json(
         changed=False,
         ipa_python_version=IPA_PYTHON_VERSION,
-        ### basic ###
+        # basic
         domain=options.domain_name,
         realm=options.realm_name,
         hostname=options.host_name,
-        ### server ###
+        # server
         setup_adtrust=options.setup_adtrust,
         setup_kra=options.setup_kra,
         server=options.server,
-        ### additional ###
+        # additional
         client_enrolled=client_enrolled,
         change_master_for_certmonger=change_master_for_certmonger,
     )
+
 
 if __name__ == '__main__':
     main()
