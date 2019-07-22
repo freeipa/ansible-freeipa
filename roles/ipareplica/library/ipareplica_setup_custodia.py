@@ -185,7 +185,8 @@ def main():
         if not hasattr(custodiainstance, "get_custodia_instance"):
             custodia = custodiainstance.CustodiaInstance(config.host_name,
                                                          config.realm_name)
-            if promote:
+            if promote and \
+               hasattr(custodiainstance.CustodiaInstance, "create_replica"):
                 ansible_log.debug("-- CUSTODIA CREATE_REPLICA --")
                 custodia.create_replica(config.master_host_name)
             else:
