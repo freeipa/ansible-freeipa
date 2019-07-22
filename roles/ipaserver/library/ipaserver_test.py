@@ -797,6 +797,7 @@ def main():
                 encoding = getattr(sys.stdin, 'encoding', None)
                 if encoding is None:
                     encoding = 'utf-8'
+                value = options.zonemgr
                 if not isinstance(value, unicode):
                     value = options.zonemgr.decode(encoding)
                 else:
