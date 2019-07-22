@@ -577,7 +577,7 @@
       ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
       no_host_dns: "{{ ipareplica_no_host_dns }}"
       pki_config_override:
-        "{{ ipareplica_pki_config_override | default(omit)}}"
+        "{{ ipareplica_pki_config_override | default(omit) }}"
       ### replica ###
       setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
       setup_ca: "{{ ipareplica_setup_ca }}"
