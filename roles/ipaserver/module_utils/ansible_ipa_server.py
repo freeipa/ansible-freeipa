@@ -254,6 +254,10 @@ options.add_agents = False
 # no_msdcs is deprecated
 options.no_msdcs = False
 
+# For pylint
+options.external_cert_files = None
+options.dirsrv_cert_files = None
+
 # Uninstall
 options.ignore_topology_disconnect = False
 options.ignore_last_of_role = False
