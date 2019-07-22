@@ -460,6 +460,10 @@ def main():
                 # It can sometimes take a few seconds to connect to the remote
                 # provider.
                 # Particulary, SSSD might take longer than 6-8 seconds.
+                if hasattr(paths, "GETENT"):
+                    getent_cmd = paths.GETENT
+                else:
+                    getent_cmd = '/usr/bin/getent'
                 while n < 10 and not found:
                     try:
                         ipautil.run([getent_cmd, "passwd", user])
