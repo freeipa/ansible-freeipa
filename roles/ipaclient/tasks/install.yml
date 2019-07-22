@@ -296,7 +296,7 @@
         mkhomedir: "{{ ipaclient_mkhomedir }}"
         ca_enabled: "{{ result_ipaclient_api.ca_enabled }}"
         on_master: "{{ ipaclient_on_master }}"
-        dnsok: "{{ result_ipaclient_test.dnso }}"
+        dnsok: "{{ result_ipaclient_test.dnsok }}"
         enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
         all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
         ip_addresses: "{{ ipaclient_ip_addresses | default(omit) }}"
