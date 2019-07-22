@@ -4,7 +4,10 @@
 import os
 import re
 import six
-from six.moves.configparser import RawConfigParser
+try:
+    from six.moves.configparser import RawConfigParser
+except ImportError:
+    from ConfigParser import RawConfigParser
 
 from ansible.module_utils.basic import AnsibleModule
 

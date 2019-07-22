@@ -192,7 +192,11 @@ import os
 import socket
 import inspect
 
-from six.moves.configparser import RawConfigParser
+try:
+    from six.moves.configparser import RawConfigParser
+except ImportError:
+    from ConfigParser import RawConfigParser
+
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
     paths, sysrestore, options, CheckedIPAddress, validate_domain_name,
