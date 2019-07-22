@@ -142,6 +142,12 @@ def main():
     ansible_module._ansible_debug = True
     ansible_log = AnsibleModuleLog(ansible_module)
 
+    # initialize return values for flake ############################
+
+    # These are set by ca.install_check
+    options._subject_base = None
+    options._ca_subject = None
+
     # set values ####################################################
 
     options.force = ansible_module.params.get('force')
