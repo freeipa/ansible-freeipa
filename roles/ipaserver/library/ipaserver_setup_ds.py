@@ -33,21 +33,64 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_setup_ds
-short description: 
-description:
+short description: Configure directory server
+description: Configure directory server
 options:
   dm_password:
+    description: Directory Manager password
+    required: no
   password:
+    description: Admin user kerberos password
+    required: no
   domain:
+    description: Primary DNS domain of the IPA deployment
+    required: no
   realm:
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
+    description: Fully qualified name of this host
+    required: yes
   idstart:
+    description: The starting value for the IDs range (default random)
+    required: no
   idmax:
-  no_pkinit:
+    description: The max value for the IDs range (default: idstart+199999)
+    required: no
   no_hbac_allow:
+    description: Don't install allow_all HBAC rule
+    required: yes
+  no_pkinit:
+    description: Disable pkinit setup steps
+    required: yes
+  dirsrv_config_file:
+    description:
+      The path to LDIF file that will be used to modify configuration of
+      dse.ldif during installation of the directory server instance
+    required: yes
+  dirsrv_cert_files:
+    description:
+      Files containing the Directory Server SSL certificate and private key
+    required: yes
+  _dirsrv_pkcs12_info:
+    description: The installer _dirsrv_pkcs12_info setting
+    required: yes
+  external_cert_files:
+    description:
+      File containing the IPA CA certificate and the external CA certificate
+      chain
+    required: yes
   subject_base:
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: yes
   ca_subject:
-  setup_ca
+    description: The installer ca_subject setting
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
 author:
     - Thomas Woerner
 '''

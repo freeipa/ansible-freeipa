@@ -32,10 +32,19 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: setup_otpd
-short description: 
-description:
+module: ipaserver_setup_otpd
+short description: Setup OTPD
+description: Setup OTPD
 options:
+  realm:
+    description: Kerberos realm name of the IPA deployment
+    required: no
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
 author:
     - Thomas Woerner
 '''

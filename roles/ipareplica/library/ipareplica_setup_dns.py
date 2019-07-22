@@ -38,26 +38,46 @@ description:
   Setup DNS
 options:
   setup_kra:
-    description: 
+    description: Configure a dogtag KRA
     required: yes
   setup_dns:
-    description: 
+    description: Configure bind with our zone
     required: yes
   subject_base:
-    description: 
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
+  zonemgr:
+    description: DNS zone manager e-mail address. Defaults to hostmaster@DOMAIN
     required: yes
+  forwarders:
+    description: Add DNS forwarders
+    required: yes
+  forward_policy:
+    description: DNS forwarding policy for global forwarders
+    required: yes
+  no_dnssec_validation:
+    description: Disable DNSSEC validation
+    required: yes
+  dns_ip_addresses:
+    description: The dns ip_addresses setting
+    required: no
+  dns_reverse_zones:
+    description: The dns reverse_zones setting
+    required: no
   ccache:
-    description: 
-    required: yes
+    description: The local ccache
+    required: no
   _top_dir:
-    description: 
-    required: yes
+    description: The installer _top_dir setting
+    required: no
   setup_ca:
-    description: 
-    required: yes
+    description: Configure a dogtag CA
+    required: no
   config_master_host_name:
-    description: 
-    required: yes
+    description: The config master_host_name setting
+    required: no
 author:
     - Thomas Woerner
 '''

@@ -33,37 +33,116 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_prepare
-short description:
-description:
+short description: Prepare IPA server deployment
+description: Prepare IPA server deployment
 options:
+  force:
+    description: Installer force parameter
+    required: yes
   dm_password:
+    description: Directory Manager password
+    required: no
   password:
+    description: Admin user kerberos password
+    required: no
   ip_addresses:
+    description: List of Master Server IP Addresses
+    required: yes
   domain:
+    description: Primary DNS domain of the IPA deployment
+    required: no
   realm:
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
+    description: Fully qualified name of this host
+    required: yes
   ca_cert_files:
+    description:
+      List of files containing CA certificates for the service certificate
+      files
+    required: yes
   no_host_dns:
+    description: Do not use DNS for hostname lookup during installation
+    required: yes
   setup_adtrust:
+    description: Configure AD trust capability
+    required: yes
   setup_kra:
+    description: Configure a dogtag KRA
+    required: yes
   setup_dns:
+    description: Configure bind with our zone
+    required: yes
   external_ca:
+    description: External ca setting
+    required: yes
+  external_ca_type:
+    description: Type of the external CA
+    required: yes
+  external_ca_profile:
+    description:
+      Specify the certificate profile/template to use at the external CA
+    required: yes
   external_cert_files:
+    description:
+      File containing the IPA CA certificate and the external CA certificate
+      chain
+    required: yes
   subject_base:
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: yes
   ca_subject:
+    description: The installer ca_subject setting
+    required: yes
+  allow_zone_overlap:
+    description: Create DNS zone even if it already exists
+    required: yes
   reverse_zones:
+    description: The reverse DNS zones to use
+    required: yes
   no_reverse:
+    description: Do not create new reverse DNS zone
+    required: yes
   auto_reverse:
+    description: Create necessary reverse zones
+    required: yes
   forwarders:
+    description: Add DNS forwarders
+    required: yes
   no_forwarders:
+    description: Do not add any DNS forwarders, use root servers instead
+    required: yes
   auto_forwarders:
+    description: Use DNS forwarders configured in /etc/resolv.conf
+    required: yes
   forward_policy:
+    description: DNS forwarding policy for global forwarders
+    required: yes
+  no_dnssec_validation:
+    description: Disable DNSSEC validation
+    required: yes
   enable_compat:
+    description: Enable support for trusted domains for old clients
+    required: yes
   netbios_name:
+    description: NetBIOS name of the IPA domain
+    required: yes
   rid_base:
+    description: Start value for mapping UIDs and GIDs to RIDs
+    required: yes
   secondary_rid_base:
+    description:
+      Start value of the secondary range for mapping UIDs and GIDs to RIDs
+    required: yes
   setup_ca:
+    description: Configure a dogtag CA
+    required: yes
   _hostname_overridden:
+    description: The installer _hostname_overridden setting
+    required: yes
 author:
     - Thomas Woerner
 '''

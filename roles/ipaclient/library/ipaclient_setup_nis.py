@@ -36,11 +36,11 @@ description:
   Setup NIS for IPA client
 options:
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: true
+    description: Primary DNS domain of the IPA deployment
+    required: no
   nisdomain:
-    description: NIS domain name
-    required: false
+    description: The NIS domain name
+    required: yes
 author:
     - Thomas Woerner
 '''

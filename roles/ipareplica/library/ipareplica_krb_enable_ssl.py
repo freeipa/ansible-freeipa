@@ -37,6 +37,41 @@ short description: KRB enable SSL
 description:
   KRB enable SSL
 options:
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
+  setup_kra:
+    description: Configure a dogtag KRA
+    required: yes
+  no_pkinit:
+    description: Disable pkinit setup steps
+    required: yes
+  subject_base:
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
+  config_master_host_name:
+    description: The config master_host_name setting
+    required: no
+  ccache:
+    description: The local ccache
+    required: no
+  _ca_enabled:
+    description: The installer _ca_enabled setting
+    required: yes
+  _ca_file:
+    description: The installer _ca_file setting
+    required: yes
+  _pkinit_pkcs12_info:
+    description: The installer _pkinit_pkcs12_info setting
+    required: yes
+  _top_dir:
+    description: The installer _top_dir setting
+    required: no
+  dirman_password:
+    description: Directory Manager (master) password
+    required: no
 author:
     - Thomas Woerner
 '''

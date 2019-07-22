@@ -31,9 +31,91 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_test
-short description:
-description:
+short description: IPA replica deployment tests
+description: IPA replica deployment tests
 options:
+  ip_addresses:
+    description: List of Master Server IP Addresses
+    required: yes
+  domain:
+    description: Primary DNS domain of the IPA deployment
+    required: yes
+  servers:
+    description: Fully qualified name of IPA servers to enroll to
+    required: yes
+  realm:
+    description: Kerberos realm name of the IPA deployment
+    required: yes
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  ca_cert_files:
+    description:
+      List of files containing CA certificates for the service certificate
+      files
+    required: yes
+  hidden_replica:
+    description: Install a hidden replica
+    required: yes
+  setup_adtrust:
+    description: Configure AD trust capability
+    required: yes
+  setup_kra:
+    description: Configure a dogtag KRA
+    required: yes
+  setup_dns:
+    description: Configure bind with our zone
+    required: yes
+  no_pkinit:
+    description: Disable pkinit setup steps
+    required: yes
+  dirsrv_config_file:
+    description:
+      The path to LDIF file that will be used to modify configuration of
+      dse.ldif during installation of the directory server instance
+    required: yes
+  dirsrv_cert_files:
+    description:
+      Files containing the Directory Server SSL certificate and private key
+    required: yes
+  http_cert_files:
+    description:
+      File containing the Apache Server SSL certificate and private key
+    required: yes
+  pkinit_cert_files:
+    description:
+      File containing the Kerberos KDC SSL certificate and private key
+    required: yes
+  no_ntp:
+    description: Do not configure ntp
+    required: yes
+  ntp_servers:
+    description: ntp servers to use
+    required: yes
+  ntp_pool:
+    description: ntp server pool to use
+    required: yes
+  no_reverse:
+    description: Do not create new reverse DNS zone
+    required: yes
+  auto_reverse:
+    description: Create necessary reverse zones
+    required: yes
+  forwarders:
+    description: Add DNS forwarders
+    required: yes
+  no_forwarders:
+    description: Do not add any DNS forwarders, use root servers instead
+    required: yes
+  auto_forwarders:
+    description: Use DNS forwarders configured in /etc/resolv.conf
+    required: yes
+  forward_policy:
+    description: DNS forwarding policy for global forwarders
+    required: yes
+  no_dnssec_validation:
+    description: Disable DNSSEC validation
+    required: yes
 author:
     - Thomas Woerner
 '''

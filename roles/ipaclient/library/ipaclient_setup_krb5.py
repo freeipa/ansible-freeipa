@@ -35,12 +35,33 @@ short description: Setup krb5 for IPA client
 description:
   Setup krb5 for IPA client
 options:
-  server:
   domain:
+    description: Primary DNS domain of the IPA deployment
+    required: yes
+  servers:
+    description: Fully qualified name of IPA servers to enroll to
+    required: yes
   realm:
+    description: Kerberos realm name of the IPA deployment
+    required: yes
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: yes
+  kdc:
+    description: The name or address of the host running the KDC
+    required: yes
+  dnsok:
+    description: The installer dnsok setting
+    required: yes
+  client_domain:
+    description: Primary DNS domain of the IPA deployment
+    required: yes
+  sssd:
+    description: The installer sssd setting
+    required: yes
+  force:
+    description: Installer force parameter
+    required: yes
 author:
     - Thomas Woerner
 '''

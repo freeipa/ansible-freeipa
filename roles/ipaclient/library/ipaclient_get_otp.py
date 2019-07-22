@@ -35,45 +35,31 @@ description:
   host operations.
 options:
   principal:
-    description: Kerberos principal used to manage the host
-    required: true
-    default: admin
-  password:
-    description: Password for the kerberos principal
-    required: false
-  keytab:
-    description: Keytab file containing the Kerberos principal and encrypted key
-    required: false
-  lifetime:
-    description: Sets the default lifetime for initial ticket requests
-    required: false
-    default: 1h
+    description:
+      User Principal allowed to promote replicas and join IPA realm
+    required: yes
+  ccache:
+    description: The local ccache
+    required: yes
   fqdn:
-    description: the fully-qualified hostname of the host to add/modify/remove
-    required: true
-  random:
-    description: generate a random password to be used in bulk enrollment
-    required: false
-    type: bool
-    default: no
-  state:
-    description: the host state
-    required: false
-    default: present
-    choices: [ "present", "absent" ]
+    description:
+      The fully-qualified hostname of the host to add/modify/remove
+    required: no
   certificates:
-    description: a list of host certificates
-    required: false
-    type: list
+    description: A list of host certificates
+    required: yes
   sshpubkey:
-    description: the SSH public key for the host
-    required: false
+    description: The SSH public key for the host
+    required: yes
   ipaddress:
-    description: the IP address for the host
-    required: false
-
-requirements:
-    - gssapi on the Ansible controller
+    description: The IP address for the host
+    required: yes
+  random:
+    description: Generate a random password to be used in bulk enrollment
+    required: yes
+  state:
+    description: The desired host state
+    required: yes
 author:
     - "Florence Blanc-Renaud"
 '''

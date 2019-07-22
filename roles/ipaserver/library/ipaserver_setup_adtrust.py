@@ -32,10 +32,35 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: setup_adtrust
-short description: 
-description:
+module: ipaserver_setup_adtrust
+short description: Setup trust ad
+description: Setup trust ad
 options:
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
+  setup_adtrust:
+    description: Configure AD trust capability
+    required: yes
+  enable_compat:
+    description: Enable support for trusted domains for old clients
+    required: yes
+  rid_base:
+    description: Start value for mapping UIDs and GIDs to RIDs
+    required: yes
+  secondary_rid_base:
+    description:
+      Start value of the secondary range for mapping UIDs and GIDs to RIDs
+    required: yes
+  adtrust_netbios_name:
+    description: The adtrust netbios_name setting
+    required: no
+  adtrust_reset_netbios_name:
+    description: The adtrust reset_netbios_name setting
+    required: no
 author:
     - Thomas Woerner
 '''

@@ -37,65 +37,67 @@ short description: Setup CA
 description:
   Setup CA
 options:
+  pki_config_override:
+    description: Path to ini file with config overrides
+    required: yes
   setup_ca:
-    description: 
+    description: Configure a dogtag CA
     required: yes
   setup_kra:
-    description: 
+    description: Configure a dogtag KRA
     required: yes
   no_pkinit:
-    description: 
-    required: yes
-  pki_config_override:
-    description: 
+    description: Disable pkinit setup steps
     required: yes
   subject_base:
-    description: 
-    required: yes
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
   ccache:
-    description: 
-    required: yes
+    description: The local ccache
+    required: no
   _ca_enabled:
-    description: 
+    description: The installer _ca_enabled setting
     required: yes
   _ca_file:
-    description: 
+    description: The installer _ca_file setting
     required: yes
   _kra_enabled:
-    description:
+    description: The installer _kra_enabled setting
     required: yes
   _kra_host_name:
-    description:
+    description: The installer _kra_host_name setting
     required: yes
   _dirsrv_pkcs12_info:
-    description: 
+    description: The installer _dirsrv_pkcs12_info setting
     required: yes
   _pkinit_pkcs12_info:
-    description: 
+    description: The installer _pkinit_pkcs12_info setting
     required: yes
   _top_dir:
-    description: 
-    required: yes
+    description: The installer _top_dir setting
+    required: no
   _ca_subject:
-    description: 
-    required: yes
+    description: The installer _ca_subject setting
+    required: no
   _subject_base:
-    description: 
-    required: yes
+    description: The installer _subject_base setting
+    required: no
   dirman_password:
-    description: 
-    required: yes
+    description: Directory Manager (master) password
+    required: no
   config_setup_ca:
-    description: 
-    required: yes
+    description: The config setup_ca setting
+    required: no
   config_master_host_name:
-    description: 
-    required: yes
+    description: The config master_host_name setting
+    required: no
   config_ca_host_name:
-    description: 
-    required: yes
+    description: The config ca_host_name setting
+    required: no
   config_ips:
-    description: 
+    description: The config ips setting
     required: yes
 author:
     - Thomas Woerner

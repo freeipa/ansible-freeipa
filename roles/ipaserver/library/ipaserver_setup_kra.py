@@ -32,10 +32,28 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: setup_kra
-short description: 
-description:
+module: ipaserver_setup_kra
+short description: Setup KRA
+description: Setup KRA
 options:
+  dm_password:
+    description: Directory Manager password
+    required: no
+  hostname:
+    description: Fully qualified name of this host
+    required: no
+  setup_ca:
+    description: Configure a dogtag CA
+    required: no
+  setup_kra:
+    description: Configure a dogtag KRA
+    required: no
+  realm:
+    description: Kerberos realm name of the IPA deployment
+    required: no
+  pki_config_override:
+    description: Path to ini file with config overrides
+    required: yes
 author:
     - Thomas Woerner
 '''

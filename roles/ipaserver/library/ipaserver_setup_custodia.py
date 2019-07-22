@@ -33,12 +33,18 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_setup_custodia
-short description: 
-description:
+short description: Setup custodia
+description: Setup custodia
 options:
   realm:
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
+    description: Fully qualified name of this host
+    required: yes
   setup_ca:
+    description: Configure a dogtag CA
+    required: yes
 author:
     - Thomas Woerner
 '''

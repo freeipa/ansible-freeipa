@@ -45,7 +45,7 @@ options:
     required: yes
   ip_addresses:
     description: List of Master Server IP Addresses
-    required: no
+    required: yes
   domain:
     description: Primary DNS domain of the IPA deployment
     required: yes
@@ -56,22 +56,73 @@ options:
     description: Fully qualified name of this host
     required: yes
   ca_cert_files:
-    description: List of iles containing CA certificates for the service certificate files
+    description:
+      List of files containing CA certificates for the service certificate
+      files
     required: yes
   no_host_dns:
     description: Do not use DNS for hostname lookup during installation
     required: yes
+  pki_config_override:
+    description: Path to ini file with config overrides
+    required: yes
   setup_adtrust:
-    description: 
+    description: Configure AD trust capability
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
     required: yes
   setup_kra:
-    description: 
+    description: Configure a dogtag KRA
     required: yes
   setup_dns:
-    description: 
+    description: Configure bind with our zone
     required: yes
-  external_ca:
-    description: 
+  dirsrv_cert_files:
+    description:
+      Files containing the Directory Server SSL certificate and private key
+    required: yes
+  force_join:
+    description: Force client enrollment even if already enrolled
+    required: yes
+  subject_base:
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
+  server:
+    description: Fully qualified name of IPA server to enroll to
+    required: no
+  config_master_host_name:
+    description: The config master_host_name setting
+    required: no
+  ccache:
+    description: The local ccache
+    required: no
+  installer_ccache:
+    description: The installer ccache setting
+    required: no
+  _ca_enabled:
+    description: The installer _ca_enabled setting
+    required: yes
+  _kra_enabled:
+    description: The installer _kra_enabled setting
+    required: yes
+  _kra_host_name:
+    description: The installer _kra_host_name setting
+    required: yes
+  _top_dir:
+    description: The installer _top_dir setting
+    required: no
+  _add_to_ipaservers:
+    description: The installer _add_to_ipaservers setting
+    required: no
+  _ca_subject:
+    description: The installer _ca_subject setting
+    required: no
+  _subject_base:
+    description: The installer _subject_base setting
+    required: no
 author:
     - Thomas Woerner
 '''

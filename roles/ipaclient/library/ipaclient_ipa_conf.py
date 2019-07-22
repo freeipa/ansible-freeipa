@@ -35,24 +35,21 @@ short description: Configure ipa.conf
 description:
   Configure ipa.conf
 options:
-  servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: true
-    type: list
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: false
+    description: Primary DNS domain of the IPA deployment
+    required: no
+  servers:
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
   realm:
-    description:  The Kerberos realm of an existing IPA deployment.
-    required: false
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: no
   basedn:
-    description: The basedn of the detected IPA server.
-    returned: always
-    type: string
-    sample: dc=example,dc=com
+    description: The basedn of the IPA server (of the form dc=example,dc=com)
+    required: no
 author:
     - Thomas Woerner
 '''

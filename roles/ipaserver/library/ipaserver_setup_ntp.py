@@ -32,10 +32,16 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: setup_ntp
-short description: 
-description:
+module: ipaserver_setup_ntp
+short description: Setup NTP
+description: Setup NTP
 options:
+  ntp_servers:
+    description: ntp servers to use
+    required: yes
+  ntp_pool:
+    description: ntp server pool to use
+    required: yes
 author:
     - Thomas Woerner
 '''

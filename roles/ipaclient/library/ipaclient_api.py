@@ -29,21 +29,23 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 DOCUMENTATION = '''
 ---
 module: ipaclient_api
-short description: Create temporary NSS database, call IPA API for remaining enrollment parts
+short description:
+  Create temporary NSS database, call IPA API for remaining enrollment parts
 description:
-Create temporary NSS database, call IPA API for remaining enrollment parts
+  Create temporary NSS database, call IPA API for remaining enrollment parts
 options:
+  servers:
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
   realm:
-    description: The Kerberos realm of an existing IPA deployment.
-    required: true
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: no
   debug:
     description: Turn on extra debugging
-    required: false
-    type: bool
-    default: no
+    required: yes
 author:
     - Thomas Woerner
 '''

@@ -38,23 +38,25 @@ description:
   Promote openldap.conf
 options:
   setup_kra:
-    description: 
-    required: no
+    description: Configure a dogtag KRA
+    required: yes
   subject_base:
-    description: 
-    required: yes
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
   ccache:
-    description: 
-    required: yes
+    description: The local ccache
+    required: no
   _top_dir:
-    description: 
-    required: yes
+    description: The installer _top_dir setting
+    required: no
   config_setup_ca:
-    description: 
-    required: yes
+    description: The config setup_ca setting
+    required: no
   config_master_host_name:
-    description: 
-    required: yes
+    description: The config master_host_name setting
+    required: no
 author:
     - Thomas Woerner
 '''

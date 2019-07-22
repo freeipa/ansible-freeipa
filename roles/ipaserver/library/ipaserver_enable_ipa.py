@@ -32,10 +32,19 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: enable_ipa
-short description:
-description:
+module: ipaserver_enable_ipa
+short description: Enable IPA
+description: Enable IPA
 options:
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  setup_dns:
+    description: Configure bind with our zone
+    required: no
+  setup_ca:
+    description: Configure a dogtag CA
+    required: no
 author:
     - Thomas Woerner
 '''

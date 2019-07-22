@@ -32,17 +32,46 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: setup_dns
-short description: 
-description:
+module: ipaserver_setup_dns
+short description: Setup DNS
+description: Setup DNS
 options:
+  ip_addresses:
+    description: List of Master Server IP Addresses
+    required: yes
+  domain:
+    description: Primary DNS domain of the IPA deployment
+    required: no
+  realm:
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
+    description: Fully qualified name of this host
+    required: no
   setup_dns:
+    description: Configure bind with our zone
+    required: no
   setup_ca:
+    description: Configure a dogtag CA
+    required: no
   zonemgr:
+    description: DNS zone manager e-mail address. Defaults to hostmaster@DOMAIN
+    required: yes
   forwarders:
+    description: Add DNS forwarders
+    required: no
   forward_policy:
+    description: DNS forwarding policy for global forwarders
+    required: yes
   no_dnssec_validation:
+    description: Disable DNSSEC validation
+    required: yes
+  dns_ip_addresses:
+    description: The dns ip_addresses setting
+    required: no
+  dns_reverse_zones:
+    description: The dns reverse_zones setting
+    required: no
 author:
     - Thomas Woerner
 '''

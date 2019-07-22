@@ -38,29 +38,31 @@ description:
   Setup KRB
 options:
   setup_ca:
-    description: 
+    description: Configure a dogtag CA
     required: yes
   setup_kra:
-    description: 
+    description: Configure a dogtag KRA
     required: yes
   no_pkinit:
-    description: 
+    description: Disable pkinit setup steps
     required: yes
   subject_base:
-    description: 
-    required: yes
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
   config_master_host_name:
-    description: 
-    required: yes
+    description: The config master_host_name setting
+    required: no
   ccache:
-    description: 
-    required: yes
+    description: The local ccache
+    required: no
   _pkinit_pkcs12_info:
-    description: 
+    description: The installer _pkinit_pkcs12_info setting
     required: yes
   _top_dir:
-    description: 
-    required: yes
+    description: The installer _top_dir setting
+    required: no
 author:
     - Thomas Woerner
 '''

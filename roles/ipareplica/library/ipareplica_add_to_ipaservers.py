@@ -38,20 +38,20 @@ description:
   Add to ipaservers
 options:
   setup_kra:
-    description: 
-    required: yes
+    description: Configure a dogtag KRA
+    required: no
   config_master_host_name:
-    description: 
-    required: yes
+    description: The config master_host_name setting
+    required: no
   ccache:
-    description: 
-    required: yes
+    description: The local ccache
+    required: no
   installer_ccache:
-    description: 
-    required: yes
+    description: The installer ccache setting
+    required: no
   _top_dir:
-    description: 
-    required: yes
+    description: The installer _top_dir setting
+    required: no
 author:
     - Thomas Woerner
 '''

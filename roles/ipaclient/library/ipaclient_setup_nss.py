@@ -36,103 +36,82 @@ description:
 Create IPA NSS database
 options:
   servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: true
-    type: list
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: true
+    description: Primary DNS domain of the IPA deployment
+    required: no
   realm:
-    description: The Kerberos realm of an existing IPA deployment.
-    required: true
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: no
   basedn:
-    description: The basedn of the IPA server (of the form dc=example,dc=com).
-    required: true
+    description: The basedn of the IPA server (of the form dc=example,dc=com)
+    required: no
   principal:
-    description: The authorized kerberos principal used to join the IPA realm.
-    required: false
+    description:
+      User Principal allowed to promote replicas and join IPA realm
+    required: yes
   subject_base:
-    description: The subject base, needed for certmonger
-    required: true
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
   ca_enabled:
-    description: Whether the Certificate Authority is enabled or not.
-    required: true
-    type: bool
-    default: no
+    description: Whether the Certificate Authority is enabled or not
+    required: no
   mkhomedir:
-    description: Whether to create home directories for users on their first login.
-    required: false
-    type: bool
-    default: no
+    description: Create home directories for users on their first login
+    required: yes
   on_master:
-    description: Whether the configuration is done on the master or not.
-    required: false
-    type: bool
-    default: no
-
+    description: Whether the configuration is done on the master or not
+    required: yes
+  dnsok:
+    description: The installer dnsok setting
+    required: yes
   enable_dns_updates:
-    description: Configures the machine to attempt dns updates when the ip address changes.
-    required: false
-    type: bool
-    default: no
+    description:
+      Configures the machine to attempt dns updates when the ip address
+      changes
+    required: yes
   all_ip_addresses:
-    description: All routable IP addresses configured on any interface will be added to DNS
-    required: false
-    type: bool
-    default: no
+    description:
+      All routable IP addresses configured on any interface will be added
+      to DNS
+    required: yes
   ip_addresses:
-    description: Specify IP addresses that should be added to DNS.
-    required: false
-    type: list
-    default: None
+    description: List of Master Server IP Addresses
+    required: yes
   request_cert:
-    description: request certificate for the machine
-    required: false
-    type: bool
-    default: no
+    description: Request certificate for the machine
+    required: yes
   preserve_sssd:
     description: Preserve old SSSD configuration if possible
-    required: false
-    type: bool
-    default: no
+    required: yes
   no_ssh:
     description: Do not configure OpenSSH client
-    required: false
-    type: bool
-    default: no
+    required: yes
   no_sshd:
     description: Do not configure OpenSSH server
-    required: false
-    type: bool
-    default: no
+    required: yes
   no_sudo:
     description: Do not configure SSSD as data source for sudo
-    required: false
-    type: bool
-    default: no
+    required: yes
   fixed_primary:
     description: Configure sssd to use fixed server as primary IPA server
-    required: false
-    type: bool
-    default: no
+    required: yes
   permit:
-    description: Disable access rules by default, permit all access.
-    required: false
-    type: bool
-    default: no
+    description: Disable access rules by default, permit all access
+    required: yes
   no_krb5_offline_passwords:
-    description: Configure SSSD not to store user password when the server is offline
-    required: false
-    type: bool
-    default: no
+    description:
+      Configure SSSD not to store user password when the server is offline
+    required: yes
   no_dns_sshfp:
     description: Do not automatically create DNS SSHFP records
-    required: false
-    type: bool
-    default: no
+    required: yes
 author:
     - Thomas Woerner
 '''

@@ -36,11 +36,13 @@ description:
   Setup firefox for IPA client
 options:
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: true
+    description: Primary DNS domain of the IPA deployment
+    required: no
   firefox_dir:
-    description: Specify directory where Firefox is installed (for example: '/usr/lib/firefox')
-    required: false
+    description:
+      Specify directory where Firefox is installed (for example
+      '/usr/lib/firefox')
+    required: yes
 author:
     - Thomas Woerner
 '''

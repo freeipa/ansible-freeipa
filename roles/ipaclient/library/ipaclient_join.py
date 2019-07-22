@@ -31,59 +31,58 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_join
-short description: Join a machine to an IPA realm and get a keytab for the host service principal
+short description:
+  Join a machine to an IPA realm and get a keytab for the host service
+  principal
 description:
-  Join a machine to an IPA realm and get a keytab for the host service principal
+  Join a machine to an IPA realm and get a keytab for the host service
+  principal
 options:
   servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: true
-    type: list
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: true
+    description: Primary DNS domain of the IPA deployment
+    required: no
   realm:
-    description: The Kerberos realm of an existing IPA deployment.
-    required: true
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: no
   kdc:
-    description: The name or address of the host running the KDC.
-    required: true
+    description: The name or address of the host running the KDC
+    required: no
   basedn:
-    description: The basedn of the IPA server (of the form dc=example,dc=com).
-    required: true
+    description: The basedn of the IPA server (of the form dc=example,dc=com)
+    required: no
   principal:
-    description: The authorized kerberos principal used to join the IPA realm.
-    required: false
+    description:
+      User Principal allowed to promote replicas and join IPA realm
+    required: yes
   password:
-    description: The password to use if not using Kerberos to authenticate.
-    required: false
-  admin_keytab:
-    description: The path to a local admin keytab.
-    required: false
+    description: Admin user kerberos password
+    required: yes
   keytab:
-    description: The path to a backed-up host keytab from previous enrollment.
-    required: false
+    description: Path to backed up keytab from previous enrollment
+    required: yes
+  admin_keytab:
+    description: The path to a local admin keytab
+    required: yes
   ca_cert_file:
-    description: A CA certificate to use. Do not acquire the IPA CA certificate via automated means.
-    required: false
+    description:
+      A CA certificate to use. Do not acquire the IPA CA certificate via
+      automated means
+    required: yes
   force_join:
-    description: Force enrolling the host even if host entry exists.
-    required: false
-    type: bool
-    default: no
+    description: Force client enrollment even if already enrolled
+    required: yes
   kinit_attempts:
-    description: Repeat the request for host Kerberos ticket X times.
-    required: false
-    type: int
-    default: 5
+    description: Repeat the request for host Kerberos ticket X times
+    required: yes
   debug:
-    description: Enable debug mode.
-    required: false
-    type: bool
-    default: no
+    description: Turn on extra debugging
+    required: yes
 author:
     - Thomas Woerner
 '''

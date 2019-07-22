@@ -33,28 +33,36 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_enable_ipa
-short description:
+short description: Enable IPA
 description: Enable IPA
   Enable IPA
 options:
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  hidden_replica:
+    description: Install a hidden replica
+    required: yes
   subject_base:
-    description: The certificate subject base (default O=<realm-name>).
-    required: yes
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
   ccache:
-    description: The installation specific ccache file.
-    required: yes
+    description: The local ccache
+    required: no
   _top_dir:
-    description: The temporary top directory used for the installation.
-    required: yes
+    description: The installer _top_dir setting
+    required: no
   setup_ca:
     description: Configure a dogtag CA
-    required: yes
+    required: no
   setup_kra:
-    description: Configure KRA
-    required: yes
+    description: Configure a dogtag KRA
+    required: no
   config_master_host_name:
-    description: The master host name
-    required: yes
+    description: The config master_host_name setting
+    required: no
 author:
     - Thomas Woerner
 '''

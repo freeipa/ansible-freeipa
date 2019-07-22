@@ -31,32 +31,30 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_test_keytab
-short description: Test if the krb5.keytab on the machine is valid and can be used.
+short description:
+  Test if the krb5.keytab on the machine is valid and can be used.
 description:
   Test if the krb5.keytab on the machine is valid and can be used.
   A temporary krb5.conf file will be generated to not fail on an invalid one.
 options:
   servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: true
-    type: list
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: true
+    description: Primary DNS domain of the IPA deployment
+    required: no
   realm:
-    description: The Kerberos realm of an existing IPA deployment.
-    required: true
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: no
   kdc:
-    description: The name or address of the host running the KDC.
-    required: true
+    description: The name or address of the host running the KDC
+    required: no
   kinit_attempts:
-    description: Repeat the request for host Kerberos ticket X times.
-    required: false
-    type: int
-    default: 5
+    description: Repeat the request for host Kerberos ticket X times
+    required: yes
 author:
     - Thomas Woerner
 '''

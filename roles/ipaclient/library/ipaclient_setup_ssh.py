@@ -36,29 +36,20 @@ description:
   Configure ssh and sshd for IPA client
 options:
   servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: true
-    type: list
-  ssh:
-    description: Configure OpenSSH client
-    required: false
-    type: bool
-    default: no
-  trust_sshfp:
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
+  no_ssh:
+    description: Do not configure OpenSSH client
+    required: yes
+  ssh_trust_dns:
     description: Configure OpenSSH client to trust DNS SSHFP records
-    required: false
-    type: bool
-    default: no
-  sshd:
-    description: Configure OpenSSH server
-    required: false
-    type: bool
-    default: no
+    required: yes
+  no_sshd:
+    description: Do not configure OpenSSH server
+    required: yes
   sssd:
-    description: Configure SSSD server
-    required: false
-    type: bool
-    default: no
+    description: The installer sssd setting
+    required: yes
 author:
     - Thomas Woerner
 '''

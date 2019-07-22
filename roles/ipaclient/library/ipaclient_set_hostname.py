@@ -36,8 +36,8 @@ description:
   Backup and set hostname
 options:
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: no
 author:
     - Thomas Woerner
 '''

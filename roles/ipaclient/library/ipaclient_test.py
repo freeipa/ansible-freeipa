@@ -35,84 +35,70 @@ short description: Tries to discover IPA server
 description:
   Tries to discover IPA server using DNS or host name
 options:
-  servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: false
-    type: list
-    default: []
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: false
+    description: Primary DNS domain of the IPA deployment
+    required: yes
+  servers:
+    description: Fully qualified name of IPA servers to enroll to
+    required: yes
   realm:
-    description:  The Kerberos realm of an existing IPA deployment.
-    required: false
+    description: Kerberos realm name of the IPA deployment
+    required: yes
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: false
+    description: Fully qualified name of this host
+    required: yes
   ntp_servers:
-    description: List of NTP servers to use
-    required: false
-    type: list
-    default: []
+    description: ntp servers to use
+    required: yes
   ntp_pool:
     description: ntp server pool to use
-    required: false
+    required: yes
   no_ntp:
-    description: Do not sync time and do not detect time servers
-    required: false
-    default: false
-    type: bool
-    default: no
+    description: Do not configure ntp
+    required: yes
   force_ntpd:
-    description: Stop and disable any time&date synchronization services besides ntpd. Deprecated since 4.7.
-    requried: false
-    type: bool
-    default: no
+    description:
+      Stop and disable any time&date synchronization services besides ntpd
+      Deprecated since 4.7
+    required: yes
   nisdomain:
-    description: NIS domain name
-    required: false
+    description: The NIS domain name
+    required: yes
   no_nisdomain:
     description: Do not configure NIS domain name
-    required: false
-    type: bool
-    default: no
+    required: yes
   kinit_attempts:
-    description: Repeat the request for host Kerberos ticket X times.
-    required: false
-    type: int
-    default: 5
+    description: Repeat the request for host Kerberos ticket X times
+    required: yes
   ca_cert_files:
-    description: CA certificates to use.
-    required: false
+    description:
+      List of files containing CA certificates for the service certificate
+      files
+    required: yes
   configure_firefox:
     description: Configure Firefox to use IPA domain credentials
-    required: false
-    type: bool
-    default: no
+    required: yes
   firefox_dir:
-    description: Specify directory where Firefox is installed (for example: '/usr/lib/firefox')
-    required: false
+    description:
+      Specify directory where Firefox is installed (for example
+      '/usr/lib/firefox')
+    required: yes
   ip_addresses:
-    description: All routable IP addresses configured on any interface will be added to DNS.
-    required: false
-    type: bool
-    default: no
+    description: List of Master Server IP Addresses
+    required: yes
   all_ip_addresses:
-    description: All routable IP addresses configured on any interface will be added to DNS.
-    required: false
-    type: bool
-    default: no
+    description:
+      All routable IP addresses configured on any interface will be added
+      to DNS
+    required: yes
   on_master:
-    description: IPA client installation on IPA server
-    required: false
-    default: false
-    type: bool
-    default: no
+    description: Whether the configuration is done on the master or not
+    required: yes
   enable_dns_updates:
-    description: Configures the machine to attempt dns updates when the ip address changes.
-    required: false
-    type: bool
-    default: no
+    description:
+      Configures the machine to attempt dns updates when the ip address
+      changes
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -194,7 +180,9 @@ ntp_servers:
   type: list
   sample: ["ntp.example.com"]
 ipa_python_version:
-  description: The IPA python version as a number: <major version>*10000+<minor version>*100+<release>
+  description:
+  - The IPA python version as a number:
+  - <major version>*10000+<minor version>*100+<release>
   returned: always
   type: int
   sample: 040400

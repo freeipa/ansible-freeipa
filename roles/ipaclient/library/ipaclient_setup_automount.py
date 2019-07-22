@@ -36,12 +36,14 @@ description:
   Setup automount for IPA client
 options:
   servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: true
-    type: list
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
+  sssd:
+    description: The installer sssd setting
+    required: yes
   automount_location:
-    description: Automount location
-    required: false
+    description: The automount location
+    required: yes
 author:
     - Thomas Woerner
 '''
