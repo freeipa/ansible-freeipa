@@ -48,6 +48,7 @@ import os
 import sys
 import six
 import inspect
+import random
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (

@@ -22,11 +22,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+__all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
+           "ipa_generate_password", "run", "ScriptError", "services",
+           "tasks", "errors", "x509", "DOMAIN_LEVEL_0", "MIN_DOMAIN_LEVEL",
+           "validate_domain_name",
+           "no_matching_interface_for_ip_address_warning",
+           "check_zone_overlap", "timeconf", "ntpinstance", "adtrust",
+           "bindinstance", "ca", "dns", "httpinstance", "installutils",
+           "kra", "krbinstance", "otpdinstance", "custodiainstance",
+           "replication", "service", "sysupgrade", "IPA_MODULES",
+           "BadHostError", "get_fqdn", "get_server_ip_address",
+           "is_ipa_configured", "load_pkcs12", "read_password", "verify_fqdn",
+           "update_hosts_file", "check_dirsrv", "validate_admin_password",
+           "validate_dm_password", "read_cache", "write_cache",
+           "adtrustinstance", "IPAAPI_USER", "sync_time", "PKIIniLoader",
+           "default_subject_base", "default_ca_subject_dn",
+           "check_ldap_conf"]
+
 import sys
 import logging
-#import fcntl
-import inspect
 from contextlib import contextmanager as contextlib_contextmanager
 
 
@@ -43,20 +57,14 @@ else:
 if NUM_VERSION >= 40500:
     # IPA version >= 4.5
 
-    import errno
-    import pickle
-    import shutil
-    import tempfile
-    import textwrap
-    import random
-
-    if NUM_VERSION >= 40690:
-        from ipaclient.install.ipachangeconf import IPAChangeConf
+    from ipaclient.install.ipachangeconf import IPAChangeConf
     from ipalib.install import certmonger, sysrestore
     from ipapython import ipautil
     from ipapython.ipa_log_manager import standard_logging_setup
-    if NUM_VERSION < 40600:
+    try:
         from ipapython.ipa_log_manager import root_logger
+    except ImportError:
+        root_logger = None
     from ipapython.ipautil import (
         ipa_generate_password, run)
     from ipapython.admintool import ScriptError

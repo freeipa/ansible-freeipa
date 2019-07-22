@@ -22,6 +22,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+__all__ = ["gssapi", "version", "ipadiscovery", "api", "errors", "x509",
+           "constants", "sysrestore", "certmonger", "certstore",
+           "delete_persistent_client_session_data", "ScriptError",
+           "CheckedIPAddress", "validate_domain_name", "normalize_hostname",
+           "validate_hostname", "services", "tasks", "CalledProcessError",
+           "write_tmp_file", "ipa_generate_password", "DN", "kinit_keytab",
+           "kinit_password", "GSSError", "CLIENT_INSTALL_ERROR",
+           "is_ipa_client_installed", "CLIENT_ALREADY_CONFIGURED",
+           "nssldap_exists", "remove_file", "check_ip_addresses",
+           "print_port_conf_info", "configure_ipa_conf", "purge_host_keytab",
+           "configure_sssd_conf", "realm_to_suffix", "run", "timeconf",
+           "serialization", "configure_krb5_conf", "get_ca_certs",
+           "SECURE_PATH", "get_server_connection_interface",
+           "configure_nsswitch_database", "disable_ra", "client_dns",
+           "configure_certmonger", "update_ssh_keys",
+           "configure_openldap_conf", "hardcode_ldap_server",
+           "get_certs_from_ldap", "save_state", "create_ipa_nssdb",
+           "configure_nisdomain", "configure_ldap_conf",
+           "configure_nslcd_conf", "nosssd_files", "configure_ssh_config",
+           "configure_sshd_config", "configure_automount",
+           "configure_firefox", "sync_time", "check_ldap_conf",
+           "sssd_enable_ifp"]
+
 from ipapython.version import NUM_VERSION, VERSION
 
 if NUM_VERSION < 30201:
