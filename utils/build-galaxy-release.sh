@@ -6,7 +6,7 @@ sed -i -e "s/version: .*/version: \"$galaxy_version\"/" galaxy.yml
 
 find . -name "*~" -exec rm {} \;
 
-sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.freeipa.ansible_freeipa.plugins.module_utils.ansible_freeipa_module/" *.py
+sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.freeipa.ansible_freeipa.plugins.module_utils.ansible_freeipa_module/" plugins/modules/*.py
 
 cd plugins/module_utils && {
     ln -s ../../roles/ipa*/module_utils/*.py .
