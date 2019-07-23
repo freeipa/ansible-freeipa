@@ -1,0 +1,2 @@
+# vars/Debian.yml
+ipaclient_packages: [ "freeipa-client" ]
