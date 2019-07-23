@@ -36,11 +36,11 @@ description:
   Setup NIS for IPA client
 options:
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: true
+    description: Primary DNS domain of the IPA deployment
+    required: no
   nisdomain:
-    description: NIS domain name
-    required: false
+    description: The NIS domain name
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -61,13 +61,14 @@ from ansible.module_utils.ansible_ipa_client import (
     options,  sysrestore, paths, configure_nisdomain
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             domain=dict(required=True),
             nisdomain=dict(required=False),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -77,7 +78,7 @@ def main():
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
 
     argspec = inspect.getargspec(configure_nisdomain)
-    if not "statestore" in argspec.args:
+    if "statestore" not in argspec.args:
         # NUM_VERSION < 40500:
         configure_nisdomain(options=options, domain=domain)
     else:
@@ -85,6 +86,7 @@ def main():
                             statestore=statestore)
 
     module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

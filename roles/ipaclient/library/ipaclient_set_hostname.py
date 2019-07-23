@@ -36,8 +36,8 @@ description:
   Backup and set hostname
 options:
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: no
 author:
     - Thomas Woerner
 '''
@@ -60,10 +60,10 @@ from ansible.module_utils.ansible_ipa_client import (
 
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             hostname=dict(required=True),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True

@@ -52,11 +52,12 @@ from ansible.module_utils.ansible_ipa_replica import (
     AnsibleModuleLog, redirect_stdout, configure_certmonger
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
@@ -73,6 +74,7 @@ def main():
     # done #
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

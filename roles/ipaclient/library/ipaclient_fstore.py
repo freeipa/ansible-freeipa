@@ -37,7 +37,7 @@ Backup files using IPA client sysrestore
 options:
   backup:
     description: File to backup
-    required: true
+    required: no
 author:
     - Thomas Woerner
 '''
@@ -56,9 +56,10 @@ from ansible.module_utils.ansible_ipa_client import (
     paths, sysrestore
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             backup=dict(required=True),
         ),
     )
@@ -72,6 +73,7 @@ def main():
         module.exit_json(changed=True)
 
     module.exit_json(changed=False)
+
 
 if __name__ == '__main__':
     main()

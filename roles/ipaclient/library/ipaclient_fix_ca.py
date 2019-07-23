@@ -34,20 +34,19 @@ description:
 Repair Fix IPA ca certificate
 options:
   servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: true
-    type: list
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
   realm:
-    description: The Kerberos realm of an existing IPA deployment.
-    required: true
+    description: Kerberos realm name of the IPA deployment
+    required: no
   basedn:
-    description: The basedn of the IPA server (of the form dc=example,dc=com).
-    required: true
+    description: The basedn of the IPA server (of the form dc=example,dc=com)
+    required: no
   allow_repair:
-    description: Allow repair of already joined hosts. Contrary to ipaclient_force_join the host entry will not be changed on the server.
-    required: true
-    type: bool
-    default: no
+    description:
+      Allow repair of already joined hosts. Contrary to ipaclient_force_join
+      the host entry will not be changed on the server
+    required: no
 author:
     - Thomas Woerner
 '''
@@ -72,9 +71,10 @@ from ansible.module_utils.ansible_ipa_client import (
     get_ca_certs, errors
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             realm=dict(required=True),
             basedn=dict(required=True),
@@ -101,7 +101,7 @@ def main():
     if not os.path.exists(paths.IPA_CA_CRT):
         if not allow_repair:
             module.fail_json(
-                msg="%s missing, enable allow_repair to fix it." % \
+                msg="%s missing, enable allow_repair to fix it." %
                 paths.IPA_CA_CRT)
 
         # Repair missing ca.crt file
@@ -120,6 +120,7 @@ def main():
             module.fail_json(msg="Cannot obtain CA certificate\n%s" % e)
 
     module.exit_json(changed=changed)
+
 
 if __name__ == '__main__':
     main()

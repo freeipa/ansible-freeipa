@@ -32,10 +32,28 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: setup_kra
-short description: 
-description:
+module: ipaserver_setup_kra
+short description: Setup KRA
+description: Setup KRA
 options:
+  dm_password:
+    description: Directory Manager password
+    required: no
+  hostname:
+    description: Fully qualified name of this host
+    required: no
+  setup_ca:
+    description: Configure a dogtag CA
+    required: no
+  setup_kra:
+    description: Configure a dogtag KRA
+    required: no
+  realm:
+    description: Kerberos realm name of the IPA deployment
+    required: no
+  pki_config_override:
+    description: Path to ini file with config overrides
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -52,9 +70,10 @@ from ansible.module_utils.ansible_ipa_server import (
     api_Backend_ldap2, redirect_stdout, api, custodiainstance, kra
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             # basic
             dm_password=dict(required=True, no_log=True),
             hostname=dict(required=True),
@@ -100,6 +119,7 @@ def main():
     # done ##########################################################
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

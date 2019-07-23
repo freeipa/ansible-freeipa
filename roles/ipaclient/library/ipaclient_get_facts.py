@@ -4,7 +4,10 @@
 import os
 import re
 import six
-from six.moves.configparser import RawConfigParser
+try:
+    from six.moves.configparser import RawConfigParser
+except ImportError:
+    from ConfigParser import RawConfigParser
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -49,6 +52,7 @@ def is_ntpd_configured():
     except IOError:
         return False
 
+
 def is_dns_configured():
     # dns is configured when /etc/named.conf contains the line
     # dyndb "ipa" "/usr/lib64/bind/ldap.so" {
@@ -63,19 +67,23 @@ def is_dns_configured():
     except IOError:
         return False
 
+
 def is_dogtag_configured(subsystem):
-    # ca / kra is configured when the directory /var/lib/pki/pki-tomcat/[ca|kra]
-    # exists
-    available_subsystems = { 'ca', 'kra' }
+    # ca / kra is configured when the directory
+    # /var/lib/pki/pki-tomcat/[ca|kra] # exists
+    available_subsystems = {'ca', 'kra'}
     assert subsystem in available_subsystems
 
     return os.path.isdir(os.path.join(VAR_LIB_PKI_TOMCAT, subsystem))
 
+
 def is_ca_configured():
     return is_dogtag_configured('ca')
 
+
 def is_kra_configured():
     return is_dogtag_configured('kra')
+
 
 def is_client_configured():
     # IPA Client is configured when /etc/ipa/default.conf exists
@@ -84,11 +92,13 @@ def is_client_configured():
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     return (os.path.isfile(paths.IPA_DEFAULT_CONF) and fstore.has_files())
 
+
 def is_server_configured():
     # IPA server is configured when /etc/ipa/default.conf exists
     # and /var/lib/ipa/sysrestore/sysrestore.state exists
     return (os.path.isfile(paths.IPA_DEFAULT_CONF) and
             os.path.isfile(SERVER_SYSRESTORE_STATE))
+
 
 def get_ipa_conf():
     # Extract basedn, realm and domain from /etc/ipa/default.conf
@@ -103,6 +113,7 @@ def get_ipa_conf():
         domain=domain
         )
 
+
 def get_ipa_version():
     try:
         from ipapython import version
@@ -115,7 +126,8 @@ def get_ipa_version():
             # 4.4.90.201610191151GITd852c00
             # 4.4.90.dev201701071308+git2e43db1
             # 4.6.90.pre2
-            if part.startswith('dev') or part.startswith('pre') or 'GIT' in part:
+            if part.startswith('dev') or part.startswith('pre') or \
+               'GIT' in part:
                 version_info.append(part)
             else:
                 version_info.append(int(part))
@@ -128,9 +140,10 @@ def get_ipa_version():
             version_info=version_info
             )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(),
+        argument_spec=dict(),
         supports_check_mode=True
     )
 
@@ -138,7 +151,7 @@ def main():
     # check mode is supported
 
     facts = dict(
-        packages= dict(
+        packages=dict(
             ipalib=HAS_IPALIB,
             ipaserver=HAS_IPASERVER,
         ),
@@ -157,7 +170,7 @@ def main():
             facts['configured']['client'] = True
 
             facts['version'] = get_ipa_version()
-            for key,value in six.iteritems(get_ipa_conf()):
+            for key, value in six.iteritems(get_ipa_conf()):
                 facts[key] = value
 
     if HAS_IPASERVER:
@@ -172,6 +185,7 @@ def main():
         changed=False,
         ansible_facts=dict(ipa=facts)
         )
+
 
 if __name__ == '__main__':
     main()

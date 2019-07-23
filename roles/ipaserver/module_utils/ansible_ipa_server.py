@@ -22,11 +22,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+__all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
+           "ipa_generate_password", "run", "ScriptError", "services",
+           "tasks", "errors", "x509", "DOMAIN_LEVEL_0", "MIN_DOMAIN_LEVEL",
+           "validate_domain_name",
+           "no_matching_interface_for_ip_address_warning",
+           "check_zone_overlap", "timeconf", "ntpinstance", "adtrust",
+           "bindinstance", "ca", "dns", "httpinstance", "installutils",
+           "kra", "krbinstance", "otpdinstance", "custodiainstance",
+           "replication", "service", "sysupgrade", "IPA_MODULES",
+           "BadHostError", "get_fqdn", "get_server_ip_address",
+           "is_ipa_configured", "load_pkcs12", "read_password", "verify_fqdn",
+           "update_hosts_file", "check_dirsrv", "validate_admin_password",
+           "validate_dm_password", "read_cache", "write_cache",
+           "adtrustinstance", "IPAAPI_USER", "sync_time", "PKIIniLoader",
+           "default_subject_base", "default_ca_subject_dn",
+           "check_ldap_conf"]
+
 import sys
 import logging
-#import fcntl
-import inspect
 from contextlib import contextmanager as contextlib_contextmanager
 
 
@@ -34,7 +48,7 @@ from ipapython.version import NUM_VERSION, VERSION
 
 if NUM_VERSION < 30201:
     # See ipapython/version.py
-    IPA_MAJOR,IPA_MINOR,IPA_RELEASE = [ int(x) for x in VERSION.split(".", 2) ]
+    IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in VERSION.split(".", 2)]
     IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
 else:
     IPA_PYTHON_VERSION = NUM_VERSION
@@ -43,20 +57,14 @@ else:
 if NUM_VERSION >= 40500:
     # IPA version >= 4.5
 
-    import errno
-    import pickle
-    import shutil
-    import tempfile
-    import textwrap
-    import random
-
-    if NUM_VERSION >= 40690:
-        from ipaclient.install.ipachangeconf import IPAChangeConf
+    from ipaclient.install.ipachangeconf import IPAChangeConf
     from ipalib.install import certmonger, sysrestore
     from ipapython import ipautil
     from ipapython.ipa_log_manager import standard_logging_setup
-    if NUM_VERSION < 40600:
+    try:
         from ipapython.ipa_log_manager import root_logger
+    except ImportError:
+        root_logger = None
     from ipapython.ipautil import (
         ipa_generate_password, run)
     from ipapython.admintool import ScriptError
@@ -136,7 +144,7 @@ else:
 
 
 logger = logging.getLogger("ipa-server-install")
-#logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 standard_logging_setup(
     paths.IPASERVER_INSTALL_LOG, verbose=False, debug=False,
     filemode='a', console_format='%(message)s')
@@ -171,7 +179,7 @@ class AnsibleModuleLog():
         pass
 
     def log(self, msg):
-        #self.write(msg+"\n")
+        # self.write(msg+"\n")
         self.write(msg)
 
     def debug(self, msg):
@@ -182,24 +190,24 @@ class AnsibleModuleLog():
 
     def write(self, msg):
         self.module.debug(msg)
-        #self.module.warn(msg)
+        # self.module.warn(msg)
 
 
 class options_obj(object):
     def __init__(self):
         self._replica_install = False
-        self.dnssec_master = False # future unknown
-        self.disable_dnssec_master = False # future unknown
-        self.domainlevel = MAX_DOMAIN_LEVEL # deprecated
-        self.domain_level = self.domainlevel # deprecated
+        self.dnssec_master = False  # future unknown
+        self.disable_dnssec_master = False  # future unknown
+        self.domainlevel = MAX_DOMAIN_LEVEL  # deprecated
+        self.domain_level = self.domainlevel  # deprecated
         self.interactive = False
         self.unattended = not self.interactive
 
-    #def __getattribute__(self, attr):
+    # def __getattribute__(self, attr):
     #    logger.info(" <-- Accessing options.%s" % attr)
     #    return super(options_obj, self).__getattribute__(attr)
 
-    #def __getattr__(self, attr):
+    # def __getattr__(self, attr):
     #    logger.info(" --> Adding missing options.%s" % attr)
     #    setattr(self, attr, None)
     #    return getattr(self, attr)
@@ -246,15 +254,19 @@ options.add_agents = False
 # no_msdcs is deprecated
 options.no_msdcs = False
 
+# For pylint
+options.external_cert_files = None
+options.dirsrv_cert_files = None
+
 # Uninstall
 options.ignore_topology_disconnect = False
 options.ignore_last_of_role = False
 
+
 def api_Backend_ldap2(host_name, setup_ca, connect=False):
     # we are sure we have the configuration file ready.
     cfg = dict(context='installer', confdir=paths.ETC_IPA, in_server=True,
-               host=host_name,
-    )
+               host=host_name)
     if setup_ca:
         # we have an IPA-integrated CA
         cfg['ca_host'] = host_name
@@ -283,7 +295,7 @@ def ds_init_info(ansible_log, fstore, domainlevel, dirsrv_config_file,
         with redirect_stdout(ansible_log):
             ds.init_info(realm_name, host_name, domain_name, dm_password,
                          subject_base, ca_subject, idstart, idmax,
-                         #hbac_allow=not no_hbac_allow,
+                         # hbac_allow=not no_hbac_allow,
                          _dirsrv_pkcs12_info, setup_pkinit=not no_pkinit)
     else:
         ds = dsinstance.DsInstance(fstore=fstore, domainlevel=domainlevel)
@@ -296,9 +308,10 @@ def ds_init_info(ansible_log, fstore, domainlevel, dirsrv_config_file,
 
     return ds
 
+
 def ansible_module_get_parsed_ip_addresses(ansible_module,
                                            param='ip_addresses'):
-    ip_addrs = [ ]
+    ip_addrs = []
     for ip in ansible_module.params.get(param):
         try:
             ip_parsed = ipautil.CheckedIPAddress(ip)

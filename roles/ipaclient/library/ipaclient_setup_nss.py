@@ -36,103 +36,82 @@ description:
 Create IPA NSS database
 options:
   servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: true
-    type: list
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: true
+    description: Primary DNS domain of the IPA deployment
+    required: no
   realm:
-    description: The Kerberos realm of an existing IPA deployment.
-    required: true
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: no
   basedn:
-    description: The basedn of the IPA server (of the form dc=example,dc=com).
-    required: true
+    description: The basedn of the IPA server (of the form dc=example,dc=com)
+    required: no
   principal:
-    description: The authorized kerberos principal used to join the IPA realm.
-    required: false
+    description:
+      User Principal allowed to promote replicas and join IPA realm
+    required: yes
   subject_base:
-    description: The subject base, needed for certmonger
-    required: true
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
   ca_enabled:
-    description: Whether the Certificate Authority is enabled or not.
-    required: true
-    type: bool
-    default: no
+    description: Whether the Certificate Authority is enabled or not
+    required: no
   mkhomedir:
-    description: Whether to create home directories for users on their first login.
-    required: false
-    type: bool
-    default: no
+    description: Create home directories for users on their first login
+    required: yes
   on_master:
-    description: Whether the configuration is done on the master or not.
-    required: false
-    type: bool
-    default: no
-
+    description: Whether the configuration is done on the master or not
+    required: yes
+  dnsok:
+    description: The installer dnsok setting
+    required: yes
   enable_dns_updates:
-    description: Configures the machine to attempt dns updates when the ip address changes.
-    required: false
-    type: bool
-    default: no
+    description:
+      Configures the machine to attempt dns updates when the ip address
+      changes
+    required: yes
   all_ip_addresses:
-    description: All routable IP addresses configured on any interface will be added to DNS
-    required: false
-    type: bool
-    default: no
+    description:
+      All routable IP addresses configured on any interface will be added
+      to DNS
+    required: yes
   ip_addresses:
-    description: Specify IP addresses that should be added to DNS.
-    required: false
-    type: list
-    default: None
+    description: List of Master Server IP Addresses
+    required: yes
   request_cert:
-    description: request certificate for the machine
-    required: false
-    type: bool
-    default: no
+    description: Request certificate for the machine
+    required: yes
   preserve_sssd:
     description: Preserve old SSSD configuration if possible
-    required: false
-    type: bool
-    default: no
+    required: yes
   no_ssh:
     description: Do not configure OpenSSH client
-    required: false
-    type: bool
-    default: no
+    required: yes
   no_sshd:
     description: Do not configure OpenSSH server
-    required: false
-    type: bool
-    default: no
+    required: yes
   no_sudo:
     description: Do not configure SSSD as data source for sudo
-    required: false
-    type: bool
-    default: no
+    required: yes
   fixed_primary:
     description: Configure sssd to use fixed server as primary IPA server
-    required: false
-    type: bool
-    default: no
+    required: yes
   permit:
-    description: Disable access rules by default, permit all access.
-    required: false
-    type: bool
-    default: no
+    description: Disable access rules by default, permit all access
+    required: yes
   no_krb5_offline_passwords:
-    description: Configure SSSD not to store user password when the server is offline
-    required: false
-    type: bool
-    default: no
+    description:
+      Configure SSSD not to store user password when the server is offline
+    required: yes
   no_dns_sshfp:
     description: Do not automatically create DNS SSHFP records
-    required: false
-    type: bool
-    default: no
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -167,9 +146,10 @@ from ansible.module_utils.ansible_ipa_client import (
     nosssd_files, configure_openldap_conf, hardcode_ldap_server
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             domain=dict(required=True),
             realm=dict(required=True),
@@ -195,7 +175,7 @@ def main():
             no_krb5_offline_passwords=dict(required=False, type='bool'),
             no_dns_sshfp=dict(required=False, type='bool', default=False),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -251,7 +231,7 @@ def main():
     api.Backend.rpcclient.connect()
     try:
         api.Backend.rpcclient.forward('ping')
-    except errors.KerberosError as e:
+    except errors.KerberosError:
         # Cannot connect to the server due to Kerberos error, trying with
         # delegate=True
         api.Backend.rpcclient.disconnect()
@@ -272,8 +252,8 @@ def main():
 
         # Get CA certificates from the certificate store
         try:
-            ca_certs = get_certs_from_ldap(cli_server[0], cli_basedn, cli_realm,
-                                           ca_enabled)
+            ca_certs = get_certs_from_ldap(cli_server[0], cli_basedn,
+                                           cli_realm, ca_enabled)
         except errors.NoCertificateError:
             if ca_enabled:
                 ca_subject = DN(('CN', 'Certificate Authority'), subject_base)
@@ -281,7 +261,8 @@ def main():
                 ca_subject = None
             ca_certs = certstore.make_compat_ca_certs(ca_certs, cli_realm,
                                                       ca_subject)
-        ca_certs_trust = [(c, n, certstore.key_policy_to_trust_flags(t, True, u))
+        ca_certs_trust = [(c, n,
+                           certstore.key_policy_to_trust_flags(t, True, u))
                           for (c, n, t, u) in ca_certs]
 
         if hasattr(paths, "KDC_CA_BUNDLE_PEM"):
@@ -303,12 +284,13 @@ def main():
         for cert, nickname, trust_flags in ca_certs_trust:
             try:
                 ipa_db.add_cert(cert, nickname, trust_flags)
-            except CalledProcessError as e:
+            except CalledProcessError:
                 raise ScriptError(
                     "Failed to add %s to the IPA NSS database." % nickname,
                     rval=CLIENT_INSTALL_ERROR)
 
-        # Add the CA certificates to the platform-dependant systemwide CA store
+        # Add the CA certificates to the platform-dependant systemwide CA
+        # store
         tasks.insert_ca_certs_into_systemwide_ca_store(ca_certs)
 
         if not options.on_master:
@@ -361,7 +343,8 @@ def main():
             except Exception:
                 if not options.sssd:
                     logger.warning(
-                        "Failed to configure automatic startup of the %s daemon",
+                        "Failed to configure automatic startup of the %s "
+                        "daemon",
                         nscd.service_name)
                     logger.info(
                         "Caching of users/groups will not be "
@@ -434,15 +417,15 @@ def main():
                     sssd.enable()
                 except CalledProcessError as e:
                     logger.warning(
-                        "Failed to enable automatic startup of the SSSD daemon: "
-                        "%s", e)
+                        "Failed to enable automatic startup of the SSSD "
+                        "daemon: %s", e)
 
             if not options.sssd:
                 tasks.modify_pam_to_use_krb5(statestore)
                 logger.info("Kerberos 5 enabled")
 
-            # Update non-SSSD LDAP configuration after authconfig calls as it would
-            # change its configuration otherways
+            # Update non-SSSD LDAP configuration after authconfig calls as it
+            # would change its configuration otherways
             if not options.sssd:
                 for configurer in [configure_ldap_conf, configure_nslcd_conf]:
                     (retcode, conf, filenames) = configurer(
@@ -477,11 +460,15 @@ def main():
                 # It can sometimes take a few seconds to connect to the remote
                 # provider.
                 # Particulary, SSSD might take longer than 6-8 seconds.
+                if hasattr(paths, "GETENT"):
+                    getent_cmd = paths.GETENT
+                else:
+                    getent_cmd = '/usr/bin/getent'
                 while n < 10 and not found:
                     try:
-                        ipautil.run([paths.GETENT, "passwd", user])
+                        ipautil.run([getent_cmd, "passwd", user])
                         found = True
-                    except Exception as e:
+                    except Exception:
                         time.sleep(1)
                         n = n + 1
 
@@ -509,6 +496,7 @@ def main():
 
     module.exit_json(changed=True,
                      ca_enabled_ra=ca_enabled)
+
 
 if __name__ == '__main__':
     main()

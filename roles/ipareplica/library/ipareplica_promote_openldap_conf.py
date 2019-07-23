@@ -38,23 +38,25 @@ description:
   Promote openldap.conf
 options:
   setup_kra:
-    description: 
-    required: no
+    description: Configure a dogtag KRA
+    required: yes
   subject_base:
-    description: 
-    required: yes
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
   ccache:
-    description: 
-    required: yes
+    description: The local ccache
+    required: no
   _top_dir:
-    description: 
-    required: yes
+    description: The installer _top_dir setting
+    required: no
   config_setup_ca:
-    description: 
-    required: yes
+    description: The config setup_ca setting
+    required: no
   config_master_host_name:
-    description: 
-    required: yes
+    description: The config master_host_name setting
+    required: no
 author:
     - Thomas Woerner
 '''
@@ -69,25 +71,26 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
-    AnsibleModuleLog, installer, DN, paths, # sysrestore,
+    AnsibleModuleLog, installer, DN, paths,
     gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
     gen_ReplicaConfig, gen_remote_api, redirect_stdout, promote_openldap_conf
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            ### server ###
+        argument_spec=dict(
+            # server
             setup_kra=dict(required=False, type='bool'),
-            ### certificate system ###
+            # certificate system
             subject_base=dict(required=True),
-            ### additional ###
+            # additional
             ccache=dict(required=True),
-            _top_dir = dict(required=True),
+            _top_dir=dict(required=True),
             config_setup_ca=dict(required=True, type='bool'),
             config_master_host_name=dict(required=True),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
@@ -96,19 +99,20 @@ def main():
     # get parameters #
 
     options = installer
-    ### server ###
+    # server
     options.setup_kra = ansible_module.params.get('setup_kra')
-    ### certificate system ###
+    # certificate system
     options.subject_base = ansible_module.params.get('subject_base')
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
-    ### additional ###
+    # additional
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
     options._top_dir = ansible_module.params.get('_top_dir')
     config_setup_ca = ansible_module.params.get('config_setup_ca')
     installer.setup_ca = config_setup_ca
-    config_master_host_name = ansible_module.params.get('config_master_host_name')
+    config_master_host_name = ansible_module.params.get(
+        'config_master_host_name')
 
     # init #
 
@@ -135,6 +139,7 @@ def main():
     # done #
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

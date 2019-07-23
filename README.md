@@ -88,36 +88,15 @@ There are RPM packages available for Fedora 29+. These are installing the roles 
 
 **Ansible galaxy**
 
-Please use the git repo or the RPM for now or create links for roles and plugins to the `~/.ansible/` directories.
+This command will get the whole collection from galaxy:
 
-There are currently some limitations with Ansible collections that are making the use of ansible-freeipa roles with galaxy not simply possible. Modules and module_utils that are part of a role need to be placed in the global `plugins/modules` and `plugins/module_utils` directory. Modules used in the roles can be found after adding the `freeipa.ansible_freeipa.` prefix, but the also needed module_utils can not be found. Not in the global `plugins/module_utils` directory and also not in the role specific `module_utils` directory.
+```bash
+mazer install freeipa.ansible_freeipa
+```
 
->This command will get the whole collection from galaxy:
->
->```bash
->mazer install freeipa.ansible_freeipa
->```
->
->Ansible galaxy does not support the use of dash ('-') in a name and is automatically replacing this with an underscore ('\_'). Therefore the name is `ansible_freeipa`. The ansible_freeipa collection will be placed in the directory `~/.ansible/collections/ansible_collections/freeipa/ansible_freeipa`.
->
->**Important:** Using Ansible galaxy is it needed to add the collection prefix to the role and module names in the playbook:
->
->Example 1:
->```diff
->   roles:
->-  - role: ipaserver
->+  - role: freeipa.ansible_freeipa.ipaserver
->     state: present
->```
->
->Example 2:
->```diff
->   tasks:
->   - name: Add topology segment
->-    ipatopologysegment:
->+    freeipa.ansible_freeipa.ipatopologysegment:
->       ipaadmin_password: MyPassword123
->```
+Ansible galaxy does not support the use of dash ('-') in a name and is automatically replacing this with an underscore ('\_'). Therefore the name is `ansible_freeipa`. The ansible_freeipa collection will be placed in the directory `~/.ansible/collections/ansible_collections/freeipa/ansible_freeipa` where it will be automatically be found for this user.
+
+The needed adaptions of collection prefixes for `modules` and `module_utils` will be done with ansible-freeipa release `0.1.6` for galaxy.
 
 
 Ansible inventory file

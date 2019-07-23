@@ -1,6 +1,6 @@
 namespace: "freeipa"
 name: "ansible_freeipa"
-version: "0.1.5-1"
+version: "A.B.C"
 description: ""
 
 authors:

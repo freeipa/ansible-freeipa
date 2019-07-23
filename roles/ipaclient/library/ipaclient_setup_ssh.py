@@ -36,29 +36,20 @@ description:
   Configure ssh and sshd for IPA client
 options:
   servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: true
-    type: list
-  ssh:
-    description: Configure OpenSSH client
-    required: false
-    type: bool
-    default: no
-  trust_sshfp:
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
+  no_ssh:
+    description: Do not configure OpenSSH client
+    required: yes
+  ssh_trust_dns:
     description: Configure OpenSSH client to trust DNS SSHFP records
-    required: false
-    type: bool
-    default: no
-  sshd:
-    description: Configure OpenSSH server
-    required: false
-    type: bool
-    default: no
+    required: yes
+  no_sshd:
+    description: Do not configure OpenSSH server
+    required: yes
   sssd:
-    description: Configure SSSD server
-    required: false
-    type: bool
-    default: no
+    description: The installer sssd setting
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -80,16 +71,17 @@ from ansible.module_utils.ansible_ipa_client import (
     options, sysrestore, paths, configure_ssh_config, configure_sshd_config
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             no_ssh=dict(required=False, type='bool', default='no'),
             ssh_trust_dns=dict(required=False, type='bool', default='no'),
             no_sshd=dict(required=False, type='bool', default='no'),
             sssd=dict(required=False, type='bool', default='no'),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -104,7 +96,7 @@ def main():
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
 
-    #os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
+    # os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
 
     changed = False
     if options.conf_ssh:
@@ -116,6 +108,7 @@ def main():
         changed = True
 
     module.exit_json(changed=changed)
+
 
 if __name__ == '__main__':
     main()

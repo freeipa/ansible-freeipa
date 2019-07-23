@@ -37,6 +37,38 @@ short description: Restart KDC
 description:
   Restart KDC
 options:
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
+  setup_kra:
+    description: Configure a dogtag KRA
+    required: yes
+  no_pkinit:
+    description: Disable pkinit setup steps
+    required: yes
+  no_ui_redirect:
+    description: Do not automatically redirect to the Web UI
+    required: yes
+  subject_base:
+    description:
+      The certificate subject base (default O=<realm-name>).
+      RDNs are in LDAP order (most specific RDN first).
+    required: no
+  config_master_host_name:
+    description: The config master_host_name setting
+    required: no
+  ccache:
+    description: The local ccache
+    required: no
+  _ca_file:
+    description: The installer _ca_file setting
+    required: yes
+  _top_dir:
+    description: The installer _top_dir setting
+    required: no
+  dirman_password:
+    description: Directory Manager (master) password
+    required: no
 author:
     - Thomas Woerner
 '''
@@ -57,24 +89,25 @@ from ansible.module_utils.ansible_ipa_replica import (
     krbinstance
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            #### server ###
+        argument_spec=dict(
+            # server
             setup_ca=dict(required=False, type='bool'),
             setup_kra=dict(required=False, type='bool'),
             no_pkinit=dict(required=False, type='bool'),
             no_ui_redirect=dict(required=False, type='bool'),
-            #### certificate system ###
+            # certificate system
             subject_base=dict(required=True),
-            #### additional ###
+            # additional
             config_master_host_name=dict(required=True),
             ccache=dict(required=True),
             _ca_file=dict(required=False),
-            _top_dir = dict(required=True),
+            _top_dir=dict(required=True),
             dirman_password=dict(required=True, no_log=True),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
@@ -83,15 +116,15 @@ def main():
     # get parameters #
 
     options = installer
-    ### server ###
+    # server
     options.setup_ca = ansible_module.params.get('setup_ca')
     options.setup_kra = ansible_module.params.get('setup_kra')
     options.no_pkinit = ansible_module.params.get('no_pkinit')
-    ### certificate system ###
+    # certificate system
     options.subject_base = ansible_module.params.get('subject_base')
     if options.subject_base is not None:
         options.subject_base = DN(options.subject_base)
-    ### additional ###
+    # additional
     master_host_name = ansible_module.params.get('config_master_host_name')
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
@@ -138,6 +171,7 @@ def main():
     # done #
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

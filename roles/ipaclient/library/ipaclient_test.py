@@ -35,84 +35,70 @@ short description: Tries to discover IPA server
 description:
   Tries to discover IPA server using DNS or host name
 options:
-  servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: false
-    type: list
-    default: []
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: false
+    description: Primary DNS domain of the IPA deployment
+    required: yes
+  servers:
+    description: Fully qualified name of IPA servers to enroll to
+    required: yes
   realm:
-    description:  The Kerberos realm of an existing IPA deployment.
-    required: false
+    description: Kerberos realm name of the IPA deployment
+    required: yes
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: false
+    description: Fully qualified name of this host
+    required: yes
   ntp_servers:
-    description: List of NTP servers to use
-    required: false
-    type: list
-    default: []
+    description: ntp servers to use
+    required: yes
   ntp_pool:
     description: ntp server pool to use
-    required: false
+    required: yes
   no_ntp:
-    description: Do not sync time and do not detect time servers
-    required: false
-    default: false
-    type: bool
-    default: no
+    description: Do not configure ntp
+    required: yes
   force_ntpd:
-    description: Stop and disable any time&date synchronization services besides ntpd. Deprecated since 4.7.
-    requried: false
-    type: bool
-    default: no
+    description:
+      Stop and disable any time&date synchronization services besides ntpd
+      Deprecated since 4.7
+    required: yes
   nisdomain:
-    description: NIS domain name
-    required: false
+    description: The NIS domain name
+    required: yes
   no_nisdomain:
     description: Do not configure NIS domain name
-    required: false
-    type: bool
-    default: no
+    required: yes
   kinit_attempts:
-    description: Repeat the request for host Kerberos ticket X times.
-    required: false
-    type: int
-    default: 5
+    description: Repeat the request for host Kerberos ticket X times
+    required: yes
   ca_cert_files:
-    description: CA certificates to use.
-    required: false
+    description:
+      List of files containing CA certificates for the service certificate
+      files
+    required: yes
   configure_firefox:
     description: Configure Firefox to use IPA domain credentials
-    required: false
-    type: bool
-    default: no
+    required: yes
   firefox_dir:
-    description: Specify directory where Firefox is installed (for example: '/usr/lib/firefox')
-    required: false
+    description:
+      Specify directory where Firefox is installed (for example
+      '/usr/lib/firefox')
+    required: yes
   ip_addresses:
-    description: All routable IP addresses configured on any interface will be added to DNS.
-    required: false
-    type: bool
-    default: no
+    description: List of Master Server IP Addresses
+    required: yes
   all_ip_addresses:
-    description: All routable IP addresses configured on any interface will be added to DNS.
-    required: false
-    type: bool
-    default: no
+    description:
+      All routable IP addresses configured on any interface will be added
+      to DNS
+    required: yes
   on_master:
-    description: IPA client installation on IPA server
-    required: false
-    default: false
-    type: bool
-    default: no
+    description: Whether the configuration is done on the master or not
+    required: yes
   enable_dns_updates:
-    description: Configures the machine to attempt dns updates when the ip address changes.
-    required: false
-    type: bool
-    default: no
+    description:
+      Configures the machine to attempt dns updates when the ip address
+      changes
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -194,7 +180,9 @@ ntp_servers:
   type: list
   sample: ["ntp.example.com"]
 ipa_python_version:
-  description: The IPA python version as a number: <major version>*10000+<minor version>*100+<release>
+  description:
+  - The IPA python version as a number:
+  - <major version>*10000+<minor version>*100+<release>
   returned: always
   type: int
   sample: 040400
@@ -204,7 +192,11 @@ import os
 import socket
 import inspect
 
-from six.moves.configparser import RawConfigParser
+try:
+    from six.moves.configparser import RawConfigParser
+except ImportError:
+    from ConfigParser import RawConfigParser
+
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
     paths, sysrestore, options, CheckedIPAddress, validate_domain_name,
@@ -214,6 +206,7 @@ from ansible.module_utils.ansible_ipa_client import (
     check_ip_addresses, ipadiscovery, print_port_conf_info,
     IPA_PYTHON_VERSION
 )
+
 
 def get_cert_path(cert_path):
     """
@@ -231,6 +224,7 @@ def get_cert_path(cert_path):
 
     return None
 
+
 def is_client_configured():
     """
     Check if ipa client is configured.
@@ -244,6 +238,7 @@ def is_client_configured():
     return (os.path.isfile(paths.IPA_DEFAULT_CONF) and
             os.path.isfile(os.path.join(paths.IPA_CLIENT_SYSRESTORE,
                                         sysrestore.SYSRESTORE_STATEFILE)))
+
 
 def get_ipa_conf():
     """
@@ -265,10 +260,11 @@ def get_ipa_conf():
 
     return result
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
-            ### basic ###
+        argument_spec=dict(
+            # basic
             domain=dict(required=False, default=None),
             servers=dict(required=False, type='list', default=None),
             realm=dict(required=False, default=None),
@@ -286,13 +282,14 @@ def main():
             ip_addresses=dict(required=False, type='list', default=None),
             all_ip_addresses=dict(required=False, type='bool', default=False),
             on_master=dict(required=False, type='bool', default=False),
-            ### sssd ###
-            enable_dns_updates=dict(required=False, type='bool', default=False),
+            # sssd
+            enable_dns_updates=dict(required=False, type='bool',
+                                    default=False),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
-    #module._ansible_debug = True
+    # module._ansible_debug = True
     options.domain_name = module.params.get('domain')
     options.servers = module.params.get('servers')
     options.realm_name = module.params.get('realm')
@@ -316,12 +313,13 @@ def main():
     # servers
     if options.domain_name is None and options.servers is not None:
         if len(options.servers) > 0:
-            options.domain_name = options.servers[0][options.servers[0].find(".")+1:]
+            options.domain_name = options.servers[0][
+                options.servers[0].find(".")+1:]
 
     try:
         self = options
 
-        ### HostNameInstallInterface ###
+        # HostNameInstallInterface
 
         if options.ip_addresses is not None:
             for value in options.ip_addresses:
@@ -331,7 +329,7 @@ def main():
                     raise ValueError("invalid IP address {0}: {1}".format(
                         value, e))
 
-        ### ServiceInstallInterface ###
+        # ServiceInstallInterface
 
         if options.domain_name:
             validate_domain_name(options.domain_name)
@@ -342,12 +340,12 @@ def main():
                 # NUM_VERSION >= 40690:
                 validate_domain_name(options.realm_name, entity="realm")
 
-        ### ClientInstallInterface ###
+        # ClientInstallInterface
 
         if options.kinit_attempts < 1:
             raise ValueError("expects an integer greater than 0.")
 
-        ### ClientInstallInterface.__init__ ###
+        # ClientInstallInterface.__init__
 
         if self.servers and not self.domain_name:
             raise RuntimeError(
@@ -372,18 +370,18 @@ def main():
             if self.enable_dns_updates:
                 raise RuntimeError(
                     "--ip-address cannot be used together with"
-                " --enable-dns-updates")
+                    " --enable-dns-updates")
 
             if self.all_ip_addresses:
                 raise RuntimeError(
                     "--ip-address cannot be used together with"
                     "--all-ip-addresses")
 
-        ### SSSDInstallInterface ###
+        # SSSDInstallInterface
 
         self.no_sssd = False
 
-        ### ClientInstall ###
+        # ClientInstall
 
         if options.ca_cert_files is not None:
             for value in options.ca_cert_files:
@@ -396,18 +394,20 @@ def main():
                 if not os.path.isfile(value):
                     raise ValueError("'%s' is not a file" % value)
                 if not os.path.isabs(value):
-                    raise ValueError("'%s' is not an absolute file path" % value)
+                    raise ValueError("'%s' is not an absolute file path" %
+                                     value)
 
                 try:
                     x509.load_certificate_from_file(value)
                 except Exception:
-                    raise ValueError("'%s' is not a valid certificate file" % value)
+                    raise ValueError("'%s' is not a valid certificate file" %
+                                     value)
 
-        #self.prompt_password = self.interactive
+        # self.prompt_password = self.interactive
 
         self.no_ac = False
 
-        ### ClientInstall.__init__ ###
+        # ClientInstall.__init__
 
         if self.firefox_dir and not self.configure_firefox:
             raise RuntimeError(
@@ -417,7 +417,7 @@ def main():
     except (RuntimeError, ValueError) as e:
         module.fail_json(msg=str(e))
 
-    ### ipaclient.install.client.init ###
+    # ipaclient.install.client.init
 
     # root_logger
     options.debug = False
@@ -427,30 +427,31 @@ def main():
         options.domain = None
     options.server = options.servers
     options.realm = options.realm_name
-    #installer.primary = installer.fixed_primary
-    #if installer.principal:
-    #    installer.password = installer.admin_password
-    #else:
-    #    installer.password = installer.host_password
+    # installer.primary = installer.fixed_primary
+    # if installer.principal:
+    #     installer.password = installer.admin_password
+    # else:
+    #     installer.password = installer.host_password
     installer.hostname = installer.host_name
     options.conf_ntp = not options.no_ntp
-    #installer.trust_sshfp = installer.ssh_trust_dns
-    #installer.conf_ssh = not installer.no_ssh
-    #installer.conf_sshd = not installer.no_sshd
-    #installer.conf_sudo = not installer.no_sudo
-    #installer.create_sshfp = not installer.no_dns_sshfp
+    # installer.trust_sshfp = installer.ssh_trust_dns
+    # installer.conf_ssh = not installer.no_ssh
+    # installer.conf_sshd = not installer.no_sshd
+    # installer.conf_sudo = not installer.no_sudo
+    # installer.create_sshfp = not installer.no_dns_sshfp
     if installer.ca_cert_files:
         installer.ca_cert_file = installer.ca_cert_files[-1]
     else:
         installer.ca_cert_file = None
-    #installer.location = installer.automount_location
+    # installer.location = installer.automount_location
     installer.dns_updates = installer.enable_dns_updates
-    #installer.krb5_offline_passwords = not installer.no_krb5_offline_passwords
+    # installer.krb5_offline_passwords = \
+    #     not installer.no_krb5_offline_passwords
     installer.sssd = not installer.no_sssd
 
     try:
 
-        ### client ###
+        # client
 
         # global variables
         hostname = None
@@ -466,7 +467,7 @@ def main():
         cli_basedn = None
         # end of global variables
 
-        ### client.install_check ###
+        # client.install_check
 
         logger.info("This program will set up FreeIPA client.")
         logger.info("Version %s", version.VERSION)
@@ -484,14 +485,14 @@ def main():
 
         tasks.check_selinux_status()
 
-        #if is_ipa_client_installed(fstore, on_master=options.on_master):
-        #    logger.error("IPA client is already configured on this system.")
-        #    logger.info(
-        #        "If you want to reinstall the IPA client, uninstall it first "
-        #        "using 'ipa-client-install --uninstall'.")
-        #    raise ScriptError(
-        #        "IPA client is already configured on this system.",
-        #        rval=CLIENT_ALREADY_CONFIGURED)
+        # if is_ipa_client_installed(fstore, on_master=options.on_master):
+        #     logger.error("IPA client is already configured on this system.")
+        #     logger.info(
+        #       "If you want to reinstall the IPA client, uninstall it first "
+        #       "using 'ipa-client-install --uninstall'.")
+        #     raise ScriptError(
+        #         "IPA client is already configured on this system.",
+        #         rval=CLIENT_ALREADY_CONFIGURED)
 
         if check_ldap_conf is not None:
             check_ldap_conf()
@@ -509,16 +510,16 @@ def main():
                 pass
 
         # password, principal and keytab are checked in tasks/install.yml
-        #if options.unattended and (
-        #    options.password is None and
-        #    options.principal is None and
-        #    options.keytab is None and
-        #    options.prompt_password is False and
-        #    not options.on_master
-        #):
-        #    raise ScriptError(
-        #        "One of password / principal / keytab is required.",
-        #        rval=CLIENT_INSTALL_ERROR)
+        # if options.unattended and (
+        #     options.password is None and
+        #     options.principal is None and
+        #     options.keytab is None and
+        #     options.prompt_password is False and
+        #     not options.on_master
+        # ):
+        #     raise ScriptError(
+        #         "One of password / principal / keytab is required.",
+        #         rval=CLIENT_INSTALL_ERROR)
 
         if options.hostname:
             hostname = options.hostname
@@ -549,17 +550,17 @@ def main():
             # --no-sssd is not supported any more for rhel-based distros
             if not tasks.is_nosssd_supported() and not options.sssd:
                 raise ScriptError(
-                    "Option '--no-sssd' is incompatible with the 'authselect' tool "
-                    "provided by this distribution for configuring system "
-                    "authentication resources",
+                    "Option '--no-sssd' is incompatible with the 'authselect' "
+                    "tool provided by this distribution for configuring "
+                    "system authentication resources",
                     rval=CLIENT_INSTALL_ERROR)
 
             # --noac is not supported any more for rhel-based distros
             if not tasks.is_nosssd_supported() and options.no_ac:
                 raise ScriptError(
-                    "Option '--noac' is incompatible with the 'authselect' tool "
-                    "provided by this distribution for configuring system "
-                    "authentication resources",
+                    "Option '--noac' is incompatible with the 'authselect' "
+                    "tool provided by this distribution for configuring "
+                    "system authentication resources",
                     rval=CLIENT_INSTALL_ERROR)
 
         # when installing with '--no-sssd' option, check whether nss-ldap is
@@ -579,15 +580,15 @@ def main():
                     rval=CLIENT_INSTALL_ERROR)
 
             # principal and keytab are checked in tasks/install.yml
-            #if options.keytab and options.principal:
-            #    raise ScriptError(
-            #        "Options 'principal' and 'keytab' cannot be used together.",
-            #        rval=CLIENT_INSTALL_ERROR)
+            # if options.keytab and options.principal:
+            #   raise ScriptError(
+            #     "Options 'principal' and 'keytab' cannot be used together.",
+            #     rval=CLIENT_INSTALL_ERROR)
 
             # keytab and force_join are checked in tasks/install.yml
-            #if options.keytab and options.force_join:
-            #    logger.warning("Option 'force-join' has no additional effect "
-            #                   "when used with together with option 'keytab'.")
+            # if options.keytab and options.force_join:
+            #   logger.warning("Option 'force-join' has no additional effect "
+            #                  "when used with together with option 'keytab'.")
 
         # Added with freeipa-4.7.1 >>>
         # Remove invalid keytab file
@@ -606,7 +607,8 @@ def main():
             not options.ca_cert_file and
             get_cert_path(options.ca_cert_file) == paths.IPA_CA_CRT
         ):
-            logger.warning("Using existing certificate '%s'.", paths.IPA_CA_CRT)
+            logger.warning("Using existing certificate '%s'.",
+                           paths.IPA_CA_CRT)
 
         if not check_ip_addresses(options):
             raise ScriptError(
@@ -625,9 +627,9 @@ def main():
         )
 
         if options.server and ret != 0:
-            # There is no point to continue with installation as server list was
-            # passed as a fixed list of server and thus we cannot discover any
-            # better result
+            # There is no point to continue with installation as server list
+            # was passed as a fixed list of server and thus we cannot discover
+            # any better result
             logger.error(
                 "Failed to verify that %s is an IPA Server.",
                 ', '.join(options.server))
@@ -675,7 +677,8 @@ def main():
             #    logger.info(
             #        "DNS discovery failed to determine your DNS domain")
             #    cli_domain = user_input(
-            #        "Provide the domain name of your IPA server (ex: example.com)",
+            #        "Provide the domain name of your IPA server "
+            #        "(ex: example.com)",
             #        allow_empty=False)
             #    cli_domain_source = 'Provided interactively'
             #    logger.debug(
@@ -714,7 +717,7 @@ def main():
             #    ]
             #    cli_server_source = 'Provided interactively'
             #    logger.debug(
-            #        "will use interactively provided server: %s", cli_server[0])
+            #      "will use interactively provided server: %s", cli_server[0])
             ret = ds.search(
                 domain=cli_domain,
                 servers=cli_server,
@@ -722,8 +725,8 @@ def main():
                 ca_cert_path=get_cert_path(options.ca_cert_file))
 
         else:
-            # Only set dnsok to True if we were not passed in one or more servers
-            # and if DNS discovery actually worked.
+            # Only set dnsok to True if we were not passed in one or more
+            # servers and if DNS discovery actually worked.
             if not options.server:
                 (server, domain) = ds.check_domain(
                     ds.domain, set(), "Validating DNS Discovery")
@@ -793,29 +796,29 @@ def main():
             logger.info("Discovery was successful!")
         elif not options.unattended:
             raise ScriptError("No interactive installation")
-        #    if not options.server:
-        #        logger.warning(
-        #            "The failure to use DNS to find your IPA "
-        #            "server indicates that your resolv.conf file is not properly "
-        #            "configured.")
-        #    logger.info(
-        #        "Autodiscovery of servers for failover cannot work "
-        #        "with this configuration.")
-        #    logger.info(
-        #        "If you proceed with the installation, services "
-        #        "will be configured to always access the discovered server for "
-        #        "all operations and will not fail over to other servers in case "
-        #        "of failure.")
-        #    if not user_input(
-        #            "Proceed with fixed values and no DNS discovery?", False):
-        #        raise ScriptError(rval=CLIENT_INSTALL_ERROR)
+        # if not options.server:
+        #     logger.warning(
+        #       "The failure to use DNS to find your IPA "
+        #       "server indicates that your resolv.conf file is not properly "
+        #       "configured.")
+        # logger.info(
+        #     "Autodiscovery of servers for failover cannot work "
+        #     "with this configuration.")
+        # logger.info(
+        #   "If you proceed with the installation, services "
+        #   "will be configured to always access the discovered server for "
+        #   "all operations and will not fail over to other servers in case "
+        #   "of failure.")
+        # if not user_input(
+        #     "Proceed with fixed values and no DNS discovery?", False):
+        #     raise ScriptError(rval=CLIENT_INSTALL_ERROR)
 
         # Do not ask for time source
-        #if options.conf_ntp:
-        #    if not options.on_master and not options.unattended and not (
-        #            options.ntp_servers or options.ntp_pool):
-        #        options.ntp_servers, options.ntp_pool = \
-        #            timeconf.get_time_source()
+        # if options.conf_ntp:
+        #     if not options.on_master and not options.unattended and not (
+        #             options.ntp_servers or options.ntp_pool):
+        #         options.ntp_servers, options.ntp_pool = \
+        #             timeconf.get_time_source()
 
         cli_realm = ds.realm
         cli_realm_source = ds.realm_source
@@ -823,11 +826,13 @@ def main():
 
         if options.realm_name and options.realm_name != cli_realm:
             logger.error(
-                "The provided realm name [%s] does not match discovered one [%s]",
+                "The provided realm name [%s] does not match discovered "
+                "one [%s]",
                 options.realm_name, cli_realm)
             logger.debug("(%s: %s)", cli_realm, cli_realm_source)
             raise ScriptError(
-                "The provided realm name [%s] does not match discovered one [%s]" % (options.realm_name, cli_realm),
+                "The provided realm name [%s] does not match discovered "
+                "one [%s]" % (options.realm_name, cli_realm),
                 rval=CLIENT_INSTALL_ERROR)
 
         cli_basedn = ds.basedn
@@ -874,22 +879,22 @@ def main():
                     "installation may fail.")
                 break
 
-        #logger.info()
-        #if not options.unattended and not user_input(
-        #        "Continue to configure the system with these values?", False):
-        #    raise ScriptError(rval=CLIENT_INSTALL_ERROR)
+        # logger.info()
+        # if not options.unattended and not user_input(
+        #     "Continue to configure the system with these values?", False):
+        #     raise ScriptError(rval=CLIENT_INSTALL_ERROR)
 
     except ScriptError as e:
         module.fail_json(msg=str(e))
 
     #########################################################################
 
-    ### client._install ###
+    # client._install
 
     # May not happen in here at this time
-    #if not options.on_master:
-    #    # Try removing old principals from the keytab
-    #    purge_host_keytab(cli_realm)
+    # if not options.on_master:
+    #     # Try removing old principals from the keytab
+    #     purge_host_keytab(cli_realm)
 
     # Check if ipa client is already configured
     if is_client_configured():
@@ -921,6 +926,7 @@ def main():
                      ntp_pool=options.ntp_pool,
                      client_already_configured=client_already_configured,
                      ipa_python_version=IPA_PYTHON_VERSION)
+
 
 if __name__ == '__main__':
     main()

@@ -36,68 +36,52 @@ description:
   Setup sssd for IPA client
 options:
   servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: true
-    type: list
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
   domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: true
+    description: Primary DNS domain of the IPA deployment
+    required: no
   realm:
-    description: The Kerberos realm of an existing IPA deployment.
-    required: true
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: no
   on_master:
-    description: Whether the configuration is done on the master or not.
-    required: false
-    type: bool
-    default: no
+    description: Whether the configuration is done on the master or not
+    required: yes
   no_ssh:
     description: Do not configure OpenSSH client
-    required: false
-    type: bool
-    default: no
+    required: yes
   no_sshd:
     description: Do not configure OpenSSH server
-    required: false
-    type: bool
-    default: no
+    required: yes
   no_sudo:
     description: Do not configure SSSD as data source for sudo
-    required: false
-    type: bool
-    default: no
+    required: yes
   all_ip_addresses:
-    description: All routable IP addresses configured on any interface will be added to DNS.
-    required: false
-    type: bool
-    default: no
+    description:
+      All routable IP addresses configured on any interface will be added
+      to DNS
+    required: yes
   fixed_primary:
-    description: Whether to use fixed server as primary IPA server.
-    required: false
-    type: bool
-    default: no
+    description: Configure sssd to use fixed server as primary IPA server
+    required: yes
   permit:
-    description: Disable access rules by default, permit all access.
-    required: false
-    type: bool
-    default: no
+    description: Disable access rules by default, permit all access
+    required: yes
   enable_dns_updates:
-    description: Configures the machine to attempt dns updates when the ip address changes.
-    required: false
-    type: bool
-    default: no
+    description:
+      Configures the machine to attempt dns updates when the ip address
+      changes
+    required: yes
   preserve_sssd:
-    description: Preserve old SSSD configuration if possible.
-    required: false
-    type: bool
-    default: no
+    description: Preserve old SSSD configuration if possible
+    required: yes
   no_krb5_offline_passwords:
-    description: Whether user passwords are stored when the server is offline.
-    required: false
-    type: bool
-    default: no
+    description:
+      Configure SSSD not to store user password when the server is offline
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -120,9 +104,10 @@ from ansible.module_utils.ansible_ipa_client import (
     options, sysrestore, paths, configure_sssd_conf, logger
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             domain=dict(required=True),
             realm=dict(required=True),
@@ -139,10 +124,10 @@ def main():
             preserve_sssd=dict(required=False, type='bool'),
             no_krb5_offline_passwords=dict(required=False, type='bool'),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
-    #ansible_log = AnsibleModuleLog(module, logger)
-    #options.set_logger(ansible_log)
+    # ansible_log = AnsibleModuleLog(module, logger)
+    # options.set_logger(ansible_log)
 
     module._ansible_debug = True
     cli_server = module.params.get('servers')
@@ -177,6 +162,7 @@ def main():
     logger.info("Configured /etc/sssd/sssd.conf")
 
     module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

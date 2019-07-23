@@ -38,20 +38,20 @@ description:
   Add to ipaservers
 options:
   setup_kra:
-    description: 
-    required: yes
+    description: Configure a dogtag KRA
+    required: no
   config_master_host_name:
-    description: 
-    required: yes
+    description: The config master_host_name setting
+    required: no
   ccache:
-    description: 
-    required: yes
+    description: The local ccache
+    required: no
   installer_ccache:
-    description: 
-    required: yes
+    description: The installer ccache setting
+    required: no
   _top_dir:
-    description: 
-    required: yes
+    description: The installer _top_dir setting
+    required: no
 author:
     - Thomas Woerner
 '''
@@ -78,16 +78,16 @@ if six.PY3:
 
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
-            ### server ###
+        argument_spec=dict(
+            # server
             setup_kra=dict(required=True, type='bool'),
-            ### additional ###
+            # additional
             config_master_host_name=dict(required=True),
             ccache=dict(required=True),
             installer_ccache=dict(required=True),
-            _top_dir = dict(required=True),
+            _top_dir=dict(required=True),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
@@ -96,14 +96,15 @@ def main():
     # get parameters #
 
     options = installer
-    ### server ###
+    # server
     options.setup_kra = ansible_module.params.get('setup_kra')
-    ### additional ###
-    config_master_host_name = ansible_module.params.get('config_master_host_name')
+    # additional
+    config_master_host_name = ansible_module.params.get(
+        'config_master_host_name')
     ccache = ansible_module.params.get('ccache')
     os.environ['KRB5CCNAME'] = ccache
     options._ccache = ansible_module.params.get('installer_ccache')
-    #os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
+    # os.environ['KRB5CCNAME'] = ansible_module.params.get('installer_ccache')
     options._top_dir = ansible_module.params.get('_top_dir')
 
     # init #
@@ -115,10 +116,10 @@ def main():
     env = gen_env_boostrap_finalize_core(paths.ETC_IPA,
                                          constants.DEFAULT_CONFIG)
     api_bootstrap_finalize(env)
-    #config = gen_ReplicaConfig()
+    # config = gen_ReplicaConfig()
 
     remote_api = gen_remote_api(config_master_host_name, paths.ETC_IPA)
-    #installer._remote_api = remote_api
+    # installer._remote_api = remote_api
 
     conn = remote_api.Backend.ldap2
     ccache = os.environ['KRB5CCNAME']
@@ -140,6 +141,7 @@ def main():
     # done #
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

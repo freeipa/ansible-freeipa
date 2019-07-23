@@ -29,21 +29,23 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 DOCUMENTATION = '''
 ---
 module: ipaclient_api
-short description: Create temporary NSS database, call IPA API for remaining enrollment parts
+short description:
+  Create temporary NSS database, call IPA API for remaining enrollment parts
 description:
-Create temporary NSS database, call IPA API for remaining enrollment parts
+  Create temporary NSS database, call IPA API for remaining enrollment parts
 options:
+  servers:
+    description: Fully qualified name of IPA servers to enroll to
+    required: no
   realm:
-    description: The Kerberos realm of an existing IPA deployment.
-    required: true
+    description: Kerberos realm name of the IPA deployment
+    required: no
   hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: true
+    description: Fully qualified name of this host
+    required: no
   debug:
     description: Turn on extra debugging
-    required: false
-    type: bool
-    default: no
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -80,15 +82,16 @@ from ansible.module_utils.ansible_ipa_client import (
     CLIENT_INSTALL_ERROR, logger
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             servers=dict(required=True, type='list'),
             realm=dict(required=True),
             hostname=dict(required=True),
-            debug=dict(required=False, type='bool', default="false")
+            debug=dict(required=False, type='bool', default="false"),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
     module._ansible_debug = True
@@ -102,10 +105,10 @@ def main():
 
     ca_certs = x509.load_certificate_list_from_file(paths.IPA_CA_CRT)
     if 40500 <= NUM_VERSION < 40590:
-        ca_certs = [ cert.public_bytes(serialization.Encoding.DER)
-                     for cert in ca_certs ]
+        ca_certs = [cert.public_bytes(serialization.Encoding.DER)
+                    for cert in ca_certs]
     elif NUM_VERSION < 40500:
-        ca_certs = [ cert.der_data for cert in ca_certs ]
+        ca_certs = [cert.der_data for cert in ca_certs]
 
     with certdb.NSSDatabase() as tmp_db:
         api.bootstrap(context='cli_installer',
@@ -139,7 +142,7 @@ def main():
                 else:
                     tmp_db.add_cert(cert, 'CA certificate %d' % (i + 1),
                                     'C,,')
-        except CalledProcessError as e:
+        except CalledProcessError:
             module.fail_json(msg="Failed to add CA to temporary NSS database.")
 
         api.finalize()
@@ -175,10 +178,12 @@ def main():
                     "may not be available")
             except errors.PublicError as e2:
                 module.fail_json(
-                    msg="Cannot connect to the IPA server RPC interface: %s" % e2)
+                    msg="Cannot connect to the IPA server RPC interface: "
+                    "%s" % e2)
         except errors.PublicError as e:
             module.fail_json(
-                msg="Cannot connect to the server due to generic error: %s" % e)
+                msg="Cannot connect to the server due to generic error: "
+                "%s" % e)
     # Use the RPC directly so older servers are supported
     try:
         result = api.Backend.rpcclient.forward(
@@ -200,7 +205,7 @@ def main():
     try:
         config = api.Command['config_show']()['result']
         subject_base = str(DN(config['ipacertificatesubjectbase'][0]))
-    except errors.PublicError as e:
+    except errors.PublicError:
         try:
             config = api.Backend.rpcclient.forward(
                 'config_show',
@@ -218,6 +223,7 @@ def main():
     module.exit_json(changed=True,
                      ca_enabled=ca_enabled,
                      subject_base=subject_base)
+
 
 if __name__ == '__main__':
     main()

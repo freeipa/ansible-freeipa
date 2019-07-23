@@ -32,10 +32,35 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: setup_adtrust
-short description: 
-description:
+module: ipaserver_setup_adtrust
+short description: Setup trust ad
+description: Setup trust ad
 options:
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
+  setup_adtrust:
+    description: Configure AD trust capability
+    required: yes
+  enable_compat:
+    description: Enable support for trusted domains for old clients
+    required: yes
+  rid_base:
+    description: Start value for mapping UIDs and GIDs to RIDs
+    required: yes
+  secondary_rid_base:
+    description:
+      Start value of the secondary range for mapping UIDs and GIDs to RIDs
+    required: yes
+  adtrust_netbios_name:
+    description: The adtrust netbios_name setting
+    required: no
+  adtrust_reset_netbios_name:
+    description: The adtrust reset_netbios_name setting
+    required: no
 author:
     - Thomas Woerner
 '''
@@ -52,20 +77,21 @@ from ansible.module_utils.ansible_ipa_server import (
     api_Backend_ldap2, redirect_stdout, adtrust, api
 )
 
+
 def main():
     ansible_module = AnsibleModule(
-        argument_spec = dict(
+        argument_spec=dict(
             # basic
             hostname=dict(required=False),
             setup_ca=dict(required=False, type='bool', default=False),
             setup_adtrust=dict(required=False, type='bool', default=False),
-            ### ad trust ###
+            # ad trust
             enable_compat=dict(required=False, type='bool', default=False),
             rid_base=dict(required=False, type='int'),
             secondary_rid_base=dict(required=False, type='int'),
-            ### additional ###
+            # additional
             adtrust_netbios_name=dict(required=True),
-            adtrust_reset_netbios_name=dict(required=True, type='bool')
+            adtrust_reset_netbios_name=dict(required=True, type='bool'),
         ),
     )
 
@@ -77,14 +103,15 @@ def main():
     options.host_name = ansible_module.params.get('hostname')
     options.setup_ca = ansible_module.params.get('setup_ca')
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
-    ### ad trust ###
+    # ad trust
     options.enable_compat = ansible_module.params.get('enable_compat')
     options.rid_base = ansible_module.params.get('rid_base')
-    options.secondary_rid_base = ansible_module.params.get('secondary_rid_base')
-    ### additional ###
+    options.secondary_rid_base = ansible_module.params.get(
+        'secondary_rid_base')
+    # additional
     adtrust.netbios_name = ansible_module.params.get('adtrust_netbios_name')
-    adtrust.reset_netbios_name = \
-        ansible_module.params.get('adtrust_reset_netbios_name')
+    adtrust.reset_netbios_name = ansible_module.params.get(
+        'adtrust_reset_netbios_name')
 
     # init ##########################################################
 
@@ -100,6 +127,7 @@ def main():
     # done ##########################################################
 
     ansible_module.exit_json(changed=True)
+
 
 if __name__ == '__main__':
     main()

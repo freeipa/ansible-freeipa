@@ -35,45 +35,31 @@ description:
   host operations.
 options:
   principal:
-    description: Kerberos principal used to manage the host
-    required: true
-    default: admin
-  password:
-    description: Password for the kerberos principal
-    required: false
-  keytab:
-    description: Keytab file containing the Kerberos principal and encrypted key
-    required: false
-  lifetime:
-    description: Sets the default lifetime for initial ticket requests
-    required: false
-    default: 1h
+    description:
+      User Principal allowed to promote replicas and join IPA realm
+    required: yes
+  ccache:
+    description: The local ccache
+    required: yes
   fqdn:
-    description: the fully-qualified hostname of the host to add/modify/remove
-    required: true
-  random:
-    description: generate a random password to be used in bulk enrollment
-    required: false
-    type: bool
-    default: no
-  state:
-    description: the host state
-    required: false
-    default: present
-    choices: [ "present", "absent" ]
+    description:
+      The fully-qualified hostname of the host to add/modify/remove
+    required: no
   certificates:
-    description: a list of host certificates
-    required: false
-    type: list
+    description: A list of host certificates
+    required: yes
   sshpubkey:
-    description: the SSH public key for the host
-    required: false
+    description: The SSH public key for the host
+    required: yes
   ipaddress:
-    description: the IP address for the host
-    required: false
-
-requirements:
-    - gssapi on the Ansible controller
+    description: The IP address for the host
+    required: yes
+  random:
+    description: Generate a random password to be used in bulk enrollment
+    required: yes
+  state:
+    description: The desired host state
+    required: yes
 author:
     - "Florence Blanc-Renaud"
 '''
@@ -146,6 +132,7 @@ from ipapython.ipautil import run
 if six.PY3:
     unicode = str
 
+
 def get_host_diff(ipa_host, module_host):
     """
     Compares two dictionaries containing host attributes and builds a dict
@@ -171,7 +158,7 @@ def get_host_diff(ipa_host, module_host):
             ipa_value = sorted(ipa_value)
             module_value = sorted(module_value)
         if ipa_value != module_value:
-            data[key]=unicode(module_value)
+            data[key] = unicode(module_value)
     return data
 
 
@@ -226,7 +213,7 @@ def ensure_host_present(module, api, ipahost):
         # If we want to create a random password, and the host
         # already has Keytab: true, then we need first to run
         # ipa host-disable in order to remove OTP and keytab
-        if module.params.get('random') and ipahost['has_keytab'] == True:
+        if module.params.get('random') and ipahost['has_keytab'] is True:
             api.Command.host_disable(fqdn)
 
         result = api.Command.host_mod(fqdn, **diffs)
@@ -289,14 +276,14 @@ def main():
     """
     module = AnsibleModule(
         argument_spec=dict(
-            principal = dict(default='admin'),
-            ccache = dict(required=False, type='path'),
-            fqdn = dict(required=True),
-            certificates = dict(required=False, type='list'),
-            sshpubkey= dict(required=False),
-            ipaddress = dict(required=False),
-            random = dict(default=False, type='bool'),
-            state = dict(default='present', choices=[ 'present', 'absent' ]),
+            principal=dict(default='admin'),
+            ccache=dict(required=False, type='path'),
+            fqdn=dict(required=True),
+            certificates=dict(required=False, type='list'),
+            sshpubkey=dict(required=False),
+            ipaddress=dict(required=False),
+            random=dict(default=False, type='bool'),
+            state=dict(default='present', choices=['present', 'absent']),
         ),
         supports_check_mode=True,
     )
@@ -307,7 +294,7 @@ def main():
     state = module.params.get('state')
 
     try:
-        os.environ['KRB5CCNAME']=ccache
+        os.environ['KRB5CCNAME'] = ccache
 
         cfg = dict(
             context='ansible_module',
@@ -320,24 +307,24 @@ def main():
         api.finalize()
         api.Backend.rpcclient.connect()
 
-        changed = False
         try:
             result = api.Command.host_show(fqdn, all=True)
             host = result['result']
         except errors.NotFound:
             host = None
 
-        if state in ['present','disabled']:
-            changed = ensure_host_present(module, api, host)
+        if state in ['present', 'disabled']:
+            ensure_host_present(module, api, host)
         elif state == 'absent':
-            changed = ensure_host_absent(module, api, host)
+            ensure_host_absent(module, api, host)
 
     except Exception as e:
         module.fail_json(msg="ipaclient_get_otp module failed : %s" % str(e))
     finally:
         run([paths.KDESTROY], raiseonerr=False, env=os.environ)
 
-    module.exit_json(changed=changed, host=host)
+    module.exit_json(changed=False, host=host)
+
 
 if __name__ == '__main__':
     main()

@@ -22,14 +22,38 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+__all__ = ["gssapi", "version", "ipadiscovery", "api", "errors", "x509",
+           "constants", "sysrestore", "certmonger", "certstore",
+           "delete_persistent_client_session_data", "ScriptError",
+           "CheckedIPAddress", "validate_domain_name", "normalize_hostname",
+           "validate_hostname", "services", "tasks", "CalledProcessError",
+           "write_tmp_file", "ipa_generate_password", "DN", "kinit_keytab",
+           "kinit_password", "GSSError", "CLIENT_INSTALL_ERROR",
+           "is_ipa_client_installed", "CLIENT_ALREADY_CONFIGURED",
+           "nssldap_exists", "remove_file", "check_ip_addresses",
+           "print_port_conf_info", "configure_ipa_conf", "purge_host_keytab",
+           "configure_sssd_conf", "realm_to_suffix", "run", "timeconf",
+           "serialization", "configure_krb5_conf", "get_ca_certs",
+           "SECURE_PATH", "get_server_connection_interface",
+           "configure_nsswitch_database", "disable_ra", "client_dns",
+           "configure_certmonger", "update_ssh_keys",
+           "configure_openldap_conf", "hardcode_ldap_server",
+           "get_certs_from_ldap", "save_state", "create_ipa_nssdb",
+           "configure_nisdomain", "configure_ldap_conf",
+           "configure_nslcd_conf", "nosssd_files", "configure_ssh_config",
+           "configure_sshd_config", "configure_automount",
+           "configure_firefox", "sync_time", "check_ldap_conf",
+           "sssd_enable_ifp"]
+
 from ipapython.version import NUM_VERSION, VERSION
 
 if NUM_VERSION < 30201:
     # See ipapython/version.py
-    IPA_MAJOR,IPA_MINOR,IPA_RELEASE = [ int(x) for x in VERSION.split(".", 2) ]
+    IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in VERSION.split(".", 2)]
     IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
 else:
     IPA_PYTHON_VERSION = NUM_VERSION
+
 
 class installer_obj(object):
     def __init__(self):
@@ -38,26 +62,27 @@ class installer_obj(object):
     def set_logger(self, logger):
         self.logger = logger
 
-    #def __getattribute__(self, attr):
+    # def __getattribute__(self, attr):
     #    value = super(installer_obj, self).__getattribute__(attr)
     #    if not attr.startswith("--") and not attr.endswith("--"):
     #        logger.debug(
     #            "  <-- Accessing installer.%s (%s)" % (attr, repr(value)))
     #    return value
 
-    #def __getattr__(self, attr):
-    #    #logger.info("  --> ADDING missing installer.%s" % attr)
+    # def __getattr__(self, attr):
+    #    # logger.info("  --> ADDING missing installer.%s" % attr)
     #    self.logger.warn("  --> ADDING missing installer.%s" % attr)
     #    setattr(self, attr, None)
     #    return getattr(self, attr)
 
-    #def __setattr__(self, attr, value):
+    # def __setattr__(self, attr, value):
     #    logger.debug("  --> Setting installer.%s to %s" % (attr, repr(value)))
     #    return super(installer_obj, self).__setattr__(attr, value)
 
     def knobs(self):
         for name in self.__dict__:
             yield self, name
+
 
 # Initialize installer settings
 installer = installer_obj()
@@ -174,10 +199,13 @@ if NUM_VERSION >= 40400:
         else:
             get_ca_cert = None
             get_ca_certs = ipa_client_install.get_ca_certs
-        SECURE_PATH = ("/bin:/sbin:/usr/kerberos/bin:/usr/kerberos/sbin:/usr/bin:/usr/sbin")
+        SECURE_PATH = ("/bin:/sbin:/usr/kerberos/bin:/usr/kerberos/sbin:"
+                       "/usr/bin:/usr/sbin")
 
-        get_server_connection_interface = ipa_client_install.get_server_connection_interface
-        configure_nsswitch_database = ipa_client_install.configure_nsswitch_database
+        get_server_connection_interface = \
+            ipa_client_install.get_server_connection_interface
+        configure_nsswitch_database = \
+            ipa_client_install.configure_nsswitch_database
         disable_ra = ipa_client_install.disable_ra
         client_dns = ipa_client_install.client_dns
         configure_certmonger = ipa_client_install.configure_certmonger
@@ -250,7 +278,7 @@ def ansible_module_get_parsed_ip_addresses(ansible_module,
     if ip_addresses is None:
         return None
 
-    ip_addrs = [ ]
+    ip_addrs = []
     for ip in ip_addresses:
         try:
             ip_parsed = ipautil.CheckedIPAddress(ip)

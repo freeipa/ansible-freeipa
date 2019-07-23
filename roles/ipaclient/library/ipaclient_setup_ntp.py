@@ -35,44 +35,24 @@ short description: Setup NTP for IPA client
 description:
   Setup NTP for IPA client
 options:
-  servers:
-    description: The FQDN of the IPA servers to connect to.
-    required: false
-    type: list
-    default: []
-  domain:
-    description: The primary DNS domain of an existing IPA deployment.
-    required: false
-  realm:
-    description:  The Kerberos realm of an existing IPA deployment.
-    required: false
-  hostname:
-    description: The hostname of the machine to join (FQDN).
-    required: false
-  ca_cert_file:
-    description: A CA certificate to use.
-    required: false
-  on_master:
-    description: IPA client installation on IPA server
-    required: false
-    default: false
-    type: bool
-    default: no
   ntp_servers:
-    description: List of NTP servers to use
-    required: false
-    type: list
-    default: []
+    description: ntp servers to use
+    required: yes
   ntp_pool:
     description: ntp server pool to use
-    required: false
+    required: yes
   no_ntp:
-    description: Do not sync time and do not detect time servers
-    required: false
-    default: false
-    type: bool
-    default: no
-
+    description: Do not configure ntp
+    required: yes
+  on_master:
+    description: Whether the configuration is done on the master or not
+    required: yes
+  servers:
+    description: Fully qualified name of IPA servers to enroll to
+    required: yes
+  domain:
+    description: Primary DNS domain of the IPA deployment
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -91,23 +71,24 @@ from ansible.module_utils.ansible_ipa_client import (
     timeconf
 )
 
+
 def main():
     module = AnsibleModule(
-        argument_spec = dict(
-            ### basic ###
+        argument_spec=dict(
+            # basic
             ntp_servers=dict(required=False, type='list', default=None),
             ntp_pool=dict(required=False, default=None),
             no_ntp=dict(required=False, type='bool', default=False),
             # force_ntpd=dict(required=False, type='bool', default=False),
             on_master=dict(required=False, type='bool', default=False),
-            ### additional ###
+            # additional
             servers=dict(required=False, type='list', default=None),
             domain=dict(required=False, default=None),
         ),
-        supports_check_mode = True,
+        supports_check_mode=True,
     )
 
-    #module._ansible_debug = True
+    # module._ansible_debug = True
     options.ntp_servers = module.params.get('ntp_servers')
     options.ntp_pool = module.params.get('ntp_pool')
     options.no_ntp = module.params.get('no_ntp')
@@ -133,10 +114,11 @@ def main():
             else:
                 synced_ntp = sync_time(options, fstore, statestore)
         elif options.on_master:
-            # If we're on master skipping the time sync here because it was done
-            # in ipa-server-install
-            logger.info("Skipping attempt to configure and synchronize time with"
-                        " chrony server as it has been already done on master.")
+            # If we're on master skipping the time sync here because it was
+            # done in ipa-server-install
+            logger.info(
+                "Skipping attempt to configure and synchronize time with"
+                " chrony server as it has been already done on master.")
         else:
             logger.info("Skipping chrony configuration")
 
@@ -144,7 +126,8 @@ def main():
         ntp_srv_servers = []
         if not options.on_master and options.conf_ntp:
             # Attempt to sync time with IPA server.
-            # If we're skipping NTP configuration, we also skip the time sync here.
+            # If we're skipping NTP configuration, we also skip the time sync
+            # here.
             # We assume that NTP servers are discoverable through SRV records
             # in the DNS.
             # If that fails, we try to sync directly with IPA server,
@@ -166,7 +149,8 @@ def main():
                     break
 
             if not synced_ntp and not options.ntp_servers:
-                synced_ntp = timeconf.synconce_ntp(cli_server[0], options.debug)
+                synced_ntp = timeconf.synconce_ntp(cli_server[0],
+                                                   options.debug)
             if not synced_ntp:
                 module.warn(
                     "Unable to sync time with NTP "
