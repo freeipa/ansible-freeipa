@@ -698,6 +698,716 @@ ptions:
   skip_conncheck:
     description: Skip connection check to remote master
     required: yes
+  dm_password:
+    description: Directory Manager password
+    required: yes
+  password:
+    description: Admin user kerberos password
+    required: yes
+  ip_addresses:
+    description: List of Master Server IP Addresses
+    required: yes
+  domain:
+    description: Primary DNS domain of the IPA deployment
+    required: yes
+  realm:
+    description: Kerberos realm name of the IPA deployment
+    required: yes
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  principal:
+    description:
+      User Principal allowed to promote replicas and join IPA realm
+    required: no
+  ca_cert_files:
+    description:
+      List of files containing CA certificates for the service certificate
+      files
+    required: yes
+  no_host_dns:
+    description: Do not use DNS for hostname lookup during installation
+    required: yes
+  setup_adtrust:
+    description: Configure AD trust capability
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
+  setup_kra:
+    description: Configure a dogtag KRA
+    required: yes
+  setup_dns:
+    description: Configure bind with our zone
+    required: yes
+  dirsrv_cert_files:
+    description:
+      Files containing the Directory Server SSL certificate and private key
+    required: yes
+  dirsrv_cert_name:
+    description: Name of the Directory Server SSL certificate to install
+    required: yes
+  dirsrv_pin:
+    description: The password to unlock the Directory Server private key
+    required: yes
+  http_cert_files:
+    description:
+      File containing the Apache Server SSL certificate and private key
+    required: yes
+  http_cert_name:
+    description: Name of the Apache Server SSL certificate to install
+    required: yes
+  http_pin:
+    description: The password to unlock the Apache Server private key
+    required: yes
+  pkinit_cert_files:
+    description:
+      File containing the Kerberos KDC SSL certificate and private key
+    required: yes
+  pkinit_cert_name:
+    description: Name of the Kerberos KDC SSL certificate to install
+    required: yes
+  pkinit_pin:
+    description: The password to unlock the Kerberos KDC private key
+    required: yes
+  keytab:
+    description: Path to backed up keytab from previous enrollment
+    required: yes
+  mkhomedir:
+    description: Create home directories for users on their first login
+    required: yes
+  force_join:
+    description: Force client enrollment even if already enrolled
+    required: yes
+  no_ntp:
+    description: Do not configure ntp
+    required: yes
+  ssh_trust_dns:
+    description: Configure OpenSSH client to trust DNS SSHFP records
+    required: yes
+  no_ssh:
+    description: Do not configure OpenSSH client
+    required: yes
+  no_sshd:
+    description: Do not configure OpenSSH server
+    required: yes
+  no_dns_sshfp:
+    description: Do not automatically create DNS SSHFP records
+    required: yes
+  allow_zone_overlap:
+    description: Create DNS zone even if it already exists
+    required: yes
+  reverse_zones:
+    description: The reverse DNS zones to use
+    required: yes
+  no_reverse:
+    description: Do not create new reverse DNS zone
+    required: yes
+  auto_reverse:
+    description: Create necessary reverse zones
+    required: yes
+  forwarders:
+    description: Add DNS forwarders
+    required: yes
+  no_forwarders:
+    description: Do not add any DNS forwarders, use root servers instead
+    required: yes
+  auto_forwarders:
+    description: Use DNS forwarders configured in /etc/resolv.conf
+    required: yes
+  forward_policy:
+    description: DNS forwarding policy for global forwarders
+    required: yes
+  no_dnssec_validation:
+    description: Disable DNSSEC validation
+    required: yes
+  enable_compat:
+    description: Enable support for trusted domains for old clients
+    required: yes
+  netbios_name:
+    description: NetBIOS name of the IPA domain
+    required: yes
+  rid_base:
+    description: Start value for mapping UIDs and GIDs to RIDs
+    required: yes
+  secondary_rid_base:
+    description:
+      Start value of the secondary range for mapping UIDs and GIDs to RIDs
+    required: yes
+  server:
+    description: Fully qualified name of IPA server to enroll to
+    required: no
+  skip_conncheck:
+    description: Skip connection check to remote master
+    required: yes
+  dm_password:
+    description: Directory Manager password
+    required: yes
+  password:
+    description: Admin user kerberos password
+    required: yes
+  ip_addresses:
+    description: List of Master Server IP Addresses
+    required: yes
+  domain:
+    description: Primary DNS domain of the IPA deployment
+    required: yes
+  realm:
+    description: Kerberos realm name of the IPA deployment
+    required: yes
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  principal:
+    description:
+      User Principal allowed to promote replicas and join IPA realm
+    required: no
+  ca_cert_files:
+    description:
+      List of files containing CA certificates for the service certificate
+      files
+    required: yes
+  no_host_dns:
+    description: Do not use DNS for hostname lookup during installation
+    required: yes
+  setup_adtrust:
+    description: Configure AD trust capability
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
+  setup_kra:
+    description: Configure a dogtag KRA
+    required: yes
+  setup_dns:
+    description: Configure bind with our zone
+    required: yes
+  dirsrv_cert_files:
+    description:
+      Files containing the Directory Server SSL certificate and private key
+    required: yes
+  dirsrv_cert_name:
+    description: Name of the Directory Server SSL certificate to install
+    required: yes
+  dirsrv_pin:
+    description: The password to unlock the Directory Server private key
+    required: yes
+  http_cert_files:
+    description:
+      File containing the Apache Server SSL certificate and private key
+    required: yes
+  http_cert_name:
+    description: Name of the Apache Server SSL certificate to install
+    required: yes
+  http_pin:
+    description: The password to unlock the Apache Server private key
+    required: yes
+  pkinit_cert_files:
+    description:
+      File containing the Kerberos KDC SSL certificate and private key
+    required: yes
+  pkinit_cert_name:
+    description: Name of the Kerberos KDC SSL certificate to install
+    required: yes
+  pkinit_pin:
+    description: The password to unlock the Kerberos KDC private key
+    required: yes
+  keytab:
+    description: Path to backed up keytab from previous enrollment
+    required: yes
+  mkhomedir:
+    description: Create home directories for users on their first login
+    required: yes
+  force_join:
+    description: Force client enrollment even if already enrolled
+    required: yes
+  no_ntp:
+    description: Do not configure ntp
+    required: yes
+  ssh_trust_dns:
+    description: Configure OpenSSH client to trust DNS SSHFP records
+    required: yes
+  no_ssh:
+    description: Do not configure OpenSSH client
+    required: yes
+  no_sshd:
+    description: Do not configure OpenSSH server
+    required: yes
+  no_dns_sshfp:
+    description: Do not automatically create DNS SSHFP records
+    required: yes
+  allow_zone_overlap:
+    description: Create DNS zone even if it already exists
+    required: yes
+  reverse_zones:
+    description: The reverse DNS zones to use
+    required: yes
+  no_reverse:
+    description: Do not create new reverse DNS zone
+    required: yes
+  auto_reverse:
+    description: Create necessary reverse zones
+    required: yes
+  forwarders:
+    description: Add DNS forwarders
+    required: yes
+  no_forwarders:
+    description: Do not add any DNS forwarders, use root servers instead
+    required: yes
+  auto_forwarders:
+    description: Use DNS forwarders configured in /etc/resolv.conf
+    required: yes
+  forward_policy:
+    description: DNS forwarding policy for global forwarders
+    required: yes
+  no_dnssec_validation:
+    description: Disable DNSSEC validation
+    required: yes
+  enable_compat:
+    description: Enable support for trusted domains for old clients
+    required: yes
+  netbios_name:
+    description: NetBIOS name of the IPA domain
+    required: yes
+  rid_base:
+    description: Start value for mapping UIDs and GIDs to RIDs
+    required: yes
+  secondary_rid_base:
+    description:
+      Start value of the secondary range for mapping UIDs and GIDs to RIDs
+    required: yes
+  server:
+    description: Fully qualified name of IPA server to enroll to
+    required: no
+  skip_conncheck:
+    description: Skip connection check to remote master
+    required: yes
+  dm_password:
+    description: Directory Manager password
+    required: yes
+  password:
+    description: Admin user kerberos password
+    required: yes
+  ip_addresses:
+    description: List of Master Server IP Addresses
+    required: yes
+  domain:
+    description: Primary DNS domain of the IPA deployment
+    required: yes
+  realm:
+    description: Kerberos realm name of the IPA deployment
+    required: yes
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  principal:
+    description:
+      User Principal allowed to promote replicas and join IPA realm
+    required: no
+  ca_cert_files:
+    description:
+      List of files containing CA certificates for the service certificate
+      files
+    required: yes
+  no_host_dns:
+    description: Do not use DNS for hostname lookup during installation
+    required: yes
+  setup_adtrust:
+    description: Configure AD trust capability
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
+  setup_kra:
+    description: Configure a dogtag KRA
+    required: yes
+  setup_dns:
+    description: Configure bind with our zone
+    required: yes
+  dirsrv_cert_files:
+    description:
+      Files containing the Directory Server SSL certificate and private key
+    required: yes
+  dirsrv_cert_name:
+    description: Name of the Directory Server SSL certificate to install
+    required: yes
+  dirsrv_pin:
+    description: The password to unlock the Directory Server private key
+    required: yes
+  http_cert_files:
+    description:
+      File containing the Apache Server SSL certificate and private key
+    required: yes
+  http_cert_name:
+    description: Name of the Apache Server SSL certificate to install
+    required: yes
+  http_pin:
+    description: The password to unlock the Apache Server private key
+    required: yes
+  pkinit_cert_files:
+    description:
+      File containing the Kerberos KDC SSL certificate and private key
+    required: yes
+  pkinit_cert_name:
+    description: Name of the Kerberos KDC SSL certificate to install
+    required: yes
+  pkinit_pin:
+    description: The password to unlock the Kerberos KDC private key
+    required: yes
+  keytab:
+    description: Path to backed up keytab from previous enrollment
+    required: yes
+  mkhomedir:
+    description: Create home directories for users on their first login
+    required: yes
+  force_join:
+    description: Force client enrollment even if already enrolled
+    required: yes
+  no_ntp:
+    description: Do not configure ntp
+    required: yes
+  ssh_trust_dns:
+    description: Configure OpenSSH client to trust DNS SSHFP records
+    required: yes
+  no_ssh:
+    description: Do not configure OpenSSH client
+    required: yes
+  no_sshd:
+    description: Do not configure OpenSSH server
+    required: yes
+  no_dns_sshfp:
+    description: Do not automatically create DNS SSHFP records
+    required: yes
+  allow_zone_overlap:
+    description: Create DNS zone even if it already exists
+    required: yes
+  reverse_zones:
+    description: The reverse DNS zones to use
+    required: yes
+  no_reverse:
+    description: Do not create new reverse DNS zone
+    required: yes
+  auto_reverse:
+    description: Create necessary reverse zones
+    required: yes
+  forwarders:
+    description: Add DNS forwarders
+    required: yes
+  no_forwarders:
+    description: Do not add any DNS forwarders, use root servers instead
+    required: yes
+  auto_forwarders:
+    description: Use DNS forwarders configured in /etc/resolv.conf
+    required: yes
+  forward_policy:
+    description: DNS forwarding policy for global forwarders
+    required: yes
+  no_dnssec_validation:
+    description: Disable DNSSEC validation
+    required: yes
+  enable_compat:
+    description: Enable support for trusted domains for old clients
+    required: yes
+  netbios_name:
+    description: NetBIOS name of the IPA domain
+    required: yes
+  rid_base:
+    description: Start value for mapping UIDs and GIDs to RIDs
+    required: yes
+  secondary_rid_base:
+    description:
+      Start value of the secondary range for mapping UIDs and GIDs to RIDs
+    required: yes
+  server:
+    description: Fully qualified name of IPA server to enroll to
+    required: no
+  skip_conncheck:
+    description: Skip connection check to remote master
+    required: yes
+  dm_password:
+    description: Directory Manager password
+    required: yes
+  password:
+    description: Admin user kerberos password
+    required: yes
+  ip_addresses:
+    description: List of Master Server IP Addresses
+    required: yes
+  domain:
+    description: Primary DNS domain of the IPA deployment
+    required: yes
+  realm:
+    description: Kerberos realm name of the IPA deployment
+    required: yes
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  principal:
+    description:
+      User Principal allowed to promote replicas and join IPA realm
+    required: no
+  ca_cert_files:
+    description:
+      List of files containing CA certificates for the service certificate
+      files
+    required: yes
+  no_host_dns:
+    description: Do not use DNS for hostname lookup during installation
+    required: yes
+  setup_adtrust:
+    description: Configure AD trust capability
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
+  setup_kra:
+    description: Configure a dogtag KRA
+    required: yes
+  setup_dns:
+    description: Configure bind with our zone
+    required: yes
+  dirsrv_cert_files:
+    description:
+      Files containing the Directory Server SSL certificate and private key
+    required: yes
+  dirsrv_cert_name:
+    description: Name of the Directory Server SSL certificate to install
+    required: yes
+  dirsrv_pin:
+    description: The password to unlock the Directory Server private key
+    required: yes
+  http_cert_files:
+    description:
+      File containing the Apache Server SSL certificate and private key
+    required: yes
+  http_cert_name:
+    description: Name of the Apache Server SSL certificate to install
+    required: yes
+  http_pin:
+    description: The password to unlock the Apache Server private key
+    required: yes
+  pkinit_cert_files:
+    description:
+      File containing the Kerberos KDC SSL certificate and private key
+    required: yes
+  pkinit_cert_name:
+    description: Name of the Kerberos KDC SSL certificate to install
+    required: yes
+  pkinit_pin:
+    description: The password to unlock the Kerberos KDC private key
+    required: yes
+  keytab:
+    description: Path to backed up keytab from previous enrollment
+    required: yes
+  mkhomedir:
+    description: Create home directories for users on their first login
+    required: yes
+  force_join:
+    description: Force client enrollment even if already enrolled
+    required: yes
+  no_ntp:
+    description: Do not configure ntp
+    required: yes
+  ssh_trust_dns:
+    description: Configure OpenSSH client to trust DNS SSHFP records
+    required: yes
+  no_ssh:
+    description: Do not configure OpenSSH client
+    required: yes
+  no_sshd:
+    description: Do not configure OpenSSH server
+    required: yes
+  no_dns_sshfp:
+    description: Do not automatically create DNS SSHFP records
+    required: yes
+  allow_zone_overlap:
+    description: Create DNS zone even if it already exists
+    required: yes
+  reverse_zones:
+    description: The reverse DNS zones to use
+    required: yes
+  no_reverse:
+    description: Do not create new reverse DNS zone
+    required: yes
+  auto_reverse:
+    description: Create necessary reverse zones
+    required: yes
+  forwarders:
+    description: Add DNS forwarders
+    required: yes
+  no_forwarders:
+    description: Do not add any DNS forwarders, use root servers instead
+    required: yes
+  auto_forwarders:
+    description: Use DNS forwarders configured in /etc/resolv.conf
+    required: yes
+  forward_policy:
+    description: DNS forwarding policy for global forwarders
+    required: yes
+  no_dnssec_validation:
+    description: Disable DNSSEC validation
+    required: yes
+  enable_compat:
+    description: Enable support for trusted domains for old clients
+    required: yes
+  netbios_name:
+    description: NetBIOS name of the IPA domain
+    required: yes
+  rid_base:
+    description: Start value for mapping UIDs and GIDs to RIDs
+    required: yes
+  secondary_rid_base:
+    description:
+      Start value of the secondary range for mapping UIDs and GIDs to RIDs
+    required: yes
+  server:
+    description: Fully qualified name of IPA server to enroll to
+    required: no
+  skip_conncheck:
+    description: Skip connection check to remote master
+    required: yes
+  dm_password:
+    description: Directory Manager password
+    required: yes
+  password:
+    description: Admin user kerberos password
+    required: yes
+  ip_addresses:
+    description: List of Master Server IP Addresses
+    required: yes
+  domain:
+    description: Primary DNS domain of the IPA deployment
+    required: yes
+  realm:
+    description: Kerberos realm name of the IPA deployment
+    required: yes
+  hostname:
+    description: Fully qualified name of this host
+    required: yes
+  principal:
+    description:
+      User Principal allowed to promote replicas and join IPA realm
+    required: no
+  ca_cert_files:
+    description:
+      List of files containing CA certificates for the service certificate
+      files
+    required: yes
+  no_host_dns:
+    description: Do not use DNS for hostname lookup during installation
+    required: yes
+  setup_adtrust:
+    description: Configure AD trust capability
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
+    required: yes
+  setup_kra:
+    description: Configure a dogtag KRA
+    required: yes
+  setup_dns:
+    description: Configure bind with our zone
+    required: yes
+  dirsrv_cert_files:
+    description:
+      Files containing the Directory Server SSL certificate and private key
+    required: yes
+  dirsrv_cert_name:
+    description: Name of the Directory Server SSL certificate to install
+    required: yes
+  dirsrv_pin:
+    description: The password to unlock the Directory Server private key
+    required: yes
+  http_cert_files:
+    description:
+      File containing the Apache Server SSL certificate and private key
+    required: yes
+  http_cert_name:
+    description: Name of the Apache Server SSL certificate to install
+    required: yes
+  http_pin:
+    description: The password to unlock the Apache Server private key
+    required: yes
+  pkinit_cert_files:
+    description:
+      File containing the Kerberos KDC SSL certificate and private key
+    required: yes
+  pkinit_cert_name:
+    description: Name of the Kerberos KDC SSL certificate to install
+    required: yes
+  pkinit_pin:
+    description: The password to unlock the Kerberos KDC private key
+    required: yes
+  keytab:
+    description: Path to backed up keytab from previous enrollment
+    required: yes
+  mkhomedir:
+    description: Create home directories for users on their first login
+    required: yes
+  force_join:
+    description: Force client enrollment even if already enrolled
+    required: yes
+  no_ntp:
+    description: Do not configure ntp
+    required: yes
+  ssh_trust_dns:
+    description: Configure OpenSSH client to trust DNS SSHFP records
+    required: yes
+  no_ssh:
+    description: Do not configure OpenSSH client
+    required: yes
+  no_sshd:
+    description: Do not configure OpenSSH server
+    required: yes
+  no_dns_sshfp:
+    description: Do not automatically create DNS SSHFP records
+    required: yes
+  allow_zone_overlap:
+    description: Create DNS zone even if it already exists
+    required: yes
+  reverse_zones:
+    description: The reverse DNS zones to use
+    required: yes
+  no_reverse:
+    description: Do not create new reverse DNS zone
+    required: yes
+  auto_reverse:
+    description: Create necessary reverse zones
+    required: yes
+  forwarders:
+    description: Add DNS forwarders
+    required: yes
+  no_forwarders:
+    description: Do not add any DNS forwarders, use root servers instead
+    required: yes
+  auto_forwarders:
+    description: Use DNS forwarders configured in /etc/resolv.conf
+    required: yes
+  forward_policy:
+    description: DNS forwarding policy for global forwarders
+    required: yes
+  no_dnssec_validation:
+    description: Disable DNSSEC validation
+    required: yes
+  enable_compat:
+    description: Enable support for trusted domains for old clients
+    required: yes
+  netbios_name:
+    description: NetBIOS name of the IPA domain
+    required: yes
+  rid_base:
+    description: Start value for mapping UIDs and GIDs to RIDs
+    required: yes
+  secondary_rid_base:
+    description:
+      Start value of the secondary range for mapping UIDs and GIDs to RIDs
+    required: yes
+  server:
+    description: Fully qualified name of IPA server to enroll to
+    required: no
+  skip_conncheck:
+    description: Skip connection check to remote master
+    required: yes
 author:
     - Thomas Woerner
 '''
