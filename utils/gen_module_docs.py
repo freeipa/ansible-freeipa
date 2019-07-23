@@ -47,9 +47,6 @@ param_docs = {
     "setup_ca": "Configure a dogtag CA",
     "setup_kra": "Configure a dogtag KRA",
     "setup_dns": "Configure bind with our zone",
-    "dirserv_cert_files": [
-        "File containing the Directory Server SSL certificate and private key"
-    ],
     "force_join": "Force client enrollment even if already enrolled",
     "subject_base": [
         "The certificate subject base (default O=<realm-name>).",
