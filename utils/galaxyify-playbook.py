@@ -4,7 +4,7 @@ import re
 
 def galaxify_playbook(playbook_in):
     p1 = re.compile('(ipa.*:)$')
-    p2 = re.compile('(name:) (ipa.*)$')
+    p2 = re.compile('(.*:) (ipa.*)$')
     lines = []
 
     with open(playbook_in) as in_f:
@@ -22,6 +22,9 @@ def galaxify_playbook(playbook_in):
             elif stripped.startswith("include_role:"):
                 include_role = True
             elif include_role and stripped.startswith("name:"):
+                line = p2.sub(r'\1 freeipa.ansible_freeipa.\2', line)
+                changed = True
+            elif changeable and stripped.startswith("- role:"):
                 line = p2.sub(r'\1 freeipa.ansible_freeipa.\2', line)
                 changed = True
             elif changeable and not stripped.startswith(
