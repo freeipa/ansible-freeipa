@@ -1,6 +1,4 @@
-import os
 import sys
-import re
 
 param_docs = {
     "ccache": "The local ccache",
@@ -59,8 +57,8 @@ param_docs = {
     "external_ca": "External ca setting",
     "setup_adtrust": "Configure AD trust capability",
     "external_cert_files": [
-        "File containing the IPA CA certificate and the external CA certificate",
-        "chain"
+      "File containing the IPA CA certificate and the external CA certificate",
+      "chain"
     ],
     "reverse_zones": "The reverse DNS zones to use",
     "no_reverse": "Do not create new reverse DNS zone",
@@ -103,14 +101,16 @@ param_docs = {
     "dirsrv_pin": "The password to unlock the Directory Server private key",
     "http_pin": "The password to unlock the Apache Server private key",
     "pkinit_pin": "The password to unlock the Kerberos KDC private key",
-    "dirsrv_cert_name": "Name of the Directory Server SSL certificate to install",
+    "dirsrv_cert_name":
+        "Name of the Directory Server SSL certificate to install",
     "http_cert_name": "Name of the Apache Server SSL certificate to install",
     "pkinit_cert_name": "Name of the Kerberos KDC SSL certificate to install",
     "keytab": "Path to backed up keytab from previous enrollment",
     "mkhomedir": "Create home directories for users on their first login",
     "adtrust_netbios_name": "The adtrust netbios_name setting",
     "adtrust_reset_netbios_name": "The adtrust reset_netbios_name setting",
-    "zonemgr": "DNS zone manager e-mail address. Defaults to hostmaster@DOMAIN",
+    "zonemgr":
+        "DNS zone manager e-mail address. Defaults to hostmaster@DOMAIN",
     "ssh_trust_dns": "Configure OpenSSH client to trust DNS SSHFP records",
     "dns_ip_addresses": "The dns ip_addresses setting",
     "dns_reverse_zones": "The dns reverse_zones setting",
@@ -132,8 +132,8 @@ param_docs = {
     "debug": "Turn on extra debugging",
     "basedn": "The basedn of the IPA server (of the form dc=example,dc=com)",
     "allow_repair": [
-        "Allow repair of already joined hosts. Contrary to ipaclient_force_join",
-        "the host entry will not be changed on the server"
+      "Allow repair of already joined hosts. Contrary to ipaclient_force_join",
+      "the host entry will not be changed on the server"
     ],
     "backup": "File to backup",
     "fqdn": [
@@ -167,7 +167,8 @@ param_docs = {
     "request_cert": "Request certificate for the machine",
     "preserve_sssd": "Preserve old SSSD configuration if possible",
     "no_sudo": "Do not configure SSSD as data source for sudo",
-    "fixed_primary": "Configure sssd to use fixed server as primary IPA server",
+    "fixed_primary":
+        "Configure sssd to use fixed server as primary IPA server",
     "permit": "Disable access rules by default, permit all access",
     "no_krb5_offline_passwords": [
         "Configure SSSD not to store user password when the server is offline"
@@ -182,8 +183,6 @@ param_docs = {
 
 
 def gen_module_docs(module_in):
-    lines = [ ]
-
     with open(module_in) as in_f:
         in_lines = in_f.readlines()
 
@@ -193,7 +192,7 @@ def gen_module_docs(module_in):
     while i < len(in_lines):
         line = in_lines[i]
         stripped = line.strip()
-        #print("stripped: %s" % repr(stripped))
+        # print("stripped: %s" % repr(stripped))
         if stripped.startswith("# "):
             pass
         elif stripped.startswith("argument_spec=dict()"):
@@ -203,23 +202,23 @@ def gen_module_docs(module_in):
         elif stripped.startswith("),") and arg_spec:
             arg_spec = False
         elif arg_spec:
-            #if not "dict=(" in stripped:
-            #    print("%s: Bad argument dict line '%s'" % (module_in,
-            #                                               stripped))
+            # if not "dict=(" in stripped:
+            #     print("%s: Bad argument dict line '%s'" % (module_in,
+            #                                                stripped))
             while ")," not in stripped and i < len(in_lines) - 1:
                 next_stripped = in_lines[i+1].strip()
                 if not next_stripped.startswith("# "):
                     stripped += next_stripped
                 i += 1
-            #print("stripped: '%s'" % stripped)
+            # print("stripped: '%s'" % stripped)
 
             try:
                 param, _dict = stripped.split("=", 1)
-            except:
+            except Exception:
                 print("Failed to split line '%s'" % stripped)
                 sys.exit(1)
 
-            #print("_dict: '%s'" % _dict)
+            # print("_dict: '%s'" % _dict)
             if not _dict.startswith("dict(") or not _dict.endswith("),"):
                 print("%s: Bad argument dict line 2 '%s'" % (module_in, _dict))
                 sys.exit(1)
@@ -228,26 +227,27 @@ def gen_module_docs(module_in):
 
             if param not in param_docs:
                 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                print("%s: param '%s' is not in param_docs" % (module_in, param))
+                print("%s: param '%s' is not in param_docs" % (module_in,
+                                                               param))
                 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 sys.exit(1)
-                
-            #print("param: '%s', dict: '%s'" % (param, _dict))
+
+            # print("param: '%s', dict: '%s'" % (param, _dict))
 
             opts = _dict.split(',')
-            opts = [ o.strip() for o in opts ]
+            opts = [o.strip() for o in opts]
             required = False
-            #no_log = False
+            # no_log = False
             if "required=True" in opts:
                 required = True
-            #if "no_log=True" in opts:
-            #    no_log = True
-            
-            #args.append([param, required, no_log])
+            # if "no_log=True" in opts:
+            #     no_log = True
+
+            # args.append([param, required, no_log])
             args.append([param, required])
         i += 1
 
-    #print("%s: %s" % (module_in, repr(args)))
+    # print("%s: %s" % (module_in, repr(args)))
 
     def add_options(args):
         for param, required in args:
@@ -258,8 +258,8 @@ def gen_module_docs(module_in):
                     out_lines.append("      %s\n" % x)
             else:
                 out_lines.append("    description: %s\n" % param_docs[param])
-            out_lines.append("    required: %s\n" % ("yes","no")[required])
-    
+            out_lines.append("    required: %s\n" % ("yes", "no")[required])
+
     out_lines = []
     options = False
     in_options = False
@@ -295,12 +295,13 @@ def gen_module_docs(module_in):
         out_lines.append(line)
 
     print(module_in)
-    #for line in out_lines:
-    #    sys.stdout.write(line)
+    # for line in out_lines:
+    #     sys.stdout.write(line)
 
     if changed:
         with open(module_in, "w") as out_f:
             for line in out_lines:
                 out_f.write(line)
+
 
 gen_module_docs(sys.argv[1])
