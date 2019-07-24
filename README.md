@@ -66,11 +66,12 @@ The simplest method for now is to clone this repository on the contoller from gi
 git clone https://github.com/freeipa/ansible-freeipa.git
 cd ansible-freeipa
 ```
-You can use the roles directly within the top directory of the git repo, but to be able to use the management modules in the plugins subdirectory, you have to either adapt `anisble.cfg` or create links for the modules or directories.
+You can use the roles directly within the top directory of the git repo, but to be able to use the management modules in the plugins subdirectory, you have to either adapt `anisble.cfg` or create links for the roles, modules or directories.
 
 You can either adapt ansible.cfg:
 
 ```
+roles_path   = /my/dir/ansible-freeipa/roles
 library      = /my/dir/ansible-freeipa/plugins/modules
 module_utils = /my/dir/ansible-freeipa/plugins/module_utils
 ```
@@ -78,6 +79,7 @@ module_utils = /my/dir/ansible-freeipa/plugins/module_utils
 Or you can link the directories:
 
 ```
+ansible-freeipa/roles to ~/.ansible/
 ansible-freeipa/plugins/modules to ~/.ansible/plugins/
 ansible-freeipa/plugins/module_utils to ~/.ansible/plugins/
 ```
