@@ -28,6 +28,7 @@ Supported Distributions
 * RHEL/CentOS 7.4+
 * Fedora 26+
 * Ubuntu
+* Debian 10+ (ipaclient only, no server or replica!)
 
 Requirements
 ------------
