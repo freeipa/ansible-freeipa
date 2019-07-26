@@ -311,6 +311,18 @@ def main():
 
                     commands.append(["topologysegment_reinitialize", args,
                                      suffix])
+                else:
+                    params = []
+                    if name is not None:
+                        params.append("name=%s" % name)
+                    if left is not None:
+                        params.append("left=%s" % left)
+                    if right is not None:
+                        params.append("right=%s" % right)
+                    ansible_module.fail_json(
+                        msg="No entry '%s' for suffix '%s'" %
+                        (",".join(params), suffix))
+
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
