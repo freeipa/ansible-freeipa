@@ -256,12 +256,12 @@ def main():
                             del args[key]
                     if len(args) > 1:
                         # cn needs to be in args always
-                        commands.append(["topologysegment_mod", args])
+                        commands.append(["topologysegment_mod", args, suffix])
                     # else: Nothing to change
                 else:
                     if name is None:
                         args["cn"] = to_text("%s-to-%s" % (left, right))
-                    commands.append(["topologysegment_add", args])
+                    commands.append(["topologysegment_add", args, suffix])
 
             elif state in ["absent", "disabled"]:
                 # Make sure topology segment does not exist
@@ -274,7 +274,7 @@ def main():
                     args = {
                         "cn": res_find["cn"][0]
                     }
-                    commands.append(["topologysegment_del", args])
+                    commands.append(["topologysegment_del", args, suffix])
 
             elif state == "checked":
                 # Check if topology segment does exists
@@ -309,14 +309,15 @@ def main():
                     elif direction == "right-to-left":
                         args["right"] = True
 
-                    commands.append(["topologysegment_reinitialize", args])
+                    commands.append(["topologysegment_reinitialize", args,
+                                     suffix])
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
         # Execute command
 
-        for command, args in commands:
-            api_command(ansible_module, command, to_text(suffix), args)
+        for command, args, _suffix in commands:
+            api_command(ansible_module, command, to_text(_suffix), args)
             changed = True
 
     except Exception as e:
