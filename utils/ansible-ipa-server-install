@@ -331,9 +331,11 @@ def run_cmd(args):
         p = subprocess.Popen(args, stdout=p_out, stderr=p_err,
                              close_fds=True, bufsize=1,
                              universal_newlines=True)
-        with p.stdout:
-            for line in p.stdout:
-                sys.stdout.write(line)
+        while True:
+            line = p.stdout.readline()
+            if p.poll() is not None and line == "":
+                break
+            sys.stdout.write(line)
     except KeyboardInterrupt:
         p.wait()
         raise
