@@ -196,8 +196,8 @@ def parse_options():
                         choices=("yes", "no"), default=None,
                         help="The bool value defines if an already joined or "
                         "partly set-up client can be repaired. Default: no")
-    parser.add_argument("--ipaserver-install-packages",
-                        dest="ipaserver_install_packages",
+    parser.add_argument("--ipaclient-install-packages",
+                        dest="ipaclient_install_packages",
                         choices=("yes", "no"), default=None,
                         help="The bool value defines if the needed packages "
                         "are installed on the node. Default: yes")
