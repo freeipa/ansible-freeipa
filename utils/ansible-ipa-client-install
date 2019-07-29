@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -330,7 +330,7 @@ def main(options, args):
             f.write("ipaclient_allow_repair=%s\n" %
                     options.ipaclient_allow_repair)
         if options.ipaclient_install_packages:
-            f.write("ipaclient_install-packages=%s\n" %
+            f.write("ipaclient_install_packages=%s\n" %
                     options.ipaclient_install_packages)
 
     if options.uninstall:

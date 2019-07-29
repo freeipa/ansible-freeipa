@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -445,7 +445,7 @@ def main(options, args):
                     options.secondary_rid_base)
         # ansible
         if options.ipareplica_install_packages:
-            f.write("ipareplica_install-packages=%s\n" %
+            f.write("ipareplica_install_packages=%s\n" %
                     options.ipareplica_install_packages)
         if options.ipareplica_setup_firewalld:
             f.write("ipareplica_setup_firewalld=%s\n" %
