@@ -313,8 +313,9 @@ def run_cmd(args):
     except KeyboardInterrupt:
         p.wait()
         raise
-
-    return p.returncode
+    else:
+        p.wait()
+        return p.returncode
 
 
 def main(options, args):
