@@ -278,6 +278,12 @@ def parse_options():
                         help="If defined will be used as to create inventory "
                         "file and playbook in. The files will not be removed "
                         "after the playbook processing ended.")
+    parser.add_argument("--become-method",
+                        dest="become_method",
+                        default="sudo",
+                        help="privilege escalation method to use "
+                        "(default=sudo), use `ansible-doc -t become -l` to "
+                        "list valid choices.")
 
     options, args = parser.parse_known_args()
 
@@ -334,10 +340,10 @@ def main(options, args):
             for server in options.servers:
                 f.write("%s\n" % server)
             f.write("\n")
-        f.write("[ipareplica]\n")
+        f.write("[ipareplicas]\n")
         f.write("%s\n" % args[0])
         f.write("\n")
-        f.write("[ipareplica:vars]\n")
+        f.write("[ipareplicas:vars]\n")
         # basic
         if options.admin_password:
             f.write("ipaadmin_password=%s\n" % options.admin_password)
@@ -472,15 +478,16 @@ def main(options, args):
     state = "present"
 
     with open(playbook, 'w') as f:
-        f.write("""---
-- name: Playbook to configure IPA replica
-  hosts: ipareplica
-  become: true
-
-  roles:
-  - role: ipareplica
-    state: %s
-""" % state)
+        f.write("---\n")
+        f.write("- name: Playbook to configure IPA replicas\n")
+        f.write("  hosts: ipareplicas\n")
+        f.write("  become: true\n")
+        if options.become_method:
+            f.write("  become_method: %s\n" % options.become_method)
+        f.write("\n")
+        f.write("  roles:\n")
+        f.write("  - role: ipareplica\n")
+        f.write("    state: %s\n" % state)
 
     try:
         returncode = run_cmd(['ansible-playbook', '-i', inventory, playbook])
