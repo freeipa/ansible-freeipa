@@ -307,8 +307,18 @@ def parse_options():
                         choices=("yes", "no"), default=None,
                         help="Copy the generated CSR from the ipaserver to "
                         "the controller as <hostname>-ipa.csr.")
+    # playbook
+    parser.add_argument("--playbook-dir",
+                        dest="playbook_dir",
+                        default=None,
+                        help="If defined will be used as to create inventory "
+                        "file and playbook in. The files will not be removed "
+                        "after the playbook processing ended.")
 
     options, args = parser.parse_known_args()
+
+    if options.playbook_dir and not os.path.isdir(options.playbook_dir):
+        parser.error("playbook dir does not exist")
 
     if options.log_file:
         parser.error("log_file is not supported")
@@ -344,10 +354,14 @@ def run_cmd(args):
 
 
 def main(options, args):
-    temp_dir = tempfile.mkdtemp(prefix='ansible-ipa')
+    if options.playbook_dir:
+        playbook_dir = options.playbook_dir
+    else:
+        temp_dir = tempfile.mkdtemp(prefix='ansible-ipa-server')
+        playbook_dir = temp_dir
 
-    inventory = os.path.join(temp_dir, "server-inventory")
-    playbook = os.path.join(temp_dir, "server-playbook.yml")
+    inventory = os.path.join(playbook_dir, "ipaserver-inventory")
+    playbook = os.path.join(playbook_dir, "ipaserver-playbook.yml")
 
     with open(inventory, 'w') as f:
         f.write("[ipaserver]\n")
@@ -529,7 +543,8 @@ def main(options, args):
         if returncode != 0:
             raise RuntimeError()
     finally:
-        shutil.rmtree(temp_dir, ignore_errors=True)
+        if not options.playbook_dir:
+            shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 options, args = parse_options()
