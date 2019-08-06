@@ -290,7 +290,7 @@ def parse_options():
     if len(args) < 1:
         parser.error("ansible host not set")
     elif len(args) > 1:
-        parser.error("too many arguments")
+        parser.error("too many arguments: %s" % ",".join(args))
 
     return options, args
 
