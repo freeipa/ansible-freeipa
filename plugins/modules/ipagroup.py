@@ -272,7 +272,7 @@ def main():
     ccache_dir = None
     ccache_name = None
     try:
-        if not valid_creds(ipaadmin_principal):
+        if not valid_creds(ansible_module, ipaadmin_principal):
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
         api_connect()

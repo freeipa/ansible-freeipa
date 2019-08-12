@@ -37,7 +37,7 @@ from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
 
 
-def valid_creds(principal):
+def valid_creds(module, principal):
     """
     Get valid credintials matching the princial
     """
@@ -110,7 +110,7 @@ def execute_api_command(module, principal, password, command, name, args):
     ccache_dir = None
     ccache_name = None
     try:
-        if not valid_creds(principal):
+        if not valid_creds(module, principal):
             ccache_dir, ccache_name = temp_kinit(principal, password)
         api_connect()
 
