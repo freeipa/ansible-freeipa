@@ -22,16 +22,18 @@
 
 
 import os
+import uuid
 import tempfile
 import shutil
+import gssapi
 from datetime import datetime
 from ipalib import api
 from ipalib.config import Env
 from ipalib.constants import DEFAULT_CONFIG, LDAP_GENERALIZED_TIME_FORMAT
 try:
-    from ipalib.install.kinit import kinit_password
+    from ipalib.install.kinit import kinit_password, kinit_keytab
 except ImportError:
-    from ipapython.ipautil import kinit_password
+    from ipapython.ipautil import kinit_password, kinit_keytab
 from ipapython.ipautil import run
 from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
@@ -39,8 +41,34 @@ from ipalib.krb_utils import get_credentials_if_valid
 
 def valid_creds(module, principal):
     """
-    Get valid credintials matching the princial
+    Get valid credintials matching the princial, try GSSAPI first
     """
+    if "KRB5CCNAME" in os.environ:
+        module.debug('KRB5CCNAME set to %s' %
+                     os.environ.get('KRB5CCNAME', None))
+        try:
+            cred = gssapi.creds.Credentials()
+        except gssapi.raw.misc.GSSError as e:
+            module.fail_json(msg='Failed to find default ccache: %s' % e)
+        else:
+            module.debug("Using principal %s" % str(cred.name))
+            return True
+
+    elif "KRB5_CLIENT_KTNAME" in os.environ:
+        keytab = os.environ.get('KRB5_CLIENT_KTNAME', None)
+        module.debug('KRB5_CLIENT_KTNAME set to %s' % keytab)
+
+        ccache_name = "MEMORY:%s" % str(uuid.uuid4())
+        os.environ["KRB5CCNAME"] = ccache_name
+
+        try:
+            cred = kinit_keytab(principal, keytab, ccache_name)
+        except gssapi.raw.misc.GSSError as e:
+            module.fail_json(msg='Kerberos authentication failed : %s' % e)
+        else:
+            module.debug("Using principal %s" % str(cred.name))
+            return True
+
     creds = get_credentials_if_valid()
     if creds and \
        creds.lifetime > 0 and \
