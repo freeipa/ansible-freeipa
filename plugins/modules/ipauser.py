@@ -320,7 +320,7 @@ def main():
     if state == "present":
         if len(names) != 1:
             ansible_module.fail_json(
-                msg="Onle one user can be added at a time.")
+                msg="Only one user can be added at a time.")
         if first is None:
             ansible_module.fail_json(msg="First name is needed")
         if last is None:

@@ -242,7 +242,7 @@ def main():
     if state == "present":
         if len(names) != 1:
             ansible_module.fail_json(
-                msg="Onle one group can be added at a time.")
+                msg="Only one group can be added at a time.")
         if action == "member":
             invalid = ["description", "gid", "nonposix", "external",
                        "nomembers"]
