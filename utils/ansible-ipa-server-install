@@ -259,6 +259,9 @@ def parse_options():
                         default=None, type=int,
                         help="Start value of the secondary range for mapping "
                         "UIDs and GIDs to RIDs")
+    # deprecated
+    parser.add_argument("--domain-level", type=int,
+                        help="IPA domain level (deprecated)")
     # uninstall
     parser.add_argument("--ignore-topology-disconnect",
                         dest="ignore_topology_disconnect",
