@@ -284,6 +284,12 @@ def parse_options():
                         help="privilege escalation method to use "
                         "(default=sudo), use `ansible-doc -t become -l` to "
                         "list valid choices.")
+    parser.add_argument("--ansible-verbose",
+                        dest="ansible_verbose",
+                        type=int, default=None,
+                        help="privilege escalation method to use "
+                        "(default=sudo), use `ansible-doc -t become -l` to "
+                        "list valid choices.")
 
     options, args = parser.parse_known_args()
 
@@ -489,8 +495,12 @@ def main(options, args):
         f.write("  - role: ipareplica\n")
         f.write("    state: %s\n" % state)
 
+    cmd = [ 'ansible-playbook' ]
+    if options.ansible_verbose:
+        cmd.append("-"+"v"*options.ansible_verbose)
+    cmd.extend(['-i', inventory, playbook])
     try:
-        returncode = run_cmd(['ansible-playbook', '-i', inventory, playbook])
+        returncode = run_cmd(cmd)
         if returncode != 0:
             raise RuntimeError()
     finally:
