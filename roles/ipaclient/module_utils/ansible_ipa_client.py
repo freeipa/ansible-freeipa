@@ -35,7 +35,7 @@ __all__ = ["gssapi", "version", "ipadiscovery", "api", "errors", "x509",
            "configure_sssd_conf", "realm_to_suffix", "run", "timeconf",
            "serialization", "configure_krb5_conf", "get_ca_certs",
            "SECURE_PATH", "get_server_connection_interface",
-           "configure_nsswitch_database", "disable_ra", "client_dns",
+           "disable_ra", "client_dns",
            "configure_certmonger", "update_ssh_keys",
            "configure_openldap_conf", "hardcode_ldap_server",
            "get_certs_from_ldap", "save_state", "create_ipa_nssdb",
@@ -143,7 +143,7 @@ if NUM_VERSION >= 40400:
     try:
         from ipaclient.install.client import configure_krb5_conf, \
             get_ca_certs, SECURE_PATH, get_server_connection_interface, \
-            configure_nsswitch_database, disable_ra, client_dns, \
+            disable_ra, client_dns, \
             configure_certmonger, update_ssh_keys, configure_openldap_conf, \
             hardcode_ldap_server, get_certs_from_ldap, save_state, \
             create_ipa_nssdb, configure_ssh_config, configure_sshd_config, \
@@ -204,8 +204,6 @@ if NUM_VERSION >= 40400:
 
         get_server_connection_interface = \
             ipa_client_install.get_server_connection_interface
-        configure_nsswitch_database = \
-            ipa_client_install.configure_nsswitch_database
         disable_ra = ipa_client_install.disable_ra
         client_dns = ipa_client_install.client_dns
         configure_certmonger = ipa_client_install.configure_certmonger
