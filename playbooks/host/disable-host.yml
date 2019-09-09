@@ -1,0 +1,11 @@
+---
+- name: Playbook to handle hosts
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Disable host host01.example.com
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: host01.example.com
+      state: disabled

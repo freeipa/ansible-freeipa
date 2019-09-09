@@ -1,7 +1,7 @@
 FreeIPA Ansible collection
 ==========================
 
-This repository contains [Ansible](https://www.ansible.com/) roles and playbooks to install and uninstall [FreeIPA](https://www.freeipa.org/) `servers`, `replicas` and `clients`. Also modules for group, topology and user management.
+This repository contains [Ansible](https://www.ansible.com/) roles and playbooks to install and uninstall [FreeIPA](https://www.freeipa.org/) `servers`, `replicas` and `clients`. Also modules for group, host, topology and user management.
 
 **Note**: The ansible playbooks and roles require a configured ansible environment where the ansible nodes are reachable and are properly set up to have an IP address and a working package manager.
 
@@ -12,6 +12,7 @@ Features
 * One-time-password (OTP) support for client installation
 * Repair mode for clients
 * Modules for group management
+* Modules for host management
 * Modules for topology management
 * Modules for user management
 
@@ -387,6 +388,7 @@ Modules in plugin/modules
 =========================
 
 * [ipagroup](README-group.md)
+* [ipahost](README-host.md)
 * [ipatopologysegment](README-topology.md)
 * [ipatopologysuffix](README-topology.md)
 * [ipauser](README-user.md)
