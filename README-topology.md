@@ -4,7 +4,7 @@ Topology modules
 Description
 -----------
 
-These modules allow to manage the topology. That means that topology segments can be added, removed and reinitialized. Also it is possible to verify topology suffixes.
+These modules allow to manage the topology. That means that it can made sure that topology segments are present, absent or reinitialized. Also it is possible to verify topology suffixes.
 
 
 Features

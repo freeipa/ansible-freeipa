@@ -4,7 +4,7 @@ Host module
 Description
 -----------
 
-The host module allows to add, remove, and disable hosts.
+The host module allows to ensure presence, absence and disablement of hosts.
 
 The host module is as compatible as possible to the Ansible upstream `ipa_host` module, but addtionally offers to disable hosts.
 
