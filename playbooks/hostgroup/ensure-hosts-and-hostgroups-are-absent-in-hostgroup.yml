@@ -1,0 +1,17 @@
+---
+- name: Playbook to handle hostgroups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure hosts and hostgroups are present in existing databases hostgroup
+  - ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: databases
+      host:
+      - db.example.com
+      hostgroup:
+      - mysql-server
+      - oracle-server
+      action: member
+      state: absent

@@ -1,0 +1,11 @@
+---
+- name: Playbook to handle hostgroups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure host-group databases is present
+  - ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: databases
+      state: absent

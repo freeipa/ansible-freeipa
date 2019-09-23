@@ -13,6 +13,7 @@ Features
 * Repair mode for clients
 * Modules for group management
 * Modules for host management
+* Modules for hostgroup management
 * Modules for topology management
 * Modules for user management
 
@@ -389,6 +390,7 @@ Modules in plugin/modules
 
 * [ipagroup](README-group.md)
 * [ipahost](README-host.md)
+* [ipahostgroup](README-hostgroup.md)
 * [ipatopologysegment](README-topology.md)
 * [ipatopologysuffix](README-topology.md)
 * [ipauser](README-user.md)
