@@ -209,8 +209,7 @@ def main():
                         choices=["member", "group"]),
             # state
             state=dict(type="str", default="present",
-                       choices=["present", "absent",
-                                "member_present", "member_absent"]),
+                       choices=["present", "absent"]),
         ),
         supports_check_mode=True,
     )
