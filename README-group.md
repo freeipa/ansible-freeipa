@@ -144,7 +144,7 @@ Variable | Description | Required
 `group` | List of group name strings assigned to this group. | no
 `service` | List of service name strings assigned to this group | no
 `action` | Work on group or member level. It can be on of `member` or `group` and defaults to `group`. | no
-`state` | The state to ensure. It can be one of `present` or `absent`, defauilt: `present`. | yes
+`state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. | yes
 
 
 Authors
