@@ -1,7 +1,7 @@
 [ipaserver]
 ipaserver.test.local
 
-[ipaservcer:vars]
+[ipaserver:vars]
 ipaadmin_password=SomeADMINpassword
 ipadm_password=SomeDMpassword
 ipaserver_domain=test.local
