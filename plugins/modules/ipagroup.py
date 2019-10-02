@@ -347,25 +347,12 @@ def main():
                     if res_find is None:
                         ansible_module.fail_json(msg="No group '%s'" % name)
 
-                    user_add = list(
-                        set(user or []) -
-                        set(res_find.get("member_user", [])))
-                    group_add = list(
-                        set(group or []) -
-                        set(res_find.get("member_group", [])))
-                    service_add = list(
-                        set(service or []) -
-                        set(res_find.get("member_service", [])))
-
-                    # Add members
-                    if len(user_add) > 0 or len(group_add) > 0 or \
-                       len(service_add) > 0:
-                        commands.append([name, "group_add_member",
-                                         {
-                                             "user": user,
-                                             "group": group,
-                                             "service": service,
-                                         }])
+                    commands.append([name, "group_add_member",
+                                     {
+                                         "user": user,
+                                         "group": group,
+                                         "service": service,
+                                     }])
 
             elif state == "absent":
                 if action == "group":
@@ -376,26 +363,12 @@ def main():
                     if res_find is None:
                         ansible_module.fail_json(msg="No group '%s'" % name)
 
-                    # Remove intersection member
-                    user_del = list(
-                        set(user or []) &
-                        set(res_find.get("member_user", [])))
-                    group_del = list(
-                        set(group or []) &
-                        set(res_find.get("member_group", [])))
-                    service_del = list(
-                        set(service or []) &
-                        set(res_find.get("member_service", [])))
-
-                    # Remove members
-                    if len(user_del) > 0 or len(group_del) > 0 or \
-                       len(service_del) > 0:
-                        commands.append([name, "group_remove_member",
-                                         {
-                                             "user": user,
-                                             "group": group,
-                                             "service": service,
-                                         }])
+                    commands.append([name, "group_remove_member",
+                                     {
+                                         "user": user,
+                                         "group": group,
+                                         "service": service,
+                                     }])
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
@@ -403,11 +376,29 @@ def main():
 
         for name, command, args in commands:
             try:
-                api_command(ansible_module, command, to_text(name), args)
-                changed = True
+                result = api_command(ansible_module, command, to_text(name),
+                                     args)
+                if "completed" in result and result["completed"] > 0:
+                    changed = True
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(e)))
+            # Get all errors
+            # All "already a member" and "not a member" failures in the
+            # result are ignored. All others are reported.
+            errors = []
+            if "failed" in result and len(result["failed"]) > 0:
+                for item in result["failed"]:
+                    failed_item = result["failed"][item]
+                    for member_type in failed_item:
+                        for member, failure in failed_item[member_type]:
+                            if "already a member" in failure \
+                               or "not a member" in failure:
+                                continue
+                            errors.append("%s: %s %s: %s" % (
+                                command, member_type, member, failure))
+            if len(errors) > 0:
+                ansible_module.fail_json(msg=", ".join(errors))
 
     except Exception as e:
         ansible_module.fail_json(msg=str(e))
