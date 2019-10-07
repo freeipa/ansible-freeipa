@@ -7,7 +7,7 @@ Description
 This role allows to configure a new IPA server that is a replica of the server. Once it has been created it is an exact copy of the original IPA server and is an equal  master.
 Changes made to any master are automatically replicated to other masters.
 
-This can be done in differnt ways using auto-discovery of the servers, domain and other settings or by specifying them.
+This can be done in different ways using auto-discovery of the servers, domain and other settings or by specifying them.
 
 **Note**: The ansible playbooks and role require a configured ansible environment where the ansible nodes are reachable and are properly set up to have an IP address and a working package manager.
 
@@ -229,7 +229,7 @@ Cluster Specific Variables
 Variable | Description | Required
 -------- | ----------- | --------
 `ipareplica_servers` | Manually override list of servers for example in a cluster environment on a per replica basis. The list of servers is normally taken from from groups.ipaserver in cluster environments. (list of strings) | no
-`ipaserver_domain` | Used if set in a cliuster environment to overload `ipareplica_domain` | no
+`ipaserver_domain` | Used if set in a cluster environment to overload `ipareplica_domain` | no
 
 Special Variables
 -----------------

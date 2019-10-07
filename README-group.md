@@ -6,7 +6,7 @@ Description
 
 The group module allows to ensure presence and absence of groups and members of groups.
 
-The group module is as compatible as possible to the Ansible upstream `ipa_group` module, but addtionally offers to add users to a group and also to remove users from a group.
+The group module is as compatible as possible to the Ansible upstream `ipa_group` module, but additionally offers to add users to a group and also to remove users from a group.
 
 
 Features

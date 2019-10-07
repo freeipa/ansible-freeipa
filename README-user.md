@@ -6,7 +6,7 @@ Description
 
 The user module allows to ensure presence, absence, disablement, unlocking and undeletion of users.
 
-The user module is as compatible as possible to the Ansible upstream `ipa_user` module, but addtionally offers to preserve delete, enable, disable, unlock and undelete users.
+The user module is as compatible as possible to the Ansible upstream `ipa_user` module, but additionally offers to preserve delete, enable, disable, unlock and undelete users.
 
 
 Features

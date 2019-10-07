@@ -39,7 +39,7 @@ ipaserver.test.local
 ```
 
 
-Example playbook to add a topology segment wiht default name (cn):
+Example playbook to add a topology segment with default name (cn):
 
 ```yaml
 ---
@@ -56,7 +56,7 @@ Example playbook to add a topology segment wiht default name (cn):
       right: ipareplica2.test.local
       state: present
 ```
-The name (cn) can also be set if it should not be the default `{left}-to-{rkight}`.
+The name (cn) can also be set if it should not be the default `{left}-to-{right}`.
 
 
 Example playbook to delete a topology segment:

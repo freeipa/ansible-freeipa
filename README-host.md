@@ -6,7 +6,7 @@ Description
 
 The host module allows to ensure presence, absence and disablement of hosts.
 
-The host module is as compatible as possible to the Ansible upstream `ipa_host` module, but addtionally offers to disable hosts.
+The host module is as compatible as possible to the Ansible upstream `ipa_host` module, but additionally offers to disable hosts.
 
 
 Features
@@ -94,7 +94,7 @@ Example playbook to initiate the generation of a random password to be used in b
   become: true
 
   tasks:
-  # Generate a random password for bulk enrolment
+  # Generate a random password for bulk enrollment
   - ipahost:
       ipaadmin_password: MyPassword123
       name: host01.example.com

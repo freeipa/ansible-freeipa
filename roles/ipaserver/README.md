@@ -132,7 +132,7 @@ Server installation step 1: Generate CSR, copy to controller as `<ipaserver host
 
 Sign with CA: This is up to you
 
-Server installatin step 2: Copy `<ipaserver hostname>-chain.crt` to the IPA server and continue with installation of the primary.
+Server installation step 2: Copy `<ipaserver hostname>-chain.crt` to the IPA server and continue with installation of the primary.
 
 ```yaml
 - name: Playbook to configure IPA server step3
@@ -153,7 +153,7 @@ Server installatin step 2: Copy `<ipaserver hostname>-chain.crt` to the IPA serv
     state: present
 ```
 
-The files can also be copied automatically: Set `ipaserver_copy_csr_to_controller` to true in the server installation step 1 and set `ipaserver_external_cert_files_from_controller` to point to the `chain.crt` file in the server installatin step 2.
+The files can also be copied automatically: Set `ipaserver_copy_csr_to_controller` to true in the server installation step 1 and set `ipaserver_external_cert_files_from_controller` to point to the `chain.crt` file in the server installation step 2.
 
 
 Playbooks
@@ -282,7 +282,7 @@ Special Variables
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaserver_install_packages` | The bool value defines if the needed packages are installed on the node. (bool, default: true) | no
-`ipaserver_setup_firewalld` | The value defines if the needed services will automatically be openen in the firewall managed by firewalld. (bool, default: true) | no
+`ipaserver_setup_firewalld` | The value defines if the needed services will automatically be opened in the firewall managed by firewalld. (bool, default: true) | no
 `ipaserver_external_cert_files_from_controller` | Files containing the IPA CA certificates and the external CA certificate chains on the controller that will be copied to the ipaserver host to `/root` folder. (list of string) | no
 `ipaserver_copy_csr_to_controller` | Copy the generated CSR from the ipaserver to the controller as `"{{ inventory_hostname }}-ipa.csr"`. (bool) | no
 

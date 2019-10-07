@@ -62,13 +62,13 @@ How to use ansible-freeipa
 
 **GIT repo**
 
-The simplest method for now is to clone this repository on the contoller from github directly and to start the deployment from the ansible-freeipa directory:
+The simplest method for now is to clone this repository on the controller from github directly and to start the deployment from the ansible-freeipa directory:
 
 ```bash
 git clone https://github.com/freeipa/ansible-freeipa.git
 cd ansible-freeipa
 ```
-You can use the roles directly within the top directory of the git repo, but to be able to use the management modules in the plugins subdirectory, you have to either adapt `anisble.cfg` or create links for the roles, modules or directories.
+You can use the roles directly within the top directory of the git repo, but to be able to use the management modules in the plugins subdirectory, you have to either adapt `ansible.cfg` or create links for the roles, modules or directories.
 
 You can either adapt ansible.cfg:
 
@@ -88,7 +88,7 @@ ansible-freeipa/plugins/module_utils to ~/.ansible/plugins/
 
 **RPM package**
 
-There are RPM packages available for Fedora 29+. These are installing the roles and modules into the global Ansible directories for `roles`, `plugins/modules` and `plugings/module_utils` in the `/usr/share/ansible` directory. Therefore is it possible to use the roles and modules without adapting the names like it is done in the example playbooks.
+There are RPM packages available for Fedora 29+. These are installing the roles and modules into the global Ansible directories for `roles`, `plugins/modules` and `plugins/module_utils` in the `/usr/share/ansible` directory. Therefore is it possible to use the roles and modules without adapting the names like it is done in the example playbooks.
 
 **Ansible galaxy**
 
@@ -348,7 +348,7 @@ If Ansible vault is used for passwords, then it is needed to adapt the playbooks
     state: present
 ```
 
-It is also needed to provide the vault passowrd file on the ansible-playbook command line:
+It is also needed to provide the vault password file on the ansible-playbook command line:
 ```bash
 ansible-playbook -v -i inventory/hosts --vault-password-file .vaul_pass.txt install-server.yml
 ```
