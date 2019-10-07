@@ -1,7 +1,7 @@
 ipaclient role
 ==============
 
-This [Ansible](https://www.ansible.com/) role allows to join hosts as clients to an IPA domain. This can be done in differnt ways using auto-discovery of the servers, domain and other settings or by specifying them.
+This [Ansible](https://www.ansible.com/) role allows to join hosts as clients to an IPA domain. This can be done in different ways using auto-discovery of the servers, domain and other settings or by specifying them.
 
 **Note**: The ansible playbooks and role require a configured ansible environment where the ansible nodes are reachable and are properly set up to have an IP address and a working package manager.
 
@@ -16,7 +16,7 @@ Features
 Supported FreeIPA Versions
 --------------------------
 
-FreeIPA versions 4.5 and up are supported by the client role. There is also limited support for verison 4.4.
+FreeIPA versions 4.5 and up are supported by the client role. There is also limited support for version 4.4.
 
 
 Supported Distributions
@@ -173,7 +173,7 @@ Server Variables
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaservers` | This group is a list of the IPA server full qualified host names. In a topology with a chain of servers and replicas, it is important to use the right server or replica as the server for the client. If there is a need to overwrite the setting for a client in the `ipaclients` group, please use the list `ipaclient_servers` explained below. If no `ipaservers` group is defined than the installation preparation step will try to use DNS autodiscovery to identify the the IPA server using DNS txt records. | mostly
-`ipaadmin_keytab` | The string variable enables the use of an admin keytab as an alternativce authentication method. The variable needs to contain the local path to the keytab file. If `ipaadmin_keytab` is used, then `ipaadmin_password` does not need to be set. If `ipaadmin_keytab` is used with `ipaclient_use_otp: yes` then the keytab needs to be available on the contoller, else on the client node. The use of full path names is recommended.  | no
+`ipaadmin_keytab` | The string variable enables the use of an admin keytab as an alternative authentication method. The variable needs to contain the local path to the keytab file. If `ipaadmin_keytab` is used, then `ipaadmin_password` does not need to be set. If `ipaadmin_keytab` is used with `ipaclient_use_otp: yes` then the keytab needs to be available on the controller, else on the client node. The use of full path names is recommended.  | no
 `ipaadmin_principal` | The string variable only needs to be set if the name of the Kerberos admin principal is not "admin". If `ipaadmin_principal` is not set it will be set internally to "admin". | no
 `ipaadmin_password` | The string variable contains the Kerberos password of the Kerberos admin principal. If `ipaadmin_keytab` is used, then `ipaadmin_password` does not need to be set. | mostly
 
@@ -185,7 +185,7 @@ These variables can be used to define or change how clients are arranged within 
 
 Variable | Description | Required
 -------- | ----------- | --------
-`ipaclient_no_dns_lookup` | The bool value defines if the `ipaservers` group will be used as servers for the clients automatically. If enabled this deactivates DNS lookup in Kerberos in client installations. `ipaclient_no_dns_lookup` defauults to `no`. | no
+`ipaclient_no_dns_lookup` | The bool value defines if the `ipaservers` group will be used as servers for the clients automatically. If enabled this deactivates DNS lookup in Kerberos in client installations. `ipaclient_no_dns_lookup` defaults to `no`. | no
 `ipaclient_servers` | The optional list can be used to manually override list of servers on a per client basis. The list of servers is normally taken from from `ipaservers` group. | no
 
 
@@ -194,7 +194,7 @@ Special Variables
 
 Variable | Description | Required
 -------- | ----------- | --------
-`ipaclient_use_otp` | The bool value defines if a one-time password will be generated to join a new or existing host. `ipaclient_use_otp` defaults to `no`. The enforcement on an existing host is not done if there is a working krb5.keytab on the host. If the generation of an otp is enforced for an existing host entry, then the host gets diabled and the containing keytab gets removed. | no
+`ipaclient_use_otp` | The bool value defines if a one-time password will be generated to join a new or existing host. `ipaclient_use_otp` defaults to `no`. The enforcement on an existing host is not done if there is a working krb5.keytab on the host. If the generation of an otp is enforced for an existing host entry, then the host gets disabled and the containing keytab gets removed. | no
 `ipaclient_allow_repair` | The bool value defines if an already joined or partly set-up client can be repaired. `ipaclient_allow_repair` defaults to `no`. Contrary to `ipaclient_force_join=yes` the host entry will not be changed on the server. | no
 `ipaclient_install_packages` | The bool value defines if the needed packages are installed on the node. `ipaclient_install_packages` defaults to `yes`. | no
 `ipaclient_on_master` | The bool value is only used in the server and replica installation process to install the client part. It should not be set otherwise. `ipaclient_on_master` defaults to `no`. | no

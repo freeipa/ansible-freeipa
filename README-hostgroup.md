@@ -6,7 +6,7 @@ Description
 
 The hostgroup module allows to ensure presence and absence of hostgroups and members of hostgroups.
 
-The hostgroup module is as compatible as possible to the Ansible upstream `ipa_hostgroup` module, but addtionally offers to make sure that hosts are present or absent in a hostgroup.
+The hostgroup module is as compatible as possible to the Ansible upstream `ipa_hostgroup` module, but additionally offers to make sure that hosts are present or absent in a hostgroup.
 
 
 Features
