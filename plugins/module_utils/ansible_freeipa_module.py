@@ -127,6 +127,13 @@ def api_command(module, command, name, args):
     return api.Command[command](name, **args)
 
 
+def api_check_param(command, name):
+    """
+    Return if param exists in command param list
+    """
+    return name in api.Command[command].params
+
+
 def execute_api_command(module, principal, password, command, name, args):
     """
     Get KRB ticket if not already there, initialize api, connect,
