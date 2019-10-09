@@ -122,12 +122,9 @@ def api_connect():
 
 def api_command(module, command, name, args):
     """
-    Call ipa.Command, use AnsibleModule.fail_json for error handling
+    Call ipa.Command
     """
-    try:
-        return api.Command[command](name, **args)
-    except Exception as e:
-        module.fail_json(msg="%s: %s" % (command, e))
+    return api.Command[command](name, **args)
 
 
 def execute_api_command(module, principal, password, command, name, args):
