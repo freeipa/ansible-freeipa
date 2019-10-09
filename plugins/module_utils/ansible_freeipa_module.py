@@ -178,7 +178,8 @@ def compare_args_ipa(module, args, ipa):
             if isinstance(ipa_arg, list) and not isinstance(arg, list):
                 arg = [arg]
             # module.warn("%s <=> %s" % (arg, ipa_arg))
-            if arg != ipa_arg:
+            if set(arg) != set(ipa_arg):
+                # module.warn("DIFFERENT")
                 return False
 
     return True
