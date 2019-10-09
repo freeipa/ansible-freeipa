@@ -190,3 +190,21 @@ def compare_args_ipa(module, args, ipa):
                 return False
 
     return True
+
+
+def _afm_convert(value):
+    if value is not None:
+        if isinstance(value, list):
+            return [_afm_convert(x) for x in value]
+        elif isinstance(value, dict):
+            return {_afm_convert(k): _afm_convert(v) for k, v in value.items()}
+        elif isinstance(value, str):
+            return to_text(value)
+        else:
+            return value
+    else:
+        return value
+
+
+def module_params_get(module, name):
+    return _afm_convert(module.params.get(name))
