@@ -1,0 +1,11 @@
+---
+- name: Playbook to manage sudo command
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure sudo command is present
+  - ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name: /usr/bin/su
+      state: present
