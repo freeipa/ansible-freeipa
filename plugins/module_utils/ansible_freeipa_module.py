@@ -37,6 +37,7 @@ except ImportError:
 from ipapython.ipautil import run
 from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
+from ansible.module_utils._text import to_text
 
 
 def valid_creds(module, principal):
