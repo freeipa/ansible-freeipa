@@ -211,3 +211,7 @@ def _afm_convert(value):
 
 def module_params_get(module, name):
     return _afm_convert(module.params.get(name))
+
+
+def api_get_realm():
+    return api.env.realm
