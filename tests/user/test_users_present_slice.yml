@@ -1,0 +1,19 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  vars:
+    slice_size: 500
+  tasks:
+  - name: Include users_present.json
+    include_vars:
+      file: users_present.json
+  - debug:
+      msg: "{{ users | length }}"
+  - name: Users present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users: "{{ users[item:item+slice_size] }}"
+    loop: "{{ range(0,users | length, slice_size) | list }}"

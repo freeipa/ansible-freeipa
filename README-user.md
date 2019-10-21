@@ -41,7 +41,7 @@ ipaserver.test.local
 ```
 
 
-Example playbook to add users:
+Example playbook to ensure a user is present:
 
 ```yaml
 ---
@@ -50,7 +50,7 @@ Example playbook to add users:
   become: true
 
   tasks:
-  # Create user pinky
+  # Ensure user pinky is present
   - ipauser:
       ipaadmin_password: MyPassword123
       name: pinky
@@ -64,7 +64,7 @@ Example playbook to add users:
       password: "no-brain"
       update_password: on_create
 
-  # Create user brain
+  # Ensure user brain is present
   - ipauser:
       ipaadmin_password: MyPassword123
       name: brain
@@ -72,6 +72,75 @@ Example playbook to add users:
       last: Acme
 ```
 `update_password` controls if a password for a user will be set in present state only on creation or every time (always).
+
+
+These two `ipauser` module calls can be combined into one with the `users` variable:
+
+```yaml
+---
+- name: Playbook to handle users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure users pinky and brain are present
+  - ipauser:
+      ipaadmin_password: MyPassword123
+      users:
+      - name: pinky
+        first: pinky
+        last: Acme
+        uid: 10001
+        gid: 100
+        phone: "+555123457"
+        email: pinky@acme.com
+        passwordexpiration: "2023-01-19 23:59:59"
+        password: "no-brain"
+      - name: brain
+        first: brain
+        last: Acme
+      update_password: on_create
+```
+
+You can also alternatively use a json file containing the users, here `users_present.json`:
+
+```json
+{
+  "users": [
+    {
+      "name": "user1",
+      "first": "First 1",
+      "last": "Last 1"
+    },
+    {
+      "name": "user2",
+      "first": "First 2",
+      "last": "Last 2"
+    },
+    ...
+  ]
+}
+```
+
+And ensure the presence of the users with this example playbook:
+
+```yaml
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Include users_present.json
+    include_vars:
+      file: users_present.json
+
+  - name: Users present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users: "{{ users }}"
+```
 
 
 Example playbook to delete a user, but preserve it:
@@ -91,6 +160,28 @@ Example playbook to delete a user, but preserve it:
       state: absent
 ```
 
+This can also be done with the `users` variable containing only names, this can be combined into one module call:
+
+Example playbook to delete a user is absent, but preserved:
+
+```yaml
+---
+- name: Playbook to handle users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Remove but preserve user pinky
+  - ipauser:
+      ipaadmin_password: MyPassword123
+      users:
+      - name: pinky
+      preserve: yes
+      state: absent
+```
+
+This can also be done as an alternative with the `users` variable containing only names.
+
 
 Example playbook to undelete a preserved user.
 
@@ -107,6 +198,8 @@ Example playbook to undelete a preserved user.
       name: pinky
       state: undeleted
 ```
+
+This can also be done as an alternative with the `users` variable containing only names.
 
 
 Example playbook to disable a user:
@@ -125,6 +218,8 @@ Example playbook to disable a user:
       state: disabled
 ```
 
+This can also be done as an alternative with the `users` variable containing only names.
+
 
 Example playbook to enable users:
 
@@ -141,6 +236,8 @@ Example playbook to enable users:
       name: pinky,brain
       state: enabled
 ```
+
+This can also be done as an alternative with the `users` variable containing only names.
 
 
 Example playbook to unlock users:
@@ -160,7 +257,7 @@ Example playbook to unlock users:
 ```
 
 
-Example playbook to delete users:
+Example playbook to ensure users are absent:
 
 ```yaml
 ---
@@ -169,10 +266,31 @@ Example playbook to delete users:
   become: true
 
   tasks:
-  # Remove user pinky and brain
+  # Ensure users pinky and brain are absent
   - ipauser:
       ipaadmin_password: MyPassword123
       name: pinky,brain
+      state: absent
+```
+
+This can also be done as an alternative with the `users` variable containing only names.
+
+
+Example playbook to ensure users are absent:
+
+```yaml
+---
+- name: Playbook to handle users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure users pinky and brain are absent
+  - ipauser:
+      ipaadmin_password: MyPassword123
+      users:
+      - name: pinky
+      - name: brain
       state: absent
 ```
 
@@ -183,11 +301,28 @@ Variables
 ipauser
 -------
 
+**General Variables:**
+
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
-`name` | The list of user name strings. | no
+`name` | The list of user name strings. `name` with *user variables* or `users` containing *user variables* need to be used. | no
+**User variables** | Only used with `name` variable in the first level. | no
+`users` | The list of user dicts. Each `users` dict entry can contain **user variables**.<br>There is one required option in the `users` dict:| no
+&nbsp; | `name` - The user name string of the entry. | yes
+&nbsp; | **User variables** | no
+`preserve` | Delete a user, keeping the entry available for future use. (bool) | no
+`update_password` | Set password for a user in present state only on creation or always. It can be one of `always` or `on_create` and defaults to `always`. | no
+`preserve` | Delete a user, keeping the entry available for future use. (bool)  | no
+`state` | The state to ensure. It can be one of `present`, `absent`, `enabled`, `disabled`, `unlocked` or `undeleted`, default: `present`. Only `names` or `users` with only `name` set are allowed if state is not `present`. | yes
+
+
+
+**User Variables:**
+
+Variable | Description | Required
+-------- | ----------- | --------
 `first` \| `givenname` | The first name string. | no
 `last` | The last name | no
 `fullname` \| `cn` | The full name string. | no
@@ -195,17 +330,40 @@ Variable | Description | Required
 `homedir` | The home directory string. | no
 `shell` \| `loginshell` | The login shell string. | no
 `email` | List of email address strings. | no
-`principalname` \| `krbprincipalname` | The kerberos principal sptring. | no
+`principal` \| `principalnam` \| `krbprincipalname` | The kerberos principal sptring. | no
+`principalexpiration` \| `krbprincipalexpiration` | The kerberos principal expiration date. Possible formats: `YYYYMMddHHmmssZ`, `YYYY-MM-ddTHH:mm:ssZ`, `YYYY-MM-ddTHH:mmZ`, `YYYY-MM-ddZ`, `YYYY-MM-dd HH:mm:ssZ` or `YYYY-MM-dd HH:mmZ`. The trailing 'Z' can be skipped. | no
 `passwordexpiration` \| `krbpasswordexpiration` | The kerberos password expiration date. Possible formats: `YYYYMMddHHmmssZ`, `YYYY-MM-ddTHH:mm:ssZ`, `YYYY-MM-ddTHH:mmZ`, `YYYY-MM-ddZ`, `YYYY-MM-dd HH:mm:ssZ` or `YYYY-MM-dd HH:mmZ`. The trailing 'Z' can be skipped. | no
 `password` | The user password string. | no
+`random` | Generate a random user password | no
 `uid` \| `uidnumber` | The UID integer. | no
 `gid` \| `gidnumber` | The GID integer. | no
+`city` | City | no
+`userstate` \| `st` | State/Province | no
+`postalcode` \| `zip` | Postalcode/ZIP | no
 `phone` \| `telephonenumber` | List of telephone number strings, | no
+`mobile` | List of mobile telephone number strings. | no
+`pager` | List of pager number strings. | no
+`fax` \| `facsimiletelephonenumber` | List of fax number strings. | no
+`orgunit` | The Organisation unit. | no
 `title` | The job title string. | no
-~~`sshpubkey` \| `ipasshpubkey`~~ | ~~List of SSH public keys.~~ | ~~no~~
-`update_password` | Set password for a user in present state only on creation or always. It can be one of `always` or `on_create` and defaults to `always`. | no
-`preserve` | Delete a user, keeping the entry available for future use. (bool)  | no
-`state` | The state to ensure. It can be one of `present`, `absent`, `enabled`, `disabled`, `unlocked` or `undeleted`, default: `present`. | yes
+`manager` | List of manager user names. | no
+`carlicense` | List of car licenses. | no
+`sshpubkey` \| `ipasshpubkey` | List of SSH public keys. | no
+`userauthtype` | List of supported user authentication types. Choices: `password`, `radius` and `otp` | no
+`userclass` | User category. (semantics placed on this attribute are for local interpretation). | no
+`radius` | RADIUS proxy configuration  | no
+`radiususer` | RADIUS proxy username | no
+`departmentnumber` | Department Number | no
+`employeenumber` | Employee Number | no
+`employeetype` | Employee Type | no
+`preferredlanguage` | Preferred Language | no
+`certificate` | List of base-64 encoded user certificates. | no
+`certmapdata` | List of certificate mappings. Either `certificate` or `issuer` together with `subject` need to be specified. <br>Options: | no
+&nbsp; | `certificate` - Base-64 encoded user certificate | no
+&nbsp; | `issuer` - Issuer of the certificate | no
+&nbsp; | `subject` - Subject of the certificate | no
+`noprivate` | Do not create user private group. (bool) | no
+`nomembers` | Suppress processing of membership attributes. (bool) | no
 
 
 Authors

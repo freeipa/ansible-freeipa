@@ -1,0 +1,16 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Include users_absent.json
+    include_vars:
+      file: users_absent.json
+
+  - name: Users absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users: "{{ users }}"
+      state: absent

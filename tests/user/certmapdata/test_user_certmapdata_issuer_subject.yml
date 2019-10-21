@@ -1,0 +1,91 @@
+---
+- name: Test user certmapdata
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: User test absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      state: absent
+
+  - name: User test present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      first: test
+      last: test
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata members present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - issuer: CN=issuer1
+        subject: CN=subject1
+      - issuer: CN=issuer2
+        subject: CN=subject2
+      - issuer: CN=issuer3
+        subject: CN=subject3
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata members present again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - issuer: CN=issuer1
+        subject: CN=subject1
+      - issuer: CN=issuer2
+        subject: CN=subject2
+      - issuer: CN=issuer3
+        subject: CN=subject3
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: User test certmapdata members absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - issuer: CN=issuer1
+        subject: CN=subject1
+      - issuer: CN=issuer2
+        subject: CN=subject2
+      - issuer: CN=issuer3
+        subject: CN=subject3
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata members absent again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - issuer: CN=issuer1
+        subject: CN=subject1
+      - issuer: CN=issuer2
+        subject: CN=subject2
+      - issuer: CN=issuer3
+        subject: CN=subject3
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: User test absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      state: absent
+    register: result
+    failed_when: not result.changed

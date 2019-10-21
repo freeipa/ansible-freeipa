@@ -1,0 +1,42 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Users user1..10 absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: user1
+        givenname: user1
+        last: Last
+      - name: user2
+        first: user2
+        last: Last
+      - name: user3
+        first: user3
+        last: Last
+      - name: user4
+        first: user4
+        last: Last
+      - name: user5
+        first: user5
+        last: Last
+      - name: user6
+        first: user6
+        last: Last
+      - name: user7
+        first: user7
+        last: Last
+      - name: user8
+        first: user8
+        last: Last
+      - name: user9
+        first: user9
+        last: Last
+      - name: user10
+        first: user10
+        last: Last
+      state: absent

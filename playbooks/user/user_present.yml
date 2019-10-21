@@ -1,0 +1,40 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: User pinky present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      uid: 10001
+      gid: 100
+      phone: "+555123457"
+      email: pinky@acme.com
+      principalexpiration: "20220119235959"
+      passwordexpiration: "2022-01-19 23:59:59"
+      first: pinky
+      last: Acme
+      initials: pa
+      principal: pa
+      random: yes
+      city: PinkyCity
+      userstate: PinkyState
+      postalcode: 321
+      mobile: "+555123458,+555123459"
+      pager: "+555123450,+555123451"
+      fax: "+555123452,+555123453"
+      orgunit: PinkyOrgUnit
+      manager: manager1,manager2
+      update_password: on_create
+      carlicense: PinkyCarLicense1,PinkyCarLicense2
+      userauthtype: password,radius,otp
+      userclass: PinkyUserClass
+      departmentnumber: "1234"
+      employeenumber: "0815"
+      employeetype: "PinkyExmployeeType"
+      preferredlanguage: "en"
+      noprivate: yes
+      nomembers: false
