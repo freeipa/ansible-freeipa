@@ -15,6 +15,7 @@ Features
 * Modules for host management
 * Modules for hostgroup management
 * Modules for sudocmd management
+* Modules for sudocmdgroup management
 * Modules for topology management
 * Modules for user management
 
@@ -393,6 +394,7 @@ Modules in plugin/modules
 * [ipahost](README-host.md)
 * [ipahostgroup](README-hostgroup.md)
 * [ipasudocmd](README-sudocmd.md)
+* [ipasudocmdgroup](README-sudocmdgroup.md)
 * [ipatopologysegment](README-topology.md)
 * [ipatopologysuffix](README-topology.md)
 * [ipauser](README-user.md)

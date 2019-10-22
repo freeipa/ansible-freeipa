@@ -1,0 +1,22 @@
+---
+- name: Playbook to handle sudocmdgroups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure sudo commands are present
+  - ipasudocmd:
+     ipaadmin_password: MyPassword123
+     name:
+     - /usr/sbin/ifconfig
+     - /usr/sbin/iwlist
+     state: present
+
+  # Ensure sudo commands are present in existing sudocmdgroup
+  - ipasudocmdgroup:
+     ipaadmin_password: MyPassword123
+     name: network
+     sudocmd:
+     - /usr/sbin/ifconfig
+     - /usr/sbin/iwlist
+     action: member

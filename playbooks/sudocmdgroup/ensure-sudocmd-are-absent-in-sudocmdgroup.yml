@@ -1,0 +1,15 @@
+---
+- name: Playbook to handle sudocmdgroups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure sudocmds are absent in sudocmdgroup
+  - ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      sudocmd:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      action: member
+      state: absent
