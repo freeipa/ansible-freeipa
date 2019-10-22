@@ -1,0 +1,120 @@
+---
+
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure sudocmds are absent
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name:
+      - /usr/bin/su
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: absent
+
+  - name: Ensure sudocmd is present
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name: /usr/bin/su
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudocmd is present again
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name: /usr/bin/su
+      state: present
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudocmd is absent
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name: /usr/bin/su
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudocmd is absent again
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name: /usr/bin/su
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure multiple sudocmd are present
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure multiple sudocmd are present again
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: present
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure multiple sudocmd are absent
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure multiple sudocmd are absent again
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: absent
+    register: result
+    failed_when: result.changed
+  - name: Ensure sudocmds are absent
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name:
+      - /usr/bin/su
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: absent
+
+  - name: Ensure sudocmds are absent
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name:
+      - /usr/sbin/ifconfig
+      state: absent
+
+  - name: Ensure sudocmds are present
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name:
+      - /usr/sbin/iwlist
+      state: present
+
+  - name: Ensure multiple sudocmd are absent when only one was present
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: absent
+    register: result
+    failed_when: not result.changed
