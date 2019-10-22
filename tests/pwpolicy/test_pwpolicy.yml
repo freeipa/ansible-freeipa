@@ -1,0 +1,59 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure presence of group ops
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+
+  - name: Ensure presence of pwpolicies for group ops
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      minlife: 7
+      maxlife: 49
+      history: 5
+      priority: 1
+      lockouttime: 300
+      minlength: 8
+      minclasses: 5
+      maxfail: 3
+      failinterval: 5
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure presence of pwpolicies for group ops again
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      minlife: 7
+      maxlife: 49
+      history: 5
+      priority: 1
+      lockouttime: 300
+      minlength: 8
+      minclasses: 5
+      maxfail: 3
+      failinterval: 5
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure absence of pwpolicies for group ops
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure absence of pwpolicies for group ops
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      state: absent
+    register: result
+    failed_when: result.changed

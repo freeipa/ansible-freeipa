@@ -14,6 +14,7 @@ Features
 * Modules for group management
 * Modules for host management
 * Modules for hostgroup management
+* Modules for pwpolicy management
 * Modules for sudocmd management
 * Modules for sudocmdgroup management
 * Modules for topology management
@@ -393,6 +394,7 @@ Modules in plugin/modules
 * [ipagroup](README-group.md)
 * [ipahost](README-host.md)
 * [ipahostgroup](README-hostgroup.md)
+* [ipapwpolicy](README-pwpolicy.md)
 * [ipasudocmd](README-sudocmd.md)
 * [ipasudocmdgroup](README-sudocmdgroup.md)
 * [ipatopologysegment](README-topology.md)
