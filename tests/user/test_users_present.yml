@@ -1,0 +1,15 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Include users_present.json
+    include_vars:
+      file: users_present.json
+
+  - name: Users present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users: "{{ users }}"

@@ -1,0 +1,258 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Remove test users
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: manager1,manager2,manager3,pinky,pinky2
+      state: absent
+
+  - name: User manager1 present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: manager1
+      first: Manager
+      last: One
+    register: result
+    failed_when: not result.changed
+
+  - name: User manager2 present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: manager2
+      first: Manager
+      last: One
+    register: result
+    failed_when: not result.changed
+
+  - name: User manager3 present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: manager3
+      first: Manager
+      last: One
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      uid: 10001
+      gid: 100
+      phone: "+555123457"
+      email: pinky@acme.com
+      principalexpiration: "20220119235959"
+      #passwordexpiration: "2022-01-19 23:59:59"
+      first: pinky
+      last: Acme
+      initials: pa
+      #password: foo2
+      principal: pa
+      random: yes
+      city: PinkyCity
+      userstate: PinkyState
+      postalcode: PinkyZip
+      mobile: "+555123458,+555123459"
+      pager: "+555123450,+555123451"
+      fax: "+555123452,+555123453"
+      orgunit: PinkyOrgUnit
+      manager: manager1,manager2
+      update_password: on_create
+      carlicense: PinkyCarLicense1,PinkyCarLicense2
+      # sshpubkey
+      userauthtype: password,radius,otp
+      userclass: PinkyUserClass
+      #radius: "http://some.link/"
+      #radiususer: PinkyRadiusUser
+      departmentnumber: "1234"
+      employeenumber: "0815"
+      employeetype: "PinkyExmployeeType"
+      preferredlanguage: "en"
+      # certificate
+      noprivate: yes
+      nomembers: false
+      #issuer: PinkyIssuer
+      #subject: PinkySubject
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky present with changed settings
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      first: pinky
+      last: Acme
+      #manager: manager1,manager2,manager3
+      #principal: pa,pa1,pa3
+      sshpubkey:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCqmVDpEX5gnSjKuv97AyzOhaUMMKz8ahOA3GY77tVC4o68KNgMCmDSEG1/kOIaElngNLaCha3p/2iAcU9Bi1tLKUlm2bbO5NHNwHfRxY/3cJtq+/7D1vxJzqThYwI4F9vr1WxyY2+mMTv3pXbfAJoR8Mu06XaEY5PDetlDKjHLuNWF+/O7ZU8PsULTa1dJZFrtXeFpmUoLoGxQBvlrlcPI1zDciCSU24t27Zan5Py2l5QchyI7yhCyMM77KDtj5+AFVpmkb9+zq50rYJAyFVeyUvwjzErvQrKJzYpA0NyBp7vskWbt36M16/M/LxEK7HA6mkcakO3ESWx5MT1LAjvdlnxbWG3787MxweHXuB8CZU+9bZPFBaJ+VQtOfJ7I8eH0S16moPC4ak8FlcFvOH8ERDPWLFDqfy09yaZ7bVIF0//5ZI7Nf3YDe3S7GrBX5ieYuECyP6UNkTx9BRsAQeVvXEc6otzB7iCSnYBMGUGzCqeigoAWaVQUONsSR3Uatks= pinky@ipaserver.el81.local
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDc8MIjaSrxLYHvu+hduoF4m6NUFSlXZWzYbd3BK4L47/U4eiXoOS6dcfuZJDjmLfOipc7XVp7NADwAgA1yBOAjbeVpXr2tC8w8saZibl75WBOEjDfNroiOh/f/ojrwwHg05QTVSZHs27sU1HBPyCQM/FHVM6EnRfmyiBkEBA/3ca0PJ9UJhWb2XisCaz6y6QcTh4gQnvHzgmEmK31GwiKnmBSEQuj8P5NGCO8RlN3cq3zpRpMDEoBRCjQYicllf/5P43r5OGvS1LhTiAMfyqE37URezNQa7aozBpH1GhIwAmjAtm84jXQjxUgZPYC0aSLuADYErScOP4792r6koH9t/DM5/M+jG2c4PNWynDczUw6Eaxl5E3hU0Ee9UN0Oee7iBnVenS/QMeZNyo5lMA/HXT5lrYiJGTYM0shRjGXXYBbJZhWerguSWDAdUd1gvuGP1nb7/+/Cvb46+HX7zYouS5Ojo0yPzMZ07X142jnKAfx9LnKdMUCwBJzbtoJ91Zc= pinky@ipaserver.el81.local
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky add manager manager1
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      manager: manager1
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky add manager manager1 again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      manager: manager1
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: User pinky add manager manager2, manager3
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      manager: manager2,manager3
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky add manager manager2, manager3 again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      manager: manager2,manager3
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: User pinky remove manager manager1
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      manager: manager1
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky remove manager manager1 again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      manager: manager1
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: User pinky add principal pa
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      principal: pa
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky add principal pa again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      principal: pa
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: User pinky add principal pa1
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      principal: pa1
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky remove principal pa1
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      principal: pa1
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky remove principal pa1 again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      principal: pa1
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: User pinky remove principal pa
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      principal: pa
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky remove principal non-existing pa2
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      principal: pa2
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: User pinky absent and preserved
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      preserve: yes
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky undeleted (preserved before)
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      state: undeleted
+    register: result
+    failed_when: not result.changed
+
+  - name: Users pinky disabled
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      state: disabled
+    register: result
+    failed_when: not result.changed
+
+  - name: User pinky enabled
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      state: enabled
+    register: result
+    failed_when: not result.changed
+
+  - name: Remove test users
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: manager1,manager2,manager3,pinky,pinky2
+      state: absent

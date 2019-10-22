@@ -1,0 +1,171 @@
+#
+# Generate self-signed certificates using openssl:
+#
+#   openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout private1.key -out cert1.pem -subj '/CN=test1'
+#   openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout private2.key -out cert2.pem -subj '/CN=test2'
+#   openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout private3.key -out cert3.pem -subj '/CN=test2'
+#
+# Convert the certificate do DER for easier handling through CLI
+#
+#   openssl x509 -outform der -in cert1.pem -out cert1.der
+#   openssl x509 -outform der -in cert2.pem -out cert2.der
+#   openssl x509 -outform der -in cert3.pem -out cert3.der
+#
+# Use base64:
+#
+#  base64 cert1.der -w5000
+#  base64 cert2.der -w5000
+#  base64 cert3.der -w5000
+#
+---
+- name: Test user certmapdata
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: User test absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+      state: absent
+
+  - name: User test present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+        first: test
+        last: test
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata members present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+        certmapdata:
+        - certificate: MIIDATCCAemgAwIBAgIUFDZuUg9kBvN+ubTBaS6d62KafvQwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDEwHhcNMTkxMDE0MTk0ODM4WhcNMjAxMDEzMTk0ODM4WjAQMQ4wDAYDVQQDDAV0ZXN0MTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALrwv6KuOIZMxjp9aueRgJWKns7P7Oo8lo4ojBVhyB3K11+1OifLqfo2SL9HPx9XynvouMj+XnqbY+NRLOX9wPYAvA7rXUgN1zQYK5stCCTjW0V4QloHnMUPM0shIuErcTP1UMatzTaFxd+UkvZCMNbE9jXHeCd3uDYoqA8Y4yRuqQ4HcnbB7DyMNZHaSCHxQCvZzllJA9m1b+c2sO3l7008PibG5RSpPnrjMUeH4yzjaB8R7A/WApAA1g5bn+IXD2dDsbdHAVFdzqwkxxLlacD8pbM7jWtCI+qJwE6dXpPb5WRkUz3tZLkEW7EQJAi3TMy//hF/SobEul3WVjiO/HUCAwEAAaNTMFEwHQYDVR0OBBYEFCkUPLMp0M5rgxHNAYuunGM0if/vMB8GA1UdIwQYMBaAFCkUPLMp0M5rgxHNAYuunGM0if/vMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAI7gj1VllrF0eRqPP9xtSqWla+qGMpHUWur1yIoy3R8I7LV3muQpbgxsfOyH2PHj69v+8yvI5einvOXJVgJxcn/ERxm/prIdo+QlK4O/SDdswJWfjCaDlk03PzjDzHXeEWRwDFV9zpRx/hjLUn8knwBOSbUE8ImUGt37ZBMBsz++y+oCZJVxzwZgcXZ3L4yuhJ0l48Cz+2EEoYN08gJqNk1EzmpBcAYJJ0Ai1psFqu12b32fNIhWSSf5THldqNefdpBlMo5ZtC9wE//NTml+nebA1FJDSppTMfHP/rTb/wfNx5vc5KLYYR9wZUUUDeJhdNPlBZZuuVbn29X6a4teoBk=
+        - certificate: MIIDATCCAemgAwIBAgIUK2Sa8/xr/4H9BOB0K0SswbVmmMcwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDIwHhcNMTkxMDE0MTk0ODM1WhcNMjAxMDEzMTk0ODM1WjAQMQ4wDAYDVQQDDAV0ZXN0MjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANQdGqRUTNCptUsZxVe03YTYyhg6+ovidYP9bPPsCS1FzOTCKV9maFv4GHGEI455lkGowW3okT2DPC5pgtH43vZkDtjXNy1JDyg1y4OmxfiAg4Uc0W9DnakvEokVyt44WRzXjlv2CBO+A7Zon8z3aJwKKCV4EfpuvRw/npqhrnGF/w/n7NXyeRXI6lom9hqIQzJoRjXrMIEbtzM8m2GWlFq8af1KJ+Cmm25c87aeyu7I0+BRCq21pwcyQ6Cx0Lo3szQVlD9ZN6wUfz3IDacLjoMOZkVrclIKO0DU595AVo86TD0C1TC/vCjmDGOfgoQsfS5OFfP+FmN6we9IVIAUcL8CAwEAAaNTMFEwHQYDVR0OBBYEFHTGQuoyDwtbHVLU0SseGvarrJKOMB8GA1UdIwQYMBaAFHTGQuoyDwtbHVLU0SseGvarrJKOMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAEGcA6GzCv67GYWoFK9zAjN01M79BDSuac2QV+9PYjQ7tLXQPGdoXJjJzrkJLgzTwqH2iIUqGoAZp30dW89yrJuA8s0gk3SbPOowYmst6pN6SeENxXL/1kn/IBm3+oHf5IWf7vaW4j8tYt7Q3x2K3V9GWRrozGEPIXk8yMeJq72wpfWynDxxYOepGG2+pSkm8soi9Fpt29pb+DtKB2U9GpMBS8vHU+1H4trIvEOMsd4v+X1+Vxlnt8tgy8/PrlKk1wLB9r1XA+W/vXPBe0tRcuntsXiniSKGC5oiR9AFS134HFEWuhxXWihNFzsLmNimvvxQBlXMRPZC1waCSoTKTAI=
+        - certificate: MIIDATCCAemgAwIBAgIUIa8TtXJ4Nq8VYrlgbSKcVt0FdckwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDMwHhcNMTkxMDE0MTk0ODQ1WhcNMjAxMDEzMTk0ODQ1WjAQMQ4wDAYDVQQDDAV0ZXN0MzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMyttsxCiNH8qx83FTkQaUKxQXer6aMa5DpyfnGMh1K3icfEHyiKLkrjiuFbnfYC1s/iYkz9UyBQrneglYROGgr8TSFC5LXiVppI3/LONKuBh0GfmBM8dhYkOg6WmEB15EL7Hj3V6Xi/Sx3WFnvY/wAzds06linDp/I46jRXqMrWFuhXbf4A09OXpQs6KOMWkkitw3lKuKLgiNzXEiAHaS2YqW7UwSy9RLCrIDMwEmVzZ/gh3vGwM2jyfhOZ75U/xOt9U6jMQsp7hFQAoSeVBTuGpjI40g3IbNBRNi2SnERFzQFkJr0tzAX250XGDaRwRuLhilYoQoJl59B2cTzYsLECAwEAAaNTMFEwHQYDVR0OBBYEFD8iZgdSshdfyAMNfQNzS74Dl9UVMB8GA1UdIwQYMBaAFD8iZgdSshdfyAMNfQNzS74Dl9UVMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFrip5Hl7dHz3oqXLcoza9rQCiMsXV7Q2gVHJ6W2YZZlQpVOBmNPf0n42OVZrnIkDnuGD+pGuw65Aq/TnfMI2KrW8o//aOXLitR60moMEbj61IlBx3aUGvdhyevrz4tM8SHX05p4K86ZJ9jZuS/sNyDwBKBaBAqjW1Rjuqb2o+C9zvDgPWFX++8OgXljDPHR6XYAKpRBmbBZHxYXazjhj1gGhb9/txqDn4EniPXE4rZ/X5MwXzAPs7ROgvr7fkIQypO+O++FGn8rWQL+5zZY0GavOK6FMBJj8M6RDHwEEsXQqSHicsrL8iMx4jun82wgu+gO5lBPTMd0hjsOYR3eT0A=
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata members present again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+        certmapdata:
+        - certificate: MIIDATCCAemgAwIBAgIUFDZuUg9kBvN+ubTBaS6d62KafvQwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDEwHhcNMTkxMDE0MTk0ODM4WhcNMjAxMDEzMTk0ODM4WjAQMQ4wDAYDVQQDDAV0ZXN0MTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALrwv6KuOIZMxjp9aueRgJWKns7P7Oo8lo4ojBVhyB3K11+1OifLqfo2SL9HPx9XynvouMj+XnqbY+NRLOX9wPYAvA7rXUgN1zQYK5stCCTjW0V4QloHnMUPM0shIuErcTP1UMatzTaFxd+UkvZCMNbE9jXHeCd3uDYoqA8Y4yRuqQ4HcnbB7DyMNZHaSCHxQCvZzllJA9m1b+c2sO3l7008PibG5RSpPnrjMUeH4yzjaB8R7A/WApAA1g5bn+IXD2dDsbdHAVFdzqwkxxLlacD8pbM7jWtCI+qJwE6dXpPb5WRkUz3tZLkEW7EQJAi3TMy//hF/SobEul3WVjiO/HUCAwEAAaNTMFEwHQYDVR0OBBYEFCkUPLMp0M5rgxHNAYuunGM0if/vMB8GA1UdIwQYMBaAFCkUPLMp0M5rgxHNAYuunGM0if/vMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAI7gj1VllrF0eRqPP9xtSqWla+qGMpHUWur1yIoy3R8I7LV3muQpbgxsfOyH2PHj69v+8yvI5einvOXJVgJxcn/ERxm/prIdo+QlK4O/SDdswJWfjCaDlk03PzjDzHXeEWRwDFV9zpRx/hjLUn8knwBOSbUE8ImUGt37ZBMBsz++y+oCZJVxzwZgcXZ3L4yuhJ0l48Cz+2EEoYN08gJqNk1EzmpBcAYJJ0Ai1psFqu12b32fNIhWSSf5THldqNefdpBlMo5ZtC9wE//NTml+nebA1FJDSppTMfHP/rTb/wfNx5vc5KLYYR9wZUUUDeJhdNPlBZZuuVbn29X6a4teoBk=
+        - certificate: MIIDATCCAemgAwIBAgIUK2Sa8/xr/4H9BOB0K0SswbVmmMcwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDIwHhcNMTkxMDE0MTk0ODM1WhcNMjAxMDEzMTk0ODM1WjAQMQ4wDAYDVQQDDAV0ZXN0MjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANQdGqRUTNCptUsZxVe03YTYyhg6+ovidYP9bPPsCS1FzOTCKV9maFv4GHGEI455lkGowW3okT2DPC5pgtH43vZkDtjXNy1JDyg1y4OmxfiAg4Uc0W9DnakvEokVyt44WRzXjlv2CBO+A7Zon8z3aJwKKCV4EfpuvRw/npqhrnGF/w/n7NXyeRXI6lom9hqIQzJoRjXrMIEbtzM8m2GWlFq8af1KJ+Cmm25c87aeyu7I0+BRCq21pwcyQ6Cx0Lo3szQVlD9ZN6wUfz3IDacLjoMOZkVrclIKO0DU595AVo86TD0C1TC/vCjmDGOfgoQsfS5OFfP+FmN6we9IVIAUcL8CAwEAAaNTMFEwHQYDVR0OBBYEFHTGQuoyDwtbHVLU0SseGvarrJKOMB8GA1UdIwQYMBaAFHTGQuoyDwtbHVLU0SseGvarrJKOMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAEGcA6GzCv67GYWoFK9zAjN01M79BDSuac2QV+9PYjQ7tLXQPGdoXJjJzrkJLgzTwqH2iIUqGoAZp30dW89yrJuA8s0gk3SbPOowYmst6pN6SeENxXL/1kn/IBm3+oHf5IWf7vaW4j8tYt7Q3x2K3V9GWRrozGEPIXk8yMeJq72wpfWynDxxYOepGG2+pSkm8soi9Fpt29pb+DtKB2U9GpMBS8vHU+1H4trIvEOMsd4v+X1+Vxlnt8tgy8/PrlKk1wLB9r1XA+W/vXPBe0tRcuntsXiniSKGC5oiR9AFS134HFEWuhxXWihNFzsLmNimvvxQBlXMRPZC1waCSoTKTAI=
+        - certificate: MIIDATCCAemgAwIBAgIUIa8TtXJ4Nq8VYrlgbSKcVt0FdckwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDMwHhcNMTkxMDE0MTk0ODQ1WhcNMjAxMDEzMTk0ODQ1WjAQMQ4wDAYDVQQDDAV0ZXN0MzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMyttsxCiNH8qx83FTkQaUKxQXer6aMa5DpyfnGMh1K3icfEHyiKLkrjiuFbnfYC1s/iYkz9UyBQrneglYROGgr8TSFC5LXiVppI3/LONKuBh0GfmBM8dhYkOg6WmEB15EL7Hj3V6Xi/Sx3WFnvY/wAzds06linDp/I46jRXqMrWFuhXbf4A09OXpQs6KOMWkkitw3lKuKLgiNzXEiAHaS2YqW7UwSy9RLCrIDMwEmVzZ/gh3vGwM2jyfhOZ75U/xOt9U6jMQsp7hFQAoSeVBTuGpjI40g3IbNBRNi2SnERFzQFkJr0tzAX250XGDaRwRuLhilYoQoJl59B2cTzYsLECAwEAAaNTMFEwHQYDVR0OBBYEFD8iZgdSshdfyAMNfQNzS74Dl9UVMB8GA1UdIwQYMBaAFD8iZgdSshdfyAMNfQNzS74Dl9UVMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFrip5Hl7dHz3oqXLcoza9rQCiMsXV7Q2gVHJ6W2YZZlQpVOBmNPf0n42OVZrnIkDnuGD+pGuw65Aq/TnfMI2KrW8o//aOXLitR60moMEbj61IlBx3aUGvdhyevrz4tM8SHX05p4K86ZJ9jZuS/sNyDwBKBaBAqjW1Rjuqb2o+C9zvDgPWFX++8OgXljDPHR6XYAKpRBmbBZHxYXazjhj1gGhb9/txqDn4EniPXE4rZ/X5MwXzAPs7ROgvr7fkIQypO+O++FGn8rWQL+5zZY0GavOK6FMBJj8M6RDHwEEsXQqSHicsrL8iMx4jun82wgu+gO5lBPTMd0hjsOYR3eT0A=
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: User test certmapdata members absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+        certmapdata:
+        - certificate: MIIDATCCAemgAwIBAgIUFDZuUg9kBvN+ubTBaS6d62KafvQwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDEwHhcNMTkxMDE0MTk0ODM4WhcNMjAxMDEzMTk0ODM4WjAQMQ4wDAYDVQQDDAV0ZXN0MTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALrwv6KuOIZMxjp9aueRgJWKns7P7Oo8lo4ojBVhyB3K11+1OifLqfo2SL9HPx9XynvouMj+XnqbY+NRLOX9wPYAvA7rXUgN1zQYK5stCCTjW0V4QloHnMUPM0shIuErcTP1UMatzTaFxd+UkvZCMNbE9jXHeCd3uDYoqA8Y4yRuqQ4HcnbB7DyMNZHaSCHxQCvZzllJA9m1b+c2sO3l7008PibG5RSpPnrjMUeH4yzjaB8R7A/WApAA1g5bn+IXD2dDsbdHAVFdzqwkxxLlacD8pbM7jWtCI+qJwE6dXpPb5WRkUz3tZLkEW7EQJAi3TMy//hF/SobEul3WVjiO/HUCAwEAAaNTMFEwHQYDVR0OBBYEFCkUPLMp0M5rgxHNAYuunGM0if/vMB8GA1UdIwQYMBaAFCkUPLMp0M5rgxHNAYuunGM0if/vMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAI7gj1VllrF0eRqPP9xtSqWla+qGMpHUWur1yIoy3R8I7LV3muQpbgxsfOyH2PHj69v+8yvI5einvOXJVgJxcn/ERxm/prIdo+QlK4O/SDdswJWfjCaDlk03PzjDzHXeEWRwDFV9zpRx/hjLUn8knwBOSbUE8ImUGt37ZBMBsz++y+oCZJVxzwZgcXZ3L4yuhJ0l48Cz+2EEoYN08gJqNk1EzmpBcAYJJ0Ai1psFqu12b32fNIhWSSf5THldqNefdpBlMo5ZtC9wE//NTml+nebA1FJDSppTMfHP/rTb/wfNx5vc5KLYYR9wZUUUDeJhdNPlBZZuuVbn29X6a4teoBk=
+        - certificate: MIIDATCCAemgAwIBAgIUK2Sa8/xr/4H9BOB0K0SswbVmmMcwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDIwHhcNMTkxMDE0MTk0ODM1WhcNMjAxMDEzMTk0ODM1WjAQMQ4wDAYDVQQDDAV0ZXN0MjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANQdGqRUTNCptUsZxVe03YTYyhg6+ovidYP9bPPsCS1FzOTCKV9maFv4GHGEI455lkGowW3okT2DPC5pgtH43vZkDtjXNy1JDyg1y4OmxfiAg4Uc0W9DnakvEokVyt44WRzXjlv2CBO+A7Zon8z3aJwKKCV4EfpuvRw/npqhrnGF/w/n7NXyeRXI6lom9hqIQzJoRjXrMIEbtzM8m2GWlFq8af1KJ+Cmm25c87aeyu7I0+BRCq21pwcyQ6Cx0Lo3szQVlD9ZN6wUfz3IDacLjoMOZkVrclIKO0DU595AVo86TD0C1TC/vCjmDGOfgoQsfS5OFfP+FmN6we9IVIAUcL8CAwEAAaNTMFEwHQYDVR0OBBYEFHTGQuoyDwtbHVLU0SseGvarrJKOMB8GA1UdIwQYMBaAFHTGQuoyDwtbHVLU0SseGvarrJKOMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAEGcA6GzCv67GYWoFK9zAjN01M79BDSuac2QV+9PYjQ7tLXQPGdoXJjJzrkJLgzTwqH2iIUqGoAZp30dW89yrJuA8s0gk3SbPOowYmst6pN6SeENxXL/1kn/IBm3+oHf5IWf7vaW4j8tYt7Q3x2K3V9GWRrozGEPIXk8yMeJq72wpfWynDxxYOepGG2+pSkm8soi9Fpt29pb+DtKB2U9GpMBS8vHU+1H4trIvEOMsd4v+X1+Vxlnt8tgy8/PrlKk1wLB9r1XA+W/vXPBe0tRcuntsXiniSKGC5oiR9AFS134HFEWuhxXWihNFzsLmNimvvxQBlXMRPZC1waCSoTKTAI=
+        - certificate: MIIDATCCAemgAwIBAgIUIa8TtXJ4Nq8VYrlgbSKcVt0FdckwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDMwHhcNMTkxMDE0MTk0ODQ1WhcNMjAxMDEzMTk0ODQ1WjAQMQ4wDAYDVQQDDAV0ZXN0MzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMyttsxCiNH8qx83FTkQaUKxQXer6aMa5DpyfnGMh1K3icfEHyiKLkrjiuFbnfYC1s/iYkz9UyBQrneglYROGgr8TSFC5LXiVppI3/LONKuBh0GfmBM8dhYkOg6WmEB15EL7Hj3V6Xi/Sx3WFnvY/wAzds06linDp/I46jRXqMrWFuhXbf4A09OXpQs6KOMWkkitw3lKuKLgiNzXEiAHaS2YqW7UwSy9RLCrIDMwEmVzZ/gh3vGwM2jyfhOZ75U/xOt9U6jMQsp7hFQAoSeVBTuGpjI40g3IbNBRNi2SnERFzQFkJr0tzAX250XGDaRwRuLhilYoQoJl59B2cTzYsLECAwEAAaNTMFEwHQYDVR0OBBYEFD8iZgdSshdfyAMNfQNzS74Dl9UVMB8GA1UdIwQYMBaAFD8iZgdSshdfyAMNfQNzS74Dl9UVMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFrip5Hl7dHz3oqXLcoza9rQCiMsXV7Q2gVHJ6W2YZZlQpVOBmNPf0n42OVZrnIkDnuGD+pGuw65Aq/TnfMI2KrW8o//aOXLitR60moMEbj61IlBx3aUGvdhyevrz4tM8SHX05p4K86ZJ9jZuS/sNyDwBKBaBAqjW1Rjuqb2o+C9zvDgPWFX++8OgXljDPHR6XYAKpRBmbBZHxYXazjhj1gGhb9/txqDn4EniPXE4rZ/X5MwXzAPs7ROgvr7fkIQypO+O++FGn8rWQL+5zZY0GavOK6FMBJj8M6RDHwEEsXQqSHicsrL8iMx4jun82wgu+gO5lBPTMd0hjsOYR3eT0A=
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata members absent again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+        certmapdata:
+        - certificate: MIIDATCCAemgAwIBAgIUFDZuUg9kBvN+ubTBaS6d62KafvQwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDEwHhcNMTkxMDE0MTk0ODM4WhcNMjAxMDEzMTk0ODM4WjAQMQ4wDAYDVQQDDAV0ZXN0MTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALrwv6KuOIZMxjp9aueRgJWKns7P7Oo8lo4ojBVhyB3K11+1OifLqfo2SL9HPx9XynvouMj+XnqbY+NRLOX9wPYAvA7rXUgN1zQYK5stCCTjW0V4QloHnMUPM0shIuErcTP1UMatzTaFxd+UkvZCMNbE9jXHeCd3uDYoqA8Y4yRuqQ4HcnbB7DyMNZHaSCHxQCvZzllJA9m1b+c2sO3l7008PibG5RSpPnrjMUeH4yzjaB8R7A/WApAA1g5bn+IXD2dDsbdHAVFdzqwkxxLlacD8pbM7jWtCI+qJwE6dXpPb5WRkUz3tZLkEW7EQJAi3TMy//hF/SobEul3WVjiO/HUCAwEAAaNTMFEwHQYDVR0OBBYEFCkUPLMp0M5rgxHNAYuunGM0if/vMB8GA1UdIwQYMBaAFCkUPLMp0M5rgxHNAYuunGM0if/vMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAI7gj1VllrF0eRqPP9xtSqWla+qGMpHUWur1yIoy3R8I7LV3muQpbgxsfOyH2PHj69v+8yvI5einvOXJVgJxcn/ERxm/prIdo+QlK4O/SDdswJWfjCaDlk03PzjDzHXeEWRwDFV9zpRx/hjLUn8knwBOSbUE8ImUGt37ZBMBsz++y+oCZJVxzwZgcXZ3L4yuhJ0l48Cz+2EEoYN08gJqNk1EzmpBcAYJJ0Ai1psFqu12b32fNIhWSSf5THldqNefdpBlMo5ZtC9wE//NTml+nebA1FJDSppTMfHP/rTb/wfNx5vc5KLYYR9wZUUUDeJhdNPlBZZuuVbn29X6a4teoBk=
+        - certificate: MIIDATCCAemgAwIBAgIUK2Sa8/xr/4H9BOB0K0SswbVmmMcwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDIwHhcNMTkxMDE0MTk0ODM1WhcNMjAxMDEzMTk0ODM1WjAQMQ4wDAYDVQQDDAV0ZXN0MjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANQdGqRUTNCptUsZxVe03YTYyhg6+ovidYP9bPPsCS1FzOTCKV9maFv4GHGEI455lkGowW3okT2DPC5pgtH43vZkDtjXNy1JDyg1y4OmxfiAg4Uc0W9DnakvEokVyt44WRzXjlv2CBO+A7Zon8z3aJwKKCV4EfpuvRw/npqhrnGF/w/n7NXyeRXI6lom9hqIQzJoRjXrMIEbtzM8m2GWlFq8af1KJ+Cmm25c87aeyu7I0+BRCq21pwcyQ6Cx0Lo3szQVlD9ZN6wUfz3IDacLjoMOZkVrclIKO0DU595AVo86TD0C1TC/vCjmDGOfgoQsfS5OFfP+FmN6we9IVIAUcL8CAwEAAaNTMFEwHQYDVR0OBBYEFHTGQuoyDwtbHVLU0SseGvarrJKOMB8GA1UdIwQYMBaAFHTGQuoyDwtbHVLU0SseGvarrJKOMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAEGcA6GzCv67GYWoFK9zAjN01M79BDSuac2QV+9PYjQ7tLXQPGdoXJjJzrkJLgzTwqH2iIUqGoAZp30dW89yrJuA8s0gk3SbPOowYmst6pN6SeENxXL/1kn/IBm3+oHf5IWf7vaW4j8tYt7Q3x2K3V9GWRrozGEPIXk8yMeJq72wpfWynDxxYOepGG2+pSkm8soi9Fpt29pb+DtKB2U9GpMBS8vHU+1H4trIvEOMsd4v+X1+Vxlnt8tgy8/PrlKk1wLB9r1XA+W/vXPBe0tRcuntsXiniSKGC5oiR9AFS134HFEWuhxXWihNFzsLmNimvvxQBlXMRPZC1waCSoTKTAI=
+        - certificate: MIIDATCCAemgAwIBAgIUIa8TtXJ4Nq8VYrlgbSKcVt0FdckwDQYJKoZIhvcNAQELBQAwEDEOMAwGA1UEAwwFdGVzdDMwHhcNMTkxMDE0MTk0ODQ1WhcNMjAxMDEzMTk0ODQ1WjAQMQ4wDAYDVQQDDAV0ZXN0MzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMyttsxCiNH8qx83FTkQaUKxQXer6aMa5DpyfnGMh1K3icfEHyiKLkrjiuFbnfYC1s/iYkz9UyBQrneglYROGgr8TSFC5LXiVppI3/LONKuBh0GfmBM8dhYkOg6WmEB15EL7Hj3V6Xi/Sx3WFnvY/wAzds06linDp/I46jRXqMrWFuhXbf4A09OXpQs6KOMWkkitw3lKuKLgiNzXEiAHaS2YqW7UwSy9RLCrIDMwEmVzZ/gh3vGwM2jyfhOZ75U/xOt9U6jMQsp7hFQAoSeVBTuGpjI40g3IbNBRNi2SnERFzQFkJr0tzAX250XGDaRwRuLhilYoQoJl59B2cTzYsLECAwEAAaNTMFEwHQYDVR0OBBYEFD8iZgdSshdfyAMNfQNzS74Dl9UVMB8GA1UdIwQYMBaAFD8iZgdSshdfyAMNfQNzS74Dl9UVMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAFrip5Hl7dHz3oqXLcoza9rQCiMsXV7Q2gVHJ6W2YZZlQpVOBmNPf0n42OVZrnIkDnuGD+pGuw65Aq/TnfMI2KrW8o//aOXLitR60moMEbj61IlBx3aUGvdhyevrz4tM8SHX05p4K86ZJ9jZuS/sNyDwBKBaBAqjW1Rjuqb2o+C9zvDgPWFX++8OgXljDPHR6XYAKpRBmbBZHxYXazjhj1gGhb9/txqDn4EniPXE4rZ/X5MwXzAPs7ROgvr7fkIQypO+O++FGn8rWQL+5zZY0GavOK6FMBJj8M6RDHwEEsXQqSHicsrL8iMx4jun82wgu+gO5lBPTMd0hjsOYR3eT0A=
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: User test certmapdata members present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+        certmapdata:
+        - issuer: CN=issuer1
+          subject: CN=subject1
+        - issuer: CN=issuer2
+          subject: CN=subject2
+        - issuer: CN=issuer3
+          subject: CN=subject3
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata members present again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+        certmapdata:
+        - issuer: CN=issuer1
+          subject: CN=subject1
+        - issuer: CN=issuer2
+          subject: CN=subject2
+        - issuer: CN=issuer3
+          subject: CN=subject3
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: User test certmapdata members absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+        certmapdata:
+        - issuer: CN=issuer1
+          subject: CN=subject1
+        - issuer: CN=issuer2
+          subject: CN=subject2
+        - issuer: CN=issuer3
+          subject: CN=subject3
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata members absent again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+        certmapdata:
+        - issuer: CN=issuer1
+          subject: CN=subject1
+        - issuer: CN=issuer2
+          subject: CN=subject2
+        - issuer: CN=issuer3
+          subject: CN=subject3
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: User test absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: test
+      state: absent
+    register: result
+    failed_when: not result.changed

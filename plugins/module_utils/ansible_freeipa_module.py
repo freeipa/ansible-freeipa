@@ -183,6 +183,8 @@ def compare_args_ipa(module, args, ipa):
             # If ipa_arg is a list and arg is not, replace arg
             # with list containing arg. Most args in a find result
             # are lists, but not all.
+            if isinstance(ipa_arg, tuple):
+                ipa_arg = list(ipa_arg)
             if isinstance(ipa_arg, list) and not isinstance(arg, list):
                 arg = [arg]
             # module.warn("%s <=> %s" % (arg, ipa_arg))
@@ -209,3 +211,7 @@ def _afm_convert(value):
 
 def module_params_get(module, name):
     return _afm_convert(module.params.get(name))
+
+
+def api_get_realm():
+    return api.env.realm
