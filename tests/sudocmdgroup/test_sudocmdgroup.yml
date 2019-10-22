@@ -1,0 +1,164 @@
+---
+
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure sudocmds are present
+    ipasudocmd:
+      ipaadmin_password: MyPassword123
+      name:
+      - /usr/bin/su
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: present
+
+  - name: Ensure sudocmdgroup is absent
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      state: absent
+
+  - name: Ensure sudocmdgroup is present
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudocmdgroup is present again
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      state: present
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudocmdgroup is absent
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudocmdgroup is absent again
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure testing sudocmdgroup is present
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudo commands are present in existing sudocmdgroup
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      sudocmd:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudo commands are present in existing sudocmdgroup, again
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      sudocmd:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudo commands are absent in existing sudocmdgroup
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      sudocmd:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudo commands are absent in existing sudocmdgroup, again
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      sudocmd:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudo commands are present in sudocmdgroup
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      sudocmd:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      action: member
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure one sudo command is not present in sudocmdgroup
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      sudocmd:
+      - /usr/sbin/ifconfig
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure one sudo command is present in sudocmdgroup
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      sudocmd:
+      - /usr/sbin/ifconfig
+      action: member
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure the other sudo command is not present in sudocmdgroup
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      sudocmd:
+      - /usr/sbin/iwlist
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure the other sudo commandsis not present in sudocmdgroup, again
+    ipasudocmdgroup:
+      ipaadmin_password: MyPassword123
+      name: network
+      sudocmd:
+      - /usr/sbin/iwlist
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
