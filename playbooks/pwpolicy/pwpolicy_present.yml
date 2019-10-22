@@ -1,0 +1,20 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure presence of pwpolicies for group ops
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      minlife: 7
+      maxlife: 49
+      history: 5
+      priority: 1
+      lockouttime: 300
+      minlength: 8
+      minclasses: 5
+      maxfail: 3
+      failinterval: 5

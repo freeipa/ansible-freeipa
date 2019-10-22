@@ -38,6 +38,11 @@ from ipapython.ipautil import run
 from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
 from ansible.module_utils._text import to_text
+import six
+
+
+if six.PY3:
+    unicode = str
 
 
 def valid_creds(module, principal):
@@ -185,8 +190,13 @@ def compare_args_ipa(module, args, ipa):
             # are lists, but not all.
             if isinstance(ipa_arg, tuple):
                 ipa_arg = list(ipa_arg)
-            if isinstance(ipa_arg, list) and not isinstance(arg, list):
-                arg = [arg]
+            if isinstance(ipa_arg, list):
+                if not isinstance(arg, list):
+                    arg = [arg]
+                if isinstance(ipa_arg[0], str) and isinstance(arg[0], int):
+                    arg = [to_text(_arg) for _arg in arg]
+                if isinstance(ipa_arg[0], unicode) and isinstance(arg[0], int):
+                    arg = [to_text(_arg) for _arg in arg]
             # module.warn("%s <=> %s" % (arg, ipa_arg))
             if set(arg) != set(ipa_arg):
                 # module.warn("DIFFERENT")

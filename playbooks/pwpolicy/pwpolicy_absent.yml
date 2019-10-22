@@ -1,0 +1,12 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure absence of pwpolicies for group ops
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      state: absent
