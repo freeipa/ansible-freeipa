@@ -1,0 +1,58 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure HBAC Service for http is absent
+    ipahbacsvc:
+      ipaadmin_password: MyPassword123
+      name: http,tftp
+      state: absent
+
+  - name: Ensure HBAC Service for http is present
+    ipahbacsvc:
+      ipaadmin_password: MyPassword123
+      name: http
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Service for http is present again
+    ipahbacsvc:
+      ipaadmin_password: MyPassword123
+      name: http
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC Service for tftp is present
+    ipahbacsvc:
+      ipaadmin_password: MyPassword123
+      name: tftp
+      description: TFTP service
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Service for tftp is present again
+    ipahbacsvc:
+      ipaadmin_password: MyPassword123
+      name: tftp
+      description: TFTP service
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC Services for http and tftp are absent
+    ipahbacsvc:
+      ipaadmin_password: MyPassword123
+      name: http,tftp
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Services for http and tftp are absent again
+    ipahbacsvc:
+      ipaadmin_password: MyPassword123
+      name: http,tftp
+      state: absent
+    register: result
+    failed_when: result.changed

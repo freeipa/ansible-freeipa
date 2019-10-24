@@ -1,0 +1,18 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure HBAC Service for http is present
+    ipahbacsvc:
+      ipaadmin_password: MyPassword123
+      name: http
+      description: Web service
+
+  - name: Ensure HBAC Service for tftp is present
+    ipahbacsvc:
+      ipaadmin_password: MyPassword123
+      name: tftp
+      description: TFTP service
