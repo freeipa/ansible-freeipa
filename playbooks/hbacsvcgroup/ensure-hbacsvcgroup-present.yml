@@ -1,0 +1,14 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure HBAC Service sshd is present in HBAC Service Group login
+    ipahbacsvcgroup:
+      ipaadmin_password: MyPassword123
+      name: login
+      hbacsvc:
+      - sshd
+      action: member

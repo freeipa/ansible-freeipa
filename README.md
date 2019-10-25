@@ -13,6 +13,7 @@ Features
 * Repair mode for clients
 * Modules for group management
 * Modules for hbacsvc management
+* Modules for hbacsvcgroup management
 * Modules for host management
 * Modules for hostgroup management
 * Modules for pwpolicy management
@@ -394,6 +395,7 @@ Modules in plugin/modules
 
 * [ipagroup](README-group.md)
 * [ipahbacsvc](README-hbacsvc.md)
+* [ipahbacsvcgroup](README-hbacsvc.md)
 * [ipahost](README-host.md)
 * [ipahostgroup](README-hostgroup.md)
 * [ipapwpolicy](README-pwpolicy.md)
