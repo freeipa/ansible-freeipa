@@ -378,7 +378,10 @@ def main():
             try:
                 result = api_command(ansible_module, command, to_text(name),
                                      args)
-                if "completed" in result and result["completed"] > 0:
+                if "completed" in result:
+                    if result["completed"] > 0:
+                        changed = True
+                else:
                     changed = True
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
