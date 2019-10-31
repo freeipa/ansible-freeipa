@@ -92,6 +92,7 @@ options:
         - (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
         - YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
         - YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
+        - Only usable with IPA versions 4.7 and up.
         required: false
         aliases: ["krbpasswordexpiration"]
       password:
@@ -247,6 +248,7 @@ options:
     - (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
     - YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
     - YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
+    - Only usable with IPA versions 4.7 and up.
     required: false
     aliases: ["krbpasswordexpiration"]
   password:
