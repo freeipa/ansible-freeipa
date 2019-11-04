@@ -1,0 +1,12 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure HBAC Rule allhosts is present
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: allhosts
+      usercategory: all

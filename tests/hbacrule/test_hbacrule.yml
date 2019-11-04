@@ -1,0 +1,338 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure HBAC Rule allhosts is absent
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: allhosts,sshd-pinky,loginRule
+      state: absent
+
+  - name: User pinky absent
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name: pinky
+      state: absent
+
+  - name: User group login absent
+    ipagroup:
+      ipaadmin_password: MyPassword123
+      name: login
+      state: absent
+
+  - name: User pinky present
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name: pinky
+      uid: 10001
+      gid: 100
+      phone: "+555123457"
+      email: pinky@acme.com
+      principalexpiration: "20220119235959"
+      #passwordexpiration: "2022-01-19 23:59:59"
+      first: pinky
+      last: Acme
+    register: result
+    failed_when: not result.changed
+
+  - name: User group login present
+    ipagroup:
+      ipaadmin_password: MyPassword123
+      name: login
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Rule allhosts is present
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: allhosts
+      usercategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Rule allhosts is present again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: allhosts
+      usercategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure host "{{ groups.ipaserver[0] }}" is present in HBAC Rule allhosts
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: allhosts
+      host: "{{ groups.ipaserver[0] }}"
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host "{{ groups.ipaserver[0] }}" is present in HBAC Rule allhosts again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: allhosts
+      host: "{{ groups.ipaserver[0] }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC Rule sshd-pinky is present
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      hostcategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Rule sshd-pinky is present again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      hostcategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user pinky is present in HBAC Rule sshd-pinky
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      user: pinky
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user pinky is present in HBAC Rule sshd-pinky again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      user: pinky
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC service sshd is present in HBAC Rule sshd-pinky
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      hbacsvc: sshd
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC service sshd is present in HBAC Rule sshd-pinky again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      hbacsvc: sshd
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC Rule loginRule is present with HBAC service sshd
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: loginRule
+      group: login
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Rule loginRule is present with HBAC service sshd again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: loginRule
+      group: login
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user pinky is present in HBAC Rule loginRule
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: loginRule
+      user: pinky
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user pinky is present in HBAC Rule loginRule again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: loginRule
+      user: pinky
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user pinky is absent in HBAC Rule loginRule
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: loginRule
+      user: pinky
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user pinky is absent in HBAC Rule loginRule again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: loginRule
+      user: pinky
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC Rule loginRule is absent
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: loginRule
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Rule loginRule is absent again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: loginRule
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC service sshd is absent in HBAC Rule sshd-pinky
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      hbacsvc: sshd
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC service sshd is absent in HBAC Rule sshd-pinky again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      hbacsvc: sshd
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user pinky is absent in HBAC Rule sshd-pinky
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      user: pinky
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user pinky is absent in HBAC Rule sshd-pinky again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      user: pinky
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC Rule sshd-pinky is disabled
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      state: disabled
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Rule sshd-pinky is disabled again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      state: disabled
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC Rule sshd-pinky is enabled
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      state: enabled
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Rule sshd-pinky is enabled again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      state: enabled
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC Rule sshd-pinky is absent
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Rule sshd-pinky is absent again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: sshd-pinky
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure host "{{ groups.ipaserver[0] }}" is absent in HBAC Rule allhosts
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: allhosts
+      host: "{{ groups.ipaserver[0] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host "{{ groups.ipaserver[0] }}" is absent in HBAC Rule allhosts again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: allhosts
+      host: "{{ groups.ipaserver[0] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC Rule allhosts is absent
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: allhosts
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC Rule allhosts is absent again
+    ipahbacrule:
+      ipaadmin_password: MyPassword123
+      name: allhosts
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: User pinky absent
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name: pinky
+      state: absent
+
+  - name: User group login absent
+    ipagroup:
+      ipaadmin_password: MyPassword123
+      name: login
+      state: absent

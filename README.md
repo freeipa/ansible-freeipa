@@ -12,6 +12,7 @@ Features
 * One-time-password (OTP) support for client installation
 * Repair mode for clients
 * Modules for group management
+* Modules for hbacrule management
 * Modules for hbacsvc management
 * Modules for hbacsvcgroup management
 * Modules for host management
@@ -394,6 +395,7 @@ Modules in plugin/modules
 =========================
 
 * [ipagroup](README-group.md)
+* [ipahbacrule](README-hbacrule.md)
 * [ipahbacsvc](README-hbacsvc.md)
 * [ipahbacsvcgroup](README-hbacsvc.md)
 * [ipahost](README-host.md)
