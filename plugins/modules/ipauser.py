@@ -54,6 +54,7 @@ options:
       last:
         description: The last name
         required: false
+        aliases: ["sn"]
       fullname:
         description: The full name
         required: false
@@ -210,6 +211,7 @@ options:
   last:
     description: The last name
     required: false
+    aliases: ["sn"]
   fullname:
     description: The full name
     required: false
@@ -647,7 +649,7 @@ def main():
     user_spec = dict(
         # present
         first=dict(type="str", aliases=["givenname"], default=None),
-        last=dict(type="str", default=None),
+        last=dict(type="str", aliases=["sn"], default=None),
         fullname=dict(type="str", aliases=["cn"], default=None),
         displayname=dict(type="str", default=None),
         initials=dict(type="str", default=None),
