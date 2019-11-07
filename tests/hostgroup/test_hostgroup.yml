@@ -1,0 +1,185 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Ensure host-group databases, mysql-server and oracle-server are absent
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name:
+      - databases
+      - mysql-server
+      - oracle-server
+      state: absent
+
+  - name: Test hosts db1 and db2 absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ 'db1.' + ipaserver_domain }}"
+      - "{{ 'db2.' + ipaserver_domain }}"
+      state: absent
+
+  - name: Host "{{ 'db1.' + ipaserver_domain }}" present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ 'db1.' + ipaserver_domain }}"
+      force: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ 'db2.' + ipaserver_domain }}" present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ 'db2.' + ipaserver_domain }}"
+      force: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host-group mysql-server is present
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: mysql-server
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host-group mysql-server is present again
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: mysql-server
+      state: present
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure host-group oracle-server is present
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: oracle-server
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host-group oracle-server is present again
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: oracle-server
+      state: present
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure host-group databases is present
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: databases
+      state: present
+      host:
+      - "{{ 'db1.' + ipaserver_domain }}"
+      hostgroup:
+      - oracle-server
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host-group databases is present again
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: databases
+      state: present
+      host:
+      - "{{ 'db1.' + ipaserver_domain }}"
+      hostgroup:
+      - oracle-server
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure host db2 is member of host-group databases
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: databases
+      state: present
+      host:
+      - "{{ 'db2.' + ipaserver_domain }}"
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host db2 is member of host-group databases again
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: databases
+      state: present
+      host:
+      - "{{ 'db2.' + ipaserver_domain }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure host-group mysql-server is member of host-group databases
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: databases
+      state: present
+      hostgroup:
+      - mysql-server
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host-group mysql-server is member of host-group databases again
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: databases
+      state: present
+      hostgroup:
+      - mysql-server
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure host-group oracle-server is member of host-group databases (again)
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: databases
+      state: present
+      hostgroup:
+      - oracle-server
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure host-group databases, mysql-server and oracle-server are absent
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name:
+      - databases
+      - mysql-server
+      - oracle-server
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host-group databases, mysql-server and oracle-server are absent again
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name:
+      - databases
+      - mysql-server
+      - oracle-server
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Test hosts db1 and db2 absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ 'db1.' + ipaserver_domain }}"
+      - "{{ 'db2.' + ipaserver_domain }}"
+      state: absent

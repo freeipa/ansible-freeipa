@@ -115,18 +115,18 @@ RETURN = """
 """
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa
+    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
+    module_params_get
 
 
 def find_hostgroup(module, name):
     _args = {
         "all": True,
-        "cn": to_text(name),
+        "cn": name,
     }
 
-    _result = api_command(module, "hostgroup_find", to_text(name), _args)
+    _result = api_command(module, "hostgroup_find", name, _args)
 
     if len(_result["result"]) > 1:
         module.fail_json(
@@ -185,18 +185,20 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
-    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
-    names = ansible_module.params.get("name")
+    ipaadmin_principal = module_params_get(ansible_module,
+                                           "ipaadmin_principal")
+    ipaadmin_password = module_params_get(ansible_module,
+                                          "ipaadmin_password")
+    names = module_params_get(ansible_module, "name")
 
     # present
-    description = ansible_module.params.get("description")
-    nomembers = ansible_module.params.get("nomembers")
-    host = ansible_module.params.get("host")
-    hostgroup = ansible_module.params.get("hostgroup")
-    action = ansible_module.params.get("action")
+    description = module_params_get(ansible_module, "description")
+    nomembers = module_params_get(ansible_module, "nomembers")
+    host = module_params_get(ansible_module, "host")
+    hostgroup = module_params_get(ansible_module, "hostgroup")
+    action = module_params_get(ansible_module, "action")
     # state
-    state = ansible_module.params.get("state")
+    state = module_params_get(ansible_module, "state")
 
     # Check parameters
 
@@ -326,9 +328,11 @@ def main():
         # Execute commands
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, to_text(name),
-                                     args)
-                if "completed" in result and result["completed"] > 0:
+                result = api_command(ansible_module, command, name, args)
+                if "completed" in result:
+                    if result["completed"] > 0:
+                        changed = True
+                else:
                     changed = True
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
