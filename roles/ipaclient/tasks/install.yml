@@ -72,6 +72,11 @@
       servers: "{{ result_ipaclient_test.servers }}"
       domain: "{{ result_ipaclient_test.domain }}"
 
+  - name: Install - Make sure One-Time Password is enabled if it's already defined
+    set_fact:
+      ipaclient_use_otp: "yes"
+    when: ipaclient_otp is defined
+
   - name: Install - Disable One-Time Password for on_master
     set_fact:
       ipaclient_use_otp: "no"
@@ -95,15 +100,16 @@
           result_ipaclient_test_keytab.krb5_keytab_ok and
           not ipaclient_force_join | bool
 
-  # The following block is executed when using OTP to enroll IPA client
-  # ie when ipaclient_use_otp is set.
+  # The following block is executed when using OTP to enroll IPA client and
+  # the OTP isn't predefined, ie when ipaclient_use_otp is set and ipaclient_otp
+  # is not set.
   # It connects to ipaserver and add the host with --random option in order
   # to create a OneTime Password
   # If a keytab is specified in the hostent, then the hostent will be disabled
   # if ipaclient_use_otp is set.
   - block:
-    - name: Install - Keytab or password is required for otp
-      fail: msg="Keytab or password is required for otp"
+    - name: Install - Keytab or password is required for getting otp
+      fail: msg="Keytab or password is required for getting otp"
       when: ipaadmin_keytab is undefined and ipaadmin_password is undefined
 
     #- name: Install - Include Python2/3 import test
@@ -143,7 +149,14 @@
         ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword
                                if result_ipaclient_get_otp.host is defined }}"
 
-    when: ipaclient_use_otp | bool
+    when: ipaclient_use_otp | bool and ipaclient_otp is not defined
+
+  - name: Store predefined OTP in admin_password
+    no_log: yes
+    set_fact:
+      ipaadmin_orig_password: "{{ ipaadmin_password | default(omit) }}"
+      ipaadmin_password: "{{ ipaclient_otp }}"
+    when: ipaclient_otp is defined
 
   - block:
     # This block is executed only when
