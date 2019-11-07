@@ -1,0 +1,11 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure sudorule command is absent
+  - ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      state: absent

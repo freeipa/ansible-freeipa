@@ -1,0 +1,279 @@
+---
+
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+
+  - name: Ensure hostgroup is present, with a host.
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: cluster
+      host:
+      - "{{ groups.ipaserver[0] }}"
+
+  - name: Ensure some sudocmds are available
+    ipasudocmd:
+      ipaadmin_password: pass1234
+      name:
+          - /sbin/ifconfig
+          - /usr/bin/vim
+      state: present
+
+  - name: Ensure sudorules are absent
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name:
+      - testrule1
+      - allusers
+      - allhosts
+      - allcommands
+      state: absent
+
+  - name: Ensure sudorule is present
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present again
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, runAsUserCategory.
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      runAsUserCategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with usercategory 'all'
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allusers
+      usercategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with usercategory 'all', again
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allusers
+      usercategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with hostategory 'all'
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allhosts
+      hostcategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with hostategory 'all', again
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allhosts
+      hostcategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is disabled
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      state: disabled
+
+  - name: Ensure sudorule is disabled, again
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      state: disabled
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is enabled
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      state: enabled
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is enabled, again
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      state: enabled
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present and some sudocmd are a member of it.
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      cmd:
+      - /sbin/ifconfig
+      - /usr/bin/vim
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present and some sudocmd are a member of it, again.
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      cmd:
+      - /sbin/ifconfig
+      - /usr/bin/vim
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present with cmdcategory 'all'.
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allcommands
+      cmdcategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present with cmdcategory 'all', again.
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allcommands
+      cmdcategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure host "{{ groups.ipaserver[0] }}" is present in sudorule.
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      host: "{{ groups.ipaserver[0] }}"
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host "{{ groups.ipaserver[0] }}" is present in sudorule, again.
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      host: "{{ groups.ipaserver[0] }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure hostgroup is present in sudorule.
+    ipasudorule:
+      ipaadmin_password: MyPassword123
+      name: testrule1
+      hostgroup: cluster
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure hostgroup is present in sudorule, again.
+    ipasudorule:
+      ipaadmin_password: MyPassword123
+      name: testrule1
+      hostgroup: cluster
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule sudocmds are absent
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      cmd:
+      - /sbin/ifconfig
+      - /usr/bin/vim
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule sudocmds are absent, again
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      cmd:
+      - /sbin/ifconfig
+      - /usr/bin/vim
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is absent
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is absent, again.
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: testrule1
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule allhosts is absent
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allhosts
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule allhosts is absent, again
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allhosts
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule allusers is absent
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allusers
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule allusers is absent, again
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allusers
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule allcommands is absent
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allcommands
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule allcommands is absent, again
+    ipasudorule:
+      ipaadmin_password: pass1234
+      name: allcommands
+      state: absent
+    register: result
+    failed_when: result.changed
