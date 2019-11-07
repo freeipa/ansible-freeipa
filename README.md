@@ -20,6 +20,7 @@ Features
 * Modules for pwpolicy management
 * Modules for sudocmd management
 * Modules for sudocmdgroup management
+* Modules for sudorule management
 * Modules for topology management
 * Modules for user management
 
@@ -403,6 +404,7 @@ Modules in plugin/modules
 * [ipapwpolicy](README-pwpolicy.md)
 * [ipasudocmd](README-sudocmd.md)
 * [ipasudocmdgroup](README-sudocmdgroup.md)
+* [ipasudorule](README-sudorule.md)
 * [ipatopologysegment](README-topology.md)
 * [ipatopologysuffix](README-topology.md)
 * [ipauser](README-user.md)
