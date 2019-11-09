@@ -324,7 +324,7 @@ Variable | Description | Required
 Variable | Description | Required
 -------- | ----------- | --------
 `first` \| `givenname` | The first name string. | no
-`last` | The last name | no
+`last` \| `sn` | The last name string. | no
 `fullname` \| `cn` | The full name string. | no
 `displayname` | The display name string. | no
 `homedir` | The home directory string. | no
