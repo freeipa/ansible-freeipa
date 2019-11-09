@@ -17,7 +17,7 @@
       users:
       - name: user1
         givenname: user1
-        sn: Last
+        last: Last
       - name: user2
         first: user2
         last: Last
