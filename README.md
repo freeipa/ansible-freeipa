@@ -102,6 +102,14 @@ There are RPM packages available for Fedora 29+. These are installing the roles 
 This command will get the whole collection from galaxy:
 
 ```bash
+ansible-galaxy collection install freeipa.ansible_freeipa
+```
+
+Installing collections using the ansible-galaxy command is only supported with ansible 2.9+.
+
+The mazer tool can be used for to install the collection for ansible 2.8:
+
+```bash
 mazer install freeipa.ansible_freeipa
 ```
 
