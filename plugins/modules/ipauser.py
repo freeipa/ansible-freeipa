@@ -45,7 +45,7 @@ options:
     description: The list of user dicts (internally uid).
     options:
       name:
-        description: The ser (internally uid).
+        description: The user (internally uid).
         required: true
       first:
         description: The first name
