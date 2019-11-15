@@ -54,7 +54,7 @@
       users:
       - name: user1
         givenname: user1
-        last: Last
+        sn: Last
       - name: user2
         first: user2
         last: Last
