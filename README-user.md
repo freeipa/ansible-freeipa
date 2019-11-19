@@ -162,7 +162,7 @@ Example playbook to delete a user, but preserve it:
 
 This can also be done with the `users` variable containing only names, this can be combined into one module call:
 
-Example playbook to delete a user is absent, but preserved:
+Example playbook to delete a user, but preserve it using the `users` variable:
 
 ```yaml
 ---
