@@ -1,0 +1,70 @@
+---
+- name: Test ipauser random password generation
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Users user1 and user2 absent
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name:
+      - user1
+      - user2
+      state: absent
+
+  - name: User user1 present with random password
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name: user1
+      first: first1
+      last: last1
+      random: yes
+      update_password: on_create
+    register: ipauser
+    failed_when: not ipauser.changed or
+                 ipauser.user.randompassword is not defined
+
+  - name: Print generated random password
+    debug:
+      var: ipauser.user.randompassword
+
+  - name: User user1 absent
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name:
+      - user1
+      state: absent
+
+  - name: Users user1 and user1 present with random password
+    ipauser:
+      ipaadmin_password: MyPassword123
+      users:
+      - name: user1
+        first: first1
+        last: last1
+        random: yes
+      - name: user2
+        first: first2
+        last: last2
+        random: yes
+      update_password: on_create
+    register: ipauser
+    failed_when: not ipauser.changed or
+                 ipauser.user.user1.randompassword is not defined or
+                 ipauser.user.user2.randompassword is not defined
+
+  - name: Print generated random password for user1
+    debug:
+      var: ipauser.user.user1.randompassword
+
+  - name: Print generated random password for user2
+    debug:
+      var: ipauser.user.user2.randompassword
+
+  - name: Users user1 and user2 absent
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name:
+      - user1
+      - user2
+      state: absent

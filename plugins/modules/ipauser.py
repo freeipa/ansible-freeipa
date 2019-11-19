@@ -436,6 +436,22 @@ EXAMPLES = """
 """
 
 RETURN = """
+user:
+  description: User dict with random password
+  returned: If random is yes and user did not exist or update_password is yes
+  type: dict
+  options:
+    randompassword:
+      description: The generated random password
+      returned: If only one user is handled by the module
+    name:
+      description: The user name of the user that got a new random password
+      returned: If several users are handled by the module
+      type: dict
+      options:
+        randompassword:
+          description: The generated random password
+          returned: always
 """
 
 from ansible.module_utils.basic import AnsibleModule
@@ -1003,7 +1019,8 @@ def main():
                     else:
                         commands.append([name, "user_add", args])
 
-                    # Handle members: principal, manager
+                    # Handle members: principal, manager, certificate and
+                    # certmapdata
                     if res_find is not None:
                         # Generate addition and removal lists
                         manager_add = list(
@@ -1274,6 +1291,16 @@ def main():
                         changed = True
                 else:
                     changed = True
+
+                if "random" in args and command in ["user_add", "user_mod"] \
+                   and "randompassword" in result["result"]:
+                    if len(names) == 1:
+                        exit_args["randompassword"] = \
+                            result["result"]["randompassword"]
+                    else:
+                        exit_args.setdefault(name, {})["randompassword"] = \
+                            result["result"]["randompassword"]
+
             except Exception as e:
                 msg = str(e)
                 if "already contains" in msg \
@@ -1310,7 +1337,7 @@ def main():
 
     # Done
 
-    ansible_module.exit_json(changed=changed, **exit_args)
+    ansible_module.exit_json(changed=changed, user=exit_args)
 
 
 if __name__ == "__main__":

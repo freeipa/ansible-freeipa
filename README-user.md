@@ -142,6 +142,64 @@ And ensure the presence of the users with this example playbook:
       users: "{{ users }}"
 ```
 
+Ensure user pinky is present with a generated random password and print the random password:
+
+```yaml
+---
+- name: Playbook to handle users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure user pinky is present with a random password
+  - ipauser:
+      ipaadmin_password: MyPassword123
+      name: brain
+      first: brain
+      last: Acme
+      random: yes
+    register: ipauser
+
+  - name: Print generated random password
+    debug:
+      var: ipauser.user.randompassword
+```
+
+Ensure users pinky and brain are present with a generated random password and print the random passwords:
+
+```yaml
+---
+- name: Playbook to handle users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure users pinky and brain are present with random password
+  - ipauser:
+      ipaadmin_password: MyPassword123
+      users:
+      - name: pinky
+        first: pinky
+        last: Acme
+        uid: 10001
+        gid: 100
+        phone: "+555123457"
+        email: pinky@acme.com
+        passwordexpiration: "2023-01-19 23:59:59"
+        password: "no-brain"
+      - name: brain
+        first: brain
+        last: Acme
+    register: ipauser
+
+  - name: Print generated random password of pinky
+    debug:
+      var: ipauser.user.pinky.randompassword
+
+  - name: Print generated random password of brain
+    debug:
+      var: ipauser.user.brain.randompassword
+```
 
 Example playbook to delete a user, but preserve it:
 
@@ -364,6 +422,22 @@ Variable | Description | Required
 &nbsp; | `subject` - Subject of the certificate | no
 `noprivate` | Do not create user private group. (bool) | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
+
+
+
+Return Values
+=============
+
+ipauser
+-------
+
+There are only return values if one or more random passwords have been generated.
+
+Variable | Description | Returned When
+-------- | ----------- | -------------
+`host` | Host dict with random password. (dict) <br>Options: | If random is yes and user did not exist or update_password is yes
+&nbsp; | `randompassword` - The generated random password | If only one user is handled by the module
+&nbsp; | `name` - The user name of the user that got a new random password. (dict) <br> Options: <br> &nbsp; `randompassword` - The generated random password | If several users are handled by the module
 
 
 Authors
