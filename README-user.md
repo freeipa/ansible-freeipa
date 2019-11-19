@@ -315,6 +315,7 @@ Variable | Description | Required
 `preserve` | Delete a user, keeping the entry available for future use. (bool) | no
 `update_password` | Set password for a user in present state only on creation or always. It can be one of `always` or `on_create` and defaults to `always`. | no
 `preserve` | Delete a user, keeping the entry available for future use. (bool)  | no
+`action` | Work on user or member level. It can be on of `member` or `user` and defaults to `user`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, `enabled`, `disabled`, `unlocked` or `undeleted`, default: `present`. Only `names` or `users` with only `name` set are allowed if state is not `present`. | yes
 
 
