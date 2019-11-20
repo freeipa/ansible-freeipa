@@ -19,11 +19,11 @@ ipaclient_force_ntpd: no
 ipaclient_no_nisdomain: no
 ipaclient_configure_firefox: no
 ipaclient_all_ip_addresses: no
-ipassd_fixed_primary: no
-ipassd_permit: no
-ipassd_enable_dns_updates: no
-ipassd_no_krb5_offline_passwords: no
-ipassd_preserve_sssd: no
+ipasssd_fixed_primary: no
+ipasssd_permit: no
+ipasssd_enable_dns_updates: no
+ipasssd_no_krb5_offline_passwords: no
+ipasssd_preserve_sssd: no
 ipaclient_request_cert: no
 
 ### packages ###

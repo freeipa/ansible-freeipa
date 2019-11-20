@@ -339,15 +339,15 @@ def main(options, args):
             f.write("ipaclient_kinit_attempts=%d\n" % options.kinit_attempts)
         # sssd
         if options.fixed_primary:
-            f.write("ipassd_fixed_primary=yes\n")
+            f.write("ipasssd_fixed_primary=yes\n")
         if options.permit:
-            f.write("ipassd_permit=yes\n")
+            f.write("ipasssd_permit=yes\n")
         if options.enable_dns_updates:
-            f.write("ipassd_enable_dns_updates=yes\n")
+            f.write("ipasssd_enable_dns_updates=yes\n")
         if options.no_krb5_offline_passwords:
-            f.write("ipassd_no_krb5_offline_passwords=yes\n")
+            f.write("ipasssd_no_krb5_offline_passwords=yes\n")
         if options.preserve_sssd:
-            f.write("ipassd_preserve_sssd=yes\n")
+            f.write("ipasssd_preserve_sssd=yes\n")
         # automount
         if options.automount_location:
             f.write("ipaclient_automount_location=%s\n" %
