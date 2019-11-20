@@ -101,6 +101,11 @@ Example playbook to initiate the generation of a random password to be used in b
       description: Example host
       ip_address: 192.168.0.123
       random: yes
+    register: ipahost
+
+  - name: Print generated random password
+    debug:
+      var: ipahost.host.randompassword
 ```
 
 
@@ -165,6 +170,21 @@ Variable | Description | Required
 `update_dns` | Update DNS entries. | no
 `update_password` |  Set password for a host in present state only on creation or always. It can be one of `always` or `on_create` and defaults to `always`. | no
 `state` | The state to ensure. It can be one of `present`, `absent` or `disabled`, default: `present`. | yes
+
+
+Return Values
+=============
+
+ipahost
+-------
+
+There are only return values if one or more random passwords have been generated.
+
+Variable | Description | Returned When
+-------- | ----------- | -------------
+`host` | Host dict with random password. (dict) <br>Options: | If random is yes and host did not exist or update_password is yes
+&nbsp; | `randompassword` - The generated random password | If only one host is handled by the module
+&nbsp; | `name` - The host name of the host that got a new random password. (dict) <br> Options: <br> &nbsp; `randompassword` - The generated random password | If several hosts are handled by the module
 
 
 Authors
