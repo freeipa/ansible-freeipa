@@ -149,6 +149,22 @@ EXAMPLES = """
 """
 
 RETURN = """
+host:
+  description: Host dict with random password
+  returned: If random is yes and user did not exist or update_password is yes
+  type: dict
+  options:
+    randompassword:
+      description: The generated random password
+      returned: If only one user is handled by the module
+    name:
+      description: The user name of the user that got a new random password
+      returned: If several users are handled by the module
+      type: dict
+      options:
+        randompassword:
+          description: The generated random password
+          returned: always
 """
 
 from ansible.module_utils.basic import AnsibleModule
@@ -344,9 +360,11 @@ def main():
                 # Found the host
                 if res_find is not None:
                     # Ignore password with update_password == on_create
-                    if update_password == "on_create" and \
-                       "userpassword" in args:
-                        del args["userpassword"]
+                    if update_password == "on_create":
+                        if "userpassword" in args:
+                            del args["userpassword"]
+                        if "random" in args:
+                            del args["random"]
 
                     # Ignore force, ip_address and no_reverse for mod
                     for x in ["force", "ip_address", "no_reverse"]:
@@ -379,8 +397,19 @@ def main():
         # Execute commands
         for name, command, args in commands:
             try:
-                api_command(ansible_module, command, to_text(name), args)
+                result = api_command(ansible_module, command, to_text(name),
+                                     args)
                 changed = True
+
+                if "random" in args and command in ["host_add", "host_mod"] \
+                   and "randompassword" in result["result"]:
+                    if len(names) == 1:
+                        exit_args["randompassword"] = \
+                            result["result"]["randompassword"]
+                    else:
+                        exit_args.setdefault(name, {})["randompassword"] = \
+                            result["result"]["randompassword"]
+
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(e)))
@@ -393,7 +422,7 @@ def main():
 
     # Done
 
-    ansible_module.exit_json(changed=changed, **exit_args)
+    ansible_module.exit_json(changed=changed, host=exit_args)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,41 @@
+---
+- name: Test ipahost random password generation
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Test hosts absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ 'host1.' + ipaserver_domain }}"
+      - "{{ 'host2.' + ipaserver_domain }}"
+      update_dns: yes
+      state: absent
+
+  - name: Host "{{ 'host1.' + ipaserver_domain }}" present with random password
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ 'host1.' + ipaserver_domain }}"
+      random: yes
+      force: yes
+      update_password: on_create
+    register: ipahost
+    failed_when: not ipahost.changed or
+                 ipahost.host.randompassword is not defined
+
+  - name: Print generated random password
+    debug:
+      var: ipahost.host.randompassword
+
+  - name: Host "{{ 'host1.' + ipaserver_domain }}" absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ 'host1.' + ipaserver_domain }}"
+      state: absent
