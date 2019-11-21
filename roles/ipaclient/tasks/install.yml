@@ -51,7 +51,8 @@
     all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
     on_master: "{{ ipaclient_on_master }}"
     ### sssd ###
-    enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
+    enable_dns_updates: "{{ ipassd_enable_dns_updates
+                            | default(ipasssd_enable_dns_updates) }}"
   register: result_ipaclient_test
 
 - block:
@@ -259,11 +260,16 @@
         no_sshd: "{{ ipaclient_no_sshd }}"
         no_sudo: "{{ ipaclient_no_sudo }}"
         all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
-        fixed_primary: "{{ ipassd_fixed_primary }}"
-        permit: "{{ ipassd_permit }}"
-        enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
-        preserve_sssd: "{{ ipassd_preserve_sssd }}"
-        no_krb5_offline_passwords: "{{ ipassd_no_krb5_offline_passwords }}"
+        fixed_primary: "{{ ipassd_fixed_primary
+                           | default(ipasssd_fixed_primary) }}"
+        permit: "{{ ipassd_permit | default(ipasssd_permit) }}"
+        enable_dns_updates: "{{ ipassd_enable_dns_updates
+                                | default(ipasssd_enable_dns_updates) }}"
+        preserve_sssd: "{{ ipassd_preserve_sssd
+                           | default(ipasssd_preserve_sssd) }}"
+        no_krb5_offline_passwords:
+          "{{ ipassd_no_krb5_offline_passwords
+              | default(ipasssd_no_krb5_offline_passwords) }}"
 
     - name: Install - Configure krb5 for IPA realm
       ipaclient_setup_krb5:
@@ -310,17 +316,22 @@
         ca_enabled: "{{ result_ipaclient_api.ca_enabled }}"
         on_master: "{{ ipaclient_on_master }}"
         dnsok: "{{ result_ipaclient_test.dnsok }}"
-        enable_dns_updates: "{{ ipassd_enable_dns_updates }}"
+        enable_dns_updates: "{{ ipassd_enable_dns_updates
+                                | default(ipasssd_enable_dns_updates) }}"
         all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
         ip_addresses: "{{ ipaclient_ip_addresses | default(omit) }}"
         request_cert: "{{ ipaclient_request_cert }}"
-        preserve_sssd: "{{ ipassd_preserve_sssd }}"
+        preserve_sssd: "{{ ipassd_preserve_sssd
+                           | default(ipasssd_preserve_sssd) }}"
         no_ssh: "{{ ipaclient_no_ssh }}"
         no_sshd: "{{ ipaclient_no_sshd }}"
         no_sudo: "{{ ipaclient_no_sudo }}"
-        fixed_primary: "{{ ipassd_fixed_primary }}"
-        permit: "{{ ipassd_permit }}"
-        no_krb5_offline_passwords: "{{ ipassd_no_krb5_offline_passwords }}"
+        fixed_primary: "{{ ipassd_fixed_primary
+                           | default(ipasssd_fixed_primary) }}"
+        permit: "{{ ipassd_permit | default(ipasssd_permit) }}"
+        no_krb5_offline_passwords:
+          "{{ ipassd_no_krb5_offline_passwords
+              | default(ipasssd_no_krb5_offline_passwords) }}"
         no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
 
     - name: Install - Configure SSH and SSHD
