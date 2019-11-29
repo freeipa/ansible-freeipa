@@ -113,7 +113,7 @@ def temp_kdestroy(ccache_dir, ccache_name):
         shutil.rmtree(ccache_dir, ignore_errors=True)
 
 
-def api_connect():
+def api_connect(context=None):
     """
     Create environment, initialize api and connect to ldap2
     """
@@ -121,9 +121,20 @@ def api_connect():
     env._bootstrap()
     env._finalize_core(**dict(DEFAULT_CONFIG))
 
-    api.bootstrap(context='server', debug=env.debug, log=None)
+    # available contexts are 'server', 'ansible-freeipa' and 'cli_installer'
+    if context is None:
+        context = 'server'
+
+    api.bootstrap(context=context, debug=env.debug, log=None)
     api.finalize()
-    api.Backend.ldap2.connect()
+
+    if api.env.in_server:
+        backend = api.Backend.ldap2
+    else:
+        backend = api.Backend.rpcclient
+
+    if not backend.isconnected():
+        backend.connect()
 
 
 def api_command(module, command, name, args):
