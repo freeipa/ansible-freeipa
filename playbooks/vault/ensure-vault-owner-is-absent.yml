@@ -1,0 +1,15 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - ipavault:
+      ipaadmin_password: MyPassword123
+      name: symvault
+      username: admin
+      owners: user01
+      ownergroups: ipausers
+      action: member
+      state: absent

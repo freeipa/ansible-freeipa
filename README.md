@@ -23,6 +23,7 @@ Features
 * Modules for sudorule management
 * Modules for topology management
 * Modules for user management
+* Modules for vault management
 
 Supported FreeIPA Versions
 --------------------------
@@ -416,3 +417,4 @@ Modules in plugin/modules
 * [ipatopologysegment](README-topology.md)
 * [ipatopologysuffix](README-topology.md)
 * [ipauser](README-user.md)
+* [ipavault](README-vault.md)

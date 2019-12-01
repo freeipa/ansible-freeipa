@@ -1,0 +1,14 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - ipavault:
+      ipaadmin_password: MyPassword123
+      name: symvault
+      username: admin
+      vault_password: MyVaultPassword123
+      vault_data: The world of π is half rounded.
+      action: member
