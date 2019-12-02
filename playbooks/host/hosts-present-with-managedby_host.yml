@@ -1,0 +1,15 @@
+---
+- name: Host present with managedby_host
+  hosts: ipaserver
+  become: true
+
+  tasks:
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: host01.exmaple.com
+        managedby_host: server.exmaple.com
+        force: yes
+      - name: host02.exmaple.com
+        managedby_host: server.exmaple.com
+        force: yes

@@ -1,0 +1,98 @@
+---
+- name: Test hosts
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Set host1_fqdn .. host6_fqdn
+    set_fact:
+      host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+      host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+      host3_fqdn: "{{ 'host3.' + ipaserver_domain }}"
+      host4_fqdn: "{{ 'host4.' + ipaserver_domain }}"
+      host5_fqdn: "{{ 'host5.' + ipaserver_domain }}"
+      host6_fqdn: "{{ 'host6.' + ipaserver_domain }}"
+
+  - name: Host host1..host6 absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+      - name: "{{ host2_fqdn }}"
+      - name: "{{ host3_fqdn }}"
+      - name: "{{ host4_fqdn }}"
+      - name: "{{ host5_fqdn }}"
+      - name: "{{ host6_fqdn }}"
+      state: absent
+
+  - name: Hosts host1..host6 present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        force: yes
+      - name: "{{ host2_fqdn }}"
+        force: yes
+      - name: "{{ host3_fqdn }}"
+        force: yes
+      - name: "{{ host4_fqdn }}"
+        force: yes
+      - name: "{{ host5_fqdn }}"
+        force: yes
+      - name: "{{ host6_fqdn }}"
+        force: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Hosts host1..host6 present again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        force: yes
+      - name: "{{ host2_fqdn }}"
+        force: yes
+      - name: "{{ host3_fqdn }}"
+        force: yes
+      - name: "{{ host4_fqdn }}"
+        force: yes
+      - name: "{{ host5_fqdn }}"
+        force: yes
+      - name: "{{ host6_fqdn }}"
+        force: yes
+    register: result
+    failed_when: result.changed
+
+  - name: Hosts host1..host6 absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+      - name: "{{ host2_fqdn }}"
+      - name: "{{ host3_fqdn }}"
+      - name: "{{ host4_fqdn }}"
+      - name: "{{ host5_fqdn }}"
+      - name: "{{ host6_fqdn }}"
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Hosts host1..host6 absent again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+      - name: "{{ host2_fqdn }}"
+      - name: "{{ host3_fqdn }}"
+      - name: "{{ host4_fqdn }}"
+      - name: "{{ host5_fqdn }}"
+      - name: "{{ host6_fqdn }}"
+      state: absent
+    register: result
+    failed_when: result.changed

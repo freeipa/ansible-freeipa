@@ -1,0 +1,14 @@
+---
+- name: Host member principal present
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Host host01.example.com principals host/testhost01.example.com and host/myhost01.example.com present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: host01.example.com
+      principal:
+      - host/testhost01.example.com
+      - host/myhost01.example.com
+      action: member

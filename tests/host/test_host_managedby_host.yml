@@ -1,0 +1,125 @@
+---
+- name: Test host managedby_host
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Set host1_fqdn .. host2_fqdn
+    set_fact:
+      host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+      host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+
+  - name: Host absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      update_dns: yes
+      state: absent
+
+  - name: Host "{{ host1_fqdn }}" present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      force: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host2_fqdn }}" present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host2_fqdn }}"
+      force: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" managed by "{{ 'host2.' + ipaserver_domain }}"
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      managedby_host: "{{ host2_fqdn }}"
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" managed by "{{ 'host2.' + ipaserver_domain }}" again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      managedby_host: "{{ host2_fqdn }}"
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host1_fqdn }}" managed by "{{ groups.ipaserver[0] }}"
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      managedby_host: "{{ groups.ipaserver[0] }}"
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" managed by "{{ groups.ipaserver[0] }}" again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      managedby_host: "{{ groups.ipaserver[0] }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host1_fqdn }}" not managed by "{{ groups.ipaserver[0] }}"
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      managedby_host: "{{ groups.ipaserver[0] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" not managed by "{{ groups.ipaserver[0] }}" again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      managedby_host: "{{ groups.ipaserver[0] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host1_fqdn }}" not managed by "{{ 'host2.' + ipaserver_domain }}"
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      managedby_host: "{{ host2_fqdn }}"
+      state: absent
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" not managed by "{{ 'host2.' + ipaserver_domain }}" again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      managedby_host: "{{ host2_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Host absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      update_dns: yes
+      state: absent
+    register: result
+    failed_when: not result.changed

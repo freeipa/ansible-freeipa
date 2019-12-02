@@ -1,0 +1,179 @@
+---
+- name: Test hosts principal
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Get Realm from server name
+    set_fact:
+      ipaserver_realm: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') | upper }}"
+    when: ipaserver_realm is not defined
+
+  - name: Set host1_fqdn .. host2_fqdn
+    set_fact:
+      host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+      host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+
+  - name: Host host1... and host2... absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      update_dns: yes
+      state: absent
+
+  - name: Host hostX... present with principal host/testhostX... X=[1,2]
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        principal:
+        - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}" 
+        force: yes
+      - name: "{{ host2_fqdn }}"
+        principal:
+        - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}" 
+        force: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Host hostX... principal 'host/hostX... present (existing already) X=[1,2]
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        principal:
+        - "{{ 'host/host1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      - name: "{{ host2_fqdn }}"
+        principal:
+        - "{{ 'host/host2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Host hostX... principal host/testhostX... present again X=[1,2]
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        principal:
+        - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      - name: "{{ host2_fqdn }}"
+        principal:
+        - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Host hostX.. principal host/testhostX... absent X=[1,2]
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        principal:
+        - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      - name: "{{ host2_fqdn }}"
+        principal:
+        - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Host hostX... principal host/testhostX... absent again X=[1,2]
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        principal:
+        - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      - name: "{{ host2_fqdn }}"
+        principal:
+        - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Host hostX... principal host/testhostX... and host/myhostX... present X=[1,2]
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        principal:
+        - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'host/myhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      - name: "{{ host2_fqdn }}"
+        principal:
+        - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'host/myhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Host hostX... principal host/testhostX... and host/myhostX... present again X=[1,2]
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        principal:
+        - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'host/myhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      - name: "{{ host2_fqdn }}"
+        principal:
+        - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'host/myhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Host hostX... principal host/testhostX... and host/myhostX... absent X=[1,2]
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        principal:
+        - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'host/myhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      hosts:
+      - name: "{{ host2_fqdn }}"
+        principal:
+        - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'host/myhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Host hostX... principal host/testhostX... and host/myhostX... absent again X=[1,2]
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        principal:
+        - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'host/myhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      hosts:
+      - name: "{{ host2_fqdn }}"
+        principal:
+        - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'host/myhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Hosts host1... and host2... absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      update_dns: yes
+      state: absent

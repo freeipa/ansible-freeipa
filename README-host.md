@@ -41,7 +41,7 @@ ipaserver.test.local
 ```
 
 
-Example playbook to add hosts:
+Example playbook to ensure host presence:
 
 ```yaml
 ---
@@ -67,7 +67,7 @@ Example playbook to add hosts:
 ```
 
 
-Example playbook to create host without DNS:
+Example playbook to ensure host presence without DNS:
 
 ```yaml
 ---
@@ -85,27 +85,117 @@ Example playbook to create host without DNS:
 ```
 
 
-Example playbook to initiate the generation of a random password to be used in bulk enrollment:
+Example playbook to ensure host presence with a random password:
 
 ```yaml
 ---
-- name: Playbook to handle hosts
+- name: Ensure host with random password
   hosts: ipaserver
   become: true
 
   tasks:
-  # Generate a random password for bulk enrollment
-  - ipahost:
+  - name: Host host01.example.com present with random password
+    ipahost:
       ipaadmin_password: MyPassword123
       name: host01.example.com
-      description: Example host
-      ip_address: 192.168.0.123
       random: yes
+      force: yes
     register: ipahost
 
   - name: Print generated random password
     debug:
       var: ipahost.host.randompassword
+```
+Please remember that the `force` tag will also force the generation of a new random password even if the host already exists and if `update_password` is limited to `on_create`.
+
+
+Example playbook to ensure presence of several hosts with a random password:
+
+```yaml
+---
+- name: Ensure hosts with random password
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Hosts host01.example.com and host01.example.com present with random passwords
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: host01.example.com
+        random: yes
+        force: yes
+      - name: host02.example.com
+        random: yes
+        force: yes
+    register: ipahost
+
+  - name: Print generated random password for host01.example.com
+    debug:
+      var: ipahost.host["host01.example.com"].randompassword
+
+  - name: Print generated random password for host02.example.com
+    debug:
+      var: ipahost.host["host02.example.com"].randompassword
+```
+Please remember that the `force` tag will also force the generation of a new random password even if the host alreay exists and if `update_password` is limited to `on_create`.
+
+
+Example playbook to ensure presence of host member principal:
+
+```yaml
+---
+- name: Host present with principal
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Host host01.example.com present with principals host/testhost01.example.com and host/myhost01.example.com
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: host01.example.com
+      principal:
+      - host/testhost01.example.com
+      - host/myhost01.example.com
+      action: member
+```
+
+
+Example playbook to ensure presence of host member certificate:
+
+```yaml
+- name: Host present with certificate
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Host host01.example.com present with certificate
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: host01.example.com
+      certificate:
+      - MIIC/zCCAeegAwIBAg...
+      action: member
+```
+
+
+Example playbook to ensure presence of member managedby_host for serveral hosts:
+
+```yaml
+---
+- name: Host present with managedby_host
+  hosts: ipaserver
+  become: true
+
+  tasks:
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: host01.exmaple.com
+        managedby_host: server.exmaple.com
+      - name: host02.exmaple.com
+        managedby_host: server.exmaple.com
+      action: member
 ```
 
 
@@ -155,7 +245,20 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
-`name` \| `fqdn` | The list of host name strings. | yes
+`name` \| `fqdn` | The list of host name strings. `name` with *host variables* or `hosts` containing *host variables* need to be used. | no
+**Host variables** | Only used with `name` variable in the first level. | no
+`hosts` | The list of host dicts. Each `hosts` dict entry can contain **host variables**.<br>There is one required option in the `hosts` dict:| no
+&nbsp; | `name` \| `fqdn` - The user name string of the entry. | yes
+&nbsp; | **Host variables** | no
+`update_password` |  Set password for a host in present state only on creation or always. It can be one of `always` or `on_create` and defaults to `always`. | no
+`action` | Work on host or member level. It can be on of `member` or `host` and defaults to `host`. | no
+`state` | The state to ensure. It can be one of `present`, `absent` or `disabled`, default: `present`. | yes
+
+
+**Host Variables:**
+
+Variable | Description | Required
+-------- | ----------- | --------
 `description` | The host description. | no
 `locality` | Host locality (e.g. "Baltimore, MD"). | no
 `location` \| `ns_host_location` | Host location (e.g. "Lab 2"). | no
@@ -163,13 +266,28 @@ Variable | Description | Required
 `os` \| `ns_os_version` | Host operating system and version (e.g. "Fedora 9"). | no
 `password` \| `user_password` \| `userpassword` | Password used in bulk enrollment. | no
 `random` \| `random_password` |  Initiate the generation of a random password to be used in bulk enrollment. | no
+`certificate` \| `usercertificate` | List of base-64 encoded host certificates | no
+`managedby` \| `principalname` \| `krbprincipalname` | List of hosts that can manage this host | no
+`principal` \| `principalname` \| `krbprincipalname` | List of principal aliases for this host | no
+`allow_create_keytab_user` \| `ipaallowedtoperform_write_keys_user` | Users allowed to create a keytab of this host. <br>Options: | no
+`allow_create_keytab_group` \| `ipaallowedtoperform_write_keys_group` | Groups allowed to create a keytab of this host. <br>Options: | no
+`allow_create_keytab_host` \| `ipaallowedtoperform_write_keys_host` | Hosts allowed to create a keytab of this host. <br>Options: | no
+`allow_create_keytab_hostgroup` \| `ipaallowedtoperform_write_keys_hostgroup` | Host groups allowed to create a keytab of this host. <br>Options: | no
+`allow_retrieve_keytab_user` \| `ipaallowedtoperform_read_keys_user` | Users allowed to retieve a keytab of this host. <br>Options: | no
+`allow_retrieve_keytab_group` \| `ipaallowedtoperform_read_keys_group` | Groups allowed to retieve a keytab of this host. <br>Options: | no
+`allow_retrieve_keytab_host` \| `ipaallowedtoperform_read_keys_host` | Hosts allowed to retieve a keytab of this host. <br>Options: | no
+`allow_retrieve_keytab_hostgroup` \| `ipaallowedtoperform_read_keys_hostgroup` | Host groups allowed to retieve a keytab of this host. <br>Options: | no
 `mac_address` \| `macaddress` | List of hardware MAC addresses. | no
+`sshpubkey` \| `ipasshpubkey` | List of SSH public keys | no
+`userclass` \| `class` | Host category (semantics placed on this attribute are for local interpretation) | no
+`auth_ind` \| `krbprincipalauthind` | Defines a whitelist for Authentication Indicators. Use 'otp' to allow OTP-based 2FA authentications. Use 'radius' to allow RADIUS-based 2FA authentications. Other values may be used for custom configurations. choices: ["radius", "otp", "pkinit", "hardened"] | no
+`requires_pre_auth` \| `ipakrbrequirespreauth` | Pre-authentication is required for the service (bool) | no
+`ok_as_delegate` \| `ipakrbokasdelegate` | Client credentials may be delegated to the service (bool) | no
+`ok_to_auth_as_delegate` \| `ipakrboktoauthasdelegate` | The service is allowed to authenticate on behalf of a client (bool) | no
 `force` | Force host name even if not in DNS. | no
 `reverse` | Reverse DNS detection. | no
 `ip_address` \| `ipaddress` | The host IP address. | no
 `update_dns` | Update DNS entries. | no
-`update_password` |  Set password for a host in present state only on creation or always. It can be one of `always` or `on_create` and defaults to `always`. | no
-`state` | The state to ensure. It can be one of `present`, `absent` or `disabled`, default: `present`. | yes
 
 
 Return Values
