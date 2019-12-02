@@ -50,10 +50,12 @@ def valid_creds(module, principal):
     Get valid credintials matching the princial, try GSSAPI first
     """
     if "KRB5CCNAME" in os.environ:
-        module.debug('KRB5CCNAME set to %s' %
-                     os.environ.get('KRB5CCNAME', None))
+        ccache = os.environ["KRB5CCNAME"]
+        module.debug('KRB5CCNAME set to %s' % ccache)
+
         try:
-            cred = gssapi.creds.Credentials()
+            cred = gssapi.Credentials(usage='initiate',
+                                      store={'ccache': ccache})
         except gssapi.raw.misc.GSSError as e:
             module.fail_json(msg='Failed to find default ccache: %s' % e)
         else:
