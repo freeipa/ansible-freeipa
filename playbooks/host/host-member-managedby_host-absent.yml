@@ -1,0 +1,12 @@
+---
+- name: Host member managedby_host absent
+  hosts: ipaserver
+  become: true
+
+  tasks:
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: host01.exmaple.com
+      managedby_host: server.exmaple.com
+      action: member
+      state: absent

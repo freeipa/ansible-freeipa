@@ -38,6 +38,11 @@ from ipapython.ipautil import run
 from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
 from ansible.module_utils._text import to_text
+try:
+    from ipalib.x509 import Encoding
+except ImportError:
+    from cryptography.hazmat.primitives.serialization import Encoding
+import base64
 import six
 
 
@@ -236,3 +241,28 @@ def module_params_get(module, name):
 
 def api_get_realm():
     return api.env.realm
+
+
+def gen_add_del_lists(user_list, res_list):
+    """
+    Generate the lists for the addition and removal of members using the
+    provided user and ipa settings
+    """
+    add_list = list(set(user_list or []) - set(res_list or []))
+    del_list = list(set(res_list or []) - set(user_list or []))
+
+    return add_list, del_list
+
+
+def encode_certificate(cert):
+    """
+    Encode a certificate using base64 with also taking FreeIPA and Python
+    versions into account
+    """
+    if isinstance(cert, str) or isinstance(cert, unicode):
+        encoded = base64.b64encode(cert)
+    else:
+        encoded = base64.b64encode(cert.public_bytes(Encoding.DER))
+    if not six.PY2:
+        encoded = encoded.decode('ascii')
+    return encoded

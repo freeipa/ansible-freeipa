@@ -1,0 +1,13 @@
+- name: Host member certificate absent
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Host host01.example.com member certificate absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: host01.example.com
+      certificate:
+      - MIIC/zCCAeegAwIBAgIUZGHLaSYg1myp6EI4VGWSC27vOrswDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0xOTEwMTQxNjI4MzVaFw0yMDEwMTMxNjI4MzVaMA8xDTALBgNVBAMMBHRlc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDER/lB8wUAmPTSwSc/NOXNlzdpPOQDSwrhKH6XsqZF4KpQoSY/nmCjAhJmOVpOUo4K2fGRZ0yAH9fkGv6yJP6c7IAFjLeec7GPHVwN4bZrP1DXfTAmfmXhcRQbCYkV+wmq8Puzw/+xA9EJrrodnJPPsE6E8HnSVLF6Ys9+cJMJ7HuwOI+wYt3gkmspsir1tccmf4x1PP+yHJWdcXyetlFRcmZ8gspjqOR2jb89xSQsh8gcyDW6rPNlSTzYZ2FmNtjES6ZhCsYL31fQbF2QglidlLGpAlvHUUS+xCigW73cvhFPMWXcfO51Mr15RcgYTckY+7QZ2nYqplRBoDlQl6DnAgMBAAGjUzBRMB0GA1UdDgQWBBTPG99XVRdxpOXMZo3Nhy+ldnf13TAfBgNVHSMEGDAWgBTPG99XVRdxpOXMZo3Nhy+ldnf13TAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQAjWTcnIl2mpNbfHAN8DB4Kk+RNRmhsH0y+r/47MXVTMMMToCfofeNY3Jeohu+2lIXMPQfTvXUbDTkNAGsGLv6LtQEUfSREqgk1eY7bT9BFfpH1uV2ZFhCO9jBA+E4bf55Kx7bgUNG31ykBshOsOblOJM1lS/0q4TWHAxrsU2PNwPi8X0ten+eGeB8aRshxS17Ij2cH0fdAMmSA+jMAvTIZl853Bxe0HuozauKwOFWL4qHm61c4O/j1mQCLqJKYfJ9mBDWFQLszd/tF+ePKiNhZCQly60F8Lumn2CDZj5UIkl8wk9Wls5n1BIQs+M8AN65NAdv7+js8jKUKCuyji8r3
+      action: member
+      state: absent

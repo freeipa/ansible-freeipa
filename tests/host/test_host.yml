@@ -1,0 +1,218 @@
+---
+- name: Test host
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Set host1_fqdn .. host6_fqdn
+    set_fact:
+      host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+      host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+      host3_fqdn: "{{ 'host3.' + ipaserver_domain }}"
+      host4_fqdn: "{{ 'host4.' + ipaserver_domain }}"
+      host5_fqdn: "{{ 'host5.' + ipaserver_domain }}"
+      host6_fqdn: "{{ 'host6.' + ipaserver_domain }}"
+
+  - name: Host absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      - "{{ host4_fqdn }}"
+      - "{{ host5_fqdn }}"
+      - "{{ host6_fqdn }}"
+      update_dns: yes
+      state: absent
+
+  - name: Get IPv4 address prefix from server node
+    set_fact:
+      ipv4_prefix: "{{ ansible_default_ipv4.address.split('.')[:-1] |
+                       join('.') }}"
+
+  - name: Host "{{ host1_fqdn }}" present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.201' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" present again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.201' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host2_fqdn }}" present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host2_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.202' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host2_fqdn }}" present again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host2_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.202' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host3_fqdn }}" present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host3_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.203' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host3_fqdn }}" present again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host3_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.203' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host4_fqdn }}" present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host4_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.204' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host4_fqdn }}" present again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host4_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.204' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host5_fqdn }}" present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host5_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.205' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host5_fqdn }}" present again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.205' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host6_fqdn }}" present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host6_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.206' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host6_fqdn }}" present again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host6_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.206' }}"
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: result.changed
+
+  # disabled can only be checked with enabled hosts, all hosts above are
+  # not enabled.
+  #- name: Hosts host1..host6 disabled
+  #  ipahost:
+  #    ipaadmin_password: MyPassword123
+  #    name:
+  #    - "{{ host1_fqdn }}"
+  #    - "{{ host2_fqdn }}"
+  #    - "{{ host3_fqdn }}"
+  #    - "{{ host4_fqdn }}"
+  #    - "{{ host5_fqdn }}"
+  #    - "{{ host6_fqdn }}"
+  #    state: disabled
+  #  register: result
+  #  failed_when: not result.changed
+  #
+  #- name: Hosts host1..host6 disabled again
+  #  ipahost:
+  #    ipaadmin_password: MyPassword123
+  #    name:
+  #    - "{{ host1_fqdn }}"
+  #    - "{{ host2_fqdn }}"
+  #    - "{{ host3_fqdn }}"
+  #    - "{{ host4_fqdn }}"
+  #    - "{{ host5_fqdn }}"
+  #    - "{{ host6_fqdn }}"
+  #    state: disabled
+  #  register: result
+  #  failed_when: result.changed
+
+  - name: Hosts host1..host6 absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      - "{{ host4_fqdn }}"
+      - "{{ host5_fqdn }}"
+      - "{{ host6_fqdn }}"
+      update_dns: yes
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Hosts host1..host6 absent again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      - "{{ host4_fqdn }}"
+      - "{{ host5_fqdn }}"
+      - "{{ host6_fqdn }}"
+      update_dns: yes
+      state: absent
+    register: result
+    failed_when: result.changed
+

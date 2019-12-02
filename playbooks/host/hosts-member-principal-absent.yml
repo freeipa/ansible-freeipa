@@ -1,0 +1,18 @@
+---
+- name: Host member principal absent
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Hosts host01.exmaple.com and host02.exmaple.com member principals host/testhost0X.exmaple.com absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: host01.exmaple.com
+        principal:
+        - host/testhost01.exmaple.com
+      - name: host02.exmaple.com
+        principal:
+        - host/testhost02.exmaple.com
+      action: member
+      state: absent

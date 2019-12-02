@@ -1,0 +1,278 @@
+---
+- name: Test host allow_retrieve_keytab
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Get Realm from server name
+    set_fact:
+      ipaserver_realm: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') | upper }}"
+    when: ipaserver_realm is not defined
+
+  - name: Set host1_fqdn .. host3_fqdn
+    set_fact:
+      host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+      host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+      host3_fqdn: "{{ 'host3.' + ipaserver_domain }}"
+
+  - name: Host host1..., host2... and host3... absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      state: absent
+
+  - name: Ensure host-groups hostgroup1 and hostgroup2 absent
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: hostgroup1,hostgroup2
+      state: absent
+
+  - name: Ensure users user1 and user2 absent
+    ipauser:
+      ipaadmin_password: MyPassword123
+      users:
+      - name: user1
+      - name: user2
+      state: absent
+
+  - name: Ensure group1 and group2 absent
+    ipagroup:
+      ipaadmin_password: MyPassword123
+      name: group1,group2
+      state: absent
+
+  - name: Host host2... and host3... present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host2_fqdn }}"
+        force: yes
+      - name: "{{ host3_fqdn }}"
+        force: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host-group hostgroup1 present
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: hostgroup1
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host-group hostgroup2 present
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: hostgroup2
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure users user1 and user2 present
+    ipauser:
+      ipaadmin_password: MyPassword123
+      users:
+      - name: user1
+        first: First1
+        last: Last1
+      - name: user2
+        first: First2
+        last: Last2
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure group1 present
+    ipagroup:
+      ipaadmin_password: MyPassword123
+      name: group1
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure group2 present
+    ipagroup:
+      ipaadmin_password: MyPassword123
+      name: group2
+    register: result
+    failed_when: not result.changed
+
+  - name: Host host1... present with allow_retrieve_keytab users,groups,hosts and hostgroups
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      allow_retrieve_keytab_user:
+      - user1
+      - user2
+      allow_retrieve_keytab_group:
+      - group1
+      - group2
+      allow_retrieve_keytab_host:
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      allow_retrieve_keytab_hostgroup:
+      - hostgroup1
+      - hostgroup2
+      force: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Host host1... present with allow_retrieve_keytab users,groups,hosts and hostgroups again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      allow_retrieve_keytab_user:
+      - user1
+      - user2
+      allow_retrieve_keytab_group:
+      - group1
+      - group2
+      allow_retrieve_keytab_host:
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      allow_retrieve_keytab_hostgroup:
+      - hostgroup1
+      - hostgroup2
+      force: yes
+    register: result
+    failed_when: result.changed
+
+  - name: Host host1... absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      state: absent
+
+  - name: Host host1... present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      force: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Host host1... ensure allow_retrieve_keytab users,groups,hosts and hostgroups present
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      allow_retrieve_keytab_user:
+      - user1
+      - user2
+      allow_retrieve_keytab_group:
+      - group1
+      - group2
+      allow_retrieve_keytab_host:
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      allow_retrieve_keytab_hostgroup:
+      - hostgroup1
+      - hostgroup2
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Host host1... ensure allow_retrieve_keytab users,groups,hosts and hostgroups present again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      allow_retrieve_keytab_user:
+      - user1
+      - user2
+      allow_retrieve_keytab_group:
+      - group1
+      - group2
+      allow_retrieve_keytab_host:
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      allow_retrieve_keytab_hostgroup:
+      - hostgroup1
+      - hostgroup2
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Host host1... ensure allow_retrieve_keytab users,groups,hosts and hostgroups absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      allow_retrieve_keytab_user:
+      - user1
+      - user2
+      allow_retrieve_keytab_group:
+      - group1
+      - group2
+      allow_retrieve_keytab_host:
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      allow_retrieve_keytab_hostgroup:
+      - hostgroup1
+      - hostgroup2
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Host host1... ensure allow_retrieve_keytab users,groups,hosts and hostgroups absent again
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      allow_retrieve_keytab_user:
+      - user1
+      - user2
+      allow_retrieve_keytab_group:
+      - group1
+      - group2
+      allow_retrieve_keytab_host:
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      allow_retrieve_keytab_hostgroup:
+      - hostgroup1
+      - hostgroup2
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Host host1..., host2... and host3... absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host-groups hostgroup1 and hostgroup2 absent
+    ipahostgroup:
+      ipaadmin_password: MyPassword123
+      name: hostgroup1,hostgroup2
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure users user1 and user2 absent
+    ipauser:
+      ipaadmin_password: MyPassword123
+      users:
+      - name: user1
+      - name: user2
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure group1 and group2 absent
+    ipagroup:
+      ipaadmin_password: MyPassword123
+      name: group1,group2
+      state: absent
+    register: result
+    failed_when: not result.changed

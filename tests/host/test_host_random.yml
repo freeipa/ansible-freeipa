@@ -9,33 +9,78 @@
       ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
+  - name: Set host1_fqdn and host2_fqdn
+    set_fact:
+      host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+      host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+
   - name: Test hosts absent
     ipahost:
       ipaadmin_password: MyPassword123
       name:
-      - "{{ 'host1.' + ipaserver_domain }}"
-      - "{{ 'host2.' + ipaserver_domain }}"
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
       update_dns: yes
       state: absent
 
-  - name: Host "{{ 'host1.' + ipaserver_domain }}" present with random password
+  - name: Host "{{ host1_fqdn }}" present with random password
     ipahost:
       ipaadmin_password: MyPassword123
-      name: "{{ 'host1.' + ipaserver_domain }}"
+      name: "{{ host1_fqdn }}"
       random: yes
       force: yes
       update_password: on_create
     register: ipahost
-    failed_when: not ipahost.changed or
-                 ipahost.host.randompassword is not defined
+    failed_when: not ipahost.changed
+
+  - assert:
+      that:
+      - ipahost.host.randompassword is defined
 
   - name: Print generated random password
     debug:
       var: ipahost.host.randompassword
 
-  - name: Host "{{ 'host1.' + ipaserver_domain }}" absent
+  - name: Host "{{ host1_fqdn }}" absent
     ipahost:
       ipaadmin_password: MyPassword123
       name:
-      - "{{ 'host1.' + ipaserver_domain }}"
+      - "{{ host1_fqdn }}"
+      state: absent
+
+  - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" present with random password
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        random: yes
+        force: yes
+      - name: "{{ host2_fqdn }}"
+        random: yes
+        force: yes
+      update_password: on_create
+    register: ipahost
+    failed_when: not ipahost.changed
+
+  - assert:
+      that:
+      - ipahost.host["{{host1_fqdn }}"].randompassword is
+        defined
+      - ipahost.host["{{host2_fqdn }}"].randompassword is
+        defined
+
+  - name: Print generated random password for "{{host1_fqdn }}"
+    debug:
+      var: ipahost.host["{{host1_fqdn }}"].randompassword
+
+  - name: Print generated random password for "{{host2_fqdn }}"
+    debug:
+      var: ipahost.host["{{host2_fqdn }}"].randompassword
+
+  - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" absent
+    ipahost:
+      ipaadmin_password: MyPassword123
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
       state: absent
