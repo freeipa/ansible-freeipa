@@ -231,6 +231,7 @@ ipareplica_setup_firewalld=no
 ```
 
 The installation of packages and also the configuration of the firewall are by default enabled.
+Note that it is not enough to mask systemd firewalld service to skip the firewalld configuration. You need to set the variable to `no`.
 
 For more replica settings, please have a look at the [replica role documentation](roles/ipareplica/README.md).
 
