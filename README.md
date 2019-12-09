@@ -11,6 +11,7 @@ Features
 * Cluster deployments: Server, replicas and clients in one playbook
 * One-time-password (OTP) support for client installation
 * Repair mode for clients
+* Modules for dns forwarder management
 * Modules for group management
 * Modules for hbacrule management
 * Modules for hbacsvc management
@@ -403,6 +404,7 @@ Roles
 Modules in plugin/modules
 =========================
 
+* [ipadnsforwardzone](README-dnsforwardzone.md)
 * [ipagroup](README-group.md)
 * [ipahbacrule](README-hbacrule.md)
 * [ipahbacsvc](README-hbacsvc.md)
