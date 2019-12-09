@@ -20,6 +20,19 @@
       state: present
     when: ipareplica_setup_adtrust | bool
 
+  - name: Install - Ensure that firewall packages installed
+    package:
+      name: "{{ ipareplica_packages_firewalld }}"
+      state: present
+    when: ipareplica_setup_firewalld | bool
+
+  - name: Firewalld service - Ensure that firewalld is running
+    systemd:
+      name: firewalld
+      enabled: yes
+      state: started
+    when: ipareplica_setup_firewalld | bool
+
   when: ipareplica_install_packages | bool
 
 #- name: Install - Include Python2/3 import test

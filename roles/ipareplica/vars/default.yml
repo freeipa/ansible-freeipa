@@ -3,3 +3,4 @@
 ipareplica_packages: [ "freeipa-server", "python3-libselinux" ]
 ipareplica_packages_dns: [ "freeipa-server-dns" ]
 ipareplica_packages_adtrust: [ "freeipa-server-trust-ad" ]
+ipareplica_packages_firewalld: [ "firewalld" ]
