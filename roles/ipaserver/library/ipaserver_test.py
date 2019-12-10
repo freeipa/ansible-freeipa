@@ -719,12 +719,7 @@ def main():
                 msg="File %s does not exist." % options.dirsrv_config_file)
 
     # domain_name
-    if options.setup_dns and not options.allow_zone_overlap and \
-       options.domain_name is not None:
-        try:
-            check_zone_overlap(options.domain_name, False)
-        except ValueError as e:
-            ansible_module.fail_json(msg=str(e))
+    # Validation is done later on in ipaserver_prepare dns.install_check
 
     # dm_password
     with redirect_stdout(ansible_log):
