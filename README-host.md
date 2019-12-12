@@ -269,14 +269,14 @@ Variable | Description | Required
 `certificate` \| `usercertificate` | List of base-64 encoded host certificates | no
 `managedby` \| `principalname` \| `krbprincipalname` | List of hosts that can manage this host | no
 `principal` \| `principalname` \| `krbprincipalname` | List of principal aliases for this host | no
-`allow_create_keytab_user` \| `ipaallowedtoperform_write_keys_user` | Users allowed to create a keytab of this host. <br>Options: | no
-`allow_create_keytab_group` \| `ipaallowedtoperform_write_keys_group` | Groups allowed to create a keytab of this host. <br>Options: | no
-`allow_create_keytab_host` \| `ipaallowedtoperform_write_keys_host` | Hosts allowed to create a keytab of this host. <br>Options: | no
-`allow_create_keytab_hostgroup` \| `ipaallowedtoperform_write_keys_hostgroup` | Host groups allowed to create a keytab of this host. <br>Options: | no
-`allow_retrieve_keytab_user` \| `ipaallowedtoperform_read_keys_user` | Users allowed to retieve a keytab of this host. <br>Options: | no
-`allow_retrieve_keytab_group` \| `ipaallowedtoperform_read_keys_group` | Groups allowed to retieve a keytab of this host. <br>Options: | no
-`allow_retrieve_keytab_host` \| `ipaallowedtoperform_read_keys_host` | Hosts allowed to retieve a keytab of this host. <br>Options: | no
-`allow_retrieve_keytab_hostgroup` \| `ipaallowedtoperform_read_keys_hostgroup` | Host groups allowed to retieve a keytab of this host. <br>Options: | no
+`allow_create_keytab_user` \| `ipaallowedtoperform_write_keys_user` | Users allowed to create a keytab of this host. | no
+`allow_create_keytab_group` \| `ipaallowedtoperform_write_keys_group` | Groups allowed to create a keytab of this host. | no
+`allow_create_keytab_host` \| `ipaallowedtoperform_write_keys_host` | Hosts allowed to create a keytab of this host. | no
+`allow_create_keytab_hostgroup` \| `ipaallowedtoperform_write_keys_hostgroup` | Host groups allowed to create a keytab of this host. | no
+`allow_retrieve_keytab_user` \| `ipaallowedtoperform_read_keys_user` | Users allowed to retieve a keytab of this host. | no
+`allow_retrieve_keytab_group` \| `ipaallowedtoperform_read_keys_group` | Groups allowed to retieve a keytab of this host. | no
+`allow_retrieve_keytab_host` \| `ipaallowedtoperform_read_keys_host` | Hosts allowed to retieve a keytab of this host. | no
+`allow_retrieve_keytab_hostgroup` \| `ipaallowedtoperform_read_keys_hostgroup` | Host groups allowed to retieve a keytab of this host. | no
 `mac_address` \| `macaddress` | List of hardware MAC addresses. | no
 `sshpubkey` \| `ipasshpubkey` | List of SSH public keys | no
 `userclass` \| `class` | Host category (semantics placed on this attribute are for local interpretation) | no
