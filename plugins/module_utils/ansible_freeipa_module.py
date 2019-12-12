@@ -151,6 +151,13 @@ def api_command(module, command, name, args):
     return api.Command[command](name, **args)
 
 
+def api_command_no_name(module, command, args):
+    """
+    Call ipa.Command without a name.
+    """
+    return api.Command[command](**args)
+
+
 def api_check_param(command, name):
     """
     Return if param exists in command param list
