@@ -460,7 +460,8 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, date_format, \
-    compare_args_ipa, module_params_get, api_check_param, api_get_realm
+    compare_args_ipa, module_params_get, api_check_param, api_get_realm, \
+    api_command_no_name
 import six
 
 
@@ -644,6 +645,14 @@ def check_parameters(module, state, action,
                     module.fail_json(msg="certmapdata: issuer is missing")
                 if subject is None:
                     module.fail_json(msg="certmapdata: subject is missing")
+
+
+def extend_emails(email, default_email_domain):
+    if email is not None:
+        return [ "%s@%s" % (_email, default_email_domain)
+                 if "@" not in _email else _email
+                 for _email in email]
+    return email
 
 
 def gen_certmapdata_args(certmapdata):
@@ -883,6 +892,17 @@ def main():
 
         server_realm = api_get_realm()
 
+        # Default email domain
+
+        result = api_command_no_name(ansible_module, "config_show", {})
+        default_email_domain = result["result"]["ipadefaultemaildomain"][0]
+
+        # Extend email addresses
+
+        email = extend_emails(email, default_email_domain)
+
+        # commands
+
         commands = []
 
         for user in names:
@@ -948,6 +968,10 @@ def main():
                     employeetype, preferredlanguage, certificate,
                     certmapdata, noprivate, nomembers, preserve,
                     update_password)
+
+                # Extend email addresses
+
+                email = extend_emails(email, default_email_domain)
 
             elif isinstance(user, str) or isinstance(user, unicode):
                 name = user
