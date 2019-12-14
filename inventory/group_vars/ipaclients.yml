@@ -1,0 +1,9 @@
+ipaclient_keytab=/tmp/krb5.keytab
+ipaclient_domain=mine.dom
+ipaclient_realm="{{ ipa_domain | upper }}"
+ipaadmin_principal=admin
+ipaadmin_password=password1
+ipaclient_use_otp=yes
+ipaclient_force_join=yes
+ipaclient_kinit_attempts=3
+ipaclient_mkhomedir=yes
