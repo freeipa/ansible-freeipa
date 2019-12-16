@@ -1,0 +1,20 @@
+---
+- name: Playbook to manage vault container.
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Ensure vault container members are present.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      username: user01
+      users:
+      - user01
+      - user02
+      - user03
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ groups.ipaserver[0] }}"
+      action: member

@@ -1,0 +1,11 @@
+---
+- name: Playbook to manage vault container.
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Check if user vault container is present.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      username: user01
