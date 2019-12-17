@@ -147,9 +147,10 @@ options:
           Defines a whitelist for Authentication Indicators. Use 'otp' to allow
           OTP-based 2FA authentications. Use 'radius' to allow RADIUS-based 2FA
           authentications. Other values may be used for custom configurations.
+          Use empty string to reset auth_ind to the initial value.
         type: list
         aliases: ["krbprincipalauthind"]
-        choices: ["radius", "otp", "pkinit", "hardened"]
+        choices: ["radius", "otp", "pkinit", "hardened", ""]
         required: false
       requires_pre_auth:
         description: Pre-authentication is required for the service
@@ -277,9 +278,10 @@ options:
       Defines a whitelist for Authentication Indicators. Use 'otp' to allow
       OTP-based 2FA authentications. Use 'radius' to allow RADIUS-based 2FA
       authentications. Other values may be used for custom configurations.
+      Use empty string to reset auth_ind to the initial value.
     type: list
     aliases: ["krbprincipalauthind"]
-    choices: ["radius", "otp", "pkinit", "hardened"]
+    choices: ["radius", "otp", "pkinit", "hardened", ""]
     required: false
   requires_pre_auth:
     description: Pre-authentication is required for the service
@@ -590,7 +592,7 @@ def main():
                        default=None),
         auth_ind=dict(type='list', aliases=["krbprincipalauthind"],
                       default=None,
-                      choices=['password', 'radius', 'otp']),
+                      choices=['radius', 'otp', 'pkinit', 'hardened', '']),
         requires_pre_auth=dict(type="bool", aliases=["ipakrbrequirespreauth"],
                                default=None),
         ok_as_delegate=dict(type="bool", aliases=["ipakrbokasdelegate"],
@@ -834,6 +836,13 @@ def main():
                         for x in ["force", "ip_address", "no_reverse"]:
                             if x in args:
                                 del args[x]
+
+                        # Ignore auth_ind if it is empty (for resetting)
+                        # and not set in for the host
+                        if "krbprincipalauthind" not in res_find and \
+                           "krbprincipalauthind" in args and \
+                           args["krbprincipalauthind"] == ['']:
+                            del args["krbprincipalauthind"]
 
                         # For all settings is args, check if there are
                         # different settings in the find result.
