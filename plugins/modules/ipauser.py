@@ -153,9 +153,12 @@ options:
         required: false
         aliases: ["ipasshpubkey"]
       userauthtype:
-        description: List of supported user authentication types
-        choices=['password', 'radius', 'otp']
+        description:
+          List of supported user authentication types
+          Use empty string to reset userauthtype to the initial value.
+        choices=['password', 'radius', 'otp', '']
         required: false
+        aliases: ["ipauserauthtype"]
       userclass:
         description:
         - User category
@@ -310,9 +313,12 @@ options:
     required: false
     aliases: ["ipasshpubkey"]
   userauthtype:
-    description: List of supported user authentication types
-    choices=['password', 'radius', 'otp']
+    description:
+      List of supported user authentication types
+      Use empty string to reset userauthtype to the initial value.
+    choices=['password', 'radius', 'otp', '']
     required: false
+    aliases: ["ipauserauthtype"]
   userclass:
     description:
     - User category
@@ -701,7 +707,7 @@ def main():
                        default=None),
         userauthtype=dict(type='list', aliases=["ipauserauthtype"],
                           default=None,
-                          choices=['password', 'radius', 'otp']),
+                          choices=['password', 'radius', 'otp', '']),
         userclass=dict(type="list", aliases=["class"],
                        default=None),
         radius=dict(type="str", aliases=["ipatokenradiusconfiglink"],
@@ -845,13 +851,6 @@ def main():
         if names is not None and len(names) != 1:
             ansible_module.fail_json(
                 msg="Only one user can be added at a time using name.")
-        if action != "member":
-            # Only check first and last here if names is set
-            if names is not None:
-                if first is None:
-                    ansible_module.fail_json(msg="First name is needed")
-                if last is None:
-                    ansible_module.fail_json(msg="Last name is needed")
 
     check_parameters(
         ansible_module, state, action,
@@ -1011,6 +1010,13 @@ def main():
                         if "noprivate" in args:
                             del args["noprivate"]
 
+                        # Ignore userauthtype if it is empty (for resetting)
+                        # and not set in for the user
+                        if "ipauserauthtype" not in res_find and \
+                           "ipauserauthtype" in args and \
+                           args["ipauserauthtype"] == ['']:
+                            del args["ipauserauthtype"]
+
                         # For all settings is args, check if there are
                         # different settings in the find result.
                         # If yes: modify
@@ -1019,6 +1025,14 @@ def main():
                             commands.append([name, "user_mod", args])
 
                     else:
+                        # Make sure we have a first and last name
+                        if first is None:
+                            ansible_module.fail_json(
+                                msg="First name is needed")
+                        if last is None:
+                            ansible_module.fail_json(
+                                msg="Last name is needed")
+
                         commands.append([name, "user_add", args])
 
                     # Handle members: principal, manager, certificate and

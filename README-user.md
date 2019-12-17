@@ -408,7 +408,7 @@ Variable | Description | Required
 `manager` | List of manager user names. | no
 `carlicense` | List of car licenses. | no
 `sshpubkey` \| `ipasshpubkey` | List of SSH public keys. | no
-`userauthtype` | List of supported user authentication types. Choices: `password`, `radius` and `otp` | no
+`userauthtype` | List of supported user authentication types. Choices: `password`, `radius`, `otp` and ``. Use empty string to reset userauthtype to the initial value. | no
 `userclass` | User category. (semantics placed on this attribute are for local interpretation). | no
 `radius` | RADIUS proxy configuration  | no
 `radiususer` | RADIUS proxy username | no
