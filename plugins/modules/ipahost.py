@@ -511,19 +511,25 @@ def check_parameters(
                    "userclass", "auth_ind", "requires_pre_auth",
                    "ok_as_delegate", "ok_to_auth_as_delegate", "force",
                    "reverse", "ip_address", "update_password"]
-        if action == "host":
-            invalid.extend([
-                "certificate", "managedby_host", "principal",
-                "allow_create_keytab_user", "allow_create_keytab_group",
-                "allow_create_keytab_host", "allow_create_keytab_hostgroup",
-                "allow_retrieve_keytab_user", "allow_retrieve_keytab_group",
-                "allow_retrieve_keytab_host",
-                "allow_retrieve_keytab_hostgroup"])
         for x in invalid:
             if vars()[x] is not None:
                 module.fail_json(
                     msg="Argument '%s' can not be used with state '%s'" %
                     (x, state))
+        if action == "host":
+            invalid = [
+                "certificate", "managedby_host", "principal",
+                "allow_create_keytab_user", "allow_create_keytab_group",
+                "allow_create_keytab_host", "allow_create_keytab_hostgroup",
+                "allow_retrieve_keytab_user", "allow_retrieve_keytab_group",
+                "allow_retrieve_keytab_host",
+                "allow_retrieve_keytab_hostgroup"
+            ]
+            for x in invalid:
+                if vars()[x] is not None:
+                    module.fail_json(
+                        msg="Argument '%s' can only be used with action "
+                        "'member' for state '%s'" % (x, state))
 
 
 def main():
