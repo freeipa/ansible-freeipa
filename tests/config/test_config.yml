@@ -1,0 +1,143 @@
+---
+- name: Playbook to handle users
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: return current values of the global configuration options
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+    register: previousconfig
+
+  - debug:
+      msg: "{{previousconfig}}"
+
+  - name: set default shell to default value
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      defaultshell: /bin/sh
+    register: result
+    failed_when: result.changed
+
+  - name: set default shell to new value
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      defaultshell: /bin/bash
+    register: result
+    failed_when: not result.changed
+
+  - name: check default shell is changed
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      defaultshell: /bin/bash
+    register: result
+    failed_when: result.changed
+
+  - name: reset default shell to old value
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      defaultshell: '{{previousconfig.config.defaultshell }}'
+    register: result
+    failed_when: not result.changed
+
+  - name: check default shell is reset
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      defaultshell: '{{previousconfig.config.defaultshell }}'
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure the default e-mail domain is ansible.com.
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      emaildomain: ansible.com
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure the default e-mail domain is set
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      emaildomain: ansible.com
+    register: result
+    failed_when: result.changed
+
+  - name: reset default e-mail domain
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      emaildomain: '{{previousconfig.config.emaildomain }}'
+    register: result
+    failed_when: not result.changed
+
+  - name: set pac-type
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      pac_type:
+        - nfs:NONE
+    register: result
+    failed_when: not result.changed
+
+  - name: reset pac-type
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      pac_type: '{{previousconfig.config.pac_type}}'
+    register: result
+    failed_when: not result.changed
+
+  - name: set usersearch
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      usersearch:
+        - uid
+    register: result
+    failed_when: not result.changed
+
+  - name: check usersearch
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      usersearch:
+        - uid
+    register: result
+    failed_when: result.changed
+
+  - name: reset changed fields
+    ipaconfig:
+      ipaadmin_password: 'SomeADMINpassword'
+      configstring: '{{previousconfig.config.configstring}}'
+      emaildomain: '{{previousconfig.config.emaildomain}}'
+      defaultshell: '{{previousconfig.config.defaultshell}}'
+      defaultgroup: '{{previousconfig.config.defaultgroup}}'
+      groupsearch: '{{previousconfig.config.groupsearch}}'
+      homedirectory: '{{previousconfig.config.homedirectory}}'
+      pac_type: '{{previousconfig.config.pac_type}}'
+      maxusername: '{{previousconfig.config.maxusername}}'
+      enable_migration: '{{previousconfig.config.enable_migration}}'
+      pwdexpnotify: '{{previousconfig.config.pwdexpnotify}}'
+      searchrecordslimit: '{{previousconfig.config.searchrecordslimit}}'
+      searchtimelimit: '{{previousconfig.config.searchtimelimit}}'
+      selinuxusermapdefault: '{{previousconfig.config.selinuxusermapdefault}}'
+      selinuxusermaporder: '{{previousconfig.config.selinuxusermaporder}}'
+      usersearch: '{{previousconfig.config.usersearch}}'
+    register: result
+    failed_when: not result.changed
+
+  - name: check reset fields
+    ipaconfig:
+      ipaadmin_password: 'SomeADMINpassword'
+      configstring: '{{previousconfig.config.configstring}}'
+      emaildomain: '{{previousconfig.config.emaildomain}}'
+      defaultshell: '{{previousconfig.config.defaultshell}}'
+      defaultgroup: '{{previousconfig.config.defaultgroup}}'
+      groupsearch: '{{previousconfig.config.groupsearch}}'
+      homedirectory: '{{previousconfig.config.homedirectory}}'
+      pac_type: '{{previousconfig.config.pac_type}}'
+      maxusername: '{{previousconfig.config.maxusername}}'
+      enable_migration: '{{previousconfig.config.enable_migration}}'
+      pwdexpnotify: '{{previousconfig.config.pwdexpnotify}}'
+      searchrecordslimit: '{{previousconfig.config.searchrecordslimit}}'
+      searchtimelimit: '{{previousconfig.config.searchtimelimit}}'
+      selinuxusermapdefault: '{{previousconfig.config.selinuxusermapdefault}}'
+      selinuxusermaporder: '{{previousconfig.config.selinuxusermaporder}}'
+      usersearch: '{{previousconfig.config.usersearch}}'
+    register: result
+    failed_when: result.changed
