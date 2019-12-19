@@ -1,0 +1,562 @@
+---
+
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+
+  - name: Ensure user vaults are absent
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name:
+      - stdvault
+      - symvault
+      - asymvault
+      username: user01
+      state: absent
+
+  - name: Ensure test users do not exist.
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name:
+      - user01
+      - user02
+      - user03
+      state: absent
+
+  - name: Ensure test groups do not exist.
+    ipagroup:
+      ipaadmin_password: MyPassword123
+      name: vaultgroup
+      state: absent
+
+  - name: Ensure vaultgroup exists.
+    ipagroup:
+      ipaadmin_password: MyPassword123
+      name: vaultgroup
+
+  - name: Ensure user01 exists.
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name: user01
+      first: First
+      last: Start
+
+  - name: Ensure user02 exists.
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name: user02
+      first: Second
+      last: Middle
+
+  - name: Ensure user03 exists.
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name: user03
+      first: Third
+      last: Last
+
+  - name: Ensure shared vaults are absent
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: sharedvault
+      shared: True
+      state: absent
+
+  - name: Ensure service vaults are absent
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: svcvault
+      service: "HTTP/{{ groups.ipaserver[0] }}"
+      state: absent
+
+  - name: Ensure symmetric vault is present
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: symvault
+      username: user01
+      vault_password: MyVaultPassword123
+      vault_type: symmetric
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure symmetric vault is present, again
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: symvault
+      username: user01
+      vault_password: MyVaultPassword123
+      vault_type: symmetric
+    register: result
+    failed_when: result.changed
+
+  - name: Archive data to symmetric vault
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: symvault
+      username: user01
+      vault_password: MyVaultPassword123
+      vault_data: Hello World.
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Archive data with non-ASCII characters to symmetric vault
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: symvault
+      username: user01
+      vault_password: MyVaultPassword123
+      vault_data: The world of π is half rounded.
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure symmetric vault is absent
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: symvault
+      username: user01
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure symmetric vault is absent, again
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: symvault
+      username: user01
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure asymmetric vault is present.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: asymvault
+      username: user01
+      description: A symmetric private vault.
+      vault_public_key:
+        LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTR
+        HTkFEQ0JpUUtCZ1FDdGFudjRkK3ptSTZ0T3ova1RXdGowY3AxRAowUENoYy8vR0pJMTUzTi
+        9CN3UrN0h3SXlRVlZoNUlXZG1UcCtkWXYzd09yeVpPbzYvbHN5eFJaZ2pZRDRwQ3VGCjlxM
+        295VTFEMnFOZERYeGtSaFFETXBiUEVSWWlHbE1jbzdhN0hIVDk1bGNQbmhObVFkb3VGdHlV
+        bFBUVS96V1kKZldYWTBOeU1UbUtoeFRseUV3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVk
+        tLS0tLQo=
+      vault_type: asymmetric
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure asymmetric vault is present, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: asymvault
+      username: user01
+      vault_public_key:
+        LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTR
+        HTkFEQ0JpUUtCZ1FDdGFudjRkK3ptSTZ0T3ova1RXdGowY3AxRAowUENoYy8vR0pJMTUzTi
+        9CN3UrN0h3SXlRVlZoNUlXZG1UcCtkWXYzd09yeVpPbzYvbHN5eFJaZ2pZRDRwQ3VGCjlxM
+        295VTFEMnFOZERYeGtSaFFETXBiUEVSWWlHbE1jbzdhN0hIVDk1bGNQbmhObVFkb3VGdHlV
+        bFBUVS96V1kKZldYWTBOeU1UbUtoeFRseUV3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVk
+        tLS0tLQo=
+      vault_type: asymmetric
+    register: result
+    failed_when: result.changed
+
+  - name: Archive data in asymmetric vault.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: asymvault
+      username: user01
+      vault_data: Hello World.
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure asymmetric vault is absent.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: asymvault
+      username: user01
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure asymmetric vault is absent, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: asymvault
+      username: user01
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure standard vault is present.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      vault_type: standard
+      username: user01
+      description: A standard private vault.
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure standard vault is present, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      vault_type: standard
+      description: A standard private vault.
+    register: result
+    failed_when: result.changed
+
+  - name: Archive data in standard vault.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      vault_data: Hello World.
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure standard vault member user is present.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      users:
+      - user02
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure standard vault member user is present, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      users:
+      - user02
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure more vault member users are present.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      users:
+      - user01
+      - user02
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault member user is still present.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      users:
+      - user02
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault users are absent.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      users:
+      - user01
+      - user02
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault users are absent, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      users:
+      - user01
+      - user02
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault user is absent, once more.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      users:
+      - user01
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault member group is present.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      groups: vaultgroup
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault member group is present, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      groups: vaultgroup
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault member group is absent.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      groups: vaultgroup
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault member group is absent, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      action: member
+      groups: vaultgroup
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault is absent.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault is absent, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure shared vault is present.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: sharedvault
+      shared: True
+      ipavaultpassword: MyVaultPassword123
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure shared vault is absent.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: sharedvault
+      shared: True
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure service vault is present.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: svcvault
+      ipavaultpassword: MyVaultPassword123
+      service: "HTTP/{{ groups.ipaserver[0] }}"
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure service vault is absent.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: svcvault
+      service: "HTTP/{{ groups.ipaserver[0] }}"
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault is present, with members.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      vault_type: standard
+      users:
+      - user02
+      - user03
+      groups:
+      - vaultgroup
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault is present, with members, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      vault_type: standard
+      users:
+      - user02
+      - user03
+      groups:
+      - vaultgroup
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user02 is not a member of vault stdvault.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      users: user02
+      state: absent
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user02 is not a member of vault stdvault, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      users: user02
+      state: absent
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user02 is a member of vault stdvault.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      users: user02
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user02 is a member of vault stdvault, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      users: user03
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user03 owns vault stdvault.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      owners: user03
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user03 owns vault stdvault, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      owners: user03
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user03 is not owner of stdvault.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      owners: user03
+      state: absent
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user03 is not owner of stdvault, again.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      owners: user03
+      state: absent
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault is absent.
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: stdvault
+      username: user01
+      state: absent
+
+  # cleaup
+  - name: Ensure test vaults are absent
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name:
+      - stdvault
+      - symvault
+      - asymvault
+      username: user01
+      state: absent
+
+  - name: Ensure shared vaults are absent
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: sharedvault
+      shared: True
+      state: absent
+
+  - name: Ensure service vaults are absent
+    ipavault:
+      ipaadmin_password: MyPassword123
+      name: svcvault
+      service: "HTTP/{{ groups.ipaserver[0] }}"
+      state: absent
+
+  - name: Ensure test users do not exist.
+    ipauser:
+      ipaadmin_password: MyPassword123
+      name:
+      - user01
+      - user02
+      - user03
+      state: absent
+
+  - name: Ensure test groups do not exist.
+    ipagroup:
+      ipaadmin_password: MyPassword123
+      name: vaultgroup
+      state: absent
