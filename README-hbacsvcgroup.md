@@ -4,7 +4,7 @@ HBACsvcgroup module
 Description
 -----------
 
-The hbacsvcgroup (HBAC Service Group) module allows to ensure presence and absence of HBAP Service Groups and members of the groups.
+The hbacsvcgroup (HBAC Service Group) module allows to ensure presence and absence of HBAC Service Groups and members of the groups.
 
 
 Features
