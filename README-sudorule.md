@@ -106,6 +106,7 @@ Example playbook to make sure Sudo Rule is absent:
   - ipasudorule:
       ipaadmin_password: MyPassword123
       name: testrule1
+      state: absent
 ```
 
 
