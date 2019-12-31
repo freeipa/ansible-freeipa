@@ -68,7 +68,7 @@ Example playbook to make sure sudocmds are present in Sudo Rule:
   - ipasudorule:
       ipaadmin_password: MyPassword123
       name: testrule1
-      cmd:
+      allow_sudocmd:
       - /sbin/ifconfig
       action: member
 ```
@@ -87,7 +87,7 @@ Example playbook to make sure sudocmds are not present in Sudo Rule:
   - ipasudorule:
       ipaadmin_password: MyPassword123
       name: testrule1
-      cmd:
+      allow_sudocmd:
       - /sbin/ifconfig
       action: member
       state: absent
@@ -130,8 +130,14 @@ Variable | Description | Required
 `hostgroup` | List of host group name strings assigned to this sudorule. | no
 `user` | List of user name strings assigned to this sudorule. | no
 `group` | List of user group name strings assigned to this sudorule. | no
-`cmd` | List of sudocmd name strings assigned to this sudorule. | no
-`cmdgroup` | List of sudocmd group name strings assigned wto this sudorule. | no
+`allow_sudocmd` | List of sudocmd name strings assigned to the allow group of this sudorule. | no
+`deny_sudocmd` | List of sudocmd name strings assigned to the deny group of this sudorule. | no
+`allow_sudocmdgroup` | List of sudocmd groups name strings assigned to the allow group of this sudorule. | no
+`deny_sudocmdgroup` | List of sudocmd groups name strings assigned to the deny group of this sudorule. | no
+`sudooption` \| `option` | List of options to the sudorule | no
+`order` | Integer to order the sudorule | no
+`runasuser` | List of users for Sudo to execute as. | no
+`runasgroup` | List of groups for Sudo to execute as. | no
 `action` | Work on sudorule or member level. It can be on of `member` or `sudorule` and defaults to `sudorule`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, `enabled` or `disabled`, default: `present`. | no
 

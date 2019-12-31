@@ -5,16 +5,10 @@
   gather_facts: false
 
   tasks:
+  # Ensure sudooption is absent in sudorule
   - ipasudorule:
       ipaadmin_password: MyPassword123
       name: testrule1
-      allow_sudocmd:
-      - /sbin/ifconfig
-      deny_sudocmd:
-      - /usr/bin/vim
-      allow_sudocmdgroup:
-      - devops
-      deny_sudocmdgroup:
-      - users
+      sudooption: "!root"
       action: member
       state: absent
