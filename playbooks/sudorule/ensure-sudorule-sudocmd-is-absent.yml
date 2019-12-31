@@ -8,7 +8,7 @@
   - ipasudorule:
       ipaadmin_password: MyPassword123
       name: testrule1
-      cmd:
+      sudocmds:
       - /sbin/ifconfig
       - /usr/bin/vim
       action: member

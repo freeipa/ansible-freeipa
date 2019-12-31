@@ -48,21 +48,24 @@ options:
   user:
     description: List of users assigned to the sudo rule.
     required: false
-  usercategory:
+  usercat:
     description: User category the sudo rule applies to
     required: false
     choices: ["all"]
+    aliases: ["usercategory"]
   usergroup:
     description: List of user groups assigned to the sudo rule.
     required: false
-  runasgroupcategory:
+  runasgroupcat:
     description: RunAs Group category applied to the sudo rule.
     required: false
     choices: ["all"]
-  runasusercategory:
+    aliases: ["runasgroupcategory"]
+  runasusercat:
     description: RunAs User category applied to the sudorule.
     required: false
     choices: ["all"]
+    aliases: ["runasusercategory"]
   nomembers:
     description: Suppress processing of membership attributes
     required: false
@@ -75,22 +78,26 @@ options:
     description: List of host groups assigned to this sudorule.
     required: false
     type: list
-  hostcategory:
+  hostcat:
     description: Host category the sudo rule applies to.
     required: false
     choices: ["all"]
-  cmd:
+    aliases: ["hostcategory"]
+  sudocmds:
     description: List of sudocmds assigned to this sudorule.
     required: false
     type: list
-  cmdgroup:
+    aliases: ["cmd"]
+  sudocmdgroups:
     description: List of sudocmd groups assigned to this sudorule.
     required: false
     type: list
-  cmdcategory:
+    aliases: ["cmdgroup"]
+  cmdcat:
     description: Cammand category the sudo rule applies to
     required: false
     choices: ["all"]
+    aliases: ['cmdcategory']
   action:
     description: Work on sudorule or member level
     default: sudorule
@@ -113,7 +120,7 @@ EXAMPLES = """
 - ipasudorule:
   ipaadmin_password: pass1234
   name: testrule1
-  cmd:
+  sudocmds:
   - /sbin/ifconfig
   - /usr/bin/vim
   action: member
@@ -137,14 +144,14 @@ EXAMPLES = """
 - ipasudorule:
     ipaadmin_password: MyPassword123
     name: allusers
-    usercategory: all
+    usercat: all
     action: enabled
 
 # Ensure sudo rule for hostcategory "all"
 - ipasudorule:
     ipaadmin_password: MyPassword123
     name: allhosts
-    hostcategory: all
+    hostcat: all
     action: enabled
 
 # Ensure Sudo Rule tesrule1 is absent
@@ -180,14 +187,24 @@ def find_sudorule(module, name):
         return None
 
 
-def gen_args(ansible_module):
-    arglist = ['description', 'usercategory', 'hostcategory', 'cmdcategory',
-               'runasusercategory', 'runasgroupcategory', 'nomembers']
+def gen_args(description, usercat, hostcat, cmdcat, runasusercat,
+             runasgroupcat, nomembers):
     _args = {}
-    for arg in arglist:
-        value = module_params_get(ansible_module, arg)
-        if value is not None:
-            _args[arg] = value
+
+    if description is not None:
+        _args['description'] = description
+    if usercat is not None:
+        _args['usercategory'] = usercat
+    if hostcat is not None:
+        _args['hostcategory'] = hostcat
+    if cmdcat is not None:
+        _args['cmdcategory'] = cmdcat
+    if runasusercat is not None:
+        _args['runasusercategory'] = runasusercat
+    if runasgroupcat is not None:
+        _args['runasgroupcategory'] = runasgroupcat
+    if nomembers is not None:
+        _args['nomembers'] = nomembers
 
     return _args
 
@@ -203,22 +220,26 @@ def main():
                       required=True),
             # present
             description=dict(required=False, type="str", default=None),
-            usercategory=dict(required=False, type="str", default=None,
-                              choices=["all"]),
-            hostcategory=dict(required=False, type="str", default=None,
-                              choices=["all"]),
+            usercat=dict(required=False, type="str", default=None,
+                         choices=["all"], aliases=["usercategory"]),
+            hostcat=dict(required=False, type="str", default=None,
+                         choices=["all"], aliases=["hostcategory"]),
             nomembers=dict(required=False, type='bool', default=None),
             host=dict(required=False, type='list', default=None),
             hostgroup=dict(required=False, type='list', default=None),
             user=dict(required=False, type='list', default=None),
             group=dict(required=False, type='list', default=None),
-            cmd=dict(required=False, type="list", default=None),
-            cmdcategory=dict(required=False, type="str", default=None,
-                             choices=["all"]),
-            runasusercategory=dict(required=False, type="str", default=None,
-                                   choices=["all"]),
-            runasgroupcategory=dict(required=False, type="str", default=None,
-                                    choices=["all"]),
+            sudocmds=dict(required=False, type="list", default=None,
+                          aliases=['cmd']),
+            sudocmdgroups=dict(required=False, type="list", default=None,
+                               aliases=['cmdgroup']),
+            cmdcat=dict(required=False, type="str", default=None,
+                        choices=["all"], aliases=["cmdcategory"]),
+            runasusercat=dict(required=False, type="str", default=None,
+                              choices=["all"], aliases=["runasusercategory"]),
+            runasgroupcan=dict(required=False, type="str", default=None,
+                               choices=["all"],
+                               aliases=["runasgroupcategory"]),
             action=dict(type="str", default="sudorule",
                         choices=["member", "sudorule"]),
             # state
@@ -242,22 +263,20 @@ def main():
     # present
     # The 'noqa' variables are not used here, but required for vars().
     # The use of 'noqa' ensures flake8 does not complain about them.
-    description = module_params_get(ansible_module, "description")  # noqa
-    cmdcategory = module_params_get(ansible_module, 'cmdcategory')  # noqa
-    usercategory = module_params_get(ansible_module, "usercategory")  # noqa
-    hostcategory = module_params_get(ansible_module, "hostcategory")  # noqa
-    runasusercategory = module_params_get(ansible_module,           # noqa
-                                          "runasusercategory")
-    runasgroupcategory = module_params_get(ansible_module,          # noqa
-                                           "runasgroupcategory")
-    hostcategory = module_params_get(ansible_module, "hostcategory")  # noqa
-    nomembers = module_params_get(ansible_module, "nomembers")  # noqa
+    description = module_params_get(ansible_module, "description")
+    cmdcat = module_params_get(ansible_module, 'cmdcat')
+    usercat = module_params_get(ansible_module, "usercat")
+    hostcat = module_params_get(ansible_module, "hostcat")
+    runasusercat = module_params_get(ansible_module, "runasusercat")
+    runasgroupcat = module_params_get(ansible_module, "runasgroupcat")
+    hostcat = module_params_get(ansible_module, "hostcat")
+    nomembers = module_params_get(ansible_module, "nomembers")
     host = module_params_get(ansible_module, "host")
     hostgroup = module_params_get(ansible_module, "hostgroup")
     user = module_params_get(ansible_module, "user")
     group = module_params_get(ansible_module, "group")
-    cmd = module_params_get(ansible_module, 'cmd')
-    cmdgroup = module_params_get(ansible_module, 'cmdgroup')
+    sudocmds = module_params_get(ansible_module, 'cmd')
+    sudocmdgroups = module_params_get(ansible_module, 'cmdgroup')
     action = module_params_get(ansible_module, "action")
 
     # state
@@ -270,9 +289,8 @@ def main():
             ansible_module.fail_json(
                 msg="Only one sudorule can be added at a time.")
         if action == "member":
-            invalid = ["description", "usercategory", "hostcategory",
-                       "cmdcategory", "runasusercategory",
-                       "runasgroupcategory", "nomembers"]
+            invalid = ["description", "usercat", "hostcat", "cmdcat",
+                       "runasusercat", "runasgroupcat", "nomembers"]
 
             for x in invalid:
                 if x in vars() and vars()[x] is not None:
@@ -283,12 +301,11 @@ def main():
     elif state == "absent":
         if len(names) < 1:
             ansible_module.fail_json(msg="No name given.")
-        invalid = ["description", "usercategory", "hostcategory",
-                   "cmdcategory", "runasusercategory",
-                   "runasgroupcategory", "nomembers"]
+        invalid = ["description", "usercat", "hostcat", "cmdcat",
+                   "runasusercat", "runasgroupcat", "nomembers"]
         if action == "sudorule":
             invalid.extend(["host", "hostgroup", "user", "group",
-                            "cmd", "cmdgroup"])
+                            "sudocmds", "sudocmdgroups"])
         for x in invalid:
             if vars()[x] is not None:
                 ansible_module.fail_json(
@@ -302,10 +319,10 @@ def main():
             ansible_module.fail_json(
                 msg="Action member can not be used with states enabled and "
                 "disabled")
-        invalid = ["description", "usercategory", "hostcategory",
-                   "cmdcategory", "runasusercategory", "runasgroupcategory",
-                   "nomembers", "nomembers", "host", "hostgroup",
-                   "user", "group", "cmd", "cmdgroup"]
+        invalid = ["description", "usercat", "hostcat", "cmdcat",
+                   "runasusercat", "runasgroupcat", "nomembers", "nomembers",
+                   "host", "hostgroup", "user", "group", "sudocmds",
+                   "sudocmdgroups"]
         for x in invalid:
             if vars()[x] is not None:
                 ansible_module.fail_json(
@@ -335,7 +352,8 @@ def main():
             # Create command
             if state == "present":
                 # Generate args
-                args = gen_args(ansible_module)
+                args = gen_args(description, usercat, hostcat, cmdcat,
+                                runasusercat, runasgroupcat, nomembers)
                 if action == "sudorule":
                     # Found the sudorule
                     if res_find is not None:
@@ -378,17 +396,17 @@ def main():
                         set(group or []))
 
                     cmd_add = list(
-                        set(cmd or []) -
+                        set(sudocmds or []) -
                         set(res_find.get("member_cmd", [])))
                     cmd_del = list(
                         set(res_find.get("member_cmd", [])) -
-                        set(cmd or []))
+                        set(sudocmds or []))
                     cmdgroup_add = list(
-                        set(cmdgroup or []) -
+                        set(sudocmdgroups or []) -
                         set(res_find.get("member_cmdgroup", [])))
                     cmdgroup_del = list(
                         set(res_find.get("member_cmdgroup", [])) -
-                        set(cmdgroup or []))
+                        set(sudocmdgroups or []))
 
                     # Add hosts and hostgroups
                     if len(host_add) > 0 or len(hostgroup_add) > 0:
@@ -456,10 +474,10 @@ def main():
                                          }])
 
                     # Add commands
-                    if cmd is not None:
+                    if sudocmds is not None:
                         commands.append([name, "sudorule_add_allow_command",
                                          {
-                                             "sudocmd": cmd,
+                                             "sudocmd": sudocmds,
                                          }])
 
             elif state == "absent":
@@ -488,10 +506,10 @@ def main():
                                          }])
 
                     # Remove commands
-                    if cmd is not None:
+                    if sudocmds is not None:
                         commands.append([name, "sudorule_add_deny_command",
                                          {
-                                             "sudocmd": cmd,
+                                             "sudocmd": sudocmds,
                                          }])
 
             elif state == "enabled":
