@@ -97,7 +97,7 @@ def find_sudocmd(module, name):
 def gen_args(description):
     _args = {}
     if description is not None:
-        _args["description"] = description
+        _args["description"] = to_text(description)
 
     return _args
 
