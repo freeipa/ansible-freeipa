@@ -191,7 +191,7 @@
     #   5 - Principal name or realm not found in keytab
     failed_when: result_ipa_rmkeytab.rc != 0 and
                  result_ipa_rmkeytab.rc != 3 and result_ipa_rmkeytab.rc != 5
-    when: ipaclient_use_otp | bool or ipaclient_force_join | bool
+    when: (ipaclient_use_otp | bool or ipaclient_force_join | bool) and not ipaclient_on_master | bool
 
   - name: Install - Backup and set hostname
     ipaclient_set_hostname:
