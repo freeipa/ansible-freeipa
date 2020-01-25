@@ -872,14 +872,12 @@ def main():
                     is_ipaddr = False
 
             if is_ipaddr:
-                logger.info()
                 logger.warning(
                     "It seems that you are using an IP address "
                     "instead of FQDN as an argument to --server. The "
                     "installation may fail.")
                 break
 
-        # logger.info()
         # if not options.unattended and not user_input(
         #     "Continue to configure the system with these values?", False):
         #     raise ScriptError(rval=CLIENT_INSTALL_ERROR)
