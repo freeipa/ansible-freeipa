@@ -1,0 +1,14 @@
+---
+- name: Playbook to manage IPA service.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure management host is absent.
+  - ipaservice:
+      ipaadmin_password: MyPassword123
+      name: HTTP/www.example.com
+      host: "{{ groups.ipaserver[0] }}"
+      action: member
+      state: absent

@@ -1,0 +1,23 @@
+---
+- name: Service member allow_create_keytab present
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Service HTTP/www.example.com members allow_create_keytab present for users, groups, hosts and hostgroups
+    ipaservice:
+      ipaadmin_password: MyPassword123
+      name: HTTP/www.example.com
+      allow_create_keytab_user:
+      - user01
+      - user02
+      allow_create_keytab_group:
+      - group01
+      - group02
+      allow_create_keytab_host:
+      - host01.example.com
+      - host02.example.com
+      allow_create_keytab_hostgroup:
+      - hostgroup01
+      - hostgroup02
+      action: member

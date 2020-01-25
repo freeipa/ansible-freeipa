@@ -1,0 +1,24 @@
+---
+- name: Service member allow_retrieve_keytab absent
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Service HTTP/www.example.com members allow_retrieve_keytab absent for users, groups, hosts and hostgroups
+    ipaservice:
+      ipaadmin_password: MyPassword123
+      name: HTTP/www.example.com
+      allow_retrieve_keytab_user:
+      - user01
+      - user02
+      allow_retrieve_keytab_group:
+      - group01
+      - group02
+      allow_retrieve_keytab_host:
+      - host01.example.com
+      - host02.example.com
+      allow_retrieve_keytab_hostgroup:
+      - hostgroup01
+      - hostgroup02
+      action: member
+      state: absent

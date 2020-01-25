@@ -1,0 +1,12 @@
+---
+- name: Playbook to disable IPA service.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure service is disabled
+  - ipaservice:
+      ipaadmin_password: MyPassword123
+      name: HTTP/www.example.com
+      state: disabled
