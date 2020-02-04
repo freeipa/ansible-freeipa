@@ -9,4 +9,6 @@
       ipaadmin_password: MyPassword123
       name: testrule1
       description: A test sudo rule.
+      allow_sudocmd: /bin/ls
+      deny_sudocmd: /bin/vim
       state: present
