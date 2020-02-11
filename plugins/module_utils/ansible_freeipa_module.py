@@ -222,10 +222,20 @@ def compare_args_ipa(module, args, ipa):
                     arg = [to_text(_arg) for _arg in arg]
                 if isinstance(ipa_arg[0], unicode) and isinstance(arg[0], int):
                     arg = [to_text(_arg) for _arg in arg]
-            # module.warn("%s <=> %s" % (arg, ipa_arg))
-            if set(arg) != set(ipa_arg):
-                # module.warn("DIFFERENT")
-                return False
+            # module.warn("%s <=> %s" % (repr(arg), repr(ipa_arg)))
+            try:
+                arg_set = set(arg)
+                ipa_arg_set = set(ipa_arg)
+            except TypeError:
+                if arg != ipa_arg:
+                    # module.warn("%s != %s" % (repr(arg), repr(ipa_arg)))
+                    return False
+            else:
+                if arg_set != ipa_arg_set:
+                    # module.warn("%s != %s" % (repr(arg), repr(ipa_arg)))
+                    return False
+
+        # module.warn("%s == %s" % (repr(arg), repr(ipa_arg)))
 
     return True
 
