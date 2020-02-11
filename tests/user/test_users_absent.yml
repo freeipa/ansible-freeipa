@@ -1,5 +1,5 @@
 ---
-- name: Tests
+- name: Test users absent
   hosts: ipaserver
   become: true
   gather_facts: false

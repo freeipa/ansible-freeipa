@@ -1,5 +1,5 @@
 ---
-- name: Playbook to handle hbacrules
+- name: Test hbacrule
   hosts: ipaserver
   become: true
 

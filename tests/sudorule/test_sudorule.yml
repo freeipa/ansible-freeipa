@@ -1,6 +1,6 @@
 ---
 
-- name: Tests
+- name: Test sudorule
   hosts: ipaserver
   become: true
   gather_facts: false
