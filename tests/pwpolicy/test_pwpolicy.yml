@@ -1,5 +1,5 @@
 ---
-- name: Tests
+- name: Test pwpolicy
   hosts: ipaserver
   become: true
   gather_facts: false
