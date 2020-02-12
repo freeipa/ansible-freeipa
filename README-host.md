@@ -65,6 +65,79 @@ Example playbook to ensure host presence:
       - "52:54:00:BD:97:1E"
       state: present
 ```
+Compared to `ipa host-add` command no IP address conflict check is done as the ipahost module supports to have several IPv4 and IPv6 addresses for a host.
+
+
+Example playbook to ensure host presence with several IP addresses:
+
+```yaml
+---
+- name: Playbook to handle hosts
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure host is present
+  - ipahost:
+      ipaadmin_password: MyPassword123
+      name: host01.example.com
+      description: Example host
+      ip_address:
+      - 192.168.0.123
+      - 192.168.0.124
+      - fe80::20c:29ff:fe02:a1b3
+      - fe80::20c:29ff:fe02:a1b4
+      locality: Lab
+      ns_host_location: Lab
+      ns_os_version: CentOS 7
+      ns_hardware_platform: Lenovo T61
+      mac_address:
+      - "08:00:27:E3:B1:2D"
+      - "52:54:00:BD:97:1E"
+      state: present
+```
+
+
+Example playbook to ensure IP addresses are present for a host:
+
+```yaml
+---
+- name: Playbook to handle hosts
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure host is present
+  - ipahost:
+      ipaadmin_password: MyPassword123
+      name: host01.example.com
+      ip_address:
+      - 192.168.0.124
+      - fe80::20c:29ff:fe02:a1b4
+      action: member
+      state: present
+```
+
+
+Example playbook to ensure IP addresses are absent for a host:
+
+```yaml
+---
+- name: Playbook to handle hosts
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure host is present
+  - ipahost:
+      ipaadmin_password: MyPassword123
+      name: host01.example.com
+      ip_address:
+      - 192.168.0.124
+      - fe80::20c:29ff:fe02:a1b4
+      action: member
+      state: absent
+```
 
 
 Example playbook to ensure host presence without DNS:
@@ -215,7 +288,7 @@ Example playbook to disable a host:
       update_dns: yes
       state: disabled
 ```
-`update_dns` controls if the DNS entries will be updated.
+`update_dns` controls if the DNS entries will be updated in this case. For `state` present it is controlling the update of the DNS SSHFP records, but not the the other DNS records.
 
 
 Example playbook to ensure a host is absent:
@@ -286,8 +359,8 @@ Variable | Description | Required
 `ok_to_auth_as_delegate` \| `ipakrboktoauthasdelegate` | The service is allowed to authenticate on behalf of a client (bool) | no
 `force` | Force host name even if not in DNS. | no
 `reverse` | Reverse DNS detection. | no
-`ip_address` \| `ipaddress` | The host IP address. | no
-`update_dns` | Update DNS entries. | no
+`ip_address` \| `ipaddress` | The host IP address list. It can contain IPv4 and IPv6 addresses. No conflict check for IP addresses is done. | no
+`update_dns` | For existing hosts: DNS SSHFP records are updated with `state` present and all DNS entries for a host removed with `state` absent. | no
 
 
 Return Values
