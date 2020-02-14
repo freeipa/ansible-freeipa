@@ -129,7 +129,7 @@
   - name: Host "{{ host5_fqdn }}" present again
     ipahost:
       ipaadmin_password: MyPassword123
-      name: "{{ host1_fqdn }}"
+      name: "{{ host5_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.205' }}"
       update_dns: yes
       reverse: no

@@ -42,6 +42,7 @@ try:
     from ipalib.x509 import Encoding
 except ImportError:
     from cryptography.hazmat.primitives.serialization import Encoding
+import socket
 import base64
 import six
 
@@ -285,3 +286,25 @@ def encode_certificate(cert):
     if not six.PY2:
         encoded = encoded.decode('ascii')
     return encoded
+
+
+def is_ipv4_addr(ipaddr):
+    """
+    Test if figen IP address is a valid IPv4 address
+    """
+    try:
+        socket.inet_pton(socket.AF_INET, ipaddr)
+    except socket.error:
+        return False
+    return True
+
+
+def is_ipv6_addr(ipaddr):
+    """
+    Test if figen IP address is a valid IPv6 address
+    """
+    try:
+        socket.inet_pton(socket.AF_INET6, ipaddr)
+    except socket.error:
+        return False
+    return True
