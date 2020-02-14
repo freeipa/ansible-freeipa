@@ -1005,6 +1005,11 @@ def main():
                                 dnsrecord_args.get("aaaarecord"),
                                 _dnsrec.get("aaaarecord"))
 
+                else:
+                    if res_find is None:
+                        ansible_module.fail_json(
+                            msg="No host '%s'" % name)
+
                 if action != "host" or (action == "host" and res_find is None):
                     certificate_add = certificate or []
                     certificate_del = []
@@ -1178,15 +1183,17 @@ def main():
                     domain_name = name[name.find(".")+1:]
                     host_name = name[:name.find(".")]
 
+                    _args = {"idnsname": host_name}
+                    if reverse is not None:
+                        _args["a_extra_create_reverse"] = reverse
+                        _args["aaaa_extra_create_reverse"] = reverse
+                    if len(dnsrecord_a_add) > 0:
+                        _args["arecord"] = dnsrecord_a_add
+                    if len(dnsrecord_aaaa_add) > 0:
+                        _args["aaaarecord"] = dnsrecord_aaaa_add
+
                     commands.append([domain_name,
-                                     "dnsrecord_add",
-                                     {
-                                         "idnsname": host_name,
-                                         "arecord": dnsrecord_a_add,
-                                         "a_extra_create_reverse": reverse,
-                                         "aaaarecord": dnsrecord_aaaa_add,
-                                         "aaaa_extra_create_reverse": reverse
-                                     }])
+                                     "dnsrecord_add", _args])
 
                 if len(dnsrecord_a_del) > 0 or len(dnsrecord_aaaa_del) > 0:
                     domain_name = name[name.find(".")+1:]
