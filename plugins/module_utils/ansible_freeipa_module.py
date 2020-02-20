@@ -28,6 +28,7 @@ import shutil
 import gssapi
 from datetime import datetime
 from ipalib import api
+from ipalib import errors as ipalib_errors
 from ipalib.config import Env
 from ipalib.constants import DEFAULT_CONFIG, LDAP_GENERALIZED_TIME_FORMAT
 try:
