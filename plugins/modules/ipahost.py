@@ -409,7 +409,7 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
     module_params_get, gen_add_del_lists, encode_certificate, api_get_realm, \
-    is_ipv4_addr, is_ipv6_addr
+    is_ipv4_addr, is_ipv6_addr, ipalib_errors
 import six
 
 
@@ -871,7 +871,20 @@ def main():
 
             # Make sure host exists
             res_find = find_host(ansible_module, name)
-            res_find_dnsrecord = find_dnsrecord(ansible_module, name)
+            try:
+                res_find_dnsrecord = find_dnsrecord(ansible_module, name)
+            except ipalib_errors.NotFound as e:
+                msg = str(e)
+                if ip_address is None and \
+                   ("DNS is not configured" in msg or \
+                    "DNS zone not found" in msg):
+                    # IP address(es) not given and no DNS support in IPA
+                    # -> Ignore failure
+                    # IP address(es) not given and DNS zone is not found
+                    # -> Ignore failure
+                    res_find_dnsrecord = None
+                else:
+                    ansible_module.fail_json(msg="%s: %s" % (host, msg))
 
             # Create command
             if state == "present":

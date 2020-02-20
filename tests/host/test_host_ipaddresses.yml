@@ -301,6 +301,15 @@
     register: result
     failed_when: result.changed
 
+  - name: Absent host01.ihavenodns.info test
+    ipahost:
+      ipaadmin_password: MyPassword123
+      hosts:
+      - name: host01.ihavenodns.info
+      state: absent
+    register: result
+    failed_when: result.changed
+
   - name: Host absent
     ipahost:
       ipaadmin_password: MyPassword123
