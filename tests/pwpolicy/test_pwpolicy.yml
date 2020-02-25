@@ -94,7 +94,7 @@
 
   - name: Ensure maxlife of 90 for global_policy
     ipapwpolicy:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       maxlife: 90
     register: result
     failed_when: not result.changed
