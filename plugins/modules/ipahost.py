@@ -343,7 +343,7 @@ author:
 EXAMPLES = """
 # Ensure host is present
 - ipahost:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: host01.example.com
     description: Example host
     ip_address: 192.168.0.123
@@ -358,14 +358,14 @@ EXAMPLES = """
 
 # Ensure host is present without DNS
 - ipahost:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: host02.example.com
     description: Example host
     force: yes
 
 # Initiate generation of a random password for the host
 - ipahost:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: host01.example.com
     description: Example host
     ip_address: 192.168.0.123
@@ -373,7 +373,7 @@ EXAMPLES = """
 
 # Ensure host is disabled
 - ipahost:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: host01.example.com
     update_dns: yes
     state: disabled

@@ -392,7 +392,7 @@ author:
 EXAMPLES = """
 # Create user pinky
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky
     first: pinky
     last: Acme
@@ -406,39 +406,39 @@ EXAMPLES = """
 
 # Create user brain
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: brain
     first: brain
     last: Acme
 
 # Delete user pinky, but preserved
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky
     preserve: yes
     state: absent
 
 # Undelete user pinky
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky
     state: undeleted
 
 # Disable user pinky
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky,brain
     state: disabled
 
 # Enable user pinky and brain
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky,brain
     state: enabled
 
 # Remove user pinky and brain
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky,brain
     state: disabled
 """

@@ -73,7 +73,7 @@ author:
 EXAMPLES = """
 # Ensure host-group databases is present
 - ipahostgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: databases
     host:
     - db.example.com
@@ -83,7 +83,7 @@ EXAMPLES = """
 
 # Ensure hosts and hostgroups are present in existing databases hostgroup
 - ipahostgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: databases
     host:
     - db.example.com
@@ -94,7 +94,7 @@ EXAMPLES = """
 
 # Ensure hosts and hostgroups are absent in databases hostgroup
 - ipahostgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: databases
     host:
     - db.example.com
@@ -106,7 +106,7 @@ EXAMPLES = """
 
 # Ensure host-group databases is absent
 - ipahostgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: databases
     state: absent
 """
