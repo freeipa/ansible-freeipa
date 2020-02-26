@@ -50,7 +50,7 @@ Example playbook to add a topology segment with default name (cn):
   tasks:
   - name: Add topology segment
     ipatopologysegment:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       suffix: domain
       left: ipareplica1.test.local
       right: ipareplica2.test.local
@@ -70,7 +70,7 @@ Example playbook to delete a topology segment:
   tasks:
   - name: Delete topology segment
     ipatopologysegment:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       suffix: domain
       left: ipareplica1.test.local
       right: ipareplica2.test.local
@@ -90,7 +90,7 @@ Example playbook to reinitialize a topology segment:
   tasks:
   - name: Reinitialize topology segment
     ipatopologysegment:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       suffix: domain
       left: ipareplica1.test.local
       right: ipareplica2.test.local
@@ -111,7 +111,7 @@ Example playbook to verify a topology suffix:
   tasks:
   - name: Verify topology suffix
     ipatopologysuffix:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       suffix: domain
       state: verified
 ```

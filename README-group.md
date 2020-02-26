@@ -52,20 +52,20 @@ Example playbook to add groups:
   tasks:
   # Create group ops with gid 1234
   - ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: ops
       gidnumber: 1234
 
   # Create group sysops
   - ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: sysops
       user:
       - pinky
 
   # Create group appops
   - ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: appops
 ```
 
@@ -80,7 +80,7 @@ Example playbook to add users to a group:
   tasks:
   # Add user member brain to group sysops
   - ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: sysops
       action: member
       user:
@@ -100,7 +100,7 @@ Example playbook to add group members to a group:
   tasks:
   # Add group members sysops and appops to group sysops
   - ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: ops
       group:
       - sysops
@@ -118,7 +118,7 @@ Example playbook to remove groups:
   tasks:
   # Remove goups sysops, appops and ops
   - ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: sysops,appops,ops
       state: absent
 ```

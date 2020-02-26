@@ -51,7 +51,7 @@ Example playbook to make sure vault is present:
 
   tasks:
   - ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
       vault_password: MyVaultPassword123
@@ -68,7 +68,7 @@ Example playbook to make sure that a vault and its members are present:
 
   tasks:
   - ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
       users: user01
@@ -86,7 +86,7 @@ Example playbook to make sure that a vault member is present in vault:
 
   tasks:
   - ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
       users: user01
@@ -103,7 +103,7 @@ Example playbook to make sure that a vault owner is absent in vault:
 
   tasks:
   - ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
       owner: user01
@@ -121,7 +121,7 @@ Example playbook to make sure vault data is present in a symmetric vault:
 
   tasks:
   - ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
       vault_password: MyVaultPassword123
@@ -141,7 +141,7 @@ Example playbook to make sure vault data is absent in a symmetric vault:
 
   tasks:
   - ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
       vault_password: MyVaultPassword123
@@ -159,7 +159,7 @@ Example playbook to make sure vault is absent:
 
   tasks:
   - ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
       state: absent

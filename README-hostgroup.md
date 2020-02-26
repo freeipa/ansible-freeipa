@@ -52,7 +52,7 @@ Example playbook to make sure hostgroup databases exists:
   tasks:
   # Ensure host-group databases is present
   - ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: databases
       host:
       - db.example.com
@@ -72,7 +72,7 @@ Example playbook to make sure that hosts and hostgroups are present in existing 
   tasks:
   # Ensure hosts and hostgroups are present in existing databases hostgroup
   - ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: databases
       host:
       - db.example.com
@@ -94,7 +94,7 @@ Example playbook to make sure hosts and hostgroups are absent in databases hostg
   tasks:
   # Ensure hosts and hostgroups are absent in databases hostgroup
   - ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: databases
       host:
       - db.example.com
@@ -116,7 +116,7 @@ Example playbook to make sure host-group databases is absent:
   tasks:
   # Ensure host-group databases is absent
   - ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: databases
       state: absent
 ```

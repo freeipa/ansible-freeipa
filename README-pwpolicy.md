@@ -45,7 +45,7 @@ Example playbook to ensure presence of pwpolicies for exisiting group ops:
   tasks:
   - name: Ensure presence of pwpolicies for group ops
     ipapwpolicy:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: ops
       minlife: 7
       maxlife: 49
@@ -67,7 +67,7 @@ Example playbook to ensure absence of pwpolicies for group ops:
   tasks:
   # Ensure absence of pwpolicies for group ops
   - ipapwpolicy:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: ops
       state: absent
 ```
@@ -83,7 +83,7 @@ Example playbook to ensure maxlife is set to 49 in global policy:
   tasks:
   # Ensure absence of pwpolicies for group ops
   - ipapwpolicy:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       maxlife: 49
 ```
 

@@ -50,7 +50,7 @@ Example playbook to make sure HBAC Service Group login exists:
   tasks:
   # Ensure HBAC Service Group login is present
   - ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
 ```
 
@@ -66,7 +66,7 @@ Example playbook to make sure HBAC Service Group login exists with the only HBAC
   tasks:
   # Ensure HBAC Service Group login is present with the only HBAC Service sshd
   - ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd
@@ -83,7 +83,7 @@ Example playbook to make sure HBAC Service sshd is present in HBAC Service Group
   tasks:
   # Ensure HBAC Service sshd is present in HBAC Service Group login
   - ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd
@@ -101,7 +101,7 @@ Example playbook to make sure HBAC Service sshd is absent in HBAC Service Group 
   tasks:
   # Ensure HBAC Service sshd is present in HBAC Service Group login
   - ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd
@@ -120,7 +120,7 @@ Example playbook to make sure HBAC Service Group login is absent:
   tasks:
   # Ensure HBAC Service Group login is present
   - ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       state: absent
 ```
