@@ -21,7 +21,7 @@
 
   - name: Host host1..host6 absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
       - name: "{{ host2_fqdn }}"
@@ -33,7 +33,7 @@
 
   - name: Hosts host1..host6 present
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
         force: yes
@@ -52,7 +52,7 @@
 
   - name: Hosts host1..host6 present again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
         force: yes
@@ -71,7 +71,7 @@
 
   - name: Hosts host1..host6 absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
       - name: "{{ host2_fqdn }}"
@@ -85,7 +85,7 @@
 
   - name: Hosts host1..host6 absent again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
       - name: "{{ host2_fqdn }}"

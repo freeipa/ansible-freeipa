@@ -9,14 +9,14 @@
 
   - name: Ensure hostgroup is present, with a host.
     ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: cluster
       host:
       - "{{ groups.ipaserver[0] }}"
 
   - name: Ensure some sudocmds are available
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
           - /sbin/ifconfig
           - /usr/bin/vim
@@ -24,14 +24,14 @@
 
   - name: Ensure sudocmdgroup is available
     ipasudocmdgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: test_sudorule
       sudocmd: /usr/bin/vim
       state: present
 
   - name: Ensure sudorules are absent
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - testrule1
       - allusers
@@ -41,21 +41,21 @@
 
   - name: Ensure sudorule is present
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
     register: result
     failed_when: not result.changed
 
   - name: Ensure sudorule is present again
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
     register: result
     failed_when: result.changed
 
   - name: Ensure sudorule is present, runAsUserCategory.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       runAsUserCategory: all
     register: result
@@ -63,7 +63,7 @@
 
   - name: Ensure sudorule is present, with usercategory 'all'
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allusers
       usercategory: all
     register: result
@@ -71,7 +71,7 @@
 
   - name: Ensure sudorule is present, with usercategory 'all', again
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allusers
       usercategory: all
     register: result
@@ -79,7 +79,7 @@
 
   - name: Ensure sudorule is present, with hostategory 'all'
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allhosts
       hostcategory: all
     register: result
@@ -87,7 +87,7 @@
 
   - name: Ensure sudorule is present, with hostategory 'all', again
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allhosts
       hostcategory: all
     register: result
@@ -95,13 +95,13 @@
 
   - name: Ensure sudorule is disabled
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: disabled
 
   - name: Ensure sudorule is disabled, again
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: disabled
     register: result
@@ -109,7 +109,7 @@
 
   - name: Ensure sudorule is enabled
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: enabled
     register: result
@@ -117,7 +117,7 @@
 
   - name: Ensure sudorule is enabled, again
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: enabled
     register: result
@@ -125,7 +125,7 @@
 
   - name: Ensure sudorule is present and some sudocmd are allowed.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       allow_sudocmd:
       - /sbin/ifconfig
@@ -135,7 +135,7 @@
 
   - name: Ensure sudorule is present and some sudocmd are allowed, again.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       allow_sudocmd:
       - /sbin/ifconfig
@@ -145,7 +145,7 @@
 
   - name: Ensure sudorule is present and some sudocmd are denyed.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       deny_sudocmd:
       - /usr/bin/vim
@@ -155,7 +155,7 @@
 
   - name: Ensure sudorule is present and some sudocmd are denyed, again.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       deny_sudocmd:
       - /usr/bin/vim
@@ -165,7 +165,7 @@
 
   - name: Ensure sudorule is present and, sudocmds are absent.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       allow_sudocmd: /sbin/ifconfig
       deny_sudocmd: /usr/bin/vim
@@ -176,7 +176,7 @@
 
   - name: Ensure sudorule is present and, sudocmds are absent, again.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       allow_sudocmd: /sbin/ifconfig
       deny_sudocmd: /usr/bin/vim
@@ -187,7 +187,7 @@
 
   - name: Ensure sudorule is present with cmdcategory 'all'.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allcommands
       cmdcategory: all
     register: result
@@ -195,7 +195,7 @@
 
   - name: Ensure sudorule is present with cmdcategory 'all', again.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allcommands
       cmdcategory: all
     register: result
@@ -203,7 +203,7 @@
 
   - name: Ensure host "{{ groups.ipaserver[0] }}" is present in sudorule.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       host: "{{ groups.ipaserver[0] }}"
       action: member
@@ -212,7 +212,7 @@
 
   - name: Ensure host "{{ groups.ipaserver[0] }}" is present in sudorule, again.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       host: "{{ groups.ipaserver[0] }}"
       action: member
@@ -221,7 +221,7 @@
 
   - name: Ensure hostgroup is present in sudorule.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       hostgroup: cluster
       action: member
@@ -230,7 +230,7 @@
 
   - name: Ensure hostgroup is present in sudorule, again.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       hostgroup: cluster
       action: member
@@ -239,7 +239,7 @@
 
   - name: Ensure sudorule is present, with an allow_sudocmdgroup.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       allow_sudocmdgroup: test_sudorule
       state: present
@@ -248,7 +248,7 @@
 
   - name: Ensure sudorule is present, with an allow_sudocmdgroup, again.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       allow_sudocmdgroup: test_sudorule
       state: present
@@ -257,7 +257,7 @@
 
   - name: Ensure sudorule is present, but allow_sudocmdgroup is absent.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       allow_sudocmdgroup: test_sudorule
       action: member
@@ -267,7 +267,7 @@
 
   - name: Ensure sudorule is present, but allow_sudocmdgroup is absent.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       allow_sudocmdgroup: test_sudorule
       action: member
@@ -277,7 +277,7 @@
 
   - name: Ensure sudorule is present, with an deny_sudocmdgroup.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       deny_sudocmdgroup: test_sudorule
       state: present
@@ -286,7 +286,7 @@
 
   - name: Ensure sudorule is present, with an deny_sudocmdgroup, again.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       deny_sudocmdgroup: test_sudorule
       state: present
@@ -295,7 +295,7 @@
 
   - name: Ensure sudorule is present, but deny_sudocmdgroup is absent.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       deny_sudocmdgroup: test_sudorule
       action: member
@@ -305,7 +305,7 @@
 
   - name: Ensure sudorule is present, but deny_sudocmdgroup is absent, again.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       deny_sudocmdgroup: test_sudorule
       action: member
@@ -315,7 +315,7 @@
 
   - name: Ensure sudorule is absent
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: absent
     register: result
@@ -323,7 +323,7 @@
 
   - name: Ensure sudorule is absent, again.
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: absent
     register: result
@@ -331,7 +331,7 @@
 
   - name: Ensure sudorule allhosts is absent
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allhosts
       state: absent
     register: result
@@ -339,7 +339,7 @@
 
   - name: Ensure sudorule allhosts is absent, again
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allhosts
       state: absent
     register: result
@@ -347,7 +347,7 @@
 
   - name: Ensure sudorule allusers is absent
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allusers
       state: absent
     register: result
@@ -355,7 +355,7 @@
 
   - name: Ensure sudorule allusers is absent, again
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allusers
       state: absent
     register: result
@@ -363,7 +363,7 @@
 
   - name: Ensure sudorule allcommands is absent
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allcommands
       state: absent
     register: result
@@ -371,7 +371,7 @@
 
   - name: Ensure sudorule allcommands is absent, again
     ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allcommands
       state: absent
     register: result
@@ -380,19 +380,19 @@
   # cleanup
   - name : Ensure sudocmdgroup is absent
     ipasudocmdgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: test_sudorule
       state: absent
 
   - name: Ensure hostgroup is absent.
     ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: cluster
       state: absent
 
   - name: Ensure sudocmds are absent
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - /sbin/ifconfig
       - /usr/bin/vim

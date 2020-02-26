@@ -16,7 +16,7 @@
 
   - name: Host absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
@@ -25,7 +25,7 @@
 
   - name: Host "{{ host1_fqdn }}" present
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       force: yes
     register: result
@@ -33,7 +33,7 @@
 
   - name: Host "{{ host2_fqdn }}" present
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host2_fqdn }}"
       force: yes
     register: result
@@ -41,7 +41,7 @@
 
   - name: Host "{{ host1_fqdn }}" managed by "{{ 'host2.' + ipaserver_domain }}"
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       managedby_host: "{{ host2_fqdn }}"
     register: result
@@ -49,7 +49,7 @@
 
   - name: Host "{{ host1_fqdn }}" managed by "{{ 'host2.' + ipaserver_domain }}" again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       managedby_host: "{{ host2_fqdn }}"
     register: result
@@ -57,7 +57,7 @@
 
   - name: Host "{{ host1_fqdn }}" managed by "{{ groups.ipaserver[0] }}"
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       managedby_host: "{{ groups.ipaserver[0] }}"
       action: member
@@ -66,7 +66,7 @@
 
   - name: Host "{{ host1_fqdn }}" managed by "{{ groups.ipaserver[0] }}" again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       managedby_host: "{{ groups.ipaserver[0] }}"
       action: member
@@ -75,7 +75,7 @@
 
   - name: Host "{{ host1_fqdn }}" not managed by "{{ groups.ipaserver[0] }}"
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       managedby_host: "{{ groups.ipaserver[0] }}"
       action: member
@@ -85,7 +85,7 @@
 
   - name: Host "{{ host1_fqdn }}" not managed by "{{ groups.ipaserver[0] }}" again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       managedby_host: "{{ groups.ipaserver[0] }}"
       action: member
@@ -95,7 +95,7 @@
 
   - name: Host "{{ host1_fqdn }}" not managed by "{{ 'host2.' + ipaserver_domain }}"
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       managedby_host: "{{ host2_fqdn }}"
       state: absent
@@ -105,7 +105,7 @@
 
   - name: Host "{{ host1_fqdn }}" not managed by "{{ 'host2.' + ipaserver_domain }}" again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       managedby_host: "{{ host2_fqdn }}"
       action: member
@@ -115,7 +115,7 @@
 
   - name: Host absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
