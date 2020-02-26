@@ -280,7 +280,7 @@ def encode_certificate(cert):
     Encode a certificate using base64 with also taking FreeIPA and Python
     versions into account
     """
-    if isinstance(cert, str) or isinstance(cert, unicode):
+    if isinstance(cert, (str, unicode, bytes)):
         encoded = base64.b64encode(cert)
     else:
         encoded = base64.b64encode(cert.public_bytes(Encoding.DER))
