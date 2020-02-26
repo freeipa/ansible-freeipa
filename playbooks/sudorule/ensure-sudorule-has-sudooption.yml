@@ -7,7 +7,7 @@
   tasks:
   # Ensure sudooption is present in sudorule
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       sudooption: "!root"
       action: member

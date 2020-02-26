@@ -6,6 +6,6 @@
   tasks:
   - name: Remove user pinky and brain
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky
       state: absent

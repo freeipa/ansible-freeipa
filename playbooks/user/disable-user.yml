@@ -6,6 +6,6 @@
   tasks:
   - name: Disable user pinky
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky
       state: disabled

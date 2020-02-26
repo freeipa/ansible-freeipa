@@ -6,7 +6,7 @@
   tasks:
   - name: Add group members sysops and appops to group sysops
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: ops
       group:
       - sysops

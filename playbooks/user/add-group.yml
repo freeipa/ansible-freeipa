@@ -6,19 +6,19 @@
   tasks:
   - name: Create group ops with gid 1234
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: ops
       gidnumber: 1234
 
   - name: Create group sysops
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: sysops
       user:
       - pinky
 
   - name: Create group appops
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: appops
 

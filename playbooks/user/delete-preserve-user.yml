@@ -6,7 +6,7 @@
   tasks:
   - name: Delete and preserve user pinky
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky
       preserve: yes
       state: absent

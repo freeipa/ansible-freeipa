@@ -6,7 +6,7 @@
   tasks:
   # Ensure sudo commands are present
   - ipasudocmd:
-     ipaadmin_password: MyPassword123
+     ipaadmin_password: SomeADMINpassword
      name:
      - /usr/sbin/ifconfig
      - /usr/sbin/iwlist
@@ -14,7 +14,7 @@
 
   # Ensure sudo commands are present in existing sudocmdgroup
   - ipasudocmdgroup:
-     ipaadmin_password: MyPassword123
+     ipaadmin_password: SomeADMINpassword
      name: network
      sudocmd:
      - /usr/sbin/ifconfig

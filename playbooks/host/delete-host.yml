@@ -6,6 +6,6 @@
   tasks:
   - name: Ensure host host01.example.com is absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       state: absent

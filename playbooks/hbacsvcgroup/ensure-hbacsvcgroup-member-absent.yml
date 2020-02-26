@@ -7,7 +7,7 @@
   tasks:
   - name: Ensure HBAC Services sshd is absent in HBAC Service Group login
     ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd

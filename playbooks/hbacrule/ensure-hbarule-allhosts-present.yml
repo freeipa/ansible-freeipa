@@ -7,6 +7,6 @@
   tasks:
   - name: Ensure HBAC Rule allhosts is present
     ipahbacrule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allhosts
       usercategory: all

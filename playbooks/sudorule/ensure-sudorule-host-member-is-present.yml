@@ -7,7 +7,7 @@
   tasks:
   # Ensure host server is present in Sudo Rule
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       host: server
       action: member

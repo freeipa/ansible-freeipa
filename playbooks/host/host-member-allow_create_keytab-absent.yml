@@ -6,7 +6,7 @@
   tasks:
   - name: Host host1.example.com members allow_create_keytab absent for users, groups, hosts and hostgroups
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.exmaple.com
       allow_create_keytab_user:
       - user01

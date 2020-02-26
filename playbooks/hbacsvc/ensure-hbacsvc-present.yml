@@ -7,12 +7,12 @@
   tasks:
   - name: Ensure HBAC Service for http is present
     ipahbacsvc:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: http
       description: Web service
 
   - name: Ensure HBAC Service for tftp is present
     ipahbacsvc:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: tftp
       description: TFTP service
