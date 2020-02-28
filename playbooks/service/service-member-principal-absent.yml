@@ -1,0 +1,14 @@
+---
+- name: Service member principal absent
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Service HTTP/www.exmaple.com member principals host/test.exmaple.com absent
+    ipaservice:
+      ipaadmin_password: MyPassword123
+      name: HTTP/www.example.com
+      principal:
+        - host/test.exmaple.com
+      action: member
+      state: absent
