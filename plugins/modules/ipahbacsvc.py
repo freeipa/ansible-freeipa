@@ -56,13 +56,13 @@ author:
 EXAMPLES = """
 # Ensure HBAC Service for http is present
 - ipahbacsvc:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: http
     description: Web service
 
 # Ensure HBAC Service for tftp is absent
 - ipahbacsvc:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: tftp
     state: absent
 """

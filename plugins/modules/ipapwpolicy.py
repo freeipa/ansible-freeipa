@@ -98,7 +98,7 @@ author:
 EXAMPLES = """
 # Ensure pwpolicy is set for ops
 - ipapwpolicy:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: ops
     minlife: 7
     maxlife: 49

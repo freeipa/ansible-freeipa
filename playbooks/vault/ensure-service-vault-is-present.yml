@@ -6,7 +6,7 @@
 
   tasks:
   - ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: svcvault
       service: "HTTP/{{ groups.ipaserver[0] }}"
       ipavaultpassword: MyVaultPassword123

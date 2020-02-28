@@ -6,6 +6,6 @@
   tasks:
   - name: Unlock users pinky and brain
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky,brain
       state: unlocked

@@ -50,7 +50,7 @@ Example playbook to make sure Sudo Rule is present:
   tasks:
   # Ensure Sudo Rule is present
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
 ```
 
@@ -66,7 +66,7 @@ Example playbook to make sure sudocmds are present in Sudo Rule:
   tasks:
   # Ensure Sudo Rule is present
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       allow_sudocmd:
       - /sbin/ifconfig
@@ -85,7 +85,7 @@ Example playbook to make sure sudocmds are not present in Sudo Rule:
   tasks:
   # Ensure Sudo Rule is present
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       allow_sudocmd:
       - /sbin/ifconfig
@@ -104,7 +104,7 @@ Example playbook to make sure Sudo Rule is absent:
   tasks:
   # Ensure Sudo Rule is present
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: absent
 ```

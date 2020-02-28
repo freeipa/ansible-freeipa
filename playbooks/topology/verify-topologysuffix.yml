@@ -6,6 +6,6 @@
   tasks:
   - name: Verify topology suffix
     ipatopologysuffix:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       suffix: domain
       state: verified

@@ -20,7 +20,7 @@
 
   - name: Host host1 absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       update_dns: yes
@@ -28,7 +28,7 @@
 
   - name: Host host1... present with principal host/testhost1...
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       principal:
       - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}" 
@@ -38,7 +38,7 @@
 
   - name: Host host1... principal host/host1... present (existing already)
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       principal:
       - "{{ 'host/host1.' + ipaserver_domain + '@' + ipaserver_realm }}"
@@ -48,7 +48,7 @@
 
   - name: Host host1... principal host/testhost1... present again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       principal: "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
       action: member
@@ -57,7 +57,7 @@
 
   - name: Host host1... principal host/testhost1... absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       principal: "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
       action: member
@@ -67,7 +67,7 @@
 
   - name: Host host1... principal host/testhost1... absent again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       principal: "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
       action: member
@@ -77,7 +77,7 @@
 
   - name: Host host1... principal host/testhost1... and host/myhost1... present
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       principal:
       - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
@@ -88,7 +88,7 @@
 
   - name: Host host1... principal host/testhost1... and host/myhost1... present again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       principal:
       - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
@@ -99,7 +99,7 @@
 
   - name: Host host1... principal host/testhost1... and host/myhost1... absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       principal:
       - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
@@ -111,7 +111,7 @@
 
   - name: Host host1... principal host/testhost1... and host/myhost1... absent again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       principal:
       - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
@@ -123,7 +123,7 @@
 
   - name: Host host1... absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       update_dns: yes

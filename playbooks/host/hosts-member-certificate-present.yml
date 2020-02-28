@@ -6,7 +6,7 @@
   tasks:
   - name: Hosts host01.example.com and host01.exmaple.com member certificate present
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: host01.example.com
         certificate:

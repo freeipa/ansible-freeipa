@@ -103,52 +103,52 @@ author:
 EXAMPLES = """
 # Ensure HBAC Rule allhosts is present
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: allhosts
     usercategory: all
 
 # Ensure host server is present in HBAC Rule allhosts
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: allhosts
     host: server
     action: member
 
 # Ensure HBAC Rule sshd-pinky is present
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     hostcategory: all
 
 # Ensure user pinky is present in HBAC Rule sshd-pinky
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     user: pinky
     action: member
 
 # Ensure HBAC service sshd is present in HBAC Rule sshd-pinky
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     hbacsvc: sshd
     action: member
 
 # Ensure HBAC Rule sshd-pinky is disabled
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     state: disabled
 
 # Ensure HBAC Rule sshd-pinky is enabled
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     state: enabled
 
 # Ensure HBAC Rule sshd-pinky is absent
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     state: absent
 """

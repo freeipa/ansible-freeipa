@@ -7,7 +7,7 @@
   tasks:
   - name: Ensure host server is absent in HBAC Rule allhosts
     ipahbacrule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: allhosts
       host: server
       action: member

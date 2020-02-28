@@ -52,7 +52,7 @@ Example playbook to ensure a user is present:
   tasks:
   # Ensure user pinky is present
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky
       first: pinky
       last: Acme
@@ -66,7 +66,7 @@ Example playbook to ensure a user is present:
 
   # Ensure user brain is present
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: brain
       first: brain
       last: Acme
@@ -85,7 +85,7 @@ These two `ipauser` module calls can be combined into one with the `users` varia
   tasks:
   # Ensure users pinky and brain are present
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       users:
       - name: pinky
         first: pinky
@@ -153,7 +153,7 @@ Ensure user pinky is present with a generated random password and print the rand
   tasks:
   # Ensure user pinky is present with a random password
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: brain
       first: brain
       last: Acme
@@ -176,7 +176,7 @@ Ensure users pinky and brain are present with a generated random password and pr
   tasks:
   # Ensure users pinky and brain are present with random password
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       users:
       - name: pinky
         first: pinky
@@ -212,7 +212,7 @@ Example playbook to delete a user, but preserve it:
   tasks:
   # Remove but preserve user pinky
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky
       preserve: yes
       state: absent
@@ -231,7 +231,7 @@ Example playbook to delete a user, but preserve it using the `users` variable:
   tasks:
   # Remove but preserve user pinky
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       users:
       - name: pinky
       preserve: yes
@@ -252,7 +252,7 @@ Example playbook to undelete a preserved user.
   tasks:
   # Undelete preserved user pinky
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky
       state: undeleted
 ```
@@ -271,7 +271,7 @@ Example playbook to disable a user:
   tasks:
   # Disable user pinky
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky
       state: disabled
 ```
@@ -290,7 +290,7 @@ Example playbook to enable users:
   tasks:
   # Enable user pinky and brain
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky,brain
       state: enabled
 ```
@@ -309,7 +309,7 @@ Example playbook to unlock users:
   tasks:
   # Unlock user pinky and brain
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky,brain
       state: unlocked
 ```
@@ -326,7 +326,7 @@ Example playbook to ensure users are absent:
   tasks:
   # Ensure users pinky and brain are absent
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky,brain
       state: absent
 ```
@@ -345,7 +345,7 @@ Example playbook to ensure users are absent:
   tasks:
   # Ensure users pinky and brain are absent
   - ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       users:
       - name: pinky
       - name: brain

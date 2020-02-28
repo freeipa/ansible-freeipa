@@ -52,7 +52,7 @@ Example playbook to ensure host presence:
   tasks:
   # Ensure host is present
   - ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       description: Example host
       ip_address: 192.168.0.123
@@ -79,7 +79,7 @@ Example playbook to ensure host presence with several IP addresses:
   tasks:
   # Ensure host is present
   - ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       description: Example host
       ip_address:
@@ -109,7 +109,7 @@ Example playbook to ensure IP addresses are present for a host:
   tasks:
   # Ensure host is present
   - ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       ip_address:
       - 192.168.0.124
@@ -130,7 +130,7 @@ Example playbook to ensure IP addresses are absent for a host:
   tasks:
   # Ensure host is present
   - ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       ip_address:
       - 192.168.0.124
@@ -151,7 +151,7 @@ Example playbook to ensure host presence without DNS:
   tasks:
   # Ensure host is present without DNS
   - ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host02.example.com
       description: Example host
       force: yes
@@ -169,7 +169,7 @@ Example playbook to ensure host presence with a random password:
   tasks:
   - name: Host host01.example.com present with random password
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       random: yes
       force: yes
@@ -193,7 +193,7 @@ Example playbook to ensure presence of several hosts with a random password:
   tasks:
   - name: Hosts host01.example.com and host01.example.com present with random passwords
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: host01.example.com
         random: yes
@@ -225,7 +225,7 @@ Example playbook to ensure presence of host member principal:
   tasks:
   - name: Host host01.example.com present with principals host/testhost01.example.com and host/myhost01.example.com
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       principal:
       - host/testhost01.example.com
@@ -244,7 +244,7 @@ Example playbook to ensure presence of host member certificate:
   tasks:
   - name: Host host01.example.com present with certificate
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       certificate:
       - MIIC/zCCAeegAwIBAg...
@@ -262,7 +262,7 @@ Example playbook to ensure presence of member managedby_host for serveral hosts:
 
   tasks:
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: host01.exmaple.com
         managedby_host: server.exmaple.com
@@ -283,7 +283,7 @@ Example playbook to disable a host:
   tasks:
   # Ensure host is disabled
   - ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       update_dns: yes
       state: disabled

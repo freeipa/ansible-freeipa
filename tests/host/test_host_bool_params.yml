@@ -15,7 +15,7 @@
 
   - name: Host absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       update_dns: yes
@@ -23,7 +23,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth, ok_as_delegate and ok_to_auth_as_delegate
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       force: yes
       requires_pre_auth: yes
@@ -34,7 +34,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth, ok_as_delegate and ok_to_auth_as_delegate again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       requires_pre_auth: yes
       ok_as_delegate: yes
@@ -44,7 +44,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth, ok_as_delegate and ok_to_auth_as_delegate set to no
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       requires_pre_auth: no
       ok_as_delegate: no
@@ -54,7 +54,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth, ok_as_delegate and ok_to_auth_as_delegate set to no again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       requires_pre_auth: no
       ok_as_delegate: no
@@ -64,7 +64,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       requires_pre_auth: yes
     register: result
@@ -72,7 +72,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       requires_pre_auth: yes
     register: result
@@ -80,7 +80,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with ok_as_delegate
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       ok_as_delegate: yes
     register: result
@@ -88,7 +88,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with ok_as_delegate again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       ok_as_delegate: yes
     register: result
@@ -96,7 +96,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with ok_to_auth_as_delegate
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       ok_to_auth_as_delegate: yes
     register: result
@@ -104,7 +104,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with ok_to_auth_as_delegate again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       ok_to_auth_as_delegate: yes
     register: result
@@ -112,7 +112,7 @@
 
   - name: Host absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       update_dns: yes

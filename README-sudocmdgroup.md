@@ -52,7 +52,7 @@ Example playbook to make sure sudocmdgroup is present:
   tasks:
   # Ensure sudocmdgroup is present
   - ipasudocmdgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group01
       description: Group of important commands
 ```
@@ -68,7 +68,7 @@ Example playbook to make sure that a sudo command and sudocmdgroups are present 
   tasks:
   # Ensure sudo commands are present in existing sudocmdgroup
   - ipasudocmdgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group01
       sudocmd:
       - /usr/bin/su
@@ -88,7 +88,7 @@ Example playbook to make sure that a sudo command and sudocmdgroups are absent i
   tasks:
   # Ensure sudocmds are absent in existing sudocmdgroup
   - ipasudocmdgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group01
       sudocmd:
       - /usr/bin/su
@@ -108,7 +108,7 @@ Example playbook to make sure sudocmdgroup is absent:
   tasks:
   # Ensure sudocmdgroup is absent
   - ipasudocmdgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group01
       state: absent
 ```

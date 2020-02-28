@@ -6,7 +6,7 @@
   tasks:
   - name: Ensure host is present
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       description: Example host
       ip_address: 192.168.0.123

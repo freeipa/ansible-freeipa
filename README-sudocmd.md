@@ -52,7 +52,7 @@ Example playbook to make sure sudocmd exists:
   tasks:
   # Ensure sudocmd is present
   - ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: /usr/bin/su
       state: present
 ```
@@ -68,7 +68,7 @@ Example playbook to make sure sudocmd is absent:
   tasks:
   # Ensure sudocmd are absent
   - ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: /usr/bin/su
       state: absent
 ```

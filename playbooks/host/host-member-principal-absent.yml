@@ -6,7 +6,7 @@
   tasks:
   - name: Host host01.example.com principals host/testhost01.example.com and host/myhost01.example.com absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       principal:
       - host/testhost01.example.com

@@ -57,13 +57,13 @@ author:
 EXAMPLES = """
 # Ensure sudocmd is present
 - ipacommand:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: su
     state: present
 
 # Ensure sudocmd is absent
 - ipacommand:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: su
     state: absent
 """

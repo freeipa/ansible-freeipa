@@ -6,6 +6,6 @@
   tasks:
   - name: Remove goups sysops, appops and ops
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: sysops,appops,ops
       state: absent

@@ -6,7 +6,7 @@
   tasks:
   - name: Create user pinky
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky
       first: pinky
       last: Acme

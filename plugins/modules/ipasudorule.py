@@ -131,7 +131,7 @@ author:
 EXAMPLES = """
 # Ensure Sudo Rule tesrule1 is present
 - ipasudorule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: testrule1
 
 # Ensure sudocmd is present in Sudo Rule
@@ -146,35 +146,35 @@ EXAMPLES = """
 
 # Ensure host server is present in Sudo Rule
 - ipasudorule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: testrule1
     host: server
     action: member
 
 # Ensure hostgroup cluster is present in Sudo Rule
 - ipasudorule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: testrule1
     hostgroup: cluster
     action: member
 
 # Ensure sudo rule for usercategory "all"
 - ipasudorule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: allusers
     usercategory: all
     action: enabled
 
 # Ensure sudo rule for hostcategory "all"
 - ipasudorule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: allhosts
     hostcategory: all
     action: enabled
 
 # Ensure Sudo Rule tesrule1 is absent
 - ipasudorule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: testrule1
     state: absent
 """

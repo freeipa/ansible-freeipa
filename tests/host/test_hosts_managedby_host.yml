@@ -19,7 +19,7 @@
 
   - name: Host absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
@@ -31,7 +31,7 @@
 
   - name: Host "{{ host5_fqdn }}" present
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host5_fqdn }}"
       force: yes
     register: result
@@ -39,7 +39,7 @@
 
   - name: Hosts "{{ host1_fqdn }}" .. "{{ 'host5.' + ipaserver_domain }}" present and managed by "{{ 'host5.' + ipaserver_domain }}"
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
         managedby_host: "{{ host5_fqdn }}"
@@ -61,7 +61,7 @@
 
   - name: Hosts "{{ host1_fqdn }}" .. "{{ 'host5.' + ipaserver_domain }}" present and managed by "{{ 'host5.' + ipaserver_domain }}" again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
         managedby_host: "{{ host5_fqdn }}"
@@ -83,7 +83,7 @@
 
   - name: Hosts "{{ host1_fqdn }}" .. "{{ 'host5.' + ipaserver_domain }}" managed by "{{ 'host5.' + ipaserver_domain }}"
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
         managedby_host: "{{ host5_fqdn }}"
@@ -101,7 +101,7 @@
 
   - name: Hosts "{{ host1_fqdn }}" .. "{{ 'host5.' + ipaserver_domain }}" not managed by "{{ 'host5.' + ipaserver_domain }}"
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
         managedby_host: "{{ host5_fqdn }}"
@@ -120,7 +120,7 @@
 
   - name: Hosts "{{ host1_fqdn }}" .. "{{ 'host5.' + ipaserver_domain }}" not managed by "{{ 'host5.' + ipaserver_domain }}" again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
         managedby_host: "{{ host5_fqdn }}"
@@ -139,7 +139,7 @@
 
   - name: Hosts "{{ host1_fqdn }}" .. "{{ 'host5.' + ipaserver_domain }}" absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
       - name: "{{ host2_fqdn }}"

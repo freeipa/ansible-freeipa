@@ -73,13 +73,13 @@ author:
 EXAMPLES = """
 # Ensure sudocmd-group 'network' is present
 - ipasudocmdgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: network
     state: present
 
 # Ensure sudocmdgroup and sudocmd are present in 'network' sudocmdgroup
 - ipasudocmdgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: network
     sudocmd:
     - /usr/sbin/ifconfig
@@ -88,7 +88,7 @@ EXAMPLES = """
 
 # Ensure sudocmdgroup and sudocmd are absent in 'network' sudocmdgroup
 - ipasudocmdgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: network
     sudocmd:
     - /usr/sbin/ifconfig
@@ -98,7 +98,7 @@ EXAMPLES = """
 
 # Ensure sudocmd-group 'network' is absent
 - ipasudocmdgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: network
     action: member
     state: absent

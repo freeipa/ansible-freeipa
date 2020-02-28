@@ -6,7 +6,7 @@
   tasks:
   # Ensure hosts and hostgroups are present in existing databases hostgroup
   - ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: databases
       host:
       - db.example.com

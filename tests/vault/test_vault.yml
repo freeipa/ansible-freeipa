@@ -9,7 +9,7 @@
 
   - name: Ensure user vaults are absent
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - stdvault
       - symvault
@@ -19,7 +19,7 @@
 
   - name: Ensure test users do not exist.
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - user01
       - user02
@@ -28,53 +28,53 @@
 
   - name: Ensure test groups do not exist.
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: vaultgroup
       state: absent
 
   - name: Ensure vaultgroup exists.
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: vaultgroup
 
   - name: Ensure user01 exists.
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: user01
       first: First
       last: Start
 
   - name: Ensure user02 exists.
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: user02
       first: Second
       last: Middle
 
   - name: Ensure user03 exists.
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: user03
       first: Third
       last: Last
 
   - name: Ensure shared vaults are absent
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: sharedvault
       shared: True
       state: absent
 
   - name: Ensure service vaults are absent
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: svcvault
       service: "HTTP/{{ groups.ipaserver[0] }}"
       state: absent
 
   - name: Ensure symmetric vault is present
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
       vault_password: MyVaultPassword123
@@ -84,7 +84,7 @@
 
   - name: Ensure symmetric vault is present, again
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
       vault_password: MyVaultPassword123
@@ -94,7 +94,7 @@
 
   - name: Archive data to symmetric vault
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
       vault_password: MyVaultPassword123
@@ -105,7 +105,7 @@
 
   - name: Archive data with non-ASCII characters to symmetric vault
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
       vault_password: MyVaultPassword123
@@ -116,7 +116,7 @@
 
   - name: Ensure symmetric vault is absent
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
       state: absent
@@ -125,7 +125,7 @@
 
   - name: Ensure symmetric vault is absent, again
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
       state: absent
@@ -134,7 +134,7 @@
 
   - name: Ensure asymmetric vault is present.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: asymvault
       username: user01
       description: A symmetric private vault.
@@ -151,7 +151,7 @@
 
   - name: Ensure asymmetric vault is present, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: asymvault
       username: user01
       vault_public_key:
@@ -167,7 +167,7 @@
 
   - name: Archive data in asymmetric vault.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: asymvault
       username: user01
       vault_data: Hello World.
@@ -177,7 +177,7 @@
 
   - name: Ensure asymmetric vault is absent.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: asymvault
       username: user01
       state: absent
@@ -186,7 +186,7 @@
 
   - name: Ensure asymmetric vault is absent, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: asymvault
       username: user01
       state: absent
@@ -195,7 +195,7 @@
 
   - name: Ensure standard vault is present.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       vault_type: standard
       username: user01
@@ -205,7 +205,7 @@
 
   - name: Ensure standard vault is present, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       vault_type: standard
@@ -215,7 +215,7 @@
 
   - name: Archive data in standard vault.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       vault_data: Hello World.
@@ -225,7 +225,7 @@
 
   - name: Ensure standard vault member user is present.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -236,7 +236,7 @@
 
   - name: Ensure standard vault member user is present, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -247,7 +247,7 @@
 
   - name: Ensure more vault member users are present.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -259,7 +259,7 @@
 
   - name: Ensure vault member user is still present.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -270,7 +270,7 @@
 
   - name: Ensure vault users are absent.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -283,7 +283,7 @@
 
   - name: Ensure vault users are absent, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -296,7 +296,7 @@
 
   - name: Ensure vault user is absent, once more.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -308,7 +308,7 @@
 
   - name: Ensure vault member group is present.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -318,7 +318,7 @@
 
   - name: Ensure vault member group is present, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -328,7 +328,7 @@
 
   - name: Ensure vault member group is absent.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -339,7 +339,7 @@
 
   - name: Ensure vault member group is absent, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       action: member
@@ -350,7 +350,7 @@
 
   - name: Ensure vault is absent.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       state: absent
@@ -359,7 +359,7 @@
 
   - name: Ensure vault is absent, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       state: absent
@@ -368,7 +368,7 @@
 
   - name: Ensure shared vault is present.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: sharedvault
       shared: True
       ipavaultpassword: MyVaultPassword123
@@ -377,7 +377,7 @@
 
   - name: Ensure shared vault is absent.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: sharedvault
       shared: True
       state: absent
@@ -386,7 +386,7 @@
 
   - name: Ensure service vault is present.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: svcvault
       ipavaultpassword: MyVaultPassword123
       service: "HTTP/{{ groups.ipaserver[0] }}"
@@ -395,7 +395,7 @@
 
   - name: Ensure service vault is absent.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: svcvault
       service: "HTTP/{{ groups.ipaserver[0] }}"
       state: absent
@@ -404,7 +404,7 @@
 
   - name: Ensure vault is present, with members.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       vault_type: standard
@@ -418,7 +418,7 @@
 
   - name: Ensure vault is present, with members, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       vault_type: standard
@@ -432,7 +432,7 @@
 
   - name: Ensure user02 is not a member of vault stdvault.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       users: user02
@@ -443,7 +443,7 @@
 
   - name: Ensure user02 is not a member of vault stdvault, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       users: user02
@@ -454,7 +454,7 @@
 
   - name: Ensure user02 is a member of vault stdvault.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       users: user02
@@ -464,7 +464,7 @@
 
   - name: Ensure user02 is a member of vault stdvault, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       users: user03
@@ -474,7 +474,7 @@
 
   - name: Ensure user03 owns vault stdvault.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       owners: user03
@@ -484,7 +484,7 @@
 
   - name: Ensure user03 owns vault stdvault, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       owners: user03
@@ -494,7 +494,7 @@
 
   - name: Ensure user03 is not owner of stdvault.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       owners: user03
@@ -505,7 +505,7 @@
 
   - name: Ensure user03 is not owner of stdvault, again.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       owners: user03
@@ -516,7 +516,7 @@
 
   - name: Ensure vault is absent.
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
       state: absent
@@ -524,7 +524,7 @@
   # cleaup
   - name: Ensure test vaults are absent
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - stdvault
       - symvault
@@ -534,21 +534,21 @@
 
   - name: Ensure shared vaults are absent
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: sharedvault
       shared: True
       state: absent
 
   - name: Ensure service vaults are absent
     ipavault:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: svcvault
       service: "HTTP/{{ groups.ipaserver[0] }}"
       state: absent
 
   - name: Ensure test users do not exist.
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - user01
       - user02
@@ -557,6 +557,6 @@
 
   - name: Ensure test groups do not exist.
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: vaultgroup
       state: absent

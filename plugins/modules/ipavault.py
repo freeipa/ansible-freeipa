@@ -111,7 +111,7 @@ author:
 EXAMPLES = """
 # Ensure vault symvault is present
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: symvault
     username: admin
     vault_password: MyVaultPassword123
@@ -120,7 +120,7 @@ EXAMPLES = """
 
 # Ensure group ipausers is a vault member.
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: symvault
     username: admin
     groups: ipausers
@@ -128,7 +128,7 @@ EXAMPLES = """
 
 # Ensure group ipausers is not a vault member.
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: symvault
     username: admin
     groups: ipausers
@@ -137,7 +137,7 @@ EXAMPLES = """
 
 # Ensure vault users are present.
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: symvault
     username: admin
     users:
@@ -147,7 +147,7 @@ EXAMPLES = """
 
 # Ensure vault users are absent.
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: symvault
     username: admin
     users:
@@ -158,7 +158,7 @@ EXAMPLES = """
 
 # Ensure user owns vault.
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: symvault
     username: admin
     action: member
@@ -166,7 +166,7 @@ EXAMPLES = """
 
 # Ensure user does not own vault.
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: symvault
     username: admin
     owners: user01
@@ -175,7 +175,7 @@ EXAMPLES = """
 
 # Ensure data is archived to a symmetric vault
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: symvault
     username: admin
     vault_password: MyVaultPassword123
@@ -186,14 +186,14 @@ EXAMPLES = """
 
 # Ensure vault symvault is absent
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: symvault
     user: admin
     state: absent
 
 # Ensure asymmetric vault is present.
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: asymvault
     username: user01
     description: An asymmetric vault
@@ -208,7 +208,7 @@ EXAMPLES = """
 
 # Ensure data is archived in an asymmetric vault
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: asymvault
     username: admin
     vault_data: >
@@ -218,7 +218,7 @@ EXAMPLES = """
 
 # Ensure asymmetric vault is absent.
 - ipavault:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: asymvault
     username: user01
     vault_type: asymmetric

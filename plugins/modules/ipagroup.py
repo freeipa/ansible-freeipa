@@ -90,23 +90,23 @@ author:
 EXAMPLES = """
 # Create group ops with gid 1234
 - ipagroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: ops
     gidnumber: 1234
 
 # Create group sysops
 - ipagroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sysops
 
 # Create group appops
 - ipagroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: appops
 
 # Add user member pinky to group sysops
 - ipagroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sysops
     action: member
     user:
@@ -114,7 +114,7 @@ EXAMPLES = """
 
 # Add user member brain to group sysops
 - ipagroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sysops
     action: member
     user:
@@ -122,7 +122,7 @@ EXAMPLES = """
 
 # Add group members sysops and appops to group sysops
 - ipagroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: ops
     group:
     - sysops
@@ -130,7 +130,7 @@ EXAMPLES = """
 
 # Remove goups sysops, appops and ops
 - ipagroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sysops,appops,ops
     state: absent
 """

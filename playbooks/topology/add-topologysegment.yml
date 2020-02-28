@@ -6,7 +6,7 @@
   tasks:
   - name: Add topology segment
     ipatopologysegment:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       suffix: domain
       left: ipareplica1.test.local
       right: ipareplica2.test.local

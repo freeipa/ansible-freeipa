@@ -6,6 +6,6 @@
   tasks:
   # Ensure sudo command is present
   - ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: /usr/bin/su
       state: present
