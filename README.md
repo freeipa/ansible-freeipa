@@ -29,7 +29,7 @@ Features
 Supported FreeIPA Versions
 --------------------------
 
-FreeIPA versions 4.6 and up are supported by all roles. 
+FreeIPA versions 4.6 and up are supported by all roles.
 
 The client role supports versions 4.4 and up, the server role is working with versions 4.5 and up, the replica role is currently only working with versions 4.6 and up.
 
