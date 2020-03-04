@@ -125,6 +125,8 @@ Variable | Description | Required
 `usercategory` | User category the rule applies to. Choices: ["all"] | no
 `hostcategory` | Host category the rule applies to. Choices: ["all"] | no
 `cmdcategory` | Command category the rule applies to. Choices: ["all"] | no
+`runasusercategory` | RunAs User category the rule applies to. Choices: ["all"] | no
+`runasgroupcategory` | RunAs Group category the rule applies to. Choices: ["all"] | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
 `host` | List of host name strings assigned to this sudorule. | no
 `hostgroup` | List of host group name strings assigned to this sudorule. | no
