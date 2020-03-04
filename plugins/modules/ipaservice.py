@@ -86,7 +86,7 @@ options:
     default: False
     aliases:["ipakrboktoauthasdelegate"]
   principal:
-    description:
+    description: List of principal aliases for the service.
     required: false
     type: list
     aliases: ["krbprincipalname"]

@@ -197,7 +197,7 @@ Example playbook to add a principal to the service:
   gather_facts: false
 
   tasks:
-    # Principal host/test.example.com present in service.
+    # Principal host/principal.example.com present in service.
     - ipaservice:
         ipaadmin_password: SomeADMINpassword
         name: HTTP/www.example.com
@@ -301,6 +301,7 @@ Variable | Description | Required
 `skip_host_check` | Force service to be created even when host object does not exist to manage it. Default to false. (bool)| no
 `force` | Force principal name even if host not in DNS. Default to false. (bool) | no
 `host` \| `managedby_host`| Hosts that can manage the service. | no
+`principal` \| `krbprincipalname` | List of principal aliases for the service. | no
 `allow_create_keytab_user` \| `ipaallowedtoperform_write_keys_user` | Users allowed to create a keytab of this host. | no
 `allow_create_keytab_group` \| `ipaallowedtoperform_write_keys_group`| Groups allowed to create a keytab of this host. | no
 `allow_create_keytab_host` \| `ipaallowedtoperform_write_keys_host`| Hosts allowed to create a keytab of this host. | no
