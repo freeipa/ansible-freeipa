@@ -1,2 +1,6 @@
 *.pyc
 *.retry
+
+*.vagrant/
+*.swp
+*.swo

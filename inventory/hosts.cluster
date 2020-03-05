@@ -2,8 +2,8 @@
 ipaserver.test.local
 
 [ipaserver:vars]
-#ipaserver_setup_dns=yes
-#ipaserver_auto_forwarders=yes
+ipaserver_setup_dns=yes
+ipaserver_auto_forwarders=yes
 #ipaserver_no_firewalld=no
 
 
@@ -29,7 +29,7 @@ ipareplicas
 ipaclients
 
 [ipa:vars]
-ipaadmin_password=password1
-ipadm_password=password1
+ipaadmin_password=SomeADMINpassword
+ipadm_password=SomeDMpassword
 ipaserver_domain=test.local
 ipaserver_realm=TEST.LOCAL

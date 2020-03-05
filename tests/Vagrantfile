@@ -1,0 +1,86 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+
+$dns_script = <<-SCRIPT
+SERVER_IP="192.168.33.11"
+
+echo "PEERDNS=no" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+echo "DNS1=${SERVER_IP}" >> /etc/sysconfig/network-scripts/ifcfg-eth1
+echo "nameserver ${SERVER_IP}" > /etc/resolv.conf
+SCRIPT
+
+
+$controller_script = <<-SCRIPT
+dnf install python3 python3-pip python3-devel gcc krb5-devel -y
+sudo -u vagrant pip3 install ansible python-gssapi --user
+curl -s https://raw.githubusercontent.com/hashicorp/vagrant/master/keys/vagrant -o ~vagrant/.ssh/id_rsa
+chown vagrant:vagrant ~vagrant/.ssh/id_rsa
+chmod 600 ~vagrant/.ssh/id_rsa
+SCRIPT
+
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/8"
+
+  config.vm.synced_folder "..", "/vagrant", type: "rsync"
+
+  config.ssh.insert_key = false
+
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.qemu_use_session = false
+    libvirt.memory = 1024
+    libvirt.graphics_type = "spice"
+  end
+
+  config.hostmanager.enabled = true
+
+  # Vagrant's "change host name" sets the short host name.  Before
+  # we repair /etc/hosts (see below) let's reset /etc/hostname to
+  # the *full* host name
+  #
+  config.vm.provision "shell",
+    inline: "hostname --fqdn > /etc/hostname && hostname -F /etc/hostname"
+
+  # Vagrant's "change host name" capability for maps hostname
+  # to loopback.  We must repair /etc/hosts
+  #
+  config.vm.provision "shell",
+    inline: "sed -ri 's/127\.0\.0\.1.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
+
+  config.vm.define "controller" do |controller|
+    controller.vm.network "private_network", ip: "192.168.33.10"
+    controller.vm.hostname = "controller.test.local"
+    controller.vm.provider :libvirt do |libvirt|
+      libvirt.memory = 512
+    end
+    controller.vm.provision "shell", inline: $controller_script
+  end
+
+  config.vm.define "server" do |server|
+    server.vm.network "private_network", ip: "192.168.33.11"
+    server.vm.hostname = "ipaserver.test.local"
+    server.vm.provider :libvirt do |libvirt|
+      libvirt.cpus = 2
+      libvirt.memory = 2048
+    end
+  end
+
+  config.vm.define "replica" do |replica|
+    replica.vm.network "private_network", ip: "192.168.33.12"
+    replica.vm.hostname = "ipareplica1.test.local"
+    replica.vm.provision "shell", inline: $dns_script
+  end
+
+  config.vm.define "client1" do |client|
+    client.vm.network "private_network", ip: "192.168.33.21"
+    client.vm.hostname = "ipaclient1.test.local"
+    client.vm.provision "shell", inline: $dns_script
+  end
+
+  config.vm.define "client2" do |client|
+    client.vm.network "private_network", ip: "192.168.33.22"
+    client.vm.hostname = "ipaclient2.test.local"
+    client.vm.provision "shell", inline: $dns_script
+  end
+end
