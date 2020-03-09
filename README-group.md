@@ -138,7 +138,7 @@ Variable | Description | Required
 `description` | The group description string. | no
 `gid` \| `gidnumber` | The GID integer. | no
 `nonposix` | Create as a non-POSIX group. (bool) | no
-`external` | Allow adding external non-IPA members from trusted domains. (flag) | no
+`external` | Allow adding external non-IPA members from trusted domains. (bool) | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
 `user` | List of user name strings assigned to this group. | no
 `group` | List of group name strings assigned to this group. | no
