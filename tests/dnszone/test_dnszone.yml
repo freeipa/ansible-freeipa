@@ -1,0 +1,151 @@
+---
+- name: Test dnszone
+  hosts: ipaserver
+  become: true
+  gather_facts: true
+
+  tasks:
+
+  # Setup
+  - name: Ensure zone is absent.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: absent
+
+  # Tests
+  - name: Ensure zone is present.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure zone is present, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: present
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure zone is disabled.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: disabled
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure zone is disabled, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: disabled
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure zone is enabled.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: enabled
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure zone is enabled, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: enabled
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure forward_policy is none.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      forward_policy: none
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure forward_policy is none, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      forward_policy: none
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure forward_policy is first.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      forward_policy: first
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure forward_policy is first, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      forward_policy: first
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure first forwarder is set.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      forwarders:
+        - ip_address: 8.8.8.8
+          port: 53
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure first and second forwarder are set.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      forwarders:
+        - ip_address: 8.8.8.8
+          port: 53
+        - ip_address: 2001:4860:4860::8888
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure first and second forwarder are set, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      forwarders:
+        - ip_address: 8.8.8.8
+          port: 53
+        - ip_address: 2001:4860:4860::8888
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure only second forwarder is set.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      forwarders:
+        - ip_address: 2001:4860:4860::8888
+    register: result
+    failed_when: not result.changed
+
+  - name: Nothing changes.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure no forwarders are set.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      forwarders: []
+    register: result
+    failed_when: not result.changed
