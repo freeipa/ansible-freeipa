@@ -1,0 +1,15 @@
+---
+- name: Test SRV Record is present.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure a SRV record is present
+  - ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      name: _kerberos._udp.example.com
+      record_type: 'SRV'
+      record_value: '10 50 88 ipa.example.com'
+      zone_name: example.com
+      state: present

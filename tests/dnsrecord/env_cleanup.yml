@@ -1,0 +1,135 @@
+---
+  # Cleanup tasks.
+   - name: Ensure that dns records are absent
+     ipadnsrecord:
+       ipaadmin_password: SomeADMINpassword
+       zone_name: "{{ testzone }}"
+       del_all: yes
+       name:
+       - host01
+       - host02
+       - host03
+       - host04
+       - _ftp._tcp
+       - _sip._udp
+       state: absent
+
+   - name: Ensure that dns reverse ipv6 records are absent
+     ipadnsrecord:
+       ipaadmin_password: SomeADMINpassword
+       zone_name: ip6.arpa.
+       del_all: yes
+       name:
+       - 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.d.f
+       - 1.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.d.f
+       - 1.2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.d.f
+       - 4.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.d.f
+       - 4.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.d.f
+       - 4.2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.d.f
+       state: absent
+
+   - name: Ensure that dns reverse ipv6 records are absent (workaround)
+     ipadnsrecord:
+       ipaadmin_password: SomeADMINpassword
+       zone_name: "{{ zone_ipv6_reverse_workaround }}"
+       del_all: yes
+       name:
+       - 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
+       - 1.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
+       - 1.2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
+       - 4.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
+       - 4.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
+       - 4.2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0
+       state: absent
+
+   - name: Ensure that dns reverse records are absent
+     ipadnsrecord:
+       ipaadmin_password: SomeADMINpassword
+       zone_name: "{{ zone_prefix_reverse_24 }}"
+       name:
+       - "101"
+       - "102"
+       - "103"
+       - "104"
+       - "111"
+       - "112"
+       - "113"
+       - "114"
+       - "121"
+       - "122"
+       - "123"
+       - "124"
+       del_all: yes
+       state: absent
+
+   - name: Ensure that dns reverse records are absent (workaround 1)
+     ipadnsrecord:
+       ipaadmin_password: SomeADMINpassword
+       zone_name: "{{ zone_prefix_reverse_16 }}"
+       name:
+       - "101.122"
+       - "102.122"
+       - "103.122"
+       - "104.122"
+       - "111.122"
+       - "112.122"
+       - "113.122"
+       - "114.122"
+       - "121.122"
+       - "122.122"
+       - "123.122"
+       - "124.122"
+       del_all: yes
+       state: absent
+
+   - name: Ensure that dns reverse records are absent (workaround 2)
+     ipadnsrecord:
+       ipaadmin_password: SomeADMINpassword
+       zone_name: "{{ zone_prefix_reverse_8 }}"
+       name:
+       - "168.101.122"
+       - "168.102.122"
+       - "168.103.122"
+       - "168.104.122"
+       - "168.111.122"
+       - "168.112.122"
+       - "168.113.122"
+       - "168.114.122"
+       - "168.121.122"
+       - "168.122.122"
+       - "168.123.122"
+       - "168.124.122"
+       del_all: yes
+       state: absent
+
+   - name: Ensure that "{{ safezone }}" dns records are absent
+     ipadnsrecord:
+       ipaadmin_password: SomeADMINpassword
+       zone_name: "{{ safezone }}"
+       records:
+       - name: iron01
+         del_all: yes
+       state: absent
+
+   - name: Ensure that NS record for "{{ safezone }}" is absent
+     ipadnsrecord:
+       ipaadmin_password: SomeADMINpassword
+       name: iron01
+       zone_name: "{{ safezone }}"
+       ns_rec: iron01
+       state: absent
+
+   - name: Ensure DNS testing zones are absent.
+     ipadnszone:
+       ipaadmin_password: SomeADMINpassword
+       name: "{{ item }}"
+       state: absent
+     with_items:
+       - "{{ zone_prefix_reverse }}"
+       - "{{ zone_prefix_reverse_24 }}"
+       - "{{ zone_prefix_reverse_16 }}"
+       - "{{ zone_prefix_reverse_8 }}"
+       - "{{ testzone }}"
+       - ip6.arpa.
+       - d.f.ip6.arpa.
+       - "{{ safezone }}"

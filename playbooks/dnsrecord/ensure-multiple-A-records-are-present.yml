@@ -1,0 +1,17 @@
+---
+- name: Playbook to manage DNS records.
+  hosts: ipaserver
+  become: yes
+  gather_facts: no
+
+  tasks:
+  - name: Ensure that 'host04' has multiple A records.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: ipatest.local
+      name: host01
+      a_rec:
+        - 192.168.122.221
+        - 192.168.122.222
+        - 192.168.122.223
+        - 192.168.122.224

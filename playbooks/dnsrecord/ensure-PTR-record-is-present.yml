@@ -1,0 +1,15 @@
+---
+- name: Test PTR Record is present.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure a PTR record is present
+  - ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      name: 5
+      record_type: 'PTR'
+      record_value: 'internal.ipa.example.com'
+      zone_name: 2.168.192.in-addr.arpa
+      state: present

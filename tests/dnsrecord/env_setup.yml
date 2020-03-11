@@ -1,0 +1,31 @@
+---
+  - name: Setup variables and facts.
+    include_tasks: env_vars.yml
+
+  # Cleanup before setup.
+  - name: Cleanup test environment.
+    include_tasks: env_cleanup.yml
+
+  # Common setup tasks.
+  - name: Ensure DNS testing zones are present.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ item }}"
+      skip_nameserver_check: yes
+      skip_overlap_check: yes
+    with_items:
+    - "{{ zone_prefix_reverse }}"
+    - "{{ zone_prefix_reverse_24 }}"
+    - "{{ zone_prefix_reverse_16 }}"
+    - "{{ zone_prefix_reverse_8 }}"
+    - "{{ testzone }}"
+    - ip6.arpa.
+
+  - name: Ensure DNSSEC zone '"{{ safezone }}"' is present.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ safezone }}"
+      dnssec: yes
+      skip_nameserver_check: yes
+      skip_overlap_check: yes
+    ignore_errors: yes

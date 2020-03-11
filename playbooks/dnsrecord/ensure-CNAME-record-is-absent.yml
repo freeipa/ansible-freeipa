@@ -1,0 +1,13 @@
+---
+- name: Test CNAME Record is present.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure that 'host04' has CNAME, with cname_hostname
+  - ipadnsrecord:
+      zone_name: example.com
+      name: host04
+      cname_hostname: host04.example.com
+      state: absent
