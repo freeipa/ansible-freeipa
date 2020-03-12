@@ -1,0 +1,103 @@
+---
+- name: Test host
+  hosts: ipaserver
+  become: true
+  gather_facts: true
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Set host1_fqdn
+    set_fact:
+      host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+
+  - name: Host absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - "{{ host1_fqdn }}"
+      update_dns: yes
+      state: absent
+
+  - name: Get IPv4 address prefix from server node
+    set_fact:
+      ipv4_prefix: "{{ ansible_default_ipv4.address.split('.')[:-1] |
+                       join('.') }}"
+      reverse_zone: "{{ ansible_default_ipv4.address.split('.')[2::-1] |
+                        join('.') }}"
+
+  - name: Set zone for reverse address.
+    command: ipa dnszone-add "{{ item }}" --skip-nameserver-check --skip-overlap-check
+    with_items:
+      - "{{ reverse_zone + '.in-addr.arpa.' }}"
+      - 'ip6.arpa.'
+    ignore_errors: yes
+
+  - name: Host "{{ host1_fqdn }}" present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.201' }}"
+      update_dns: yes
+      reverse: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" present, again.
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.201' }}"
+      update_dns: yes
+      reverse: yes
+    register: result
+    failed_when: result.changed
+
+  - name: Hosts host1 absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - "{{ host1_fqdn }}"
+      update_dns: yes
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" present with IPv6
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: "fd00::0001"
+      update_dns: yes
+      reverse: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" present with IPv6, again.
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: "fd00::0001"
+      update_dns: yes
+      reverse: yes
+    register: result
+    failed_when: result.changed
+
+  - name: Hosts host1 absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - "{{ host1_fqdn }}"
+      update_dns: yes
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Set zone for reverse address.
+    command: ipa dnszone-del "{{ item }}"
+    with_items:
+      - "{{ reverse_zone + '.in-addr.arpa.' }}"
+      - 'ip6.arpa.'
