@@ -407,6 +407,7 @@ Roles
 Modules in plugin/modules
 =========================
 
+* [ipadnsconfig](README-dnsconfig.md)
 * [ipagroup](README-group.md)
 * [ipahbacrule](README-hbacrule.md)
 * [ipahbacsvc](README-hbacsvc.md)
