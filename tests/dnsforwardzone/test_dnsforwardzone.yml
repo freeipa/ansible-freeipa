@@ -1,0 +1,214 @@
+---
+- name: Test dnsforwardzone
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: ensure forwardzone example.com is absent - prep
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      name: example.com
+      state: absent
+
+  - name: ensure forwardzone example.com is created
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: present
+      name: example.com
+      forwarders:
+        - 8.8.8.8
+      forwardpolicy: first
+      skip_overlap_check: true
+    register: result
+    failed_when: not result.changed
+
+  - name: ensure forwardzone example.com is present again
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: present
+      name: example.com
+      forwarders:
+        - 8.8.8.8
+      forwardpolicy: first
+      skip_overlap_check: true
+    register: result
+    failed_when: result.changed
+
+  - name: ensure forwardzone example.com has two forwarders
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: present
+      name: example.com
+      forwarders:
+        - 8.8.8.8
+        - 4.4.4.4
+      forwardpolicy: first
+      skip_overlap_check: true
+    register: result
+    failed_when: not result.changed
+
+  - name: ensure forwardzone example.com has one forwarder again
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      name: example.com
+      forwarders:
+        - 8.8.8.8
+      forwardpolicy: first
+      skip_overlap_check: true
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: skip_overlap_check can only be set on creation so change nothing
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      name: example.com
+      forwarders:
+        - 8.8.8.8
+      forwardpolicy: first
+      skip_overlap_check: false
+      state: present
+    register: result
+    failed_when: result.changed
+
+  - name: change all the things at once
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: present
+      name: example.com
+      forwarders:
+        - 8.8.8.8
+        - 4.4.4.4
+      forwardpolicy: only
+      skip_overlap_check: false
+    register: result
+    failed_when: not result.changed
+
+  - name: ensure forwardzone example.com is absent for next testset
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      name: example.com
+      state: absent
+
+  - name: ensure forwardzone example.com is created with minimal args
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: present
+      name: example.com
+      skip_overlap_check: true
+      forwarders:
+        - 8.8.8.8
+    register: result
+    failed_when: not result.changed
+
+  - name: add a forwarder to any existing ones
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: present
+      name: example.com
+      forwarders:
+        - 4.4.4.4
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: check the list of forwarders is what we expect
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: present
+      name: example.com
+      forwarders:
+        - 4.4.4.4
+        - 8.8.8.8
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: remove a single forwarder
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: absent
+      name: example.com
+      forwarders:
+        - 8.8.8.8
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: check the list of forwarders is what we expect now
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: present
+      name: example.com
+      forwarders:
+        - 4.4.4.4
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: ensure forwardzone example.com is absent again
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      name: example.com
+      state: absent
+
+  - name: try to create a new forwarder with action=member
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: present
+      name: example.com
+      forwarders:
+        - 4.4.4.4
+      action: member
+      skip_overlap_check: true
+    register: result
+    failed_when: result.changed
+
+  - name: ensure forwardzone example.com is absent - tidy up
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      name: example.com
+      state: absent
+
+  - name: try to create a new forwarder is disabled state
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      state: disabled
+      name: example.com
+      forwarders:
+        - 4.4.4.4
+      skip_overlap_check: true
+    register: result
+    failed_when: not result.changed
+
+  - name: enable the forwarder
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      name: example.com
+      state: enabled
+    register: result
+    failed_when: not result.changed
+
+  - name: disable the forwarder again
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      name: example.com
+      state: disabled
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: ensure it stays disabled
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      name: example.com
+      state: disabled
+    register: result
+    failed_when: result.changed
+
+  - name: ensure forwardzone example.com is absent - tidy up
+    ipadnsforwardzone:
+      ipaadmin_password: password01
+      name: example.com
+      state: absent
