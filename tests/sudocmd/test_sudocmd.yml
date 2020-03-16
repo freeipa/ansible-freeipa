@@ -1,6 +1,6 @@
 ---
 
-- name: Tests
+- name: Test sudocmd
   hosts: ipaserver
   become: true
   gather_facts: false
@@ -8,7 +8,7 @@
   tasks:
   - name: Ensure sudocmds are absent
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - /usr/bin/su
       - /usr/sbin/ifconfig
@@ -17,7 +17,7 @@
 
   - name: Ensure sudocmd is present
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: /usr/bin/su
       state: present
     register: result
@@ -25,7 +25,7 @@
 
   - name: Ensure sudocmd is present again
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: /usr/bin/su
       state: present
     register: result
@@ -33,7 +33,7 @@
 
   - name: Ensure sudocmd is absent
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: /usr/bin/su
       state: absent
     register: result
@@ -41,7 +41,7 @@
 
   - name: Ensure sudocmd is absent again
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: /usr/bin/su
       state: absent
     register: result
@@ -49,7 +49,7 @@
 
   - name: Ensure multiple sudocmd are present
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - /usr/sbin/ifconfig
       - /usr/sbin/iwlist
@@ -59,7 +59,7 @@
 
   - name: Ensure multiple sudocmd are present again
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - /usr/sbin/ifconfig
       - /usr/sbin/iwlist
@@ -69,7 +69,7 @@
 
   - name: Ensure multiple sudocmd are absent
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - /usr/sbin/ifconfig
       - /usr/sbin/iwlist
@@ -79,7 +79,7 @@
 
   - name: Ensure multiple sudocmd are absent again
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - /usr/sbin/ifconfig
       - /usr/sbin/iwlist
@@ -88,7 +88,7 @@
     failed_when: result.changed
   - name: Ensure sudocmds are absent
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - /usr/bin/su
       - /usr/sbin/ifconfig
@@ -97,21 +97,21 @@
 
   - name: Ensure sudocmds are absent
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - /usr/sbin/ifconfig
       state: absent
 
   - name: Ensure sudocmds are present
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - /usr/sbin/iwlist
       state: present
 
   - name: Ensure multiple sudocmd are absent when only one was present
     ipasudocmd:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - /usr/sbin/ifconfig
       - /usr/sbin/iwlist

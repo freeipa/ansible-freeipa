@@ -19,16 +19,18 @@ Features
 * Modules for host management
 * Modules for hostgroup management
 * Modules for pwpolicy management
+* Modules for service management
 * Modules for sudocmd management
 * Modules for sudocmdgroup management
 * Modules for sudorule management
 * Modules for topology management
 * Modules for user management
+* Modules for vault management
 
 Supported FreeIPA Versions
 --------------------------
 
-FreeIPA versions 4.6 and up are supported by all roles. 
+FreeIPA versions 4.6 and up are supported by all roles.
 
 The client role supports versions 4.4 and up, the server role is working with versions 4.5 and up, the replica role is currently only working with versions 4.6 and up.
 
@@ -156,6 +158,7 @@ ipaserver_install_packages=no
 ipaserver_setup_firewalld=no
 ```
 The installation of packages and also the configuration of the firewall are by default enabled.
+Note that it is not enough to mask systemd firewalld service to skip the firewalld configuration. You need to set the variable to `no`.
 
 For more server settings, please have a look at the [server role documentation](roles/ipaserver/README.md).
 
@@ -231,6 +234,7 @@ ipareplica_setup_firewalld=no
 ```
 
 The installation of packages and also the configuration of the firewall are by default enabled.
+Note that it is not enough to mask systemd firewalld service to skip the firewalld configuration. You need to set the variable to `no`.
 
 For more replica settings, please have a look at the [replica role documentation](roles/ipareplica/README.md).
 
@@ -404,6 +408,7 @@ Roles
 Modules in plugin/modules
 =========================
 
+* [ipadnsconfig](README-dnsconfig.md)
 * [ipadnsforwardzone](README-dnsforwardzone.md)
 * [ipagroup](README-group.md)
 * [ipahbacrule](README-hbacrule.md)
@@ -412,9 +417,11 @@ Modules in plugin/modules
 * [ipahost](README-host.md)
 * [ipahostgroup](README-hostgroup.md)
 * [ipapwpolicy](README-pwpolicy.md)
+* [ipaservice](README-service.md)
 * [ipasudocmd](README-sudocmd.md)
 * [ipasudocmdgroup](README-sudocmdgroup.md)
 * [ipasudorule](README-sudorule.md)
 * [ipatopologysegment](README-topology.md)
 * [ipatopologysuffix](README-topology.md)
 * [ipauser](README-user.md)
+* [ipavault](README-vault.md)

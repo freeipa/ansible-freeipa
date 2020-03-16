@@ -1,0 +1,13 @@
+---
+- name: Service member principal present
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Service HTTP/www.exmaple.com member principals host/test.exmaple.com present
+    ipaservice:
+      ipaadmin_password: MyPassword123
+      name: HTTP/www.example.com
+      principal:
+        - host/test.exmaple.com
+      action: member

@@ -22,7 +22,7 @@
 
   - name: Host host1..., host2... and host3... absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
@@ -31,13 +31,13 @@
 
   - name: Ensure host-groups hostgroup1 and hostgroup2 absent
     ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: hostgroup1,hostgroup2
       state: absent
 
   - name: Ensure users user1 and user2 absent
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       users:
       - name: user1
       - name: user2
@@ -45,13 +45,13 @@
 
   - name: Ensure group1 and group2 absent
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1,group2
       state: absent
 
   - name: Host host2... and host3... present
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host2_fqdn }}"
         force: yes
@@ -62,7 +62,7 @@
 
   - name: Ensure host-group hostgroup1 present
     ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: hostgroup1
       state: present
     register: result
@@ -70,7 +70,7 @@
 
   - name: Ensure host-group hostgroup2 present
     ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: hostgroup2
       state: present
     register: result
@@ -78,7 +78,7 @@
 
   - name: Ensure users user1 and user2 present
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       users:
       - name: user1
         first: First1
@@ -91,21 +91,21 @@
 
   - name: Ensure group1 present
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1
     register: result
     failed_when: not result.changed
 
   - name: Ensure group2 present
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group2
     register: result
     failed_when: not result.changed
 
   - name: Host host1... present with allow_create_keytab users,groups,hosts and hostgroups
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       allow_create_keytab_user:
       - user1
@@ -125,7 +125,7 @@
 
   - name: Host host1... present with allow_create_keytab users,groups,hosts and hostgroups again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       allow_create_keytab_user:
       - user1
@@ -145,14 +145,14 @@
 
   - name: Host host1... absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       state: absent
 
   - name: Host host1... present
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       force: yes
     register: result
@@ -160,7 +160,7 @@
 
   - name: Host host1... ensure allow_create_keytab users,groups,hosts and hostgroups present
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       allow_create_keytab_user:
       - user1
@@ -180,7 +180,7 @@
 
   - name: Host host1... ensure allow_create_keytab users,groups,hosts and hostgroups present again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       allow_create_keytab_user:
       - user1
@@ -200,7 +200,7 @@
 
   - name: Host host1... ensure allow_create_keytab users,groups,hosts and hostgroups absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       allow_create_keytab_user:
       - user1
@@ -221,7 +221,7 @@
 
   - name: Host host1... ensure allow_create_keytab users,groups,hosts and hostgroups absent again
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       allow_create_keytab_user:
       - user1
@@ -242,7 +242,7 @@
 
   - name: Host host1..., host2... and host3... absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
@@ -253,7 +253,7 @@
 
   - name: Ensure host-groups hostgroup1 and hostgroup2 absent
     ipahostgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: hostgroup1,hostgroup2
       state: absent
     register: result
@@ -261,7 +261,7 @@
 
   - name: Ensure users user1 and user2 absent
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       users:
       - name: user1
       - name: user2
@@ -271,7 +271,7 @@
 
   - name: Ensure group1 and group2 absent
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1,group2
       state: absent
     register: result

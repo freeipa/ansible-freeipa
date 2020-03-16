@@ -6,6 +6,6 @@
   tasks:
   - name: Disable host host01.example.com
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       state: disabled

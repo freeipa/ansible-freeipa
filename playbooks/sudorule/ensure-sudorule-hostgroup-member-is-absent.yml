@@ -7,7 +7,7 @@
   tasks:
   # Ensure hostgroup cluster is absent in Sudo Rule
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       hostgroup: cluster
       action: member

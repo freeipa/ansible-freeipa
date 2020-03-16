@@ -6,9 +6,14 @@
 
   tasks:
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
-      cmd:
+      allow_sudocmd:
       - /sbin/ifconfig
+      deny_sudocmd:
       - /usr/bin/vim
+      allow_sudocmdgroup:
+      - devops
+      deny_sudocmdgroup:
+      - users
       action: member

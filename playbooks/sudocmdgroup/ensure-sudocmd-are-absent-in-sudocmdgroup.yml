@@ -6,7 +6,7 @@
   tasks:
   # Ensure sudocmds are absent in sudocmdgroup
   - ipasudocmdgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: network
       sudocmd:
       - /usr/sbin/ifconfig

@@ -47,60 +47,72 @@ Usage
 
 Example inventory file with fixed principal using auto-discovery with DNS records:
 
-    [ipareplicas]
-    ipareplica1.example.com
-    ipareplica2.example.com
-    
-    [ipareplicas:vars]
-    ipaadmin_principal=admin
+```ini
+[ipareplicas]
+ipareplica1.example.com
+ipareplica2.example.com
+
+[ipareplicas:vars]
+ipaadmin_principal=admin
+```
 
 Example playbook to setup the IPA client(s) using principal from inventory file and password from an [Ansible Vault](http://docs.ansible.com/ansible/latest/playbooks_vault.html) file:
 
-    - name: Playbook to configure IPA replicas
-      hosts: ipareplicas
-      become: true
-      vars_files:
-      - playbook_sensitive_data.yml
-    
-      roles:
-      - role: ipareplica
-        state: present
+```yaml
+---
+- name: Playbook to configure IPA replicas
+  hosts: ipareplicas
+  become: true
+  vars_files:
+  - playbook_sensitive_data.yml
+
+  roles:
+  - role: ipareplica
+    state: present
+```
 
 Example playbook to unconfigure the IPA client(s) using principal and password from inventory file:
 
-    - name: Playbook to unconfigure IPA replicas
-      hosts: ipareplicas
-      become: true
-    
-      roles:
-      - role: ipareplica
-        state: absent
+```yaml
+---
+- name: Playbook to unconfigure IPA replicas
+  hosts: ipareplicas
+  become: true
+
+  roles:
+  - role: ipareplica
+    state: absent
+```
 
 Example inventory file with fixed server, principal, password and domain:
 
-    [ipaserver]
-    ipaserver.example.com
-    
-    [ipareplicas]
-    ipareplica1.example.com
-    ipareplica2.example.com
-    
-    [ipareplicas:vars]
-    ipaclient_domain=example.com
-    ipaadmin_principal=admin
-    ipaadmin_password=MySecretPassword123
-    ipadm_password=MySecretPassword456
+```ini
+[ipaserver]
+ipaserver.example.com
+
+[ipareplicas]
+ipareplica1.example.com
+ipareplica2.example.com
+
+[ipareplicas:vars]
+ipaclient_domain=example.com
+ipaadmin_principal=admin
+ipaadmin_password=MySecretPassword123
+ipadm_password=MySecretPassword456
+```
 
 Example playbook to setup the IPA client(s) using principal and password from inventory file:
 
-    - name: Playbook to configure IPA replicas with username/password
-      hosts: ipareplicas
-      become: true
-    
-      roles:
-      - role: ipareplica
-        state: present
+```yaml
+---
+- name: Playbook to configure IPA replicas with username/password
+  hosts: ipareplicas
+  become: true
 
+  roles:
+  - role: ipareplica
+    state: present
+```
 
 Playbooks
 =========

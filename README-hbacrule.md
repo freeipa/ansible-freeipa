@@ -50,7 +50,7 @@ Example playbook to make sure HBAC Rule login exists:
   tasks:
   # Ensure HBAC Rule login is present
   - ipahbacrule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
 ```
 
@@ -66,7 +66,7 @@ Example playbook to make sure HBAC Rule login exists with the only HBAC Service 
   tasks:
   # Ensure HBAC Rule login is present with the only HBAC Service sshd
   - ipahbacrule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd
@@ -83,7 +83,7 @@ Example playbook to make sure HBAC Service sshd is present in HBAC Rule login:
   tasks:
   # Ensure HBAC Service sshd is present in HBAC Rule login
   - ipahbacrule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd
@@ -101,7 +101,7 @@ Example playbook to make sure HBAC Service sshd is absent in HBAC Rule login:
   tasks:
   # Ensure HBAC Service sshd is present in HBAC Rule login
   - ipahbacrule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd
@@ -120,7 +120,7 @@ Example playbook to make sure HBAC Rule login is absent:
   tasks:
   # Ensure HBAC Rule login is present
   - ipahbacrule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       state: absent
 ```

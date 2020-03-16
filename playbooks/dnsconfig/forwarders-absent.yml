@@ -1,0 +1,13 @@
+---
+- name: Playbook to handle global DNS configuration
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Set dnsconfig.
+    ipadnsconfig:
+      forwarders:
+        - ip_address: 8.8.4.4
+        - ip_address: 2001:4860:4860::8888
+          port: 53
+      state: absent

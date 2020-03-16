@@ -28,6 +28,7 @@ import shutil
 import gssapi
 from datetime import datetime
 from ipalib import api
+from ipalib import errors as ipalib_errors
 from ipalib.config import Env
 from ipalib.constants import DEFAULT_CONFIG, LDAP_GENERALIZED_TIME_FORMAT
 try:
@@ -42,6 +43,7 @@ try:
     from ipalib.x509 import Encoding
 except ImportError:
     from cryptography.hazmat.primitives.serialization import Encoding
+import socket
 import base64
 import six
 
@@ -151,6 +153,13 @@ def api_command(module, command, name, args):
     return api.Command[command](name, **args)
 
 
+def api_command_no_name(module, command, args):
+    """
+    Call ipa.Command without a name.
+    """
+    return api.Command[command](**args)
+
+
 def api_check_param(command, name):
     """
     Return if param exists in command param list
@@ -215,10 +224,20 @@ def compare_args_ipa(module, args, ipa):
                     arg = [to_text(_arg) for _arg in arg]
                 if isinstance(ipa_arg[0], unicode) and isinstance(arg[0], int):
                     arg = [to_text(_arg) for _arg in arg]
-            # module.warn("%s <=> %s" % (arg, ipa_arg))
-            if set(arg) != set(ipa_arg):
-                # module.warn("DIFFERENT")
-                return False
+            # module.warn("%s <=> %s" % (repr(arg), repr(ipa_arg)))
+            try:
+                arg_set = set(arg)
+                ipa_arg_set = set(ipa_arg)
+            except TypeError:
+                if arg != ipa_arg:
+                    # module.warn("%s != %s" % (repr(arg), repr(ipa_arg)))
+                    return False
+            else:
+                if arg_set != ipa_arg_set:
+                    # module.warn("%s != %s" % (repr(arg), repr(ipa_arg)))
+                    return False
+
+        # module.warn("%s == %s" % (repr(arg), repr(ipa_arg)))
 
     return True
 
@@ -261,10 +280,32 @@ def encode_certificate(cert):
     Encode a certificate using base64 with also taking FreeIPA and Python
     versions into account
     """
-    if isinstance(cert, str) or isinstance(cert, unicode):
+    if isinstance(cert, (str, unicode, bytes)):
         encoded = base64.b64encode(cert)
     else:
         encoded = base64.b64encode(cert.public_bytes(Encoding.DER))
     if not six.PY2:
         encoded = encoded.decode('ascii')
     return encoded
+
+
+def is_ipv4_addr(ipaddr):
+    """
+    Test if figen IP address is a valid IPv4 address
+    """
+    try:
+        socket.inet_pton(socket.AF_INET, ipaddr)
+    except socket.error:
+        return False
+    return True
+
+
+def is_ipv6_addr(ipaddr):
+    """
+    Test if figen IP address is a valid IPv6 address
+    """
+    try:
+        socket.inet_pton(socket.AF_INET6, ipaddr)
+    except socket.error:
+        return False
+    return True

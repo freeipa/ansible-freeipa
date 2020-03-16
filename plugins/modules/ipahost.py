@@ -147,9 +147,10 @@ options:
           Defines a whitelist for Authentication Indicators. Use 'otp' to allow
           OTP-based 2FA authentications. Use 'radius' to allow RADIUS-based 2FA
           authentications. Other values may be used for custom configurations.
+          Use empty string to reset auth_ind to the initial value.
         type: list
         aliases: ["krbprincipalauthind"]
-        choices: ["radius", "otp", "pkinit", "hardened"]
+        choices: ["radius", "otp", "pkinit", "hardened", ""]
         required: false
       requires_pre_auth:
         description: Pre-authentication is required for the service
@@ -175,11 +176,16 @@ options:
         default: true
         required: false
       ip_address:
-        description: The host IP address
+        description:
+          The host IP address list (IPv4 and IPv6). No IP address conflict
+          check will be done.
         aliases: ["ipaddress"]
         required: false
       update_dns:
-        description: Update DNS entries
+        description:
+          Controls the update of the DNS SSHFP records for existing hosts and
+          the removal of all DNS entries if a host gets removed with state
+          absent.
         required: false
   description:
     description: The host description
@@ -277,9 +283,10 @@ options:
       Defines a whitelist for Authentication Indicators. Use 'otp' to allow
       OTP-based 2FA authentications. Use 'radius' to allow RADIUS-based 2FA
       authentications. Other values may be used for custom configurations.
+      Use empty string to reset auth_ind to the initial value.
     type: list
     aliases: ["krbprincipalauthind"]
-    choices: ["radius", "otp", "pkinit", "hardened"]
+    choices: ["radius", "otp", "pkinit", "hardened", ""]
     required: false
   requires_pre_auth:
     description: Pre-authentication is required for the service
@@ -304,11 +311,16 @@ options:
     default: true
     required: false
   ip_address:
-    description: The host IP address
+    description:
+      The host IP address list (IPv4 and IPv6). No IP address conflict
+      check will be done.
     aliases: ["ipaddress"]
     required: false
   update_dns:
-    description: Update DNS entries
+    description:
+      Controls the update of the DNS SSHFP records for existing hosts and
+      the removal of all DNS entries if a host gets removed with state
+      absent.
     required: false
   update_password:
     description:
@@ -331,7 +343,7 @@ author:
 EXAMPLES = """
 # Ensure host is present
 - ipahost:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: host01.example.com
     description: Example host
     ip_address: 192.168.0.123
@@ -346,14 +358,14 @@ EXAMPLES = """
 
 # Ensure host is present without DNS
 - ipahost:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: host02.example.com
     description: Example host
     force: yes
 
 # Initiate generation of a random password for the host
 - ipahost:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: host01.example.com
     description: Example host
     ip_address: 192.168.0.123
@@ -361,7 +373,7 @@ EXAMPLES = """
 
 # Ensure host is disabled
 - ipahost:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: host01.example.com
     update_dns: yes
     state: disabled
@@ -396,7 +408,8 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get, gen_add_del_lists, encode_certificate, api_get_realm
+    module_params_get, gen_add_del_lists, encode_certificate, api_get_realm, \
+    is_ipv4_addr, is_ipv6_addr, ipalib_errors
 import six
 
 
@@ -411,6 +424,32 @@ def find_host(module, name):
     }
 
     _result = api_command(module, "host_find", to_text(name), _args)
+
+    if len(_result["result"]) > 1:
+        module.fail_json(
+            msg="There is more than one host '%s'" % (name))
+    elif len(_result["result"]) == 1:
+        _res = _result["result"][0]
+        certs = _res.get("usercertificate")
+        if certs is not None:
+            _res["usercertificate"] = [encode_certificate(cert) for
+                                       cert in certs]
+        return _res
+    else:
+        return None
+
+
+def find_dnsrecord(module, name):
+    domain_name = name[name.find(".")+1:]
+    host_name = name[:name.find(".")]
+
+    _args = {
+        "all": True,
+        "idnsname": to_text(host_name),
+    }
+
+    _result = api_command(module, "dnsrecord_find", to_text(domain_name),
+                          _args)
 
     if len(_result["result"]) > 1:
         module.fail_json(
@@ -468,12 +507,30 @@ def gen_args(description, locality, location, platform, os, password, random,
         _args["ipakrboktoauthasdelegate"] = ok_to_auth_as_delegate
     if force is not None:
         _args["force"] = force
-    if reverse is not None:
-        _args["no_reverse"] = not reverse
     if ip_address is not None:
-        _args["ip_address"] = ip_address
+        # IP addresses are handed extra, therefore it is needed to set
+        # the force option here to make sure that host-add is able to
+        # add a host without IP address.
+        _args["force"] = True
     if update_dns is not None:
         _args["updatedns"] = update_dns
+
+    return _args
+
+
+def gen_dnsrecord_args(module, ip_address, reverse):
+    _args = {}
+    if reverse is not None:
+        _args["a_extra_create_reverse"] = reverse
+        _args["aaaa_extra_create_reverse"] = reverse
+    if ip_address is not None:
+        for ip in ip_address:
+            if is_ipv4_addr(ip):
+                _args.setdefault("arecord", []).append(ip)
+            elif is_ipv6_addr(ip):
+                _args.setdefault("aaaarecord", []).append(ip)
+            else:
+                module.fail_json(msg="'%s' is not a valid IP address." % ip)
 
     return _args
 
@@ -497,8 +554,7 @@ def check_parameters(
                        "os", "password", "random", "mac_address", "sshpubkey",
                        "userclass", "auth_ind", "requires_pre_auth",
                        "ok_as_delegate", "ok_to_auth_as_delegate", "force",
-                       "reverse", "ip_address", "update_dns",
-                       "update_password"]
+                       "reverse", "update_dns", "update_password"]
             for x in invalid:
                 if vars()[x] is not None:
                     module.fail_json(
@@ -510,20 +566,26 @@ def check_parameters(
                    "password", "random", "mac_address", "sshpubkey",
                    "userclass", "auth_ind", "requires_pre_auth",
                    "ok_as_delegate", "ok_to_auth_as_delegate", "force",
-                   "reverse", "ip_address", "update_password"]
-        if action == "host":
-            invalid.extend([
-                "certificate", "managedby_host", "principal",
-                "allow_create_keytab_user", "allow_create_keytab_group",
-                "allow_create_keytab_host", "allow_create_keytab_hostgroup",
-                "allow_retrieve_keytab_user", "allow_retrieve_keytab_group",
-                "allow_retrieve_keytab_host",
-                "allow_retrieve_keytab_hostgroup"])
+                   "reverse", "update_password"]
         for x in invalid:
             if vars()[x] is not None:
                 module.fail_json(
                     msg="Argument '%s' can not be used with state '%s'" %
                     (x, state))
+        if action == "host":
+            invalid = [
+                "certificate", "managedby_host", "principal",
+                "allow_create_keytab_user", "allow_create_keytab_group",
+                "allow_create_keytab_host", "allow_create_keytab_hostgroup",
+                "allow_retrieve_keytab_user", "allow_retrieve_keytab_group",
+                "allow_retrieve_keytab_host",
+                "allow_retrieve_keytab_hostgroup"
+            ]
+            for x in invalid:
+                if vars()[x] is not None:
+                    module.fail_json(
+                        msg="Argument '%s' can only be used with action "
+                        "'member' for state '%s'" % (x, state))
 
 
 def main():
@@ -541,9 +603,6 @@ def main():
                       default=None, no_log=True),
         random=dict(type="bool", aliases=["random_password"],
                     default=None),
-
-
-
         certificate=dict(type="list", aliases=["usercertificate"],
                          default=None),
         managedby_host=dict(type="list",
@@ -590,7 +649,7 @@ def main():
                        default=None),
         auth_ind=dict(type='list', aliases=["krbprincipalauthind"],
                       default=None,
-                      choices=['password', 'radius', 'otp']),
+                      choices=['radius', 'otp', 'pkinit', 'hardened', '']),
         requires_pre_auth=dict(type="bool", aliases=["ipakrbrequirespreauth"],
                                default=None),
         ok_as_delegate=dict(type="bool", aliases=["ipakrbokasdelegate"],
@@ -600,7 +659,7 @@ def main():
                                     default=None),
         force=dict(type='bool', default=None),
         reverse=dict(type='bool', default=None),
-        ip_address=dict(type="str", aliases=["ipaddress"],
+        ip_address=dict(type="list", aliases=["ipaddress"],
                         default=None),
         update_dns=dict(type="bool", aliases=["updatedns"],
                         default=None),
@@ -812,6 +871,20 @@ def main():
 
             # Make sure host exists
             res_find = find_host(ansible_module, name)
+            try:
+                res_find_dnsrecord = find_dnsrecord(ansible_module, name)
+            except ipalib_errors.NotFound as e:
+                msg = str(e)
+                if ip_address is None and \
+                   ("DNS is not configured" in msg or \
+                    "DNS zone not found" in msg):
+                    # IP address(es) not given and no DNS support in IPA
+                    # -> Ignore failure
+                    # IP address(es) not given and DNS zone is not found
+                    # -> Ignore failure
+                    res_find_dnsrecord = None
+                else:
+                    ansible_module.fail_json(msg="%s: %s" % (host, msg))
 
             # Create command
             if state == "present":
@@ -821,6 +894,8 @@ def main():
                     random, mac_address, sshpubkey, userclass, auth_ind,
                     requires_pre_auth, ok_as_delegate, ok_to_auth_as_delegate,
                     force, reverse, ip_address, update_dns)
+                dnsrecord_args = gen_dnsrecord_args(
+                    ansible_module, ip_address, reverse)
 
                 if action == "host":
                     # Found the host
@@ -834,6 +909,13 @@ def main():
                         for x in ["force", "ip_address", "no_reverse"]:
                             if x in args:
                                 del args[x]
+
+                        # Ignore auth_ind if it is empty (for resetting)
+                        # and not set in for the host
+                        if "krbprincipalauthind" not in res_find and \
+                           "krbprincipalauthind" in args and \
+                           args["krbprincipalauthind"] == ['']:
+                            del args["krbprincipalauthind"]
 
                         # For all settings is args, check if there are
                         # different settings in the find result.
@@ -923,39 +1005,25 @@ def main():
                                 res_find.get(
                                     "ipaallowedtoperform_read_keys_hostgroup"))
 
-                    else:
-                        certificate_add = certificate or []
-                        certificate_del = []
-                        managedby_host_add = managedby_host or []
-                        managedby_host_del = []
-                        principal_add = principal or []
-                        principal_del = []
-                        allow_create_keytab_user_add = \
-                            allow_create_keytab_user or []
-                        allow_create_keytab_user_del = []
-                        allow_create_keytab_group_add = \
-                            allow_create_keytab_group or []
-                        allow_create_keytab_group_del = []
-                        allow_create_keytab_host_add = \
-                            allow_create_keytab_host or []
-                        allow_create_keytab_host_del = []
-                        allow_create_keytab_hostgroup_add = \
-                            allow_create_keytab_hostgroup or []
-                        allow_create_keytab_hostgroup_del = []
-                        allow_retrieve_keytab_user_add = \
-                            allow_retrieve_keytab_user or []
-                        allow_retrieve_keytab_user_del = []
-                        allow_retrieve_keytab_group_add = \
-                            allow_retrieve_keytab_group or []
-                        allow_retrieve_keytab_group_del = []
-                        allow_retrieve_keytab_host_add = \
-                            allow_retrieve_keytab_host or []
-                        allow_retrieve_keytab_host_del = []
-                        allow_retrieve_keytab_hostgroup_add = \
-                            allow_retrieve_keytab_hostgroup or []
-                        allow_retrieve_keytab_hostgroup_del = []
+                        # IP addresses are not really a member of hosts, but
+                        # we will simply treat it as this to enable the
+                        # addition and removal of IPv4 and IPv6 addresses in
+                        # a simple way.
+                        _dnsrec = res_find_dnsrecord or {}
+                        dnsrecord_a_add, dnsrecord_a_del = gen_add_del_lists(
+                            dnsrecord_args.get("arecord"),
+                            _dnsrec.get("arecord"))
+                        dnsrecord_aaaa_add, dnsrecord_aaaa_del = \
+                            gen_add_del_lists(
+                                dnsrecord_args.get("aaaarecord"),
+                                _dnsrec.get("aaaarecord"))
 
                 else:
+                    if res_find is None:
+                        ansible_module.fail_json(
+                            msg="No host '%s'" % name)
+
+                if action != "host" or (action == "host" and res_find is None):
                     certificate_add = certificate or []
                     certificate_del = []
                     managedby_host_add = managedby_host or []
@@ -986,6 +1054,10 @@ def main():
                     allow_retrieve_keytab_hostgroup_add = \
                         allow_retrieve_keytab_hostgroup or []
                     allow_retrieve_keytab_hostgroup_del = []
+                    dnsrecord_a_add = dnsrecord_args.get("arecord") or []
+                    dnsrecord_a_del = []
+                    dnsrecord_aaaa_add = dnsrecord_args.get("aaaarecord") or []
+                    dnsrecord_aaaa_del = []
 
                 # Remove canonical principal from principal_del
                 canonical_principal = "host/" + name + "@" + server_realm
@@ -1120,6 +1192,39 @@ def main():
                              "hostgroup": allow_retrieve_keytab_hostgroup_del,
                          }])
 
+                if len(dnsrecord_a_add) > 0 or len(dnsrecord_aaaa_add) > 0:
+                    domain_name = name[name.find(".")+1:]
+                    host_name = name[:name.find(".")]
+
+                    _args = {"idnsname": host_name}
+                    if len(dnsrecord_a_add) > 0:
+                        _args["arecord"] = dnsrecord_a_add
+                        if reverse is not None:
+                            _args["a_extra_create_reverse"] = reverse
+                    if len(dnsrecord_aaaa_add) > 0:
+                        _args["aaaarecord"] = dnsrecord_aaaa_add
+                        if reverse is not None:
+                            _args["aaaa_extra_create_reverse"] = reverse
+
+                    commands.append([domain_name,
+                                     "dnsrecord_add", _args])
+
+                if len(dnsrecord_a_del) > 0 or len(dnsrecord_aaaa_del) > 0:
+                    domain_name = name[name.find(".")+1:]
+                    host_name = name[:name.find(".")]
+
+                    # There seems to be an issue with dnsrecord_del (not
+                    # for dnsrecord_add) if aaaarecord is an empty list.
+                    # Therefore this is done differently here:
+                    _args = {"idnsname": host_name}
+                    if len(dnsrecord_a_del) > 0:
+                        _args["arecord"] = dnsrecord_a_del
+                    if len(dnsrecord_aaaa_del) > 0:
+                        _args["aaaarecord"] = dnsrecord_aaaa_del
+
+                    commands.append([domain_name,
+                                     "dnsrecord_del", _args])
+
             elif state == "absent":
                 if action == "host":
 
@@ -1200,6 +1305,17 @@ def main():
                                  "hostgroup": allow_retrieve_keytab_hostgroup,
                              }])
 
+                    dnsrecord_args = gen_dnsrecord_args(ansible_module,
+                                                        ip_address, reverse)
+                    if "arecord" in dnsrecord_args or \
+                       "aaaarecord" in dnsrecord_args:
+                        domain_name = name[name.find(".")+1:]
+                        host_name = name[:name.find(".")]
+                        dnsrecord_args["idnsname"] = host_name
+
+                        commands.append([domain_name, "dnsrecord_del",
+                                         dnsrecord_args])
+
             elif state == "disabled":
                 if res_find is not None:
                     commands.append([name, "host_disable", {}])
@@ -1244,6 +1360,11 @@ def main():
                 # Host is already disabled, ignore error
                 if "This entry is already disabled" in msg:
                     continue
+
+                # Ignore no modification error.
+                if "no modifications to be performed" in msg:
+                    continue
+
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              msg))
 

@@ -6,7 +6,7 @@
   tasks:
   - name: Users user1 and user2 absent
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - user1
       - user2
@@ -14,7 +14,7 @@
 
   - name: User user1 present with random password
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: user1
       first: first1
       last: last1
@@ -30,14 +30,14 @@
 
   - name: User user1 absent
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - user1
       state: absent
 
   - name: Users user1 and user1 present with random password
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       users:
       - name: user1
         first: first1
@@ -63,7 +63,7 @@
 
   - name: Users user1 and user2 absent
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - user1
       - user2

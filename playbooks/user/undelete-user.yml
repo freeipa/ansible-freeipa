@@ -6,6 +6,6 @@
   tasks:
   - name: Undelete preserved user pinky
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: pinky
       state: undeleted

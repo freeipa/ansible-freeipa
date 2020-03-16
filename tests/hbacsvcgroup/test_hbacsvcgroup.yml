@@ -1,5 +1,5 @@
 ---
-- name: Tests
+- name: Test hbacsvcgroup
   hosts: ipaserver
   become: true
   gather_facts: false
@@ -7,32 +7,32 @@
   tasks:
   - name: Ensure HBAC Service Group login is absent
     ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       state: absent
 
   - name: Ensure HBAC Service for sshd is present
     ipahbacsvc:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
 
   - name: Ensure HBAC Service Group login is present
     ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
     register: result
     failed_when: not result.changed
 
   - name: Ensure HBAC Service Group login is present again
     ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
     register: result
     failed_when: result.changed
 
   - name: Ensure HBAC Service sshd is present in HBAC Service Group login
     ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd
@@ -42,7 +42,7 @@
 
   - name: Ensure HBAC Service sshd is present in HBAC Service Group login again
     ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd
@@ -52,7 +52,7 @@
 
   - name: Ensure HBAC Services sshd and foo are absent in HBAC Service Group login
     ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd
@@ -64,7 +64,7 @@
 
   - name: Ensure HBAC Services sshd and foo are absent in HBAC Service Group login again
     ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       hbacsvc:
       - sshd
@@ -76,7 +76,7 @@
 
   - name: Ensure HBAC Service Group login is absent
     ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       state: absent
     register: result
@@ -84,7 +84,7 @@
 
   - name: Ensure HBAC Service Group login is absent again
     ipahbacsvcgroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: login
       state: absent
     register: result

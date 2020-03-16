@@ -1,0 +1,321 @@
+---
+- name: Test host IP addresses
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Set host1_fqdn .. host6_fqdn
+    set_fact:
+      host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+      host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+      host3_fqdn: "{{ 'host3.' + ipaserver_domain }}"
+
+  - name: Get IPv4 address prefix from server node
+    set_fact:
+      ipv4_prefix: "{{ ansible_default_ipv4.address.split('.')[:-1] |
+                       join('.') }}"
+
+  - name: Host absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      update_dns: yes
+      state: absent
+
+  - name: Host "{{ host1_fqdn }}" present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address:
+      - "{{ ipv4_prefix + '.201' }}"
+      - fe80::20c:29ff:fe02:a1b2
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" present again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address:
+      - "{{ ipv4_prefix + '.201' }}"
+      - fe80::20c:29ff:fe02:a1b2
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host1_fqdn }}" present again with new IP address
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address:
+      - "{{ ipv4_prefix + '.211' }}"
+      - fe80::20c:29ff:fe02:a1b3
+      - "{{ ipv4_prefix + '.221' }}"
+      - fe80::20c:29ff:fe02:a1b4
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" present again with new IP address again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address:
+      - "{{ ipv4_prefix + '.211' }}"
+      - fe80::20c:29ff:fe02:a1b3
+      - "{{ ipv4_prefix + '.221' }}"
+      - fe80::20c:29ff:fe02:a1b4
+      update_dns: yes
+      reverse: no
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host1_fqdn }}" member IPv4 address present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.201' }}"
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" member IPv4 address present again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.201' }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host1_fqdn }}" member IPv4 address absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.201' }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" member IPv4 address absent again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: "{{ ipv4_prefix + '.201' }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host1_fqdn }}" member IPv6 address present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: fe80::20c:29ff:fe02:a1b2
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" member IPv6 address present again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: fe80::20c:29ff:fe02:a1b2
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host1_fqdn }}" member IPv6 address absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: fe80::20c:29ff:fe02:a1b2
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" member IPv6 address absent again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address: fe80::20c:29ff:fe02:a1b2
+      action: member
+      state: absent
+    register: result
+
+  - name: Host "{{ host1_fqdn }}" member all ip-addresses absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address:
+      - "{{ ipv4_prefix + '.211' }}"
+      - fe80::20c:29ff:fe02:a1b3
+      - "{{ ipv4_prefix + '.221' }}"
+      - fe80::20c:29ff:fe02:a1b4
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host1_fqdn }}" all member ip-addresses absent again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ host1_fqdn }}"
+      ip_address:
+      - "{{ ipv4_prefix + '.211' }}"
+      - fe80::20c:29ff:fe02:a1b3
+      - "{{ ipv4_prefix + '.221' }}"
+      - fe80::20c:29ff:fe02:a1b4
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" present with same IP addresses
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        ip_address:
+        - "{{ ipv4_prefix + '.211' }}"
+        - fe80::20c:29ff:fe02:a1b3
+        - "{{ ipv4_prefix + '.221' }}"
+        - fe80::20c:29ff:fe02:a1b4
+      - name: "{{ host2_fqdn }}"
+        ip_address:
+        - "{{ ipv4_prefix + '.211' }}"
+        - fe80::20c:29ff:fe02:a1b3
+        - "{{ ipv4_prefix + '.221' }}"
+        - fe80::20c:29ff:fe02:a1b4
+    register: result
+    failed_when: not result.changed
+
+  - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" present with same IP addresses again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        ip_address:
+        - "{{ ipv4_prefix + '.211' }}"
+        - fe80::20c:29ff:fe02:a1b3
+        - "{{ ipv4_prefix + '.221' }}"
+        - fe80::20c:29ff:fe02:a1b4
+      - name: "{{ host2_fqdn }}"
+        ip_address:
+        - "{{ ipv4_prefix + '.211' }}"
+        - fe80::20c:29ff:fe02:a1b3
+        - "{{ ipv4_prefix + '.221' }}"
+        - fe80::20c:29ff:fe02:a1b4
+    register: result
+    failed_when: result.changed
+
+  - name: Hosts "{{ host3_fqdn }}" present with same IP addresses
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: "{{ host3_fqdn }}"
+        ip_address:
+        - "{{ ipv4_prefix + '.211' }}"
+        - fe80::20c:29ff:fe02:a1b3
+        - "{{ ipv4_prefix + '.221' }}"
+        - fe80::20c:29ff:fe02:a1b4
+    register: result
+    failed_when: not result.changed
+
+  - name: Hosts "{{ host3_fqdn }}" present with same IP addresses again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: "{{ host3_fqdn }}"
+        ip_address:
+        - "{{ ipv4_prefix + '.211' }}"
+        - fe80::20c:29ff:fe02:a1b3
+        - "{{ ipv4_prefix + '.221' }}"
+        - fe80::20c:29ff:fe02:a1b4
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host3_fqdn }}" present with differnt IP addresses
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: "{{ host3_fqdn }}"
+        ip_address:
+        - "{{ ipv4_prefix + '.111' }}"
+        - fe80::20c:29ff:fe02:a1b1
+        - "{{ ipv4_prefix + '.121' }}"
+        - fe80::20c:29ff:fe02:a1b2
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host3_fqdn }}" present with different IP addresses again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: "{{ host3_fqdn }}"
+        ip_address:
+        - "{{ ipv4_prefix + '.111' }}"
+        - fe80::20c:29ff:fe02:a1b1
+        - "{{ ipv4_prefix + '.121' }}"
+        - fe80::20c:29ff:fe02:a1b2
+    register: result
+    failed_when: result.changed
+
+  - name: Host "{{ host3_fqdn }}" present with old IP addresses
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: "{{ host3_fqdn }}"
+        ip_address:
+        - "{{ ipv4_prefix + '.211' }}"
+        - fe80::20c:29ff:fe02:a1b3
+        - "{{ ipv4_prefix + '.221' }}"
+        - fe80::20c:29ff:fe02:a1b4
+    register: result
+    failed_when: not result.changed
+
+  - name: Host "{{ host3_fqdn }}" present with old IP addresses again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: "{{ host3_fqdn }}"
+        ip_address:
+        - "{{ ipv4_prefix + '.211' }}"
+        - fe80::20c:29ff:fe02:a1b3
+        - "{{ ipv4_prefix + '.221' }}"
+        - fe80::20c:29ff:fe02:a1b4
+    register: result
+    failed_when: result.changed
+
+  - name: Absent host01.ihavenodns.info test
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: host01.ihavenodns.info
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Host absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      - "{{ host3_fqdn }}"
+      update_dns: yes
+      state: absent

@@ -57,13 +57,13 @@ author:
 EXAMPLES = """
 # Ensure sudocmd is present
 - ipacommand:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: su
     state: present
 
 # Ensure sudocmd is absent
 - ipacommand:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: su
     state: absent
 """
@@ -97,7 +97,7 @@ def find_sudocmd(module, name):
 def gen_args(description):
     _args = {}
     if description is not None:
-        _args["description"] = description
+        _args["description"] = to_text(description)
 
     return _args
 

@@ -153,9 +153,12 @@ options:
         required: false
         aliases: ["ipasshpubkey"]
       userauthtype:
-        description: List of supported user authentication types
-        choices=['password', 'radius', 'otp']
+        description:
+          List of supported user authentication types
+          Use empty string to reset userauthtype to the initial value.
+        choices=['password', 'radius', 'otp', '']
         required: false
+        aliases: ["ipauserauthtype"]
       userclass:
         description:
         - User category
@@ -310,9 +313,12 @@ options:
     required: false
     aliases: ["ipasshpubkey"]
   userauthtype:
-    description: List of supported user authentication types
-    choices=['password', 'radius', 'otp']
+    description:
+      List of supported user authentication types
+      Use empty string to reset userauthtype to the initial value.
+    choices=['password', 'radius', 'otp', '']
     required: false
+    aliases: ["ipauserauthtype"]
   userclass:
     description:
     - User category
@@ -386,7 +392,7 @@ author:
 EXAMPLES = """
 # Create user pinky
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky
     first: pinky
     last: Acme
@@ -400,39 +406,39 @@ EXAMPLES = """
 
 # Create user brain
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: brain
     first: brain
     last: Acme
 
 # Delete user pinky, but preserved
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky
     preserve: yes
     state: absent
 
 # Undelete user pinky
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky
     state: undeleted
 
 # Disable user pinky
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky,brain
     state: disabled
 
 # Enable user pinky and brain
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky,brain
     state: enabled
 
 # Remove user pinky and brain
 - ipauser:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: pinky,brain
     state: disabled
 """
@@ -460,7 +466,8 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, date_format, \
-    compare_args_ipa, module_params_get, api_check_param, api_get_realm
+    compare_args_ipa, module_params_get, api_check_param, api_get_realm, \
+    api_command_no_name
 import six
 
 
@@ -646,6 +653,14 @@ def check_parameters(module, state, action,
                     module.fail_json(msg="certmapdata: subject is missing")
 
 
+def extend_emails(email, default_email_domain):
+    if email is not None:
+        return [ "%s@%s" % (_email, default_email_domain)
+                 if "@" not in _email else _email
+                 for _email in email]
+    return email
+
+
 def gen_certmapdata_args(certmapdata):
     certificate = certmapdata.get("certificate")
     issuer = certmapdata.get("issuer")
@@ -701,7 +716,7 @@ def main():
                        default=None),
         userauthtype=dict(type='list', aliases=["ipauserauthtype"],
                           default=None,
-                          choices=['password', 'radius', 'otp']),
+                          choices=['password', 'radius', 'otp', '']),
         userclass=dict(type="list", aliases=["class"],
                        default=None),
         radius=dict(type="str", aliases=["ipatokenradiusconfiglink"],
@@ -845,13 +860,6 @@ def main():
         if names is not None and len(names) != 1:
             ansible_module.fail_json(
                 msg="Only one user can be added at a time using name.")
-        if action != "member":
-            # Only check first and last here if names is set
-            if names is not None:
-                if first is None:
-                    ansible_module.fail_json(msg="First name is needed")
-                if last is None:
-                    ansible_module.fail_json(msg="Last name is needed")
 
     check_parameters(
         ansible_module, state, action,
@@ -882,6 +890,17 @@ def main():
         # Check version specific settings
 
         server_realm = api_get_realm()
+
+        # Default email domain
+
+        result = api_command_no_name(ansible_module, "config_show", {})
+        default_email_domain = result["result"]["ipadefaultemaildomain"][0]
+
+        # Extend email addresses
+
+        email = extend_emails(email, default_email_domain)
+
+        # commands
 
         commands = []
 
@@ -949,6 +968,10 @@ def main():
                     certmapdata, noprivate, nomembers, preserve,
                     update_password)
 
+                # Extend email addresses
+
+                email = extend_emails(email, default_email_domain)
+
             elif isinstance(user, str) or isinstance(user, unicode):
                 name = user
             else:
@@ -1011,6 +1034,13 @@ def main():
                         if "noprivate" in args:
                             del args["noprivate"]
 
+                        # Ignore userauthtype if it is empty (for resetting)
+                        # and not set in for the user
+                        if "ipauserauthtype" not in res_find and \
+                           "ipauserauthtype" in args and \
+                           args["ipauserauthtype"] == ['']:
+                            del args["ipauserauthtype"]
+
                         # For all settings is args, check if there are
                         # different settings in the find result.
                         # If yes: modify
@@ -1019,6 +1049,14 @@ def main():
                             commands.append([name, "user_mod", args])
 
                     else:
+                        # Make sure we have a first and last name
+                        if first is None:
+                            ansible_module.fail_json(
+                                msg="First name is needed")
+                        if last is None:
+                            ansible_module.fail_json(
+                                msg="Last name is needed")
+
                         commands.append([name, "user_add", args])
 
                     # Handle members: principal, manager, certificate and

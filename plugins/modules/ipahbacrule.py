@@ -103,52 +103,52 @@ author:
 EXAMPLES = """
 # Ensure HBAC Rule allhosts is present
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: allhosts
     usercategory: all
 
 # Ensure host server is present in HBAC Rule allhosts
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: allhosts
     host: server
     action: member
 
 # Ensure HBAC Rule sshd-pinky is present
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     hostcategory: all
 
 # Ensure user pinky is present in HBAC Rule sshd-pinky
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     user: pinky
     action: member
 
 # Ensure HBAC service sshd is present in HBAC Rule sshd-pinky
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     hbacsvc: sshd
     action: member
 
 # Ensure HBAC Rule sshd-pinky is disabled
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     state: disabled
 
 # Ensure HBAC Rule sshd-pinky is enabled
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     state: enabled
 
 # Ensure HBAC Rule sshd-pinky is absent
 - ipahbacrule:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: sshd-pinky
     state: absent
 """
@@ -344,41 +344,41 @@ def main():
                     # Generate addition and removal lists
                     host_add = list(
                         set(host or []) -
-                        set(res_find.get("member_host", [])))
+                        set(res_find.get("memberhost_host", [])))
                     host_del = list(
-                        set(res_find.get("member_host", [])) -
+                        set(res_find.get("memberhost_host", [])) -
                         set(host or []))
                     hostgroup_add = list(
                         set(hostgroup or []) -
-                        set(res_find.get("member_hostgroup", [])))
+                        set(res_find.get("memberhost_hostgroup", [])))
                     hostgroup_del = list(
-                        set(res_find.get("member_hostgroup", [])) -
+                        set(res_find.get("memberhost_hostgroup", [])) -
                         set(hostgroup or []))
 
                     hbacsvc_add = list(
                         set(hbacsvc or []) -
-                        set(res_find.get("member_hbacsvc", [])))
+                        set(res_find.get("memberservice_hbacsvc", [])))
                     hbacsvc_del = list(
-                        set(res_find.get("member_hbacsvc", [])) -
+                        set(res_find.get("memberservice_hbacsvc", [])) -
                         set(hbacsvc or []))
                     hbacsvcgroup_add = list(
                         set(hbacsvcgroup or []) -
-                        set(res_find.get("member_hbacsvcgroup", [])))
+                        set(res_find.get("memberservice_hbacsvcgroup", [])))
                     hbacsvcgroup_del = list(
-                        set(res_find.get("member_hbacsvcgroup", [])) -
+                        set(res_find.get("memberservice_hbacsvcgroup", [])) -
                         set(hbacsvcgroup or []))
 
                     user_add = list(
                         set(user or []) -
-                        set(res_find.get("member_user", [])))
+                        set(res_find.get("memberuser_user", [])))
                     user_del = list(
-                        set(res_find.get("member_user", [])) -
+                        set(res_find.get("memberuser_user", [])) -
                         set(user or []))
                     group_add = list(
                         set(group or []) -
-                        set(res_find.get("member_group", [])))
+                        set(res_find.get("memberuser_group", [])))
                     group_del = list(
-                        set(res_find.get("member_group", [])) -
+                        set(res_find.get("memberuser_group", [])) -
                         set(group or []))
 
                     # Add hosts and hostgroups

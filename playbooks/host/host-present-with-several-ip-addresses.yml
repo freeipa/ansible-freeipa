@@ -1,0 +1,24 @@
+---
+- name: Host present with several IP addresses
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure host is present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: host01.example.com
+      description: Example host
+      ip_address:
+      - 192.168.0.123
+      - fe80::20c:29ff:fe02:a1b3
+      - 192.168.0.124
+      - fe80::20c:29ff:fe02:a1b4
+      locality: Lab
+      ns_host_location: Lab
+      ns_os_version: CentOS 7
+      ns_hardware_platform: Lenovo T61
+      mac_address:
+      - "08:00:27:E3:B1:2D"
+      - "52:54:00:BD:97:1E"
+      state: present

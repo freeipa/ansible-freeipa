@@ -98,7 +98,7 @@ author:
 EXAMPLES = """
 # Ensure pwpolicy is set for ops
 - ipapwpolicy:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: ops
     minlife: 7
     maxlife: 49
@@ -167,7 +167,7 @@ def main():
             ipaadmin_password=dict(type="str", required=False, no_log=True),
 
             name=dict(type="list", aliases=["cn"], default=None,
-                      required=True),
+                      required=False),
             # present
 
             maxlife=dict(type="int", aliases=["krbmaxpwdlife"], default=None),
@@ -218,6 +218,9 @@ def main():
 
     # Check parameters
 
+    if names is None:
+        names = ["global_policy"]
+
     if state == "present":
         if len(names) != 1:
             ansible_module.fail_json(
@@ -225,8 +228,10 @@ def main():
 
     if state == "absent":
         if len(names) < 1:
+            ansible_module.fail_json(msg="No name given.")
+        if "global_policy" in names:
             ansible_module.fail_json(
-                msg="No name given.")
+                msg="'global_policy' can not be made absent.")
         invalid = ["maxlife", "minlife", "history", "minclasses",
                    "minlength", "priority", "maxfail", "failinterval",
                    "lockouttime"]

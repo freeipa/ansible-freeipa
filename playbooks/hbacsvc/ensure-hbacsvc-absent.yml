@@ -7,6 +7,6 @@
   tasks:
   - name: Ensure HBAC Services for http and tftp are absent
     ipahbacsvc:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: http,tftp
       state: absent

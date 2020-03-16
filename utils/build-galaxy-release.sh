@@ -35,7 +35,7 @@ done
 
 #git diff
 
-mazer build
+ansible-galaxy collection build
 
 rm plugins/module_utils/ansible_ipa_*
 rm plugins/modules/ipaserver_*

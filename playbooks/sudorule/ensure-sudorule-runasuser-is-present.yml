@@ -1,0 +1,13 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure sudorule is present with the given order.
+  - ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      runasuser: admin
+      action: member

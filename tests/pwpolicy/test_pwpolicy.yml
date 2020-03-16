@@ -1,14 +1,34 @@
 ---
-- name: Tests
+- name: Test pwpolicy
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
+  - name: Ensure maxlife of 90 for global_policy
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      maxlife: 90
+
+  - name: Ensure absence of group ops
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      state: absent
+
+  - name: Ensure absence of pwpolicies for group ops
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      state: absent
+
   - name: Ensure presence of group ops
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: ops
+      state: present
+    register: result
+    failed_when: not result.changed
 
   - name: Ensure presence of pwpolicies for group ops
     ipapwpolicy:
@@ -42,11 +62,40 @@
     register: result
     failed_when: result.changed
 
+  - name: Ensure maxlife of 49 for global_policy
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      maxlife: 49
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure maxlife of 49 for global_policy again
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      maxlife: 49
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure absence of pwpoliciy global_policy will fail
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      state: absent
+    register: result
+    ignore_errors: True
+    failed_when: result is defined and result
+
   - name: Ensure absence of pwpolicies for group ops
     ipapwpolicy:
       ipaadmin_password: SomeADMINpassword
       name: ops
       state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure maxlife of 90 for global_policy
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      maxlife: 90
     register: result
     failed_when: not result.changed
 

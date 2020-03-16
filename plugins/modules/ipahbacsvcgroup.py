@@ -69,14 +69,14 @@ author:
 EXAMPLES = """
 # Ensure hbacsvcgroup login is present
 - ipahbacsvcgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: login
     hbacsvc:
     - sshd
 
 # Ensure hbacsvc sshd is present in existing login hbacsvcgroup
 - ipahbacsvcgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: databases
     hbacsvc:
     - sshd
@@ -84,7 +84,7 @@ EXAMPLES = """
 
 # Ensure hbacsvc sshd is abdsent in existing login hbacsvcgroup
 - ipahbacsvcgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: databases
     hbacsvc:
     - sshd
@@ -93,7 +93,7 @@ EXAMPLES = """
 
 # Ensure hbacsvcgroup login is absent
 - ipahbacsvcgroup:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: login
     state: absent
 """

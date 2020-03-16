@@ -42,8 +42,7 @@ Requirements
 Limitations
 -----------
 
-External signed CA
-
+**External signed CA**
 External signed CA is now supported. But the currently needed two step process is an issue for the processing in a simple playbook.
 
 Work is planned to have a new method to handle CSR for external signed CAs in a separate step before starting the server installation.
@@ -54,57 +53,70 @@ Usage
 
 Example inventory file with fixed domain and realm, setting up of the DNS server and using forwarders from /etc/resolv.conf:
 
-    [ipaserver]
-    ipaserver2.example.com
-    
-    [ipaserver:vars]
-    ipaserver_domain=example.com
-    ipaserver_realm=EXAMPLE.COM
-    ipaserver_setup_dns=yes
-    ipaserver_auto_forwarders=yes
+```ini
+[ipaserver]
+ipaserver2.example.com
+
+[ipaserver:vars]
+ipaserver_domain=example.com
+ipaserver_realm=EXAMPLE.COM
+ipaserver_setup_dns=yes
+ipaserver_auto_forwarders=yes
+```
 
 Example playbook to setup the IPA server using admin and dirman passwords from an [Ansible Vault](http://docs.ansible.com/ansible/latest/playbooks_vault.html) file:
 
-    - name: Playbook to configure IPA server
-      hosts: ipaserver
-      become: true
-      vars_files:
-      - playbook_sensitive_data.yml
-    
-      roles:
-      - role: ipaserver
-        state: present
+```yaml
+---
+- name: Playbook to configure IPA server
+  hosts: ipaserver
+  become: true
+  vars_files:
+  - playbook_sensitive_data.yml
+
+  roles:
+  - role: ipaserver
+    state: present
+```
 
 Example playbook to unconfigure the IPA client(s) using principal and password from inventory file:
 
-    - name: Playbook to unconfigure IPA server
-      hosts: ipaserver
-      become: true
-    
-      roles:
-      - role: ipaserver
-        state: absent
+```yaml
+---
+- name: Playbook to unconfigure IPA server
+  hosts: ipaserver
+  become: true
+
+  roles:
+  - role: ipaserver
+    state: absent
+```
 
 Example inventory file with fixed domain, realm, admin and dirman passwords:
 
-    [ipaserver]
-    ipaserver.example.com
-    
-    [ipaserver:vars]
-    ipaserver_domain=example.com
-    ipaserver_realm=EXAMPLE.COM
-    ipaadmin_password=MySecretPassword123
-    ipadm_password=MySecretPassword234
+```ini
+[ipaserver]
+ipaserver.example.com
+
+[ipaserver:vars]
+ipaserver_domain=example.com
+ipaserver_realm=EXAMPLE.COM
+ipaadmin_password=MySecretPassword123
+ipadm_password=MySecretPassword234
+```
 
 Example playbook to setup the IPA server using admin and dirman passwords from inventory file:
 
-    - name: Playbook to configure IPA server
-      hosts: ipaserver
-      become: true
-    
-      roles:
-      - role: ipaserver
-        state: present
+```yaml
+---
+- name: Playbook to configure IPA server
+  hosts: ipaserver
+  become: true
+
+  roles:
+  - role: ipaserver
+    state: present
+```
 
 Example playbook to setup the IPA primary with external signed CA using the previous inventory file:
 
@@ -135,6 +147,7 @@ Sign with CA: This is up to you
 Server installation step 2: Copy `<ipaserver hostname>-chain.crt` to the IPA server and continue with installation of the primary.
 
 ```yaml
+---
 - name: Playbook to configure IPA server step3
   hosts: ipaserver
   become: true

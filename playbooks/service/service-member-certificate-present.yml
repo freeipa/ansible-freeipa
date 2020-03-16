@@ -1,0 +1,15 @@
+---
+- name: Service certificate present.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure service certificate is present
+  - ipaservice:
+      ipaadmin_password: MyPassword123
+      name: HTTP/www.example.com
+      certificate:
+        - MIICBjCCAW8CFHnm32VcXaUDGfEGdDL/erPSijUAMA0GCSqGSIb3DQEBCwUAMEIxCzAJBgNVBAYTAlhYMRUwEwYDVQQHDAxEZWZhdWx0IENpdHkxHDAaBgNVBAoME0RlZmF1bHQgQ29tcGFueSBMdGQwHhcNMjAwMTIzMDA1NjQ2WhcNMjEwMTIyMDA1NjQ2WjBCMQswCQYDVQQGEwJYWDEVMBMGA1UEBwwMRGVmYXVsdCBDaXR5MRwwGgYDVQQKDBNEZWZhdWx0IENvbXBhbnkgTHRkMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDYrdVmsr7iT3f67DM5bb1osSEe5/c91UUMEIcFq5wrgBhzVfs8iIMDVC1yiUGTsDLJNJc4nb1tUxeR9K5fh25E6n/eWDBP75NStotjAXRU4Ahi3FNRhWFOKesds5xNqgDk5/dY8UekJv2yUblQuZzeF8b2XFrmHuCaYuFctzPfWwIDAQABMA0GCSqGSIb3DQEBCwUAA4GBACF+5RS8Ce0HRixGPu4Xd51i+Kzblg++lx8fDJ8GW5G16/Z1AsB72Hc7etJL2PksHlue/xCq6SA9fIfHc4TBNCiWjPSP1NhHJeYyoPiSkcYsqXuxWyoyRLbnAhBVvhoiqZbUt3u3tGB0uMMA0yJvj07mP7Nea2KdBYVH8X1pM0V+
+      action: member
+      state: present

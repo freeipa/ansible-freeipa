@@ -6,7 +6,7 @@
   tasks:
   - name: Hosts host01.exmaple.com and host02.exmaple.com member principals host/testhost0X.exmaple.com absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: host01.exmaple.com
         principal:

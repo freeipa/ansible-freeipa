@@ -6,7 +6,7 @@
   tasks:
   - name: Add user member brain to group sysops
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: sysops
       action: member
       user:

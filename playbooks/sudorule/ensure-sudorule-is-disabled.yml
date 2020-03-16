@@ -6,6 +6,6 @@
   tasks:
   # Ensure sudorule command is disabled
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: disabled

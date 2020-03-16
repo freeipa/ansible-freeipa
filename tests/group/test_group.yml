@@ -1,5 +1,5 @@
 ---
-- name: Tests
+- name: Test group
   hosts: ipaserver
   become: true
   gather_facts: false
@@ -7,19 +7,19 @@
   tasks:
   - name: Ensure users user1, user2 and user3 are absent
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: user1,user2,user3
       state: absent
 
   - name: Ensure group group3, group2 and group1 are absent
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group3,group2,group1
       state: absent
 
   - name: Ensure users user1..user3 are present
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       users:
       - name: user1
         first: user1
@@ -35,49 +35,49 @@
 
   - name: Ensure group1 is present
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1
     register: result
     failed_when: not result.changed
 
   - name: Ensure group1 is present again
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1
     register: result
     failed_when: result.changed
 
   - name: Ensure group2 is present
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group2
     register: result
     failed_when: not result.changed
 
   - name: Ensure group2 is present again
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group2
     register: result
     failed_when: result.changed
 
   - name: Ensure group3 is present
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group3
     register: result
     failed_when: not result.changed
 
   - name: Ensure group3 is present again
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group3
     register: result
     failed_when: result.changed
 
   - name: Ensure groups group2 and group3 are present in group group1
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1
       group:
       - group2
@@ -88,7 +88,7 @@
 
   - name: Ensure groups group2 and group3 are present in group group1 again
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1
       group:
       - group2
@@ -99,7 +99,7 @@
 
   - name: Ensure group3 ia present in group group1
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1
       group:
       - group3
@@ -109,7 +109,7 @@
 
   - name: Ensure users user1, user2 and user3 are present in group group1
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1
       user:
       - user1
@@ -121,7 +121,7 @@
 
   - name: Ensure users user1, user2 and user3 are present in group group1 again
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1
       user:
       - user1
@@ -132,7 +132,7 @@
     failed_when: result.changed
 
   #- ipagroup:
-  #    ipaadmin_password: MyPassword123
+  #    ipaadmin_password: SomeADMINpassword
   #    name: group1
   #    user:
   #    - user7
@@ -140,7 +140,7 @@
 
   - name: Ensure user user7 is absent in group group1
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group1
       user:
       - user7
@@ -151,7 +151,7 @@
 
   - name: Ensure group group4 is absent
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group4
       state: absent
     register: result
@@ -159,7 +159,7 @@
 
   - name: Ensure group group3, group2 and group1 are absent
     ipagroup:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: group3,group2,group1
       state: absent
     register: result
@@ -167,7 +167,7 @@
 
   - name: Ensure users user1, user2 and user3 are absent
     ipauser:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: user1,user2,user3
       state: absent
     register: result

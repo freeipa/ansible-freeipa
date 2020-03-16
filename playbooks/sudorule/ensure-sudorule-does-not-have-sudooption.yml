@@ -1,0 +1,14 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure sudooption is absent in sudorule
+  - ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      sudooption: "!root"
+      action: member
+      state: absent

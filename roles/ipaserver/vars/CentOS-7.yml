@@ -3,3 +3,4 @@
 ipaserver_packages: [ "ipa-server", "libselinux-python" ]
 ipaserver_packages_dns: [ "ipa-server-dns" ]
 ipaserver_packages_adtrust: [ "ipa-server-trust-ad" ]
+ipaserver_packages_firewalld: [ "firewalld" ]

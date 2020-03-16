@@ -1,0 +1,13 @@
+---
+- name: Playbook to manage IPA service.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure service is present
+  - ipaservice:
+      ipaadmin_password: MyPassword123
+      name: HTTP/ihavenodns.info
+      force: yes
+      # state: absent

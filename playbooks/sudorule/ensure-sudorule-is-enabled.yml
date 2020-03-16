@@ -6,6 +6,6 @@
   tasks:
   # Ensure sudorule command is enabled
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: enabled

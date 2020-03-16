@@ -6,7 +6,9 @@
   tasks:
   # Ensure sudorule command is present
   - ipasudorule:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       description: A test sudo rule.
+      allow_sudocmd: /bin/ls
+      deny_sudocmd: /bin/vim
       state: present

@@ -16,7 +16,7 @@
 
   - name: Test hosts absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
@@ -25,7 +25,7 @@
 
   - name: Host "{{ host1_fqdn }}" present with random password
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       random: yes
       force: yes
@@ -43,14 +43,14 @@
 
   - name: Host "{{ host1_fqdn }}" absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       state: absent
 
   - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" present with random password
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       hosts:
       - name: "{{ host1_fqdn }}"
         random: yes
@@ -79,7 +79,7 @@
 
   - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" absent
     ipahost:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
