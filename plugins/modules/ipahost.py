@@ -1197,13 +1197,14 @@ def main():
                     host_name = name[:name.find(".")]
 
                     _args = {"idnsname": host_name}
-                    if reverse is not None:
-                        _args["a_extra_create_reverse"] = reverse
-                        _args["aaaa_extra_create_reverse"] = reverse
                     if len(dnsrecord_a_add) > 0:
                         _args["arecord"] = dnsrecord_a_add
+                        if reverse is not None:
+                            _args["a_extra_create_reverse"] = reverse
                     if len(dnsrecord_aaaa_add) > 0:
                         _args["aaaarecord"] = dnsrecord_aaaa_add
+                        if reverse is not None:
+                            _args["aaaa_extra_create_reverse"] = reverse
 
                     commands.append([domain_name,
                                      "dnsrecord_add", _args])
