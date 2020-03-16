@@ -14,7 +14,7 @@ On Fedora those can be installed with the following command: `dnf install vagran
 
 While virtualbox provider should also work this test environment is only tested and mainteined for libvirt.
 
-To use libvirt as providers you can use the variables:
+To use libvirt as provider you can use the variables:
 
 ```
 VAGRANT_DEFAULT_PROVIDER="libvirt"
@@ -29,21 +29,13 @@ The topology implemented by the vagrant file consists of:
 
 * 1 - Controller (a vagrant box where ansible will be called from);
 * 1 - IPA server
-* 1 - IPA replica
-* 2 - IPA clients
 
 
 ## Provisioning the VMs
 
-Before provisioning the IPA boxes you need to spin the controller box with  `vagrant up controller`.
+Before running the tests you will need to spin the controller and server boxes with  `vagrant up`.
 
-With the controller in hands you will need to provision your IPA server using `vagrant up server`. Make sure you don't provision any clients before that because provision will fail.
-
-To provision the clients you'll need to use `vagrant up client1` and `vagrant up client2`.
-
-Finally to provision the replica you can use `vagrant up replica`.
-
-After you have all machines started you will be able to install your IPA cluster running: `./vagrant-install-ipa.sh`
+After you have the machines started you will be able to install your IPA cluster running: `./vagrant-install-ipa.sh`
 
 
 ## Running the tests
