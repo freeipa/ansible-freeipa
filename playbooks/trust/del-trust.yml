@@ -1,0 +1,10 @@
+---
+- name: Playbook to delete trust
+  hosts: ipaserver
+  become: true
+
+  tasks:
+    - name: ensure the trust is absent
+      ipatrust:
+        realm: windows.local
+        state: absent
