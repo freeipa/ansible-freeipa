@@ -259,15 +259,18 @@ if NUM_VERSION >= 40400:
         sssd_enable_ifp = None
 
     logger = logging.getLogger("ipa-client-install")
-    standard_logging_setup(
-        paths.IPACLIENT_INSTALL_LOG, verbose=False, debug=False,
-        filemode='a', console_format='%(message)s')
     root_logger = logger
 
 else:
     # IPA version < 4.4
 
     raise Exception("freeipa version '%s' is too old" % VERSION)
+
+
+def setup_logging():
+    standard_logging_setup(
+        paths.IPACLIENT_INSTALL_LOG, verbose=False, debug=False,
+        filemode='a', console_format='%(message)s')
 
 
 def ansible_module_get_parsed_ip_addresses(ansible_module,

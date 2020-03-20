@@ -144,10 +144,13 @@ else:
 
 
 logger = logging.getLogger("ipa-server-install")
-# logger.setLevel(logging.DEBUG)
-standard_logging_setup(
-    paths.IPASERVER_INSTALL_LOG, verbose=False, debug=False,
-    filemode='a', console_format='%(message)s')
+
+
+def setup_logging():
+    # logger.setLevel(logging.DEBUG)
+    standard_logging_setup(
+        paths.IPASERVER_INSTALL_LOG, verbose=False, debug=False,
+        filemode='a', console_format='%(message)s')
 
 
 @contextlib_contextmanager

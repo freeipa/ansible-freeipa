@@ -157,7 +157,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, options, sysrestore, paths,
+    AnsibleModuleLog, setup_logging, options, sysrestore, paths,
     ansible_module_get_parsed_ip_addresses,
     redirect_stdout, adtrust, api, default_subject_base,
     default_ca_subject_dn, ipautil, installutils, ca, kra, dns,
@@ -219,6 +219,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # initialize return values for flake ############################

@@ -160,7 +160,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, options, sysrestore, paths,
+    AnsibleModuleLog, setup_logging, options, sysrestore, paths,
     ansible_module_get_parsed_ip_addresses,
     api_Backend_ldap2, redirect_stdout, ca, installutils, ds_init_info,
     custodiainstance, write_cache, x509
@@ -214,6 +214,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # set values ############################################################

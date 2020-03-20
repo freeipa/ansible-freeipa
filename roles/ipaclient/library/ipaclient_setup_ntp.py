@@ -67,6 +67,7 @@ import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
+    setup_logging,
     options, sysrestore, paths, sync_time, logger, ipadiscovery,
     timeconf
 )
@@ -89,6 +90,8 @@ def main():
     )
 
     # module._ansible_debug = True
+    setup_logging()
+
     options.ntp_servers = module.params.get('ntp_servers')
     options.ntp_pool = module.params.get('ntp_pool')
     options.no_ntp = module.params.get('no_ntp')

@@ -53,7 +53,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    options, paths, read_cache
+    setup_logging, options, paths, read_cache
 )
 
 
@@ -66,6 +66,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
 
     # set values ############################################################
 

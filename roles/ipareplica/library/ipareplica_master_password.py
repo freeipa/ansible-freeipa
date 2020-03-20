@@ -53,7 +53,7 @@ password:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
-    ipa_generate_password
+    setup_logging, ipa_generate_password
 )
 
 
@@ -67,6 +67,7 @@ def main():
     )
 
     module._ansible_debug = True
+    setup_logging()
 
     master_password = module.params.get('master_password')
 

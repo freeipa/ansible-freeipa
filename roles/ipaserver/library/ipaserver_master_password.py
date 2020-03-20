@@ -58,7 +58,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    options, paths, read_cache, ipa_generate_password
+    setup_logging, options, paths, read_cache, ipa_generate_password
 )
 
 
@@ -73,6 +73,7 @@ def main():
     )
 
     module._ansible_debug = True
+    setup_logging()
 
     options.dm_password = module.params.get('dm_password')
     options.master_password = module.params.get('master_password')

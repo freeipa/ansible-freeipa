@@ -95,7 +95,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
-    AnsibleModuleLog, installer, DN, paths,
+    AnsibleModuleLog, setup_logging, installer, DN, paths,
     gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
     gen_ReplicaConfig, gen_remote_api, api, redirect_stdout, custodiainstance
 )
@@ -126,6 +126,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # get parameters #

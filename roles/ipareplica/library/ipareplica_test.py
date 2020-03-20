@@ -131,7 +131,7 @@ import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
-    AnsibleModuleLog, options, installer, paths, sysrestore,
+    AnsibleModuleLog, setup_logging, options, installer, paths, sysrestore,
     ansible_module_get_parsed_ip_addresses, service,
     redirect_stdout, create_ipa_conf, ipautil,
     x509, validate_domain_name, common_check,
@@ -179,6 +179,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # get parameters #

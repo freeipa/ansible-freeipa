@@ -60,7 +60,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    options, configure_automount
+    setup_logging, options, configure_automount
 )
 
 
@@ -77,6 +77,8 @@ def main():
     # os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
 
     module._ansible_debug = True
+    setup_logging()
+
     options.servers = module.params.get('servers')
     options.server = options.servers
     options.sssd = module.params.get('sssd')
