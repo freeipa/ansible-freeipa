@@ -12,6 +12,7 @@ Features
 * One-time-password (OTP) support for client installation
 * Repair mode for clients
 * Modules for dns forwarder management
+* Modules for dns zone management
 * Modules for group management
 * Modules for hbacrule management
 * Modules for hbacsvc management
@@ -410,6 +411,7 @@ Modules in plugin/modules
 
 * [ipadnsconfig](README-dnsconfig.md)
 * [ipadnsforwardzone](README-dnsforwardzone.md)
+* [ipadnszone](README-dnszone.md)
 * [ipagroup](README-group.md)
 * [ipahbacrule](README-hbacrule.md)
 * [ipahbacsvc](README-hbacsvc.md)
@@ -425,3 +427,5 @@ Modules in plugin/modules
 * [ipatopologysuffix](README-topology.md)
 * [ipauser](README-user.md)
 * [ipavault](README-vault.md)
+
+If you want to write a new module please read [writing a new module](plugins/modules/README.md).

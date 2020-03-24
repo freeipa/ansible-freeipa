@@ -1,0 +1,10 @@
+- name: dnszone present
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure zone is present.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: present

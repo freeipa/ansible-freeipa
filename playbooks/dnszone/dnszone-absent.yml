@@ -1,0 +1,11 @@
+---
+- name: Playbook to ensure DNS zone is absent
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Remove zone.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: absent

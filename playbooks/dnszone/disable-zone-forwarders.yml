@@ -1,0 +1,11 @@
+---
+- name: Playbook to disable DNS zone forwarders
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Disable zone forwarders.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      forward_policy: none

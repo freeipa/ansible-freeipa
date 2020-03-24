@@ -1,0 +1,319 @@
+---
+- name: Test dnszone
+  hosts: ipaserver
+  become: true
+  gather_facts: true
+
+  tasks:
+
+  # Setup
+  - name: Ensure zone is absent.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: absent
+
+  # Tests
+  - name: Ensure zone is present.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_sync_ptr: true
+      dynamic_update: true
+      dnssec: true
+      allow_transfer:
+        - 1.1.1.1
+        - 2.2.2.2
+      allow_query:
+        - 1.1.1.1
+        - 2.2.2.2
+      serial: 1234
+      refresh: 3600
+      retry: 900
+      expire: 1209600
+      minimum: 3600
+      ttl: 60
+      default_ttl: 60
+      name_server: ipaserver.test.local.
+      skip_nameserver_check: true
+      admin_email: admin@example.com
+      nsec3param_rec: "1 7 100 abcd"
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Set serial to 1234, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      serial: 1234
+    register: result
+    failed_when: result.changed
+
+  - name: Set different nsec3param_rec.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      nsec3param_rec: "2 8 200 abcd"
+    register: result
+    failed_when: not result.changed
+
+  - name: Set same nsec3param_rec.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      nsec3param_rec: "2 8 200 abcd"
+    register: result
+    failed_when: result.changed
+
+  - name: Set default_ttl to 1200
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      default_ttl: 1200
+    register: result
+    failed_when: not result.changed
+
+  - name: Set default_ttl to 1200, again
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      default_ttl: 1200
+    register: result
+    failed_when: result.changed
+
+  - name: Set ttl to 900
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      ttl: 900
+    register: result
+    failed_when: not result.changed
+
+  - name: Set ttl to 900, again
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      ttl: 900
+    register: result
+    failed_when: result.changed
+
+  - name: Set minimum to 1000
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      minimum: 1000
+    register: result
+    failed_when: not result.changed
+
+  - name: Set minimum to 1000, again
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      minimum: 1000
+    register: result
+    failed_when: result.changed
+
+  - name: Set expire to 1209601
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      expire: 1209601
+    register: result
+    failed_when: not result.changed
+
+  - name: Set expire to 1209601, again
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      expire: 1209601
+    register: result
+    failed_when: result.changed
+
+  - name: Set retry to 1200.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      retry: 1200
+    register: result
+    failed_when: not result.changed
+
+  - name: Set retry to 1200, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      retry: 1200
+    register: result
+    failed_when: result.changed
+
+  - name: Set refresh to 4000.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      refresh: 4000
+    register: result
+    failed_when: not result.changed
+
+  - name: Set refresh to 4000, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      refresh: 4000
+    register: result
+    failed_when: result.changed
+
+  - name: Set serial to 12345.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      serial: 12345
+    register: result
+    failed_when: not result.changed
+
+  - name: Set serial to 12345, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      serial: 12345
+    register: result
+    failed_when: result.changed
+
+  - name: Set dnssec to false.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      dnssec: false
+    register: result
+    failed_when: not result.changed
+
+  - name: Set dnssec to false, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      dnssec: false
+    register: result
+    failed_when: result.changed
+
+  - name: Set allow_sync_ptr to false.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_sync_ptr: false
+    register: result
+    failed_when: not result.changed
+
+  - name: Set allow_sync_ptr to false, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_sync_ptr: false
+    register: result
+    failed_when: result.changed
+
+  - name: Set dynamic_update to false.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      dynamic_update: false
+    register: result
+    failed_when: not result.changed
+
+  - name: Set dynamic_update to false, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      dynamic_update: false
+    register: result
+    failed_when: result.changed
+
+  - name: Update allow_transfer.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_transfer:
+        - 1.1.1.1
+        - 2.2.2.2
+        - 3.3.3.3
+    register: result
+    failed_when: not result.changed
+
+  - name: Update allow_transfer, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_transfer:
+        - 1.1.1.1
+        - 2.2.2.2
+        - 3.3.3.3
+    register: result
+    failed_when: result.changed
+
+  - name: Remove allow transfer.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_transfer: []
+    register: result
+    failed_when: not result.changed
+
+  - name: Remove allow transfer, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_transfer: []
+    register: result
+    failed_when: result.changed
+
+  - name: Update allow_query.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_query:
+        - 1.1.1.1
+        - 2.2.2.2
+        - 3.3.3.3
+    register: result
+    failed_when: not result.changed
+
+  - name: Update allow_query, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_query:
+        - 1.1.1.1
+        - 2.2.2.2
+        - 3.3.3.3
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure allow query is empty.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_query: []
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure allow query is empty, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_query: []
+    register: result
+    failed_when: result.changed
+
+  - name: Update admin email.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      admin_email: admin2@example.com
+    register: result
+    failed_when: not result.changed
+
+  - name: Update admin email, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      admin_email: admin2@example.com
+    register: result
+    failed_when: result.changed

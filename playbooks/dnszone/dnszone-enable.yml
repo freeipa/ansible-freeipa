@@ -1,0 +1,11 @@
+---
+- name: Playbook to enable DNS zone
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Enable zone.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: enabled

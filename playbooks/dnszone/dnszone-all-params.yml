@@ -1,0 +1,35 @@
+- name: dnszone present
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure zone is present.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      allow_sync_ptr: true
+      dynamic_update: true
+      dnssec: true
+      allow_transfer:
+        - 1.1.1.1
+        - 2.2.2.2
+      allow_query:
+        - 1.1.1.1
+        - 2.2.2.2
+      forwarders:
+        - ip_address: 8.8.8.8
+        - ip_address: 8.8.4.4
+          port: 52
+      #serial: 1234
+      refresh: 3600
+      retry: 900
+      expire: 1209600
+      minimum: 3600
+      ttl: 60
+      default_ttl: 90
+      name_server: ipaserver.test.local.
+      admin_email: admin.admin@example.com
+      nsec3param_rec: "1 7 100 0123456789abcdef"
+      skip_overlap_check: true
+      skip_nameserver_check: true
+      state: present
