@@ -211,6 +211,7 @@ import inspect
 import random
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils._text import to_native
 from ansible.module_utils.ansible_ipa_server import (
     AnsibleModuleLog, setup_logging, options, adtrust_imported, kra_imported,
     PKIIniLoader, MIN_DOMAIN_LEVEL, MAX_DOMAIN_LEVEL, check_zone_overlap,
@@ -584,7 +585,7 @@ def main():
                         "--auto-forwarders, or --no-forwarders options")
 
     except RuntimeError as e:
-        ansible_module.fail_json(msg=e)
+        ansible_module.fail_json(msg=to_native(e))
 
     # #######################################################################
 
