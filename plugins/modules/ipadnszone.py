@@ -38,6 +38,11 @@ options:
     description: The admin password
     required: false
 
+  name:
+    description: The zone name string.
+    required: true
+    type: str
+    alises: ["zone_name"]
   forwarders:
     description: The list of global DNS forwarders.
     required: false
@@ -71,10 +76,15 @@ options:
     description: Administrator e-mail address
     required: false
     type: str
-  update_policy: BIND update policy
-    description: Allow dynamic updates
+  update_policy:
+    description: BIND update policy
     required: false
     type: str
+  dynamic_update:
+    description: Allow dynamic updates
+    required: false
+    type: bool
+    alises: ["dynamicupdate"]
   dnssec:
     description: Allow inline DNSSEC signing of records in the zone
     required: false
@@ -415,7 +425,9 @@ def get_argument_spec():
         ),
         ipaadmin_principal=dict(type="str", default="admin"),
         ipaadmin_password=dict(type="str", required=False, no_log=True),
-        name=dict(type="str", default=None, required=True),
+        name=dict(
+            type="str", default=None, required=True, aliases=["zone_name"]
+        ),
         forwarders=dict(
             type="list",
             default=None,
@@ -432,7 +444,12 @@ def get_argument_spec():
         admin_email=dict(type="str", required=False, default=None),
         allow_sync_ptr=dict(type="bool", required=False, default=None),
         update_policy=dict(type="str", required=False, default=None),
-        dynamic_update=dict(type="bool", required=False, default=None),
+        dynamic_update=dict(
+            type="bool",
+            required=False,
+            default=None,
+            aliases=["dynamicupdate"],
+        ),
         dnssec=dict(type="bool", required=False, default=None),
         allow_transfer=dict(type="list", required=False, default=None),
         allow_query=dict(type="list", required=False, default=None),
