@@ -76,6 +76,7 @@ import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
+    setup_logging,
     paths, x509, NUM_VERSION, serialization, certdb, api,
     delete_persistent_client_session_data, write_tmp_file,
     ipa_generate_password, CalledProcessError, errors, disable_ra, DN,
@@ -95,6 +96,8 @@ def main():
     )
 
     module._ansible_debug = True
+    setup_logging()
+
     realm = module.params.get('realm')
     hostname = module.params.get('hostname')
     servers = module.params.get('servers')

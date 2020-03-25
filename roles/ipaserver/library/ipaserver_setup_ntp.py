@@ -56,7 +56,7 @@ import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, options, sysrestore, paths,
+    AnsibleModuleLog, setup_logging, options, sysrestore, paths,
     redirect_stdout, time_service, sync_time, ntpinstance, timeconf
 )
 
@@ -70,6 +70,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # set values ############################################################

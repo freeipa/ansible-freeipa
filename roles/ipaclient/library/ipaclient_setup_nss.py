@@ -138,6 +138,7 @@ import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
+    setup_logging,
     options, sysrestore, paths, ansible_module_get_parsed_ip_addresses,
     api, errors, create_ipa_nssdb, ipautil, ScriptError, CLIENT_INSTALL_ERROR,
     get_certs_from_ldap, DN, certstore, x509, logger, certdb,
@@ -179,6 +180,8 @@ def main():
     )
 
     module._ansible_debug = True
+    setup_logging()
+
     cli_server = module.params.get('servers')
     cli_realm = module.params.get('realm')
     hostname = module.params.get('hostname')

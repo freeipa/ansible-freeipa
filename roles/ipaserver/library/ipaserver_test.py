@@ -212,8 +212,8 @@ import random
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, options, adtrust_imported, kra_imported, PKIIniLoader,
-    MIN_DOMAIN_LEVEL, MAX_DOMAIN_LEVEL, check_zone_overlap,
+    AnsibleModuleLog, setup_logging, options, adtrust_imported, kra_imported,
+    PKIIniLoader, MIN_DOMAIN_LEVEL, MAX_DOMAIN_LEVEL, check_zone_overlap,
     redirect_stdout, validate_dm_password, validate_admin_password,
     NUM_VERSION, is_ipa_configured, sysrestore, paths, bindinstance,
     read_cache, ca, tasks, check_ldap_conf, timeconf, httpinstance,
@@ -302,6 +302,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # set values ############################################################

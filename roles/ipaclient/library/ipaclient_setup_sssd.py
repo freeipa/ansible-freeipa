@@ -101,7 +101,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    options, sysrestore, paths, configure_sssd_conf, logger
+    setup_logging, options, sysrestore, paths, configure_sssd_conf, logger
 )
 
 
@@ -130,6 +130,8 @@ def main():
     # options.set_logger(ansible_log)
 
     module._ansible_debug = True
+    setup_logging()
+
     cli_server = module.params.get('servers')
     cli_domain = module.params.get('domain')
     cli_realm = module.params.get('realm')

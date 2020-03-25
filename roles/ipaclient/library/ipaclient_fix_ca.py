@@ -67,6 +67,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
+    setup_logging,
     SECURE_PATH, paths, sysrestore, options, NUM_VERSION, get_ca_cert,
     get_ca_certs, errors
 )
@@ -83,6 +84,8 @@ def main():
     )
 
     module._ansible_debug = True
+    setup_logging()
+
     servers = module.params.get('servers')
     realm = module.params.get('realm')
     basedn = module.params.get('basedn')

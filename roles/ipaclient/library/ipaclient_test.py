@@ -199,6 +199,7 @@ except ImportError:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
+    setup_logging,
     paths, sysrestore, options, CheckedIPAddress, validate_domain_name,
     logger, x509, normalize_hostname, installer, version, ScriptError,
     CLIENT_INSTALL_ERROR, tasks, check_ldap_conf, timeconf, constants,
@@ -290,6 +291,8 @@ def main():
     )
 
     # module._ansible_debug = True
+    setup_logging()
+
     options.domain_name = module.params.get('domain')
     options.servers = module.params.get('servers')
     options.realm_name = module.params.get('realm')

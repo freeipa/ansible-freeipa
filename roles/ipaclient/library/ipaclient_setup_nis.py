@@ -58,7 +58,7 @@ import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    options,  sysrestore, paths, configure_nisdomain
+    setup_logging, options, sysrestore, paths, configure_nisdomain
 )
 
 
@@ -72,6 +72,8 @@ def main():
     )
 
     module._ansible_debug = True
+    setup_logging()
+
     domain = module.params.get('domain')
     options.nisdomain = module.params.get('nisdomain')
 

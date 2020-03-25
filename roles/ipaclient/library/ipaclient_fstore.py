@@ -53,7 +53,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    paths, sysrestore
+    setup_logging, paths, sysrestore
 )
 
 
@@ -65,6 +65,8 @@ def main():
     )
 
     module._ansible_debug = True
+    setup_logging()
+
     backup = module.params.get('backup')
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)

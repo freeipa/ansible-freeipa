@@ -57,7 +57,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, options, paths, api, sysrestore, tasks,
+    AnsibleModuleLog, setup_logging, options, paths, api, sysrestore, tasks,
     service, bindinstance, redirect_stdout, services
 )
 
@@ -72,6 +72,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # set values #############################################################

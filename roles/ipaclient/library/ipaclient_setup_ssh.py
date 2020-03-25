@@ -68,6 +68,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
+    setup_logging,
     options, sysrestore, paths, configure_ssh_config, configure_sshd_config
 )
 
@@ -85,6 +86,8 @@ def main():
     )
 
     module._ansible_debug = True
+    setup_logging()
+
     options.servers = module.params.get('servers')
     options.server = options.servers
     options.no_ssh = module.params.get('no_ssh')

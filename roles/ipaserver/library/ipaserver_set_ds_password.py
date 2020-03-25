@@ -107,7 +107,7 @@ RETURN = '''
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
     MAX_DOMAIN_LEVEL, AnsibleModuleLog, options, sysrestore, paths,
-    api_Backend_ldap2, ds_init_info, redirect_stdout
+    api_Backend_ldap2, ds_init_info, redirect_stdout, setup_logging
 )
 
 
@@ -141,6 +141,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # set values ####################################################

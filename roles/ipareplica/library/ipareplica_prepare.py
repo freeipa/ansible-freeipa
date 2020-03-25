@@ -203,7 +203,7 @@ from ansible.module_utils.ansible_ipa_replica import (
     installutils, ReplicaConfig, load_pkcs12, kinit_keytab, create_api,
     rpc_client, check_remote_version, parse_version, check_remote_fips_mode,
     ReplicationManager, promotion_check_ipa_domain, current_domain_level,
-    check_domain_level_is_supported, errors, ScriptError,
+    check_domain_level_is_supported, errors, ScriptError, setup_logging,
     logger, check_dns_resolution, service, find_providing_server, ca, kra,
     dns, no_matching_interface_for_ip_address_warning, adtrust,
     constants, api, redirect_stdout, replica_conn_check, tasks
@@ -278,6 +278,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # get parameters #

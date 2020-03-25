@@ -49,7 +49,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
-    AnsibleModuleLog, redirect_stdout, configure_certmonger
+    AnsibleModuleLog, setup_logging, redirect_stdout, configure_certmonger
 )
 
 
@@ -61,6 +61,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # get parameters #

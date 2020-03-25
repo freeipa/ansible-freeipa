@@ -57,7 +57,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, options,
+    AnsibleModuleLog, setup_logging, options,
     api_Backend_ldap2, redirect_stdout, otpdinstance, ipautil
 )
 
@@ -73,6 +73,7 @@ def main():
     )
 
     ansible_module._ansible_debug = True
+    setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
     # set values ####################################################

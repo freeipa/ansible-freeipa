@@ -103,6 +103,7 @@ import tempfile
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
+    setup_logging,
     SECURE_PATH, paths, kinit_keytab, run, GSSError, configure_krb5_conf
 )
 
@@ -121,6 +122,8 @@ def main():
     )
 
     module._ansible_debug = True
+    setup_logging()
+
     servers = module.params.get('servers')
     domain = module.params.get('domain')
     realm = module.params.get('realm')

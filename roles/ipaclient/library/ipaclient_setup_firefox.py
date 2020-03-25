@@ -60,7 +60,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    sysrestore, paths, options, configure_firefox
+    setup_logging, sysrestore, paths, options, configure_firefox
 )
 
 
@@ -74,6 +74,8 @@ def main():
     )
 
     module._ansible_debug = True
+    setup_logging()
+
     domain = module.params.get('domain')
     options.firefox_dir = module.params.get('firefox_dir')
 
