@@ -163,6 +163,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`name` \| `zone_name` | The zone name string. | yes
 `forwarders` | The list of forwarders dicts. Each `forwarders` dict entry has:| no
 &nbsp; | `ip_address` - The IPv4 or IPv6 address of the DNS server. | yes
 &nbsp; | `port` - The custom port that should be used on this server. | no
@@ -172,7 +173,7 @@ Variable | Description | Required
 `name_server`| Authoritative nameserver domain name | no
 `admin_email`| Administrator e-mail address | no
 `update_policy`| BIND update policy | no
-`dynamic_update`| Allow dynamic updates | no
+`dynamic_update` \| `dynamicupdate` | Allow dynamic updates | no
 `dnssec`| Allow inline DNSSEC signing of records in the zone | no
 `allow_transfer`| List of IP addresses or networks which are allowed to transfer the zone | no
 `allow_query`| List of IP addresses or networks which are allowed to issue queries | no
