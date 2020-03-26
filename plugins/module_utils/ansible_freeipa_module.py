@@ -52,6 +52,11 @@ import socket
 import base64
 import six
 
+try:
+    from collections.abc import Mapping  # noqa
+except ImportError:
+    from collections import Mapping  # noqa
+
 
 if six.PY3:
     unicode = str
@@ -351,19 +356,28 @@ def is_ipv6_addr(ipaddr):
     return True
 
 
-class AnsibleFreeIPAParams(dict):
+class AnsibleFreeIPAParams(Mapping):
     def __init__(self, ansible_module):
-        self.update(ansible_module.params)
+        self.mapping = ansible_module.params
         self.ansible_module = ansible_module
+
+    def __getitem__(self, key):
+        param = self.mapping[key]
+        if param is not None:
+            return _afm_convert(param)
+
+    def __iter__(self):
+        return iter(self.mapping)
+
+    def __len__(self):
+        return len(self.mapping)
 
     @property
     def names(self):
         return self.name
 
     def __getattr__(self, name):
-        param = self.get(name)
-        if param is not None:
-            return _afm_convert(param)
+        return self.get(name)
 
 
 class FreeIPABaseModule(AnsibleModule):
