@@ -18,6 +18,7 @@ license_file: "COPYING"
 dependencies:
 
 tags:
+  - "system"
   - "identity"
   - "ipa"
   - "freeipa"
