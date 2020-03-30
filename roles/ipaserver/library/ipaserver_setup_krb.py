@@ -98,7 +98,7 @@ options:
     description: The starting value for the IDs range (default random)
     required: no
   idmax:
-    description: The max value for the IDs range (default: idstart+199999)
+    description: The max value for the IDs range (default idstart+199999)
     required: no
   no_reverse:
     description: Do not create new reverse DNS zone
