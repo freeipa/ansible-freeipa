@@ -1,7 +1,7 @@
 #!/bin/bash
 
 galaxy_version=$(git describe --tags | sed -e "s/^v//")
-echo $galaxy_version | grep "-" -q || galaxy_version="${galaxy_version}-1"
+echo $galaxy_version | grep "-" -q || galaxy_version="${galaxy_version}"
 sed -i -e "s/version: .*/version: \"$galaxy_version\"/" galaxy.yml
 
 find . -name "*~" -exec rm {} \;
