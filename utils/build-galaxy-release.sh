@@ -30,11 +30,11 @@ cd plugins/action_plugins && {
 }
 
 for x in roles/*/tasks/*.yml; do
-    python utils/galaxyify-playbook.py "$x" "ipa" "$collection_prefix"
+    python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
 done
 
 for x in $(find playbooks -name "*.yml" -print); do
-    python utils/galaxyify-playbook.py "$x" "ipa" "$collection_prefix"
+    python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
 done
 
 #git diff
