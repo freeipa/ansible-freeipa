@@ -1,0 +1,13 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: User pinky absent
+    ipastageuser:
+      ipaadmin_password: 'Azsx$123Azsx$123'
+      name: pinky
+      state: absent
+
