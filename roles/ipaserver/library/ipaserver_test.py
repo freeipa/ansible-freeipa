@@ -79,7 +79,7 @@ options:
     description: The starting value for the IDs range (default random)
     required: yes
   idmax:
-    description: The max value for the IDs range (default: idstart+199999)
+    description: The max value for the IDs range (default idstart+199999)
     required: yes
   no_pkinit:
     description: Disable pkinit setup steps

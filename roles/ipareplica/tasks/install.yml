@@ -606,7 +606,6 @@
       server: "{{ result_ipareplica_test.server }}"
       config_master_host_name:
         "{{ result_ipareplica_prepare.config_master_host_name }}"
-      ccache: "{{ result_ipareplica_prepare.ccache }}"
       installer_ccache: "{{ result_ipareplica_prepare.installer_ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
       _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"

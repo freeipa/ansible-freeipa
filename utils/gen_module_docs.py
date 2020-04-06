@@ -120,7 +120,7 @@ param_docs = {
     "allow_zone_overlap": "Create DNS zone even if it already exists",
     "skip_conncheck": "Skip connection check to remote master",
     "idstart": "The starting value for the IDs range (default random)",
-    "idmax": "The max value for the IDs range (default: idstart+199999)",
+    "idmax": "The max value for the IDs range (default idstart+199999)",
     "no_hbac_allow": "Don't install allow_all HBAC rule",
     "domainlevel": "The domain level",
     "external_ca_type": "Type of the external CA",
