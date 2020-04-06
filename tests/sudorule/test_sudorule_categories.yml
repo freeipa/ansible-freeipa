@@ -1,0 +1,182 @@
+---
+- name: Test sudorule user category
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+
+  - name: Ensure sudorules are absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - allusers
+      state: absent
+
+  - name: Ensure sudorule is present, with usercategory 'all'
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      usercategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with usercategory 'all', again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      usercategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with no usercategory.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      usercategory: ""
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with no usercategory, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      usercategory: ""
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with hostcategory 'all'
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      hostcategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with hostcategory 'all', again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      hostcategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with no usercategory.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      hostcategory: ""
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with no hostcategory, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      hostcategory: ""
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with cmdcategory 'all'
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      cmdcategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with cmdcategory 'all', again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      cmdcategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with no cmdcategory.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      cmdcategory: ""
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with no cmdcategory, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      cmdcategory: ""
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with runasusercategory 'all'
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasusercategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with runasusercategory 'all', again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasusercategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with no runasusercategory.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasusercategory: ""
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with no runasusercategory, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasusercategory: ""
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with runasgroupcategory 'all'
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasgroupcategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with runasgroupcategory 'all', again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasgroupcategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is present, with no runasgroupcategory.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasgroupcategory: ""
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with no runasgroupcategory, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasgroupcategory: ""
+    register: result
+    failed_when: result.changed
+
+  # cleanup
+  - name: Ensure sudorules are absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - allusers
+      state: absent

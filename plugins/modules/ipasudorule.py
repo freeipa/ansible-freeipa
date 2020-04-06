@@ -51,18 +51,21 @@ options:
   usercategory:
     description: User category the sudo rule applies to
     required: false
-    choices: ["all"]
+    choices: ["all", ""]
+    aliases: ["usercat"]
   usergroup:
     description: List of user groups assigned to the sudo rule.
     required: false
   runasgroupcategory:
     description: RunAs Group category applied to the sudo rule.
     required: false
-    choices: ["all"]
+    choices: ["all", ""]
+    aliases: ["runasgroupcat"]
   runasusercategory:
     description: RunAs User category applied to the sudorule.
     required: false
-    choices: ["all"]
+    choices: ["all", ""]
+    aliases: ["runasusercat"]
   nomembers:
     description: Suppress processing of membership attributes
     required: false
@@ -78,7 +81,8 @@ options:
   hostcategory:
     description: Host category the sudo rule applies to.
     required: false
-    choices: ["all"]
+    choices: ["all", ""]
+    aliases: ["hostcat"]
   allow_sudocmd:
     description: List of allowed sudocmds assigned to this sudorule.
     required: false
@@ -98,7 +102,8 @@ options:
   cmdcategory:
     description: Command category the sudo rule applies to
     required: false
-    choices: ["all"]
+    choices: ["all", ""]
+    aliases: ["cmdcat"]
   order:
     description: Order to apply this rule.
     required: false
@@ -241,9 +246,9 @@ def main():
             # present
             description=dict(required=False, type="str", default=None),
             usercategory=dict(required=False, type="str", default=None,
-                              choices=["all"]),
+                              choices=["all", ""], aliases=['usercat']),
             hostcategory=dict(required=False, type="str", default=None,
-                              choices=["all"]),
+                              choices=["all", ""], aliases=['hostcat']),
             nomembers=dict(required=False, type='bool', default=None),
             host=dict(required=False, type='list', default=None),
             hostgroup=dict(required=False, type='list', default=None),
@@ -254,11 +259,13 @@ def main():
             allow_sudocmdgroup=dict(required=False, type="list", default=None),
             deny_sudocmdgroup=dict(required=False, type="list", default=None),
             cmdcategory=dict(required=False, type="str", default=None,
-                             choices=["all"]),
+                             choices=["all", ""], aliases=['cmdcat']),
             runasusercategory=dict(required=False, type="str", default=None,
-                                   choices=["all"]),
+                                   choices=["all", ""],
+                                   aliases=['runasusercat']),
             runasgroupcategory=dict(required=False, type="str", default=None,
-                                    choices=["all"]),
+                                    choices=["all", ""],
+                                    aliases=['runasgroupcat']),
             runasuser=dict(required=False, type="list", default=None),
             runasgroup=dict(required=False, type="list", default=None),
             order=dict(type="int", required=False, aliases=['sudoorder']),
