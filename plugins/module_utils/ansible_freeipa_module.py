@@ -321,7 +321,7 @@ def is_valid_port(port):
 
 
 def is_ipv4_addr(ipaddr):
-    """Test if figen IP address is a valid IPv4 address."""
+    """Test if given IP address is a valid IPv4 address."""
     try:
         socket.inet_pton(socket.AF_INET, ipaddr)
     except socket.error:
@@ -330,7 +330,7 @@ def is_ipv4_addr(ipaddr):
 
 
 def is_ipv6_addr(ipaddr):
-    """Test if figen IP address is a valid IPv6 address."""
+    """Test if given IP address is a valid IPv6 address."""
     try:
         socket.inet_pton(socket.AF_INET6, ipaddr)
     except socket.error:
