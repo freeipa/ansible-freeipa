@@ -221,7 +221,10 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module, "ipaadmin_principal")
+    ipaadmin_principal = module_params_get(
+        ansible_module,
+        "ipaadmin_principal",
+    )
     ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
     names = module_params_get(ansible_module, "name")
 

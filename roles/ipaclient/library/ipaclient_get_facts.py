@@ -13,7 +13,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 # pylint: disable=unused-import
 try:
-    from ipalib import api
+    from ipalib import api  # noqa: F401
 except ImportError:
     HAS_IPALIB = False
 else:
@@ -27,7 +27,7 @@ else:
         from ipapython import sysrestore
 
 try:
-    import ipaserver
+    import ipaserver  # noqa: F401
 except ImportError:
     HAS_IPASERVER = False
 else:
@@ -41,7 +41,7 @@ VAR_LIB_PKI_TOMCAT = "/var/lib/pki/pki-tomcat"
 def is_ntpd_configured():
     # ntpd is configured when sysrestore.state contains the line
     # [ntpd]
-    ntpd_conf_section = re.compile('^\s*\[ntpd\]\s*$')
+    ntpd_conf_section = re.compile(r'^\s*\[ntpd\]\s*$')
 
     try:
         with open(SERVER_SYSRESTORE_STATE) as f:
@@ -56,7 +56,7 @@ def is_ntpd_configured():
 def is_dns_configured():
     # dns is configured when /etc/named.conf contains the line
     # dyndb "ipa" "/usr/lib64/bind/ldap.so" {
-    bind_conf_section = re.compile('^\s*dyndb\s+"ipa"\s+"[^"]+"\s+{$')
+    bind_conf_section = re.compile(r'^\s*dyndb\s+"ipa"\s+"[^"]+"\s+{$')
 
     try:
         with open(NAMED_CONF) as f:

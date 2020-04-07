@@ -655,9 +655,9 @@ def check_parameters(module, state, action,
 
 def extend_emails(email, default_email_domain):
     if email is not None:
-        return [ "%s@%s" % (_email, default_email_domain)
-                 if "@" not in _email else _email
-                 for _email in email]
+        return ["%s@%s" % (_email, default_email_domain)
+                if "@" not in _email else _email
+                for _email in email]
     return email
 
 

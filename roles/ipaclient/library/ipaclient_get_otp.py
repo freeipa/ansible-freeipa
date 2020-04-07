@@ -288,7 +288,6 @@ def main():
         supports_check_mode=True,
     )
 
-    principal = module.params.get('principal', 'admin')
     ccache = module.params.get('ccache')
     fqdn = unicode(module.params.get('fqdn'))
     state = module.params.get('state')
