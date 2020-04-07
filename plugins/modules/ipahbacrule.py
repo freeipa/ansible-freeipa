@@ -49,17 +49,17 @@ options:
     description: User category the rule applies to
     required: false
     aliases: ["usercat"]
-    choices: ["all"]
+    choices: ["all", ""]
   hostcategory:
     description: Host category the rule applies to
     required: false
     aliases: ["hostcat"]
-    choices: ["all"]
+    choices: ["all", ""]
   servicecategory:
     description: Service category the rule applies to
     required: false
     aliases: ["servicecat"]
-    choices: ["all"]
+    choices: ["all", ""]
   nomembers:
     description: Suppress processing of membership attributes
     required: false
@@ -208,11 +208,11 @@ def main():
             # present
             description=dict(type="str", default=None),
             usercategory=dict(type="str", default=None,
-                              aliases=["usercat"], choices=["all"]),
+                              aliases=["usercat"], choices=["all", ""]),
             hostcategory=dict(type="str", default=None,
-                              aliases=["hostcat"], choices=["all"]),
+                              aliases=["hostcat"], choices=["all", ""]),
             servicecategory=dict(type="str", default=None,
-                                 aliases=["servicecat"], choices=["all"]),
+                                 aliases=["servicecat"], choices=["all", ""]),
             nomembers=dict(required=False, type='bool', default=None),
             host=dict(required=False, type='list', default=None),
             hostgroup=dict(required=False, type='list', default=None),
