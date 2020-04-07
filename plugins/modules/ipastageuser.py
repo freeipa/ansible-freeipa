@@ -153,13 +153,6 @@ options:
         description: List of SSH public keys
         required: false
         aliases: ["ipasshpubkey"]
-      userauthtype:
-        description:
-          List of supported user authentication types
-          Use empty string to reset userauthtype to the initial value.
-        choices=['password', 'radius', 'otp', '']
-        required: false
-        aliases: ["ipauserauthtype"]
       userclass:
         description:
         - User category
@@ -309,13 +302,6 @@ options:
     description: List of SSH public keys
     required: false
     aliases: ["ipasshpubkey"]
-  userauthtype:
-    description:
-      List of supported user authentication types
-      Use empty string to reset userauthtype to the initial value.
-    choices=['password', 'radius', 'otp', '']
-    required: false
-    aliases: ["ipauserauthtype"]
   userclass:
     description:
     - User category
@@ -499,7 +485,7 @@ def find_user(module, name, preserved=False):
 def gen_args(first, last, fullname, displayname, initials, homedir, shell,
              email, principalexpiration, passwordexpiration, password,
              random, uid, gid, city, userstate, postalcode, phone, mobile,
-             pager, fax, orgunit, title, carlicense, sshpubkey, userauthtype,
+             pager, fax, orgunit, title, carlicense, sshpubkey,
              userclass, radius, radiususer, departmentnumber, employeenumber,
              employeetype, preferredlanguage, nomembers):
     # principal, manager, certificate and certmapdata are handled not in here
@@ -554,8 +540,6 @@ def gen_args(first, last, fullname, displayname, initials, homedir, shell,
         _args["carlicense"] = carlicense
     if sshpubkey is not None and len(sshpubkey) > 0:
         _args["ipasshpubkey"] = sshpubkey
-    if userauthtype is not None and len(userauthtype) > 0:
-        _args["ipauserauthtype"] = userauthtype
     if userclass is not None:
         _args["userclass"] = userclass
     if radius is not None:
@@ -580,7 +564,7 @@ def check_parameters(module, state, action,
                      shell, email, principal, principalexpiration,
                      passwordexpiration, password, random, uid, gid, city,
                      phone, mobile, pager, fax, orgunit, title, manager,
-                     carlicense, sshpubkey, userauthtype, userclass, radius,
+                     carlicense, sshpubkey, userclass, radius,
                      radiususer, departmentnumber, employeenumber,
                      employeetype, preferredlanguage, certificate,
                      certmapdata, nomembers, preserve,
@@ -593,7 +577,7 @@ def check_parameters(module, state, action,
                        "passwordexpiration", "password", "random", "uid",
                        "gid", "city", "phone", "mobile", "pager", "fax",
                        "orgunit", "title", "carlicense", "sshpubkey",
-                       "userauthtype", "userclass", "radius", "radiususer",
+                       "userclass", "radius", "radiususer",
                        "departmentnumber", "employeenumber", "employeetype",
                        "preferredlanguage", "nomembers",
                        "preserve", "update_password"]
@@ -609,7 +593,7 @@ def check_parameters(module, state, action,
                    "passwordexpiration", "password", "random", "uid",
                    "gid", "city", "phone", "mobile", "pager", "fax",
                    "orgunit", "title", "carlicense", "sshpubkey",
-                   "userauthtype", "userclass", "radius", "radiususer",
+                   "userclass", "radius", "radiususer",
                    "departmentnumber", "employeenumber", "employeetype",
                    "preferredlanguage", "nomembers",
                    "update_password"]
@@ -706,9 +690,6 @@ def main():
         carlicense=dict(type="list", default=None),
         sshpubkey=dict(type="list", aliases=["ipasshpubkey"],
                        default=None),
-        userauthtype=dict(type='list', aliases=["ipauserauthtype"],
-                          default=None,
-                          choices=['password', 'radius', 'otp', '']),
         userclass=dict(type="list", aliases=["class"],
                        default=None),
         radius=dict(type="str", aliases=["ipatokenradiusconfiglink"],
@@ -823,7 +804,6 @@ def main():
     manager = module_params_get(ansible_module, "manager")
     carlicense = module_params_get(ansible_module, "carlicense")
     sshpubkey = module_params_get(ansible_module, "sshpubkey")
-    userauthtype = module_params_get(ansible_module, "userauthtype")
     userclass = module_params_get(ansible_module, "userclass")
     radius = module_params_get(ansible_module, "radius")
     radiususer = module_params_get(ansible_module, "radiususer")
@@ -858,7 +838,7 @@ def main():
         first, last, fullname, displayname, initials, homedir, shell, email,
         principal, principalexpiration, passwordexpiration, password, random,
         uid, gid, city, phone, mobile, pager, fax, orgunit, title, manager,
-        carlicense, sshpubkey, userauthtype, userclass, radius, radiususer,
+        carlicense, sshpubkey, userclass, radius, radiususer,
         departmentnumber, employeenumber, employeetype, preferredlanguage,
         certificate, certmapdata, nomembers, preserve,
         update_password)
@@ -935,7 +915,6 @@ def main():
                 manager = user.get("manager")
                 carlicense = user.get("carlicense")
                 sshpubkey = user.get("sshpubkey")
-                userauthtype = user.get("userauthtype")
                 userclass = user.get("userclass")
                 radius = user.get("radius")
                 radiususer = user.get("radiususer")
@@ -953,7 +932,7 @@ def main():
                     shell, email, principal, principalexpiration,
                     passwordexpiration, password, random, uid, gid, city,
                     phone, mobile, pager, fax, orgunit, title, manager,
-                    carlicense, sshpubkey, userauthtype, userclass, radius,
+                    carlicense, sshpubkey, userclass, radius,
                     radiususer, departmentnumber, employeenumber,
                     employeetype, preferredlanguage, certificate,
                     certmapdata, nomembers, preserve,       
@@ -1004,7 +983,7 @@ def main():
                     shell, email, principalexpiration, passwordexpiration,
                     password, random, uid, gid, city, userstate, postalcode,
                     phone, mobile, pager, fax, orgunit, title, carlicense,
-                    sshpubkey, userauthtype, userclass, radius, radiususer,
+                    sshpubkey, userclass, radius, radiususer,
                     departmentnumber, employeenumber, employeetype,
                     preferredlanguage, nomembers)
 
@@ -1022,13 +1001,6 @@ def main():
                                 del args["userpassword"]
                             if "random" in args:
                                 del args["random"]
-
-                        # Ignore userauthtype if it is empty (for resetting)
-                        # and not set in for the user
-                        if "ipauserauthtype" not in res_find and \
-                           "ipauserauthtype" in args and \
-                           args["ipauserauthtype"] == ['']:
-                            del args["ipauserauthtype"]
 
                         # For all settings is args, check if there are
                         # different settings in the find result.
