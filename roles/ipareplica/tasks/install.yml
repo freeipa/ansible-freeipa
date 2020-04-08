@@ -48,6 +48,22 @@
     ipaadmin_principal: admin
   when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
 
+- name: Create ipaserver-install log file if not exists
+  file:
+    path: /var/log/ipaserver-install.log
+    owner: root
+    group: root
+    mode: '0660'
+    state: touch
+
+- name: Create ipaclient-install log file if not exists
+  file:
+    path: /var/log/ipaclient-install.log
+    owner: root
+    group: root
+    mode: '0660'
+    state: touch
+
 - name: Install - Replica installation test
   ipareplica_test:
     ### basic ###
