@@ -30,6 +30,14 @@
     ipaadmin_principal: admin
   when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
 
+- name: Create ipaclient-install log file if not exists
+  file:
+    path: /var/log/ipaclient-install.log
+    owner: root
+    group: root
+    mode: '0660'
+    state: touch
+
 - name: Install - IPA client test
   ipaclient_test:
     ### basic ###
