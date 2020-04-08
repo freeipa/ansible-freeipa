@@ -43,6 +43,22 @@
         ipaserver_external_cert_files_from_controller|length > 0 and
         not ipaserver_external_cert_files is defined
 
+- name: Create ipaserver-install log file if not exists
+  file:
+    path: /var/log/ipaserver-install.log
+    owner: root
+    group: root
+    mode: '0660'
+    state: touch
+
+- name: Create ipaclient-install log file if not exists
+  file:
+    path: /var/log/ipaclient-install.log
+    owner: root
+    group: root
+    mode: '0660'
+    state: touch
+
 - name: Install - Server installation test
   ipaserver_test:
     ### basic ###
