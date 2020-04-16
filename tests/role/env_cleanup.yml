@@ -1,0 +1,38 @@
+---
+- name: Ensure test user is absent.
+  ipauser:
+    ipaadmin_password: SomeADMINpassword
+    name: user01
+    state: absent
+
+- name: Ensure test group is absent.
+  ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    name: group01
+    state: absent
+
+- name: Ensure test hostgroup is absent.
+  ipahostgroup:
+    ipaadmin_password: SomeADMINpassword
+    name: hostgroup01
+    state: absent
+
+- name: Ensure test host is absent.
+  ipahost:
+    ipaadmin_password: SomeADMINpassword
+    name: "{{ host1_fqdn }}"
+    state: absent
+
+- name: Ensure test service is absent.
+  ipaservice:
+    ipaadmin_password: SomeADMINpassword
+    name: "service01/{{ host1_fqdn }}"
+    state: absent
+
+- name: Ensure test roles are absent.
+  iparole:
+    ipaadmin_password: SomeADMINpassword
+    name:
+    - renamerole
+    - testrole
+    state: absent
