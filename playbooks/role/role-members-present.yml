@@ -1,0 +1,23 @@
+---
+- name: Playbook to manage IPA role with members.
+  hosts: ipaserver
+  become: yes
+  gather_facts: no
+
+  tasks:
+  - iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: somerole
+      user:
+      - pinky
+      group:
+      - group01
+      host:
+      - host01.example.com
+      hostgroup:
+      - hostgroup01
+      privilege:
+      - Group Administrators
+      - User Administrators
+      service:
+      - service01

@@ -1,0 +1,388 @@
+---
+- name: Test role module
+  hosts: ipaserver
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - name: Set environment facts.
+    import_tasks: env_facts.yml
+
+  - name: Setup environment.
+    import_tasks: env_setup.yml
+
+  # tests
+  - name: Ensure role is present.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: renamerole
+      description: A role in IPA.
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role is present, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: renamerole
+      description: A role in IPA.
+    register: result
+    failed_when: result.changed
+
+  - name: Rename role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: renamerole
+      rename: testrole
+    register: result
+    failed_when: not result.changed
+
+  - name: Rename role, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: renamerole
+      rename: testrole
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member has privileges.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      privilege:
+      - DNS Servers
+      - Host Administrators
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member has privileges, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      privilege:
+      - DNS Servers
+      - Host Administrators
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has less privileges.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      privilege:
+      - Host Administrators
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has less privileges, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      privilege:
+      - Host Administrators
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member has privileges restored.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      privilege:
+      - DNS Servers
+      - Host Administrators
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member has privileges restored, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      privilege:
+      - DNS Servers
+      - Host Administrators
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role member privileges are absent.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      privilege:
+      - DNS Servers
+      - Host Administrators
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role member privileges are absent, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      privilege:
+      - DNS Servers
+      - Host Administrators
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure invalid privileged is not assigned to role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      privilege: Invalid Privilege
+      action: member
+    register: result
+    failed_when: not result.failed or "privilege not found" not in result.msg
+
+  - name: Ensure role has member user present.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user:
+      - user01
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member user present, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user:
+      - user01
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member user absent.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user:
+      - user01
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member user absent, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user:
+      - user01
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member group present.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      group:
+      - group01
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member group present, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      group:
+      - group01
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member group absent.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      group:
+      - group01
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member group absent, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      group:
+      - group01
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member host present.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member host present, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member host absent.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member host absent, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member hostgroup present.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      hostgroup:
+      - hostgroup01
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member hostgroup present, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      hostgroup:
+      - hostgroup01
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member hostgroup absent.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      hostgroup:
+      - hostgroup01
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member hostgroup absent, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      hostgroup:
+      - hostgroup01
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role is absent.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role is absent, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role with members is present.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user:
+      - user01
+      group:
+      - group01
+      host:
+      - "{{ host1_fqdn }}"
+      hostgroup:
+      - hostgroup01
+      privilege:
+      - Group Administrators
+      - User Administrators
+      service:
+      - "service01/{{ host1_fqdn }}"
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role with members is present, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user:
+      - user01
+      group:
+      - group01
+      host:
+      - "{{ host1_fqdn }}"
+      hostgroup:
+      - hostgroup01
+      privilege:
+      - Group Administrators
+      - User Administrators
+      service:
+      - "service01/{{ host1_fqdn }}"
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role is absent.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role is absent, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  # cleanup
+  - name: Cleanup environment.
+    include_tasks: env_cleanup.yml
