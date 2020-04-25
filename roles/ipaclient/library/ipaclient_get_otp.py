@@ -135,7 +135,7 @@ if six.PY3:
 
 def get_host_diff(ipa_host, module_host):
     """
-    Compare two host dicts and builds a dict of differences.
+    Build a dict with the differences from two host dicts.
 
     :param ipa_host: the host structure seen from IPA
     :param module_host: the target host structure seen from the module params
@@ -188,7 +188,7 @@ def get_module_host(module):
 
 def ensure_host_present(module, api, ipahost):
     """
-    Ensure that the host exists in IPA and has the same attributes.
+    Ensure host exists in IPA and has the same attributes.
 
     :param module: the ansible module
     :param api: IPA api handle
@@ -245,7 +245,7 @@ def ensure_host_present(module, api, ipahost):
 
 def ensure_host_absent(module, api, host):
     """
-    Ensure that the host does not exist in IPA.
+    Ensure host does not exist in IPA.
 
     :param module: the ansible module
     :param api: the IPA API handle

@@ -63,7 +63,7 @@ if six.PY3:
 
 
 def valid_creds(module, principal):  # noqa
-    """Get valid credintials matching the princial, try GSSAPI first."""
+    """Get valid credentials matching the princial, try GSSAPI first."""
     if "KRB5CCNAME" in os.environ:
         ccache = os.environ["KRB5CCNAME"]
         module.debug('KRB5CCNAME set to %s' % ccache)
@@ -127,7 +127,14 @@ def temp_kdestroy(ccache_dir, ccache_name):
 
 
 def api_connect(context=None):
-    """Create environment, initialize api and connect to ldap2."""
+    """
+    Initialize IPA API with the provided context.
+
+    `context` can be any of:
+        * `server` (default)
+        * `ansible-freeipa`
+        * `cli_installer`
+    """
     env = Env()
     env._bootstrap()
     env._finalize_core(**dict(DEFAULT_CONFIG))
@@ -159,7 +166,7 @@ def api_command_no_name(module, command, args):
 
 
 def api_check_param(command, name):
-    """Return if param exists in command param list."""
+    """Check if param exists in command param list."""
     return name in api.Command[command].params
 
 
