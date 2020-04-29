@@ -63,9 +63,7 @@ if six.PY3:
 
 
 def valid_creds(module, principal):  # noqa
-    """
-    Get valid credintials matching the princial, try GSSAPI first
-    """
+    """Get valid credentials matching the princial, try GSSAPI first."""
     if "KRB5CCNAME" in os.environ:
         ccache = os.environ["KRB5CCNAME"]
         module.debug('KRB5CCNAME set to %s' % ccache)
@@ -103,9 +101,7 @@ def valid_creds(module, principal):  # noqa
 
 
 def temp_kinit(principal, password):
-    """
-    kinit with password using a temporary ccache
-    """
+    """Kinit with password using a temporary ccache."""
     if not password:
         raise RuntimeError("The password is not set")
     if not principal:
@@ -123,9 +119,7 @@ def temp_kinit(principal, password):
 
 
 def temp_kdestroy(ccache_dir, ccache_name):
-    """
-    Destroy temporary ticket and remove temporary ccache
-    """
+    """Destroy temporary ticket and remove temporary ccache."""
     if ccache_name is not None:
         run([paths.KDESTROY, '-c', ccache_name], raiseonerr=False)
     if ccache_dir is not None:
@@ -134,7 +128,12 @@ def temp_kdestroy(ccache_dir, ccache_name):
 
 def api_connect(context=None):
     """
-    Create environment, initialize api and connect to ldap2
+    Initialize IPA API with the provided context.
+
+    `context` can be any of:
+        * `server` (default)
+        * `ansible-freeipa`
+        * `cli_installer`
     """
     env = Env()
     env._bootstrap()
@@ -157,28 +156,24 @@ def api_connect(context=None):
 
 
 def api_command(module, command, name, args):
-    """
-    Call ipa.Command
-    """
+    """Call ipa.Command."""
     return api.Command[command](name, **args)
 
 
 def api_command_no_name(module, command, args):
-    """
-    Call ipa.Command without a name.
-    """
+    """Call ipa.Command without a name."""
     return api.Command[command](**args)
 
 
 def api_check_param(command, name):
-    """
-    Return if param exists in command param list
-    """
+    """Check if param exists in command param list."""
     return name in api.Command[command].params
 
 
 def execute_api_command(module, principal, password, command, name, args):
     """
+    Execute an API command.
+
     Get KRB ticket if not already there, initialize api, connect,
     execute command and destroy ticket again if it has been created also.
     """
@@ -300,10 +295,7 @@ def api_get_realm():
 
 
 def gen_add_del_lists(user_list, res_list):
-    """
-    Generate the lists for the addition and removal of members using the
-    provided user and ipa settings
-    """
+    """Generate the lists for the addition and removal of members."""
     add_list = list(set(user_list or []) - set(res_list or []))
     del_list = list(set(res_list or []) - set(user_list or []))
 
@@ -312,8 +304,9 @@ def gen_add_del_lists(user_list, res_list):
 
 def encode_certificate(cert):
     """
-    Encode a certificate using base64 with also taking FreeIPA and Python
-    versions into account
+    Encode a certificate using base64.
+
+    It also takes FreeIPA and Python versions into account.
     """
     if isinstance(cert, (str, unicode, bytes)):
         encoded = base64.b64encode(cert)
@@ -335,9 +328,7 @@ def is_valid_port(port):
 
 
 def is_ipv4_addr(ipaddr):
-    """
-    Test if figen IP address is a valid IPv4 address
-    """
+    """Test if given IP address is a valid IPv4 address."""
     try:
         socket.inet_pton(socket.AF_INET, ipaddr)
     except socket.error:
@@ -346,9 +337,7 @@ def is_ipv4_addr(ipaddr):
 
 
 def is_ipv6_addr(ipaddr):
-    """
-    Test if figen IP address is a valid IPv6 address
-    """
+    """Test if given IP address is a valid IPv6 address."""
     try:
         socket.inet_pton(socket.AF_INET6, ipaddr)
     except socket.error:

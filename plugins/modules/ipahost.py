@@ -875,9 +875,11 @@ def main():
                 res_find_dnsrecord = find_dnsrecord(ansible_module, name)
             except ipalib_errors.NotFound as e:
                 msg = str(e)
-                if ip_address is None and \
-                   ("DNS is not configured" in msg or \
-                    "DNS zone not found" in msg):
+                dns_not_configured = "DNS is not configured" in msg
+                dns_zone_not_found = "DNS zone not found" in msg
+                if ip_address is None and (
+                    dns_not_configured or dns_zone_not_found
+                ):
                     # IP address(es) not given and no DNS support in IPA
                     # -> Ignore failure
                     # IP address(es) not given and DNS zone is not found

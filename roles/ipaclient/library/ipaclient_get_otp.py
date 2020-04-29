@@ -135,8 +135,7 @@ if six.PY3:
 
 def get_host_diff(ipa_host, module_host):
     """
-    Compares two dictionaries containing host attributes and builds a dict
-    of differences.
+    Build a dict with the differences from two host dicts.
 
     :param ipa_host: the host structure seen from IPA
     :param module_host: the target host structure seen from the module params
@@ -164,7 +163,7 @@ def get_host_diff(ipa_host, module_host):
 
 def get_module_host(module):
     """
-    Creates a structure representing the host information
+    Create a structure representing the host information.
 
     Reads the module parameters and builds the host structure as expected from
     the module
@@ -189,7 +188,7 @@ def get_module_host(module):
 
 def ensure_host_present(module, api, ipahost):
     """
-    Ensures that the host exists in IPA and has the same attributes.
+    Ensure host exists in IPA and has the same attributes.
 
     :param module: the ansible module
     :param api: IPA api handle
@@ -246,7 +245,7 @@ def ensure_host_present(module, api, ipahost):
 
 def ensure_host_absent(module, api, host):
     """
-    Ensures that the host does not exist in IPA
+    Ensure host does not exist in IPA.
 
     :param module: the ansible module
     :param api: the IPA API handle
@@ -271,9 +270,7 @@ def ensure_host_absent(module, api, host):
 
 
 def main():
-    """
-    Main routine for the ansible module.
-    """
+
     module = AnsibleModule(
         argument_spec=dict(
             principal=dict(default='admin'),
@@ -288,7 +285,6 @@ def main():
         supports_check_mode=True,
     )
 
-    principal = module.params.get('principal', 'admin')
     ccache = module.params.get('ccache')
     fqdn = unicode(module.params.get('fqdn'))
     state = module.params.get('state')

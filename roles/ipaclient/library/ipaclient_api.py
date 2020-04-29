@@ -100,7 +100,6 @@ def main():
 
     realm = module.params.get('realm')
     hostname = module.params.get('hostname')
-    servers = module.params.get('servers')
     debug = module.params.get('debug')
 
     host_principal = 'host/%s@%s' % (hostname, realm)
