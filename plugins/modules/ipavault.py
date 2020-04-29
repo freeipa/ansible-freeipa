@@ -402,7 +402,6 @@ def main():
         ),
         supports_check_mode=True,
         mutually_exclusive=[['username', 'service', 'shared']],
-        required_one_of=[['username', 'service', 'shared']]
     )
 
     ansible_module._ansible_debug = True

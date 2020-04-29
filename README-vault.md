@@ -181,8 +181,8 @@ Variable | Description | Required
 `vault_public_key` \| `ipavaultpublickey` | Vault public key. | no
 `vault_salt` \| `ipavaultsalt` | Vault salt. | no
 `vault_type` \| `ipavaulttype` | Vault types are based on security level. It can be one of `standard`, `symmetric` or `asymmetric`, default: `symmetric` | no
+`user` \| `username` | Any user can own one or more user vaults. | no
 `service` | Any service can own one or more service vaults. | no
-`user` | Any user can own one or more user vaults. | no
 `shared` | Vault is shared. Default to false. (bool) | no
 `users` | Users that are members of the vault. | no
 `groups` | Groups that are member of the vault. | no

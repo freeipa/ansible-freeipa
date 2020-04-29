@@ -65,12 +65,53 @@
       shared: True
       state: absent
 
-  - name: Ensure service vaults are absent
+  - name: Ensure standard vault is absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      state: absent
+
+  - name: Ensure service vault is absent
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: svcvault
       service: "HTTP/{{ groups.ipaserver[0] }}"
       state: absent
+
+  # tests
+  - name: Ensure standard vault is present
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure standard vault is present, again
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure standard vault is absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure standard vault is absent, again
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+      state: absent
+    register: result
+    failed_when: result.changed
 
   - name: Ensure symmetric vault is present
     ipavault:
