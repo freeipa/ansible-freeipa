@@ -115,6 +115,7 @@ def temp_kinit(principal, password):
     except RuntimeError as e:
         raise RuntimeError("Kerberos authentication failed: {}".format(e))
 
+    os.environ["KRB5CCNAME"] = ccache_name
     return ccache_dir, ccache_name
 
 
@@ -122,6 +123,7 @@ def temp_kdestroy(ccache_dir, ccache_name):
     """Destroy temporary ticket and remove temporary ccache."""
     if ccache_name is not None:
         run([paths.KDESTROY, '-c', ccache_name], raiseonerr=False)
+        del os.environ['KRB5CCNAME']
     if ccache_dir is not None:
         shutil.rmtree(ccache_dir, ignore_errors=True)
 
@@ -152,7 +154,7 @@ def api_connect(context=None):
         backend = api.Backend.rpcclient
 
     if not backend.isconnected():
-        backend.connect()
+        backend.connect(ccache=os.environ.get('KRB5CCNAME', None))
 
 
 def api_command(module, command, name, args):
