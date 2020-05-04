@@ -394,6 +394,15 @@
     register: result
     failed_when: not result.changed
 
+  - name: Archive data from a file, in standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      in: "{{ ansible_env.HOME }}/in.txt"
+    register: result
+    failed_when: not result.changed
+
   - name: Retrieve data from standard vault.
     ipavault:
       ipaadmin_password: SomeADMINpassword

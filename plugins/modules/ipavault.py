@@ -366,7 +366,7 @@ def gen_member_args(args, users, groups, services):
 
 
 def data_storage_args(args, data, password, password_file, private_key,
-                      private_key_file, retrieve, datafile_in, datafile_out):
+                      private_key_file, datafile_in, datafile_out):
     _args = {}
 
     if 'username' in args:
@@ -407,8 +407,7 @@ def check_parameters(module, state, action, description, username, service,
                      shared, users, groups, services, owners, ownergroups,
                      ownerservices, vault_type, salt, password, password_file,
                      public_key, public_key_file, private_key,
-                     private_key_file, retrieve, vault_data, datafile_in,
-                     datafile_out):
+                     private_key_file, vault_data, datafile_in, datafile_out):
     invalid = []
     if state == "present":
         if salt is not None:
@@ -423,24 +422,20 @@ def check_parameters(module, state, action, description, username, service,
         if action == "member":
             invalid = ['description']
 
-        if not retrieve:
-            if datafile_out is not None:
-                module.fail_json(
-                    msg="Retrieve must be enabled to use datafile_out.")
+    elif state == "absent":
+        invalid = ['description', 'salt', 'vault_type', 'datafile_in',
+                   'vault_data']
 
-            if any([private_key, private_key_file]):
-                module.fail_json(
-                    msg="Attributes private_key and private_key_file can only "
-                        "be used when retrieving data from asymmetric vaults.")
-        else:
-            check = ['description', 'salt', 'datafile_in', 'users', 'groups',
-                     'owners', 'ownergroups', 'public_key', 'public_key_file',
-                     'vault_data']
+        if action == "vault":
+            invalid.extend(['users', 'groups', 'owners', 'ownergroups',
+                            'password', 'password_file', 'public_key',
+                            'public_key_file'])
 
-            for arg in check:
-                if vars()[arg] is not None:
-                    module.fail_json(
-                        msg="`%s` cannot be used with `retrieve`." % arg)
+    for arg in invalid:
+        if vars()[arg] is not None:
+            module.fail_json(
+                msg="Argument '%s' can not be used with state '%s', "
+                    "action '%s'" % (arg, state, action))
 
     elif state == "absent":
         invalid = ['description', 'salt', 'vault_type', 'private_key',
@@ -461,8 +456,8 @@ def check_parameters(module, state, action, description, username, service,
 
 def check_encryption_params(module, state, vault_type, salt, password,
                             password_file, public_key, public_key_file,
-                            private_key, private_key_file, retrieve,
-                            vault_data, datafile_in, datafile_out, res_find):
+                            private_key, private_key_file, vault_data,
+                            datafile_in, datafile_out, res_find):
     vault_type_invalid = []
     if state == "present":
         if vault_type == "standard":
@@ -593,8 +588,6 @@ def main():
     datafile_in = module_params_get(ansible_module, "datafile_in")
     datafile_out = module_params_get(ansible_module, "datafile_out")
 
-    retrieve = module_params_get(ansible_module, "retrieve")
-
     action = module_params_get(ansible_module, "action")
     state = module_params_get(ansible_module, "state")
 
@@ -616,8 +609,7 @@ def main():
                      service, shared, users, groups, services, owners,
                      ownergroups, ownerservices, vault_type, salt, password,
                      password_file, public_key, public_key_file, private_key,
-                     private_key_file, retrieve, vault_data, datafile_in,
-                     datafile_out)
+                     private_key_file, vault_data, datafile_in, datafile_out)
     # Init
 
     changed = False
@@ -660,7 +652,7 @@ def main():
             check_encryption_params(ansible_module, state, vault_type, salt,
                                     password, password_file, public_key,
                                     public_key_file, private_key,
-                                    private_key_file, retrieve, vault_data,
+                                    private_key_file, vault_data,
                                     datafile_in, datafile_out, res_find)
 
             # Create command
@@ -734,6 +726,10 @@ def main():
                        and 'ipavaultsalt' not in args:
                         args['ipavaultsalt'] = os.urandom(32)
 
+                    if vault_type == 'symmetric' \
+                       and 'ipavaultsalt' not in args:
+                        args['ipavaultsalt'] = os.urandom(32)
+
                 elif action in "member":
                     # Add users and groups
                     if any([users, groups, services]):
@@ -746,9 +742,8 @@ def main():
                         commands.append([name, 'vault_add_owner', owner_args])
 
                 pwdargs = data_storage_args(
-                    args, vault_data, password, password_file,
-                    private_key, private_key_file, retrieve, datafile_in,
-                    datafile_out)
+                    args, vault_data, password, password_file, private_key,
+                    private_key_file, datafile_in, datafile_out)
                 if any([vault_data, datafile_in]):
                     commands.append([name, "vault_archive", pwdargs])
                 if retrieve:
