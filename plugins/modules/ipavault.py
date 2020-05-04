@@ -45,21 +45,41 @@ options:
   description:
     description: The vault description
     required: false
-  vault_public_key:
-    description: Base64 encoded public key.
+  public_key:
+    description: Base64 encode public key.
     required: false
-    type: list
-    aliases: ["ipavaultpublickey"]
-  vault_salt:
-    description: Vault salt.
+    type: string
+    aliases: ["ipavaultpublickey", "vault_public_key"]
+  public_key_file:
+    description: Path to file with public key.
     required: false
-    type: list
-    aliases: ["ipavaultsalt"]
-  vault_password:
+    type: string
+    aliases: ["vault_public_key_file"]
+  private_key:
+    description: Base64 encode private key.
+    required: false
+    type: string
+    aliases: ["ipavaultprivatekey", "vault_private_key"]
+  private_key_file:
+    description: Path to file with private key.
+    required: false
+    type: string
+    aliases: ["vault_private_key_file"]
+  password:
     description: password to be used on symmetric vault.
     required: false
     type: string
-    aliases: ["ipavaultpassword"]
+    aliases: ["ipavaultpassword", "vault_password"]
+  password_file:
+    description: file with password to be used on symmetric vault.
+    required: false
+    type: string
+    aliases: ["ipavaultpassword", "vault_password"]
+  salt:
+    description: Vault salt.
+    required: false
+    type: list
+    aliases: ["ipavaultsalt", "vault_salt"]
   vault_type:
     description: Vault types are based on security level.
     required: true
@@ -79,11 +99,6 @@ options:
     description: Vault is shared.
     required: false
     type: boolean
-  vault_data:
-    description: Data to be stored in the vault.
-    required: false
-    type: string
-    aliases: ["ipavaultdata"]
   owners:
     description: Users that are owners of the container.
     required: false
@@ -100,6 +115,25 @@ options:
     description: Services that are member of the container.
     required: false
     type: list
+  data:
+    description: Data to be stored in the vault.
+    required: false
+    type: string
+    aliases: ["ipavaultdata", "vault_data"]
+  in:
+    description: Path to file with data to be stored in the vault.
+    required: false
+    type: string
+    aliases: ["datafile_in"]
+  out:
+    description: Path to file to store data retrieved from the vault.
+    required: false
+    type: string
+    aliases: ["datafile_out"]
+  retrieve:
+    description: If set to True, retrieve data stored in the vault.
+    required: false
+    type: bool
   action:
     description: Work on vault or member level.
     default: vault
@@ -118,9 +152,9 @@ EXAMPLES = """
     ipaadmin_password: SomeADMINpassword
     name: symvault
     username: admin
-    vault_password: MyVaultPassword123
-    vault_salt: MTIzNDU2Nzg5MAo=
     vault_type: symmetric
+    password: SomeVAULTpassword
+    salt: MTIzNDU2Nzg5MAo=
 
 # Ensure group ipausers is a vault member.
 - ipavault:
@@ -182,11 +216,23 @@ EXAMPLES = """
     ipaadmin_password: SomeADMINpassword
     name: symvault
     username: admin
-    vault_password: MyVaultPassword123
-    vault_data: >
+    password: SomeVAULTpassword
+    data: >
       Data archived.
       More data archived.
     action: member
+
+# Retrieve data archived from a symmetric vault
+- ipavault:
+    ipaadmin_password: SomeADMINpassword
+    name: symvault
+    username: admin
+    password: SomeVAULTpassword
+    retrieve: yes
+    action: member
+  register: result
+- debug:
+    msg: "{{ result.data | b64decode }}"
 
 # Ensure vault symvault is absent
 - ipavault:
@@ -202,7 +248,7 @@ EXAMPLES = """
     username: user01
     description: An asymmetric vault
     vault_type: asymmetric
-    vault_public_key:
+    public_key:
       LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTR
       HTkFEQ0JpUUtCZ1FDdGFudjRkK3ptSTZ0T3ova1RXdGowY3AxRAowUENoYy8vR0pJMTUzTi
       9CN3UrN0h3SXlRVlZoNUlXZG1UcCtkWXYzd09yeVpPbzYvbHN5eFJaZ2pZRDRwQ3VGCjlxM
@@ -215,10 +261,19 @@ EXAMPLES = """
     ipaadmin_password: SomeADMINpassword
     name: asymvault
     username: admin
-    vault_data: >
+    data: >
       Data archived.
       More data archived.
     action: member
+
+# Retrive data archived in an asymmetric vault
+- ipavault:
+    ipaadmin_password: SomeADMINpassword
+    name: asymvault
+    username: admin
+    retrieve: yes
+    private_key:
+
 
 # Ensure asymmetric vault is absent.
 - ipavault:
@@ -233,6 +288,7 @@ RETURN = """
 """
 
 import os
+from base64 import b64encode, b64decode
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, \
@@ -265,7 +321,8 @@ def find_vault(module, name, username, service, shared):
 
 
 def gen_args(description, username, service, shared, vault_type, salt,
-             public_key, vault_data):
+             password, password_file, public_key, public_key_file, vault_data,
+             datafile_in, datafile_out):
     _args = {}
 
     if description is not None:
@@ -281,9 +338,11 @@ def gen_args(description, username, service, shared, vault_type, salt,
     if salt is not None:
         _args['ipavaultsalt'] = salt
     if public_key is not None:
-        _args['ipavaultpublickey'] = public_key
-    if vault_data is not None:
-        _args['data'] = vault_data.encode('utf-8')
+        _args['ipavaultpublickey'] = b64decode(public_key.encode('utf-8'))
+    if public_key_file is not None:
+        with open(public_key_file, 'r') as keyfile:
+            keydata = keyfile.read()
+            _args['ipavaultpublickey'] = keydata.strip().encode('utf-8')
 
     return _args
 
@@ -306,7 +365,8 @@ def gen_member_args(args, users, groups, services):
     return _args
 
 
-def data_storage_args(args, data, password):
+def data_storage_args(args, data, password, password_file, private_key,
+                      private_key_file, retrieve, datafile_in, datafile_out):
     _args = {}
 
     if 'username' in args:
@@ -318,55 +378,117 @@ def data_storage_args(args, data, password):
 
     if password is not None:
         _args['password'] = password
+    if password_file is not None:
+        _args['password_file'] = password_file
 
-    _args['data'] = data
+    if private_key is not None:
+        _args['private_key'] = private_key
+    if private_key_file is not None:
+        _args['private_key_file'] = private_key_file
+
+    if datafile_in is not None:
+        _args['in'] = datafile_in
+    else:
+        if data is None:
+            _args['data'] = b''
+        else:
+            _args['data'] = data.encode('utf-8')
+
+    if datafile_out is not None:
+        _args['out'] = datafile_out
+
+    if private_key_file is not None:
+        _args['private_key_file'] = private_key_file
 
     return _args
 
 
 def check_parameters(module, state, action, description, username, service,
                      shared, users, groups, services, owners, ownergroups,
-                     ownerservices, vault_type, salt, password, public_key,
-                     vault_data):
+                     ownerservices, vault_type, salt, password, password_file,
+                     public_key, public_key_file, private_key,
+                     private_key_file, retrieve, vault_data, datafile_in,
+                     datafile_out):
     invalid = []
     if state == "present":
-        if action == "member":
-            invalid = ['description', 'public_key', 'salt']
-
-        for param in invalid:
-            if vars()[param] is not None:
+        if salt is not None:
+            if vault_type is not None and vault_type != "symmetric":
                 module.fail_json(
-                    msg="Argument '%s' can not be used with action '%s'" %
-                    (param, action))
+                    msg="Attribute `salt` can only be used with `symmetric` "
+                        "vaults.")
+            if not any([password, password_file]):
+                module.fail_json(
+                    msg="Value of `salt` can only modified by providing "
+                        "vault password.")
+        if action == "member":
+            invalid = ['description']
+
+        if not retrieve:
+            if datafile_out is not None:
+                module.fail_json(
+                    msg="Retrieve must be enabled to use datafile_out.")
+
+            if any([private_key, private_key_file]):
+                module.fail_json(
+                    msg="Attributes private_key and private_key_file can only "
+                        "be used when retrieving data from asymmetric vaults.")
+        else:
+            check = ['description', 'salt', 'datafile_in', 'users', 'groups',
+                     'owners', 'ownergroups', 'public_key', 'public_key_file',
+                     'vault_data']
+
+            for arg in check:
+                if vars()[arg] is not None:
+                    module.fail_json(
+                        msg="`%s` cannot be used with `retrieve`." % arg)
 
     elif state == "absent":
-        invalid = ['description', 'salt']
+        invalid = ['description', 'salt', 'vault_type', 'private_key',
+                   'private_key_file', 'retrieve', 'datafile_in',
+                   'datafile_out', 'vault_data']
 
         if action == "vault":
             invalid.extend(['users', 'groups', 'services', 'owners',
                             'ownergroups', 'ownerservices', 'password',
-                            'public_key'])
+                            'password_file', 'public_key', 'public_key_file'])
 
-        for arg in invalid:
-            if vars()[arg] is not None:
-                module.fail_json(
-                    msg="Argument '%s' can not be used with action '%s'" %
-                    (arg, state))
+    for arg in invalid:
+        if vars()[arg] is not None:
+            module.fail_json(
+                msg="Argument '%s' can not be used with state '%s', "
+                    "action '%s'" % (arg, state, action))
 
 
-def check_encryption_params(module, state, vault_type, password, public_key,
-                            vault_data, res_find):
+def check_encryption_params(module, state, vault_type, salt, password,
+                            password_file, public_key, public_key_file,
+                            private_key, private_key_file, retrieve,
+                            vault_data, datafile_in, datafile_out, res_find):
+    vault_type_invalid = []
     if state == "present":
-        if vault_type == "symmetric":
-            if password is None \
-               and (vault_data is not None or res_find is None):
+        if vault_type == "standard":
+            vault_type_invalid = ['public_key', 'public_key_file', 'password',
+                                  'password_file', 'salt']
+
+        if vault_type is None or vault_type == "symmetric":
+            vault_type_invalid = ['public_key', 'public_key_file',
+                                  'private_key', 'private_key_file']
+            if not any([password, password_file]):
                 module.fail_json(
-                    msg="Vault password required for symmetric vault.")
+                    msg="Symmetric vault requires password or password_file "
+                        "to store data.")
 
         if vault_type == "asymmetric":
-            if public_key is None and res_find is None:
+            vault_type_invalid = ['password', 'password_file']
+            if not any([public_key, public_key_file]) and res_find is None:
                 module.fail_json(
-                    msg="Public Key required for asymmetric vault.")
+                    msg="Assymmetric vault requires public_key "
+                        "or public_key_file to store data.")
+
+    for param in vault_type_invalid:
+        if vars()[param] is not None:
+            module.fail_json(
+                msg="Argument '%s' cannot be used with vault type '%s'" %
+                (param, vault_type or 'symmetric'))
 
 
 def main():
@@ -379,16 +501,24 @@ def main():
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
 
-            # present
-
             description=dict(required=False, type="str", default=None),
             vault_type=dict(type="str", aliases=["ipavaulttype"],
                             default=None, required=False,
                             choices=["standard", "symmetric", "asymmetric"]),
             vault_public_key=dict(type="str", required=False, default=None,
-                                  aliases=['ipavaultpublickey']),
+                                  aliases=['ipavaultpublickey', 'public_key']),
+            vault_public_key_file=dict(type="str", required=False,
+                                       default=None,
+                                       aliases=['public_key_file']),
+            vault_private_key=dict(
+                type="str", required=False, default=None, no_log=True,
+                aliases=['ipavaultprivatekey', 'private_key']),
+            vault_private_key_file=dict(type="str", required=False,
+                                        default=None,
+                                        aliases=['private_key_file']),
+            retrieve=dict(type="bool", required=False, default=None),
             vault_salt=dict(type="str", required=False, default=None,
-                            aliases=['ipavaultsalt']),
+                            aliases=['ipavaultsalt', 'salt']),
             username=dict(type="str", required=False, default=None,
                           aliases=['user']),
             service=dict(type="str", required=False, default=None),
@@ -402,10 +532,16 @@ def main():
             ownergroups=dict(required=False, type='list', default=None),
             ownerservices=dict(required=False, type='list', default=None),
             vault_data=dict(type="str", required=False, default=None,
-                            aliases=['ipavaultdata']),
+                            no_log=True, aliases=['ipavaultdata', 'data']),
+            datafile_in=dict(type="str", required=False, default=None,
+                             aliases=['in']),
+            datafile_out=dict(type="str", required=False, default=None,
+                              aliases=['out']),
             vault_password=dict(type="str", required=False, default=None,
-                                no_log=True, aliases=['ipavaultpassword']),
-
+                                aliases=['ipavaultpassword', 'password'],
+                                no_log=True),
+            vault_password_file=dict(type="str", required=False, default=None,
+                                     no_log=False, aliases=['password_file']),
             # state
             action=dict(type="str", default="vault",
                         choices=["vault", "data", "member"]),
@@ -413,7 +549,10 @@ def main():
                        choices=["present", "absent"]),
         ),
         supports_check_mode=True,
-        mutually_exclusive=[['username', 'service', 'shared']],
+        mutually_exclusive=[['username', 'service', 'shared'],
+                            ['datafile_in', 'vault_data'],
+                            ['vault_password', 'vault_password_file'],
+                            ['vault_public_key', 'vault_public_key_file']],
     )
 
     ansible_module._ansible_debug = True
@@ -441,12 +580,22 @@ def main():
     vault_type = module_params_get(ansible_module, "vault_type")
     salt = module_params_get(ansible_module, "vault_salt")
     password = module_params_get(ansible_module, "vault_password")
+    password_file = module_params_get(ansible_module, "vault_password_file")
     public_key = module_params_get(ansible_module, "vault_public_key")
+    public_key_file = module_params_get(ansible_module,
+                                        "vault_public_key_file")
+    private_key = module_params_get(ansible_module, "vault_private_key")
+    private_key_file = module_params_get(ansible_module,
+                                         "vault_private_key_file")
 
     vault_data = module_params_get(ansible_module, "vault_data")
 
+    datafile_in = module_params_get(ansible_module, "datafile_in")
+    datafile_out = module_params_get(ansible_module, "datafile_out")
+
+    retrieve = module_params_get(ansible_module, "retrieve")
+
     action = module_params_get(ansible_module, "action")
-    # state
     state = module_params_get(ansible_module, "state")
 
     # Check parameters
@@ -466,7 +615,9 @@ def main():
     check_parameters(ansible_module, state, action, description, username,
                      service, shared, users, groups, services, owners,
                      ownergroups, ownerservices, vault_type, salt, password,
-                     public_key, vault_data)
+                     password_file, public_key, public_key_file, private_key,
+                     private_key_file, retrieve, vault_data, datafile_in,
+                     datafile_out)
     # Init
 
     changed = False
@@ -492,7 +643,10 @@ def main():
 
             # Generate args
             args = gen_args(description, username, service, shared, vault_type,
-                            salt, public_key, vault_data)
+                            salt, password, password_file, public_key,
+                            public_key_file, vault_data, datafile_in,
+                            datafile_out)
+            pwdargs = None
 
             # Set default vault_type if needed.
             if vault_type is None and vault_data is not None:
@@ -503,8 +657,11 @@ def main():
                     args['ipavaulttype'] = vault_type = "symmetric"
 
             # verify data encription args
-            check_encryption_params(ansible_module, state, vault_type,
-                                    password, public_key, vault_data, res_find)
+            check_encryption_params(ansible_module, state, vault_type, salt,
+                                    password, password_file, public_key,
+                                    public_key_file, private_key,
+                                    private_key_file, retrieve, vault_data,
+                                    datafile_in, datafile_out, res_find)
 
             # Create command
             if state == "present":
@@ -518,16 +675,13 @@ def main():
                         if not compare_args_ipa(ansible_module, args,
                                                 res_find):
                             commands.append([name, "vault_mod_internal", args])
-                    else:
-                        if 'ipavaultsault' not in args:
-                            args['ipavaultsalt'] = os.urandom(32)
-                        commands.append([name, "vault_add_internal", args])
-                        # archive empty data to set password
-                        pwdargs = data_storage_args(
-                            args, args.get('data', ''), password)
-                        commands.append([name, "vault_archive", pwdargs])
 
-                        # Set res_find to empty dict for next step  # noqa
+                    else:
+                        commands.append([name, "vault_add_internal", args])
+                        if vault_type != 'standard' and vault_data is None:
+                            vault_data = ''
+
+                        # Set res_find to empty dict for next steps
                         res_find = {}
 
                     # Generate adittion and removal lists
@@ -576,6 +730,10 @@ def main():
                     commands.append(
                         [name, 'vault_remove_owner', owner_del_args])
 
+                    if vault_type == 'symmetric' \
+                       and 'ipavaultsalt' not in args:
+                        args['ipavaultsalt'] = os.urandom(32)
+
                 elif action in "member":
                     # Add users and groups
                     if any([users, groups, services]):
@@ -587,10 +745,16 @@ def main():
                                                      ownerservices)
                         commands.append([name, 'vault_add_owner', owner_args])
 
-                    if vault_data is not None:
-                        data_args = data_storage_args(
-                            args, args.get('data', ''), password)
-                        commands.append([name, 'vault_archive', data_args])
+                pwdargs = data_storage_args(
+                    args, vault_data, password, password_file,
+                    private_key, private_key_file, retrieve, datafile_in,
+                    datafile_out)
+                if any([vault_data, datafile_in]):
+                    commands.append([name, "vault_archive", pwdargs])
+                if retrieve:
+                    if 'data' in pwdargs:
+                        del pwdargs['data']
+                    commands.append([name, "vault_retrieve", pwdargs])
 
             elif state == "absent":
                 if 'ipavaulttype' in args:
@@ -629,6 +793,9 @@ def main():
 
                 if command == 'vault_archive':
                     changed = 'Archived data into' in result['summary']
+                elif command == 'vault_retrieve':
+                    exit_args['data'] = b64encode(result['result']['data'])
+                    changed = False
                 else:
                     if "completed" in result:
                         if result["completed"] > 0:

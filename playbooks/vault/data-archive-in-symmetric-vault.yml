@@ -9,6 +9,6 @@
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
-      vault_password: MyVaultPassword123
+      vault_password: SomeVAULTpassword
       vault_data: The world of π is half rounded.
       action: member

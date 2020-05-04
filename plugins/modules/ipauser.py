@@ -1427,7 +1427,6 @@ def main():
         temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
-
     ansible_module.exit_json(changed=changed, user=exit_args)
 
 
