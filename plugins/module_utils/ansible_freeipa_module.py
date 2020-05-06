@@ -39,6 +39,7 @@ try:
 except ImportError:
     from ipapython.ipautil import kinit_password, kinit_keytab
 from ipapython.ipautil import run
+from ipapython.dn import DN
 from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
 from ansible.module_utils.basic import AnsibleModule
@@ -342,6 +343,16 @@ def load_cert_from_str(cert):
     else:
         cert = load_certificate(cert.encode('utf-8'))
     return cert
+
+
+def DN_x500_text(text):
+    if hasattr(DN, "x500_text"):
+        return DN(text).x500_text()
+    else:
+        # Emulate x500_text
+        dn = DN(text)
+        dn.rdns = reversed(dn.rdns)
+        return str(dn)
 
 
 def is_valid_port(port):
