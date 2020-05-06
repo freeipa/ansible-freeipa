@@ -159,7 +159,7 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get
+    module_params_get, gen_add_del_lists
 
 
 def find_hbacrule(module, name):
@@ -342,44 +342,24 @@ def main():
                         res_find = {}
 
                     # Generate addition and removal lists
-                    host_add = list(
-                        set(host or []) -
-                        set(res_find.get("memberhost_host", [])))
-                    host_del = list(
-                        set(res_find.get("memberhost_host", [])) -
-                        set(host or []))
-                    hostgroup_add = list(
-                        set(hostgroup or []) -
-                        set(res_find.get("memberhost_hostgroup", [])))
-                    hostgroup_del = list(
-                        set(res_find.get("memberhost_hostgroup", [])) -
-                        set(hostgroup or []))
+                    host_add, host_del = gen_add_del_lists(
+                        host, res_find.get("memberhost_host"))
 
-                    hbacsvc_add = list(
-                        set(hbacsvc or []) -
-                        set(res_find.get("memberservice_hbacsvc", [])))
-                    hbacsvc_del = list(
-                        set(res_find.get("memberservice_hbacsvc", [])) -
-                        set(hbacsvc or []))
-                    hbacsvcgroup_add = list(
-                        set(hbacsvcgroup or []) -
-                        set(res_find.get("memberservice_hbacsvcgroup", [])))
-                    hbacsvcgroup_del = list(
-                        set(res_find.get("memberservice_hbacsvcgroup", [])) -
-                        set(hbacsvcgroup or []))
+                    hostgroup_add, hostgroup_del = gen_add_del_lists(
+                        hostgroup, res_find.get("memberhost_hostgroup"))
 
-                    user_add = list(
-                        set(user or []) -
-                        set(res_find.get("memberuser_user", [])))
-                    user_del = list(
-                        set(res_find.get("memberuser_user", [])) -
-                        set(user or []))
-                    group_add = list(
-                        set(group or []) -
-                        set(res_find.get("memberuser_group", [])))
-                    group_del = list(
-                        set(res_find.get("memberuser_group", [])) -
-                        set(group or []))
+                    hbacsvc_add, hbacsvc_del = gen_add_del_lists(
+                        hbacsvc, res_find.get("memberservice_hbacsvc"))
+
+                    hbacsvcgroup_add, hbacsvcgroup_del = gen_add_del_lists(
+                        hbacsvcgroup,
+                        res_find.get("memberservice_hbacsvcgroup"))
+
+                    user_add, user_del = gen_add_del_lists(
+                        user, res_find.get("memberuser_user"))
+
+                    group_add, group_del = gen_add_del_lists(
+                        group, res_find.get("memberuser_group"))
 
                     # Add hosts and hostgroups
                     if len(host_add) > 0 or len(hostgroup_add) > 0:

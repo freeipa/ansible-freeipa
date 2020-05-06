@@ -104,7 +104,8 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa
+    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
+    gen_add_del_lists
 
 
 def find_hbacsvcgroup(module, name):
@@ -249,12 +250,8 @@ def main():
                     if not compare_args_ipa(ansible_module, member_args,
                                             res_find):
                         # Generate addition and removal lists
-                        hbacsvc_add = list(
-                            set(hbacsvc or []) -
-                            set(res_find.get("member_hbacsvc", [])))
-                        hbacsvc_del = list(
-                            set(res_find.get("member_hbacsvc", [])) -
-                            set(hbacsvc or []))
+                        hbacsvc_add, hbacsvc_del = gen_add_del_lists(
+                            hbacsvc, res_find.get("member_hbacsvc"))
 
                         # Add members
                         if len(hbacsvc_add) > 0:
