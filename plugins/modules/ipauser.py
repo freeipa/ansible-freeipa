@@ -467,7 +467,7 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, date_format, \
     compare_args_ipa, module_params_get, api_check_param, api_get_realm, \
-    api_command_no_name, gen_add_del_lists
+    api_command_no_name, gen_add_del_lists, encode_certificate
 import six
 
 
@@ -497,6 +497,11 @@ def find_user(module, name, preserved=False):
             for x in _result["krbprincipalname"]:
                 _list.append(str(x))
             _result["krbprincipalname"] = _list
+        certs = _result.get("usercertificate")
+        if certs is not None:
+            _result["usercertificate"] = [encode_certificate(x)
+                                          for x in certs]
+
         return _result
     else:
         return None
