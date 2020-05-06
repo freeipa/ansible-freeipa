@@ -467,7 +467,7 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, date_format, \
     compare_args_ipa, module_params_get, api_check_param, api_get_realm, \
-    api_command_no_name
+    api_command_no_name, gen_add_del_lists
 import six
 
 
@@ -1063,36 +1063,21 @@ def main():
                     # certmapdata
                     if res_find is not None:
                         # Generate addition and removal lists
-                        manager_add = list(
-                            set(manager or []) -
-                            set(res_find.get("manager", [])))
-                        manager_del = list(
-                            set(res_find.get("manager", [])) -
-                            set(manager or []))
-                        principal_add = list(
-                            set(principal or []) -
-                            set(res_find.get("krbprincipalname", [])))
-                        principal_del = list(
-                            set(res_find.get("krbprincipalname", [])) -
-                            set(principal or []))
+                        manager_add, manager_del = gen_add_del_lists(
+                            manager, res_find.get("manager"))
 
+                        principal_add, principal_del = gen_add_del_lists(
+                            principal, res_find.get("krbprincipalname"))
                         # Principals are not returned as utf8 for IPA using
                         # python2 using user_find, therefore we need to
                         # convert the principals that we should remove.
                         principal_del = [to_text(x) for x in principal_del]
 
-                        certificate_add = list(
-                            set(certificate or []) -
-                            set(res_find.get("certificate", [])))
-                        certificate_del = list(
-                            set(res_find.get("certificate", [])) -
-                            set(certificate or []))
-                        certmapdata_add = list(
-                            set(certmapdata or []) -
-                            set(res_find.get("ipaCertMapData", [])))
-                        certmapdata_del = list(
-                            set(res_find.get("ipaCertMapData", [])) -
-                            set(certmapdata or []))
+                        certificate_add, certificate_del = gen_add_del_lists(
+                            certificate, res_find.get("usercertificate"))
+
+                        certmapdata_add, certmapdata_del = gen_add_del_lists(
+                            certmapdata, res_find.get("ipaCertMapData"))
 
                     else:
                         # Use given managers and principals

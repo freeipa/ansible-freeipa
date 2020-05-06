@@ -117,7 +117,7 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get
+    module_params_get, gen_add_del_lists
 
 
 def find_hostgroup(module, name):
@@ -268,18 +268,11 @@ def main():
                     if not compare_args_ipa(ansible_module, member_args,
                                             res_find):
                         # Generate addition and removal lists
-                        host_add = list(
-                            set(host or []) -
-                            set(res_find.get("member_host", [])))
-                        host_del = list(
-                            set(res_find.get("member_host", [])) -
-                            set(host or []))
-                        hostgroup_add = list(
-                            set(hostgroup or []) -
-                            set(res_find.get("member_hostgroup", [])))
-                        hostgroup_del = list(
-                            set(res_find.get("member_hostgroup", [])) -
-                            set(hostgroup or []))
+                        host_add, host_del = gen_add_del_lists(
+                            host, res_find.get("member_host"))
+
+                        hostgroup_add, hostgroup_del = gen_add_del_lists(
+                            hostgroup, res_find.get("member_hostgroup"))
 
                         # Add members
                         if len(host_add) > 0 or len(hostgroup_add) > 0:
