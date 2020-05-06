@@ -175,6 +175,11 @@ def api_command_no_name(module, command, args):
     return api.Command[command](**args)
 
 
+def api_check_command(command):
+    """Return if command exists in command list."""
+    return command in api.Command
+
+
 def api_check_param(command, name):
     """Check if param exists in command param list."""
     return name in api.Command[command].params
