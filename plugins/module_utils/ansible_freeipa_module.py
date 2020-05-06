@@ -48,6 +48,13 @@ try:
     from ipalib.x509 import Encoding
 except ImportError:
     from cryptography.hazmat.primitives.serialization import Encoding
+
+try:
+    from ipalib.x509 import load_pem_x509_certificate
+except ImportError:
+    from ipalib.x509 import load_certificate
+    load_pem_x509_certificate = None
+
 import socket
 import base64
 import six
@@ -321,6 +328,20 @@ def encode_certificate(cert):
     if not six.PY2:
         encoded = encoded.decode('ascii')
     return encoded
+
+
+def load_cert_from_str(cert):
+    cert = cert.strip()
+    if not cert.startswith("-----BEGIN CERTIFICATE-----"):
+        cert = "-----BEGIN CERTIFICATE-----\n" + cert
+    if not cert.endswith("-----END CERTIFICATE-----"):
+        cert += "\n-----END CERTIFICATE-----"
+
+    if load_pem_x509_certificate is not None:
+        cert = load_pem_x509_certificate(cert.encode('utf-8'))
+    else:
+        cert = load_certificate(cert.encode('utf-8'))
+    return cert
 
 
 def is_valid_port(port):
