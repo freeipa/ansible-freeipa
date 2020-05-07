@@ -96,6 +96,10 @@ options:
     description: Groups that are member of the container.
     required: false
     type: list
+  services:
+    description: Services that are member of the container.
+    required: false
+    type: list
   action:
     description: Work on vault or member level.
     default: vault
@@ -284,7 +288,7 @@ def gen_args(description, username, service, shared, vault_type, salt,
     return _args
 
 
-def gen_member_args(args, users, groups):
+def gen_member_args(args, users, groups, services):
     _args = args.copy()
 
     for arg in ['ipavaulttype', 'description', 'ipavaultpublickey',
@@ -292,8 +296,12 @@ def gen_member_args(args, users, groups):
         if arg in _args:
             del _args[arg]
 
-    _args['user'] = users
-    _args['group'] = groups
+    if users is not None:
+        _args['user'] = users
+    if groups is not None:
+        _args['group'] = groups
+    if services is not None:
+        _args['services'] = services
 
     return _args
 
@@ -317,8 +325,9 @@ def data_storage_args(args, data, password):
 
 
 def check_parameters(module, state, action, description, username, service,
-                     shared, users, groups, owners, ownergroups, vault_type,
-                     salt, password, public_key, vault_data):
+                     shared, users, groups, services, owners, ownergroups,
+                     ownerservices, vault_type, salt, password, public_key,
+                     vault_data):
     invalid = []
     if state == "present":
         if action == "member":
@@ -334,8 +343,9 @@ def check_parameters(module, state, action, description, username, service,
         invalid = ['description', 'salt']
 
         if action == "vault":
-            invalid.extend(['users', 'groups', 'owners', 'ownergroups',
-                            'password', 'public_key'])
+            invalid.extend(['users', 'groups', 'services', 'owners',
+                            'ownergroups', 'ownerservices', 'password',
+                            'public_key'])
 
         for arg in invalid:
             if vars()[arg] is not None:
@@ -386,9 +396,11 @@ def main():
 
             users=dict(required=False, type='list', default=None),
             groups=dict(required=False, type='list', default=None),
-            owners=dict(required=False, type='list', default=None),
+            services=dict(required=False, type='list', default=None),
+            owners=dict(required=False, type='list', default=None,
+                        aliases=['ownerusers']),
             ownergroups=dict(required=False, type='list', default=None),
-
+            ownerservices=dict(required=False, type='list', default=None),
             vault_data=dict(type="str", required=False, default=None,
                             aliases=['ipavaultdata']),
             vault_password=dict(type="str", required=False, default=None,
@@ -422,8 +434,10 @@ def main():
 
     users = module_params_get(ansible_module, "users")
     groups = module_params_get(ansible_module, "groups")
+    services = module_params_get(ansible_module, "services")
     owners = module_params_get(ansible_module, "owners")
     ownergroups = module_params_get(ansible_module, "ownergroups")
+    ownerservices = module_params_get(ansible_module, "ownerservices")
 
     vault_type = module_params_get(ansible_module, "vault_type")
     salt = module_params_get(ansible_module, "vault_salt")
@@ -451,8 +465,9 @@ def main():
         ansible_module.fail_json(msg="Invalid state '%s'" % state)
 
     check_parameters(ansible_module, state, action, description, username,
-                     service, shared, users, groups, owners, ownergroups,
-                     vault_type, salt, password, public_key, vault_data)
+                     service, shared, users, groups, services, owners,
+                     ownergroups, ownerservices, vault_type, salt, password,
+                     public_key, vault_data)
     # Init
 
     changed = False
@@ -520,48 +535,54 @@ def main():
                     group_add, group_del = \
                         gen_add_del_lists(groups,
                                           res_find.get('member_group', []))
+                    service_add, service_del = \
+                        gen_add_del_lists(services,
+                                          res_find.get('member_service', []))
+
                     owner_add, owner_del = \
                         gen_add_del_lists(owners,
                                           res_find.get('owner_user', []))
+
                     ownergroups_add, ownergroups_del = \
                         gen_add_del_lists(ownergroups,
                                           res_find.get('owner_group', []))
 
+                    ownerservice_add, ownerservice_del = \
+                        gen_add_del_lists(ownerservices,
+                                          res_find.get('owner_service', []))
+
                     # Add users and groups
-                    if len(user_add) > 0 or len(group_add) > 0:
-                        user_add_args = gen_member_args(args, user_add,
-                                                        group_add)
-                        commands.append([name, 'vault_add_member',
-                                         user_add_args])
+                    user_add_args = gen_member_args(args, user_add,
+                                                    group_add, service_add)
+                    commands.append([name, 'vault_add_member', user_add_args])
 
                     # Remove users and groups
-                    if len(user_del) > 0 or len(group_del) > 0:
-                        user_del_args = gen_member_args(args, user_del,
-                                                        group_del)
-                        commands.append([name, 'vault_remove_member',
-                                         user_del_args])
+                    user_del_args = gen_member_args(args, user_del,
+                                                    group_del, service_del)
+                    commands.append(
+                        [name, 'vault_remove_member', user_del_args])
 
                     # Add owner users and groups
-                    if len(user_add) > 0 or len(group_add) > 0:
-                        owner_add_args = gen_member_args(args, owner_add,
-                                                         ownergroups_add)
-                        commands.append([name, 'vault_add_owner',
-                                         owner_add_args])
+                    owner_add_args = gen_member_args(
+                        args, owner_add, ownergroups_add, ownerservice_add)
+                    commands.append(
+                        [name, 'vault_add_owner', owner_add_args])
 
                     # Remove owner users and groups
-                    if len(user_del) > 0 or len(group_del) > 0:
-                        owner_del_args = gen_member_args(args, owner_del,
-                                                         ownergroups_del)
-                        commands.append([name, 'vault_remove_owner',
-                                         owner_del_args])
+                    owner_del_args = gen_member_args(
+                        args, owner_del, ownergroups_del, ownerservice_del)
+                    commands.append(
+                        [name, 'vault_remove_owner', owner_del_args])
 
                 elif action in "member":
                     # Add users and groups
-                    if users is not None or groups is not None:
-                        user_args = gen_member_args(args, users, groups)
+                    if any([users, groups, services]):
+                        user_args = gen_member_args(args, users, groups,
+                                                    services)
                         commands.append([name, 'vault_add_member', user_args])
-                    if owners is not None or ownergroups is not None:
-                        owner_args = gen_member_args(args, owners, ownergroups)
+                    if any([owners, ownergroups, ownerservices]):
+                        owner_args = gen_member_args(args, owners, ownergroups,
+                                                     ownerservices)
                         commands.append([name, 'vault_add_owner', owner_args])
 
                     if vault_data is not None:
@@ -579,15 +600,17 @@ def main():
 
                 elif action == "member":
                     # remove users and groups
-                    if users is not None or groups is not None:
-                        user_args = gen_member_args(args, users, groups)
-                        commands.append([name, 'vault_remove_member',
-                                         user_args])
+                    if any([users, groups, services]):
+                        user_args = gen_member_args(
+                            args, users, groups, services)
+                        commands.append(
+                            [name, 'vault_remove_member', user_args])
 
-                    if owners is not None or ownergroups is not None:
-                        owner_args = gen_member_args(args, owners, ownergroups)
-                        commands.append([name, 'vault_remove_owner',
-                                         owner_args])
+                    if any([owners, ownergroups, ownerservices]):
+                        owner_args = gen_member_args(
+                            args, owners, ownergroups, ownerservices)
+                        commands.append(
+                            [name, 'vault_remove_owner', owner_args])
                 else:
                     ansible_module.fail_json(
                         msg="Invalid action '%s' for state '%s'" %
