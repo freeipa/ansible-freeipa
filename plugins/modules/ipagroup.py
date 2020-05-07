@@ -141,7 +141,7 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    api_check_param, module_params_get
+    api_check_param, module_params_get, gen_add_del_lists
 
 
 def find_group(module, name):
@@ -317,24 +317,14 @@ def main():
                     if not compare_args_ipa(ansible_module, member_args,
                                             res_find):
                         # Generate addition and removal lists
-                        user_add = list(
-                            set(user or []) -
-                            set(res_find.get("member_user", [])))
-                        user_del = list(
-                            set(res_find.get("member_user", [])) -
-                            set(user or []))
-                        group_add = list(
-                            set(group or []) -
-                            set(res_find.get("member_group", [])))
-                        group_del = list(
-                            set(res_find.get("member_group", [])) -
-                            set(group or []))
-                        service_add = list(
-                            set(service or []) -
-                            set(res_find.get("member_service", [])))
-                        service_del = list(
-                            set(res_find.get("member_service", [])) -
-                            set(service or []))
+                        user_add, user_del = gen_add_del_lists(
+                            user, res_find.get("member_user"))
+
+                        group_add, group_del = gen_add_del_lists(
+                            group, res_find.get("member_group"))
+
+                        service_add, service_del = gen_add_del_lists(
+                            service, res_find.get("member_service"))
 
                         if has_add_member_service:
                             # Add members

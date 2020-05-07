@@ -298,6 +298,10 @@ def api_get_realm():
 
 def gen_add_del_lists(user_list, res_list):
     """Generate the lists for the addition and removal of members."""
+    # The user list is None, therefore the parameter should not be touched
+    if user_list is None:
+        return [], []
+
     add_list = list(set(user_list or []) - set(res_list or []))
     del_list = list(set(res_list or []) - set(user_list or []))
 
