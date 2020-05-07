@@ -463,6 +463,9 @@ def main():
         if not valid_creds(ansible_module, ipaadmin_principal):
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
+            # Need to set krb5 ccache name, due to context='ansible-freeipa'
+            if ccache_name is not None:
+                os.environ["KRB5CCNAME"] = ccache_name
 
         api_connect(context='ansible-freeipa')
 
