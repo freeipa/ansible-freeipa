@@ -173,14 +173,14 @@ Example playbook to ensure host presence with a random password:
       name: host01.example.com
       random: yes
       force: yes
+      update_password: on_create
     register: ipahost
 
   - name: Print generated random password
     debug:
       var: ipahost.host.randompassword
 ```
-Please remember that the `force` tag will also force the generation of a new random password even if the host already exists and if `update_password` is limited to `on_create`.
-
+Please remember that a new random password will be generated for an existing but not enrolled host if `update_password` is not limited to `on_create`. For an already enrolled host the task will fail with `update_password` default setting `always`.
 
 Example playbook to ensure presence of several hosts with a random password:
 
@@ -198,9 +198,11 @@ Example playbook to ensure presence of several hosts with a random password:
       - name: host01.example.com
         random: yes
         force: yes
+        update_password: on_create
       - name: host02.example.com
         random: yes
         force: yes
+        update_password: on_create
     register: ipahost
 
   - name: Print generated random password for host01.example.com
@@ -211,7 +213,7 @@ Example playbook to ensure presence of several hosts with a random password:
     debug:
       var: ipahost.host["host02.example.com"].randompassword
 ```
-Please remember that the `force` tag will also force the generation of a new random password even if the host alreay exists and if `update_password` is limited to `on_create`.
+Please remember that a new random password will be generated for an existing but not enrolled host if `update_password` is not limited to `on_create`. For an already enrolled host the task will fail with `update_password` default setting `always`.
 
 
 Example playbook to ensure presence of host member principal:
@@ -337,8 +339,8 @@ Variable | Description | Required
 `location` \| `ns_host_location` | Host location (e.g. "Lab 2"). | no
 `platform` \| `ns_hardware_platform` | Host hardware platform (e.g. "Lenovo T61"). | no
 `os` \| `ns_os_version` | Host operating system and version (e.g. "Fedora 9"). | no
-`password` \| `user_password` \| `userpassword` | Password used in bulk enrollment. | no
-`random` \| `random_password` |  Initiate the generation of a random password to be used in bulk enrollment. | no
+`password` \| `user_password` \| `userpassword` | Password used in bulk enrollment for absent or not enrolled hosts. | no
+`random` \| `random_password` |  Initiate the generation of a random password to be used in bulk enrollment for absent or not enrolled hosts. | no
 `certificate` \| `usercertificate` | List of base-64 encoded host certificates | no
 `managedby` \| `principalname` \| `krbprincipalname` | List of hosts that can manage this host | no
 `principal` \| `principalname` \| `krbprincipalname` | List of principal aliases for this host | no

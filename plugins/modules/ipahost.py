@@ -420,23 +420,22 @@ if six.PY3:
 def find_host(module, name):
     _args = {
         "all": True,
-        "fqdn": to_text(name),
     }
 
-    _result = api_command(module, "host_find", to_text(name), _args)
+    try:
+        _result = api_command(module, "host_show", to_text(name), _args)
+    except ipalib_errors.NotFound as e:
+        msg = str(e)
+        if "host not found" in msg:
+            return None
+        module.fail_json(msg="host_show failed: %s" % msg)
 
-    if len(_result["result"]) > 1:
-        module.fail_json(
-            msg="There is more than one host '%s'" % (name))
-    elif len(_result["result"]) == 1:
-        _res = _result["result"][0]
-        certs = _res.get("usercertificate")
-        if certs is not None:
-            _res["usercertificate"] = [encode_certificate(cert) for
-                                       cert in certs]
-        return _res
-    else:
-        return None
+    _res = _result["result"]
+    certs = _res.get("usercertificate")
+    if certs is not None:
+        _res["usercertificate"] = [encode_certificate(cert) for
+                                   cert in certs]
+    return _res
 
 
 def find_dnsrecord(module, name):
@@ -903,9 +902,25 @@ def main():
                     # Found the host
                     if res_find is not None:
                         # Ignore password with update_password == on_create
-                        if update_password == "on_create" and \
-                           "userpassword" in args:
-                            del args["userpassword"]
+                        if update_password == "on_create":
+                            # Ignore userpassword and random for existing
+                            # host if update_password is "on_create"
+                            if "userpassword" in args:
+                                del args["userpassword"]
+                            if "random" in args:
+                                del args["random"]
+                        elif "userpassword" in args or "random" in args:
+                            # Allow an existing OTP to be reset but don't
+                            # allow a OTP or to be added to an enrolled host.
+                            # Also do not allow to change the password for an
+                            # enrolled host.
+
+                            if not res_find["has_password"] and \
+                               res_find["has_keytab"]:
+                                ansible_module.fail_json(
+                                    msg="%s: Password cannot be set on "
+                                    "enrolled host." % host
+                                )
 
                         # Ignore force, ip_address and no_reverse for mod
                         for x in ["force", "ip_address", "no_reverse"]:
@@ -953,7 +968,7 @@ def main():
                         principal_add, principal_del = gen_add_del_lists(
                             principal, res_find.get("principal"))
                         # Principals are not returned as utf8 for IPA using
-                        # python2 using host_find, therefore we need to
+                        # python2 using host_show, therefore we need to
                         # convert the principals that we should remove.
                         principal_del = [to_text(x) for x in principal_del]
 
