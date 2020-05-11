@@ -386,12 +386,20 @@ def main():
                     if res_find is None:
                         ansible_module.fail_json(msg="No group '%s'" % name)
 
-                    commands.append([name, "group_remove_member",
-                                     {
-                                         "user": user,
-                                         "group": group,
-                                         "service": service,
-                                     }])
+                    if has_add_member_service:
+                        commands.append([name, "group_remove_member",
+                                         {
+                                             "user": user,
+                                             "group": group,
+                                             "service": service,
+                                         }])
+                    else:
+                        commands.append([name, "group_remove_member",
+                                         {
+                                             "user": user,
+                                             "group": group,
+                                         }])
+
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
