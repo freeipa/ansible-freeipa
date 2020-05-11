@@ -445,24 +445,19 @@ def find_dnsrecord(module, name):
 
     _args = {
         "all": True,
-        "idnsname": to_text(host_name),
+        "idnsname": to_text(host_name)
     }
 
-    _result = api_command(module, "dnsrecord_find", to_text(domain_name),
-                          _args)
+    try:
+        _result = api_command(module, "dnsrecord_show", to_text(domain_name),
+                              _args)
+    except ipalib_errors.NotFound as e:
+        msg = str(e)
+        if "record not found" in msg:
+            return None
+        module.fail_json(msg="dnsrecord_show failed: %s" % msg)
 
-    if len(_result["result"]) > 1:
-        module.fail_json(
-            msg="There is more than one host '%s'" % (name))
-    elif len(_result["result"]) == 1:
-        _res = _result["result"][0]
-        certs = _res.get("usercertificate")
-        if certs is not None:
-            _res["usercertificate"] = [encode_certificate(cert) for
-                                       cert in certs]
-        return _res
-    else:
-        return None
+    return _result["result"]
 
 
 def show_host(module, name):
