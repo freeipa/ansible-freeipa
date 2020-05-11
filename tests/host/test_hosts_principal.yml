@@ -141,7 +141,6 @@
         principal:
         - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
         - "{{ 'host/myhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
-      hosts:
       - name: "{{ host2_fqdn }}"
         principal:
         - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
@@ -159,7 +158,6 @@
         principal:
         - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
         - "{{ 'host/myhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
-      hosts:
       - name: "{{ host2_fqdn }}"
         principal:
         - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
