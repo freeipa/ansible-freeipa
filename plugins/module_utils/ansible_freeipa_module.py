@@ -39,6 +39,7 @@ try:
 except ImportError:
     from ipapython.ipautil import kinit_password, kinit_keytab
 from ipapython.ipautil import run
+from ipapython.dn import DN
 from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
 from ansible.module_utils.basic import AnsibleModule
@@ -48,6 +49,13 @@ try:
     from ipalib.x509 import Encoding
 except ImportError:
     from cryptography.hazmat.primitives.serialization import Encoding
+
+try:
+    from ipalib.x509 import load_pem_x509_certificate
+except ImportError:
+    from ipalib.x509 import load_certificate
+    load_pem_x509_certificate = None
+
 import socket
 import base64
 import six
@@ -165,6 +173,11 @@ def api_command(module, command, name, args):
 def api_command_no_name(module, command, args):
     """Call ipa.Command without a name."""
     return api.Command[command](**args)
+
+
+def api_check_command(command):
+    """Return if command exists in command list."""
+    return command in api.Command
 
 
 def api_check_param(command, name):
@@ -321,6 +334,30 @@ def encode_certificate(cert):
     if not six.PY2:
         encoded = encoded.decode('ascii')
     return encoded
+
+
+def load_cert_from_str(cert):
+    cert = cert.strip()
+    if not cert.startswith("-----BEGIN CERTIFICATE-----"):
+        cert = "-----BEGIN CERTIFICATE-----\n" + cert
+    if not cert.endswith("-----END CERTIFICATE-----"):
+        cert += "\n-----END CERTIFICATE-----"
+
+    if load_pem_x509_certificate is not None:
+        cert = load_pem_x509_certificate(cert.encode('utf-8'))
+    else:
+        cert = load_certificate(cert.encode('utf-8'))
+    return cert
+
+
+def DN_x500_text(text):
+    if hasattr(DN, "x500_text"):
+        return DN(text).x500_text()
+    else:
+        # Emulate x500_text
+        dn = DN(text)
+        dn.rdns = reversed(dn.rdns)
+        return str(dn)
 
 
 def is_valid_port(port):

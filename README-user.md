@@ -417,10 +417,11 @@ Variable | Description | Required
 `employeetype` | Employee Type | no
 `preferredlanguage` | Preferred Language | no
 `certificate` | List of base-64 encoded user certificates. | no
-`certmapdata` | List of certificate mappings. Either `certificate` or `issuer` together with `subject` need to be specified. <br>Options: | no
-&nbsp; | `certificate` - Base-64 encoded user certificate | no
-&nbsp; | `issuer` - Issuer of the certificate | no
-&nbsp; | `subject` - Subject of the certificate | no
+`certmapdata` | List of certificate mappings. Either `data` or `certificate` or `issuer` together with `subject` need to be specified. Only usable with IPA versions 4.5 and up. <br>Options: | no
+&nbsp; | `certificate` - Base-64 encoded user certificate, not usable with other certmapdata options. | no
+&nbsp; | `issuer` - Issuer of the certificate, only usable together with `usbject` option. | no
+&nbsp; | `subject` - Subject of the certificate, only usable together with `issuer` option. | no
+&nbsp; | `data` - Certmap data, not usable with other certmapdata options. | no
 `noprivate` | Do not create user private group. (bool) | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
 
