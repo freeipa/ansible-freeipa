@@ -1,0 +1,117 @@
+---
+- name: Test HBAC rule user category
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+
+  - name: Ensure HBAC rules are absent
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testrule
+      state: absent
+
+  - name: Ensure HBAC rule is present, with usercategory 'all'
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      usercategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC rule is present, with usercategory 'all', again.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      usercategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC rule is present, with no usercategory.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      usercategory: ""
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC rule is present, with no usercategory, again.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      usercategory: ""
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC rule is present, with hostcategory 'all'
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      hostcategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC rule is present, with hostcategory 'all', again.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      hostcategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC rule is present, with no hostcategory.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      hostcategory: ""
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC rule is present, with no hostcategory, again.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      hostcategory: ""
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC rule is present, with servicecategory 'all'
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      servicecategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC rule is present, with servicecategory 'all', again.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      servicecategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC rule is present, with no servicecategory.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      servicecategory: ""
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure HBAC rule is present, with no servicecategory, again.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule
+      servicecategory: ""
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure HBAC rules are absent
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testrule
+      state: absent

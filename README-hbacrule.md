@@ -138,9 +138,9 @@ Variable | Description | Required
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `name` \| `cn` | The list of hbacrule name strings. | yes
 `description` | The hbacrule description string. | no
-`usercategory` \| `usercat` | User category the rule applies to. Choices: ["all"] | no
-`hostcategory` \| `hostcat` | Host category the rule applies to. Choices: ["all"] | no
-`servicecategory` \| `servicecat` | HBAC service category the rule applies to. Choices: ["all"] | no
+`usercategory` \| `usercat` | User category the rule applies to. Choices: ["all", ""] | no
+`hostcategory` \| `hostcat` | Host category the rule applies to. Choices: ["all", ""] | no
+`servicecategory` \| `servicecat` | HBAC service category the rule applies to. Choices: ["all", ""] | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
 `host` | List of host name strings assigned to this hbacrule. | no
 `hostgroup` | List of host group name strings assigned to this hbacrule. | no
