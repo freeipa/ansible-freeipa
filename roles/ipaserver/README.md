@@ -235,6 +235,9 @@ Variable | Description | Required
 `ipaserver_dirsrv_cert_name` | Name of the Directory Server SSL certificate to install. (string) | no
 `ipaserver_http_cert_name` | Name of the Apache Server SSL certificate to install. (string) | no
 `ipaserver_pkinit_cert_name` | Name of the Kerberos KDC SSL certificate to install. (string) | no
+`ipaserver_no_pkinit` | Disable pkinit setup steps (boolean) | no
+
+NOTE: If one of the `ipaserver_http_cert_files` or `ipaserver_pkinit_cert_files` is specified, then both are required, so declaring only one of them will raise an error. Additionally, one of `ipaserver_pkinit_cert_files` or `ipaserver_no_pkinit` must be provided as well.
 
 Client Variables
 ----------------
