@@ -227,8 +227,8 @@ SSL certificate Variables
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaserver_dirsrv_cert_files` | Files containing the Directory Server SSL certificate and private keys. (list of strings) | no
-`ipaserver_http_cert_file` | File containing the Apache Server SSL certificate and private key. (string) | no
-`ipaserver_pkinit_cert_file` | File containing the Kerberos KDC SSL certificate and private key. (string) | no
+`ipaserver_http_cert_files` | File containing the Apache Server SSL certificate and private key. (list of string) | no
+`ipaserver_pkinit_cert_files` | File containing the Kerberos KDC SSL certificate and private key. (list of string) | no
 `ipaserver_dirsrv_pin` | The password to unlock the Directory Server private key. (string) | no
 `ipaserver_http_pin` | The password to unlock the Apache Server private key. (string) | no
 `ipaserver_pkinit_pin` | The password to unlock the Kerberos KDC private key. (string) | no
