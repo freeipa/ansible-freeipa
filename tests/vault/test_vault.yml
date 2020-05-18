@@ -1,5 +1,4 @@
 ---
-
 - name: Test vault
   hosts: ipaserver
   become: true
@@ -120,7 +119,6 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: stdvault
-      vault_type: standard
       state: absent
     register: result
     failed_when: not result.changed
@@ -129,7 +127,6 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: stdvault
-      vault_type: standard
       state: absent
     register: result
     failed_when: result.changed
@@ -220,7 +217,6 @@
       state: absent
     register: result
     failed_when: not result.changed
-
 
   - name: Ensure symmetric vault is present, with password from file.
     ipavault:
@@ -330,11 +326,11 @@
       name: asymvault
       username: user01
       vault_type: asymmetric
-      retrieve: true
       private_key:
         LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBck01L2Y2ZGQvWUltL2E5ZW9HVlRXOGpvYkVncmY5UFhSQTNhSHNBN2tKbzZmQjE4CkhENCtSVlV3eC9scWxrUFliVWk5YlhWL3JKQWtVd0FFRE9uSmVxWEVTWitnVkNWbWlnUnptS1dLMmFkOWFnbVkKU2lxeXlOeEZJSnZaQW8wZEc0Q0FXallLMjd0TGc0SWg2b0dzWklERytXVkVTNVc4OUsrTDBid1ZqcTR0c2hoZQpETU81N3Vudm1JS0VtYUJFMGV3UGZ2a2RaaDVrOEd0czlINGZoMGZHazV0YklZYTBiaHdNVXBMK1dIT202bmJkCituN0JiYVZjODIwVGdaRE8vclNZdG51WGFJYzZXeDBVOUxYWmtVbWszYXBNbnprbk5hVHFndUFRZFRuNzlHOFAKcXJHcW15V2QvRTFjSDJiNWp6SXhpR284cHNMNXN4V1ZZN1dKZHdJREFRQUJBb0lCQUE2ZTlpaXQxNFVBZ3g0Sgp2WDdpczlmYk90Y1drQitqbzk0Tk1meFNGWGdacElNbDEzOW9RTXFLOTdLanhzSHFBYURWZTdtTUxINUVQOTZKCjdNM081ZzRyZ2wwY1ZXdHBNckRReVpzTHZxREZ6Qld4dENIcVZQQXJ1dW1VWmhzU0ozbFJPUXJvOGFnL3c1YmYKNXRDNW9nVnE0K3JzQjRoQnBoZ3Axakdyc1VNK0U4TzdEWFhGSDY4RjhXZ0JpNzI1V3Zjam5iSTlpcmtiMEdjcQoxYkNQSndOM2ZBMWkyVldpUndWWVdiTlRXbkRvTk05WmRZWXhLMGt1VWtEK1F0cmV5Y1dQZjlWNDlsdlVpMVZwCkZWTm1CVUR2R0szSzFNd2JnWFJ3T1hoYWNZN1B0amtkdmFlYjJRY3U1UmpUa3J1R2h6VVlzT1AzcC9jdyt3S1YKdnpRcWNlRUNnWUVBNVd6N1YyU2xSYTJyLy96K0VUUWtKZkVOSjBLRG5DYjBwTUNsQ1FoM2pUTlBBNkRiaGlNawpGVGtjb05icWNwVGlWU2x2aGg2VEtzY1NncVlRVWpRL09xeUc3U2tqS1ZqUTcyajViZVFMeGlMVHRVeWoxT21QClhoOWNXSlh4OGlRKzQ1Y1BvbitrTU9BSWlUd2lCM21tRlJmUWpJR3ZlMURQVW85SitOWjRYZEVDZ1lFQXdOS2cKT2RHWXh4S3RDclhWejFtZGc2UERsVjhxaDdueHhaYlBjaCthTUlRbDErb1RDZ1NpdzhvT1lFZDhnMEhPZFY2dAoxRytJV2h2UHhpaVd5My9BRTBRaGdvS2syR1VzU2pXU01MY0piYVV6RG9FSEZqVExqZWNSbHFkem83cXhSWHFCCm1lTjRMNVdKWUtuTEM0ODJLN2h2dWZTK3VvNWZCNXF3UG10MTNNY0NnWUFlNFRWUFJQK3R5anR0WUNyK084dGwKdy9VbVJLQ2NRdTRJd3Rrenh3ejRWMkNhTjJ0MHVZUWd5eWdjU2ZFU2JSR3RycjhSQ1VwN3BvSEtUZm5DWnIvZgo4TnJVVHdZcGlZZk53WTVaQ1NuQWlHMkFhSWxnbmZNckV3T0Y5T0MwMjhZUE1nVHJ0VXh2TzZoS2VHcUlJUXFHCnFrYnFzb1hoRGpacGdWbk9nV2VBRVFLQmdHdWlaMHcvSXFBbFhiQzMxZlViMmlCTWZ2WFhuSjhNL2RmRkdtRmoKSUtmcWJGRjlXVWxqVXhRbHF5YTFZTnpJRkI1U1RvaGlCZVArMkZtTitMYjV4ZGM3VmRWTFpnZGhXbnJHTXFlOAoxS2QrNnVReXhDanlLWm81blFqU3ltdGY0R3FmT3M4VE9kaWVDWVNLNDB1OWtvaVBPTmE5dHVYZWFVK09Xc2xOCkpRcXJBb0dCQUozTUtPdnNuUXp1WlZQMnZ6MFpxTHdJRTNYalJpRkd2ZVZwaXpxNGh3T1ZldU5zVjA4SnZBMHQKcHVlTkl5OWtsUFNjRmM5T1VkaVpXa0VYMDlCd0prVklyT0hvdHVTQjhBU3RPNVVBbnRObnV5V0xKRUZDNFVxNApHcEI4bGJqOWpreFNLYVU3WDNHYWMyM0s5Skw4ZXVMaDdFN3JQdVpSWWE2bVlONG5iS3F1Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+      state: retrieved
     register: result
-    failed_when: result.data | b64decode != 'Hello World.' or result.changed
+    failed_when: result.changed or result.failed or result['data'] != 'Hello World.'
 
   - name: Retrieve data from asymmetric vault, with private key file.
     ipavault:
@@ -342,10 +338,10 @@
       name: asymvault
       username: user01
       vault_type: asymmetric
-      retrieve: true
       private_key_file: "{{ ansible_env.HOME }}/private.pem"
+      state: retrieved
     register: result
-    failed_when: result.data | b64decode != 'Hello World.' or result.changed
+    failed_when: result.failed or result.changed or result['data'] != 'Hello World.'
 
   - name: Ensure asymmetric vault is absent.
     ipavault:
@@ -394,22 +390,13 @@
     register: result
     failed_when: not result.changed
 
-  - name: Archive data from a file, in standard vault.
-    ipavault:
-      ipaadmin_password: SomeADMINpassword
-      name: stdvault
-      username: user01
-      in: "{{ ansible_env.HOME }}/in.txt"
-    register: result
-    failed_when: not result.changed
-
   - name: Retrieve data from standard vault.
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: stdvault
       username: user01
-      retrieve: yes
       out: "{{ ansible_env.HOME }}/data.txt"
+      state: retrieved
     register: result
     failed_when: result.changed
 
@@ -419,7 +406,7 @@
     register: slurpfile
     failed_when: slurpfile['content'] | b64decode != 'Hello World.'
 
-  - name: Archive data in standard vault.
+  - name: Archive data in standard vault, from file.
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: stdvault
@@ -434,9 +421,9 @@
       name: stdvault
       username: user01
       vault_type: standard
-      retrieve: true
+      state: retrieved
     register: result
-    failed_when: result.data | b64decode != 'Another World.' or result.changed
+    failed_when: result.data != 'Another World.' or result.changed
 
   - name: Ensure standard vault member user is present.
     ipavault:

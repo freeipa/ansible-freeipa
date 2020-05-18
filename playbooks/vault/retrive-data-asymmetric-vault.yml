@@ -1,19 +1,17 @@
 ---
 - name: Tests
   hosts: ipaserver
-  become: true
-  gather_facts: True
+  become: no
+  gather_facts: no
 
   tasks:
     - name: Retrieve data from assymetric vault with a private key file.
       ipavault:
         ipaadmin_password: SomeADMINpassword
-        name: symvault
-        username: admin
+        name: asymvault
+        username: user01
         private_key_file: private.pem
-        retrieve: True
+        state: retrieved
       register: result
     - debug:
        msg: "Data: {{ result.data }}"
-    - debug:
-       msg: "Decoded Data: {{ result.data | b64decode }}"
