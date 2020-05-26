@@ -1,0 +1,10 @@
+[ipaserver]
+ipaserver.test.local
+
+[ipaserver:vars]
+ipaserver_domain=test.local
+ipaserver_realm=TEST.LOCAL
+ipaadmin_password=SomeADMINpassword
+ipadm_password=SomeDMpassword
+ipaserver_install_packages=yes
+ipaserver_setup_dns=no

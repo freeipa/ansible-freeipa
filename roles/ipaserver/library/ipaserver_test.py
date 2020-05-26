@@ -967,37 +967,25 @@ def main():
         if options.http_pin is None:
             ansible_module.fail_json(
                 msg="Apache Server private key unlock password required")
-        http_pkcs12_file, http_pin, http_ca_cert = load_pkcs12(
-            cert_files=options.http_cert_files,
-            key_password=options.http_pin,
-            key_nickname=options.http_cert_name,
-            ca_cert_files=options.ca_cert_files,
-            host_name=host_name)
-        http_pkcs12_info = (http_pkcs12_file.name, http_pin)
+        http_pkcs12_info = [options.http_cert_files[0], options.http_pin]
+        with open(options.ca_cert_files[0]) as http_ca_cert_file:
+            http_ca_cert = http_ca_cert_file.read()
 
     if options.dirsrv_cert_files:
         if options.dirsrv_pin is None:
             ansible_module.fail_json(
                 msg="Directory Server private key unlock password required")
-        dirsrv_pkcs12_file, dirsrv_pin, dirsrv_ca_cert = load_pkcs12(
-            cert_files=options.dirsrv_cert_files,
-            key_password=options.dirsrv_pin,
-            key_nickname=options.dirsrv_cert_name,
-            ca_cert_files=options.ca_cert_files,
-            host_name=host_name)
-        dirsrv_pkcs12_info = (dirsrv_pkcs12_file.name, dirsrv_pin)
+        dirsrv_pkcs12_info = [options.dirsrv_cert_files[0], options.dirsrv_pin]
+        with open(options.ca_cert_files[0]) as dirsrv_ca_cert_file:
+           dirsrv_ca_cert = dirsrv_ca_cert_file.read()
 
     if options.pkinit_cert_files:
         if options.pkinit_pin is None:
             ansible_module.fail_json(
                 msg="Kerberos KDC private key unlock password required")
-        pkinit_pkcs12_file, pkinit_pin, pkinit_ca_cert = load_pkcs12(
-            cert_files=options.pkinit_cert_files,
-            key_password=options.pkinit_pin,
-            key_nickname=options.pkinit_cert_name,
-            ca_cert_files=options.ca_cert_files,
-            realm_name=realm_name)
-        pkinit_pkcs12_info = (pkinit_pkcs12_file.name, pkinit_pin)
+        pkinit_pkcs12_info = [options.pkinit_cert_files[0], options.pkinit_pin]
+        with open(options.ca_cert_files[0]) as pkinit_ca_cert_file:
+           pkinit_ca_cert = pkinit_ca_cert_file.read()
 
     if options.http_cert_files and options.dirsrv_cert_files and \
        http_ca_cert != dirsrv_ca_cert:
