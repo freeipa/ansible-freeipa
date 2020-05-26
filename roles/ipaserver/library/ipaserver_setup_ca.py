@@ -163,7 +163,7 @@ from ansible.module_utils.ansible_ipa_server import (
     AnsibleModuleLog, setup_logging, options, sysrestore, paths,
     ansible_module_get_parsed_ip_addresses,
     api_Backend_ldap2, redirect_stdout, ca, installutils, ds_init_info,
-    custodiainstance, write_cache, x509
+    custodiainstance, write_cache
 )
 
 

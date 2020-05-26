@@ -219,7 +219,7 @@ from ansible.module_utils.ansible_ipa_server import (
     NUM_VERSION, is_ipa_configured, sysrestore, paths, bindinstance,
     read_cache, ca, tasks, check_ldap_conf, timeconf, httpinstance,
     check_dirsrv, ScriptError, get_fqdn, verify_fqdn, BadHostError,
-    validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION
+    validate_domain_name, IPA_PYTHON_VERSION
 )
 
 if six.PY3:
@@ -953,13 +953,10 @@ def main():
 
     #########################################################################
 
-    http_pkcs12_file = None
     http_pkcs12_info = None
     http_ca_cert = None
-    dirsrv_pkcs12_file = None
     dirsrv_pkcs12_info = None
     dirsrv_ca_cert = None
-    pkinit_pkcs12_file = None
     pkinit_pkcs12_info = None
     pkinit_ca_cert = None
 
@@ -977,7 +974,7 @@ def main():
                 msg="Directory Server private key unlock password required")
         dirsrv_pkcs12_info = [options.dirsrv_cert_files[0], options.dirsrv_pin]
         with open(options.ca_cert_files[0]) as dirsrv_ca_cert_file:
-           dirsrv_ca_cert = dirsrv_ca_cert_file.read()
+            dirsrv_ca_cert = dirsrv_ca_cert_file.read()
 
     if options.pkinit_cert_files:
         if options.pkinit_pin is None:
