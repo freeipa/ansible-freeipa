@@ -982,7 +982,7 @@ def main():
                 msg="Kerberos KDC private key unlock password required")
         pkinit_pkcs12_info = [options.pkinit_cert_files[0], options.pkinit_pin]
         with open(options.ca_cert_files[0]) as pkinit_ca_cert_file:
-           pkinit_ca_cert = pkinit_ca_cert_file.read()
+            pkinit_ca_cert = pkinit_ca_cert_file.read()
 
     if options.http_cert_files and options.dirsrv_cert_files and \
        http_ca_cert != dirsrv_ca_cert:
