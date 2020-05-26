@@ -57,23 +57,15 @@ master=$1
 if [ -z "$master" ]; then
     echo "ERROR: master is not set"
     echo
-    echo "usage: $0 master-fqdn replica-fqdn domain"
+    echo "usage: $0 master-fqdn domain"
     exit 0;
 fi
 
-replica=$2
-if [ -z "$master" ]; then
-    echo "ERROR: replica is not set"
-    echo
-    echo "usage: $0 master-fqdn replica-fqdn domain"
-    exit 0;
-fi
-
-domain=$3
+domain=$2
 if [ -z "$domain" ]; then
     echo "ERROR: domain is not set"
     echo
-    echo "usage: $0 master-fqdn replica-fqdn domain"
+    echo "usage: $0 master-fqdn domain"
     exit 0;
 fi
 
