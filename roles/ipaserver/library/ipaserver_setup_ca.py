@@ -191,7 +191,7 @@ def main():
             no_pkinit=dict(required=False, type='bool', default=False),
             dirsrv_config_file=dict(required=False),
             dirsrv_cert_files=dict(required=False, type='list'),
-            _dirsrv_pkcs12_info=dict(required=False),
+            _dirsrv_pkcs12_info=dict(required=False, type='list'),
             # certificate system
             external_ca=dict(required=False, type='bool', default=False),
             external_ca_type=dict(required=False),
@@ -322,18 +322,20 @@ def main():
                                      csr_generated=True)
     else:
         # Put the CA cert where other instances expect it
-        x509.write_certificate(options._http_ca_cert, paths.IPA_CA_CRT)
+        with open(paths.IPA_CA_CRT, "w") as http_ca_cert_file:
+            http_ca_cert_file.write(options._http_ca_cert)
         os.chmod(paths.IPA_CA_CRT, 0o444)
 
         if not options.no_pkinit:
-            x509.write_certificate(options._http_ca_cert,
-                                   paths.KDC_CA_BUNDLE_PEM)
+            with open(paths.KDC_CA_BUNDLE_PEM, "w") as http_ca_cert_file:
+                http_ca_cert_file.write(options._http_ca_cert)
         else:
             with open(paths.KDC_CA_BUNDLE_PEM, 'w'):
                 pass
         os.chmod(paths.KDC_CA_BUNDLE_PEM, 0o444)
 
-        x509.write_certificate(options._http_ca_cert, paths.CA_BUNDLE_PEM)
+        with open(paths.CA_BUNDLE_PEM, "w") as http_ca_cert_file:
+            http_ca_cert_file.write(options._http_ca_cert)
         os.chmod(paths.CA_BUNDLE_PEM, 0o444)
 
     with redirect_stdout(ansible_log):
