@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import functools
 import tempfile
 
 from subprocess import Popen
@@ -59,11 +60,16 @@ def get_test_groups():
     return groups
 
 
-def rename(newname):
-    def decorator(f):
-        f.__name__ = newname
-        return f
+def prepare_test(test_name, test_path):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            kwargs["test_path"] = test_path
+            return func(*args, **kwargs)
 
+        return wrapper
+
+    decorator.__name__ = test_name
     return decorator
 
 
@@ -73,14 +79,15 @@ for group_name, group_tests in get_test_groups().items():
     _tests = {}
     for test_config in group_tests:
         test_name = test_config["name"].replace("-", "_")
+        test_path = test_config["path"]
 
         @pytest.mark.skipif(
             os.getenv("IPA_SERVER_HOST") is None,
             reason="Environment variable IPA_SERVER_HOST must be set",
         )
-        @rename(test_name)
-        def method(self):
-            result = run_playbook(test_config["path"])
+        @prepare_test(test_name, test_path)
+        def method(self, test_path):
+            result = run_playbook(test_path)
             assert result.returncode == 0
 
         _tests[test_name] = method
