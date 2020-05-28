@@ -1,0 +1,125 @@
+---
+- name: Test vault
+  hosts: ipaserver
+  become: true
+  # Need to gather facts for ansible_env.
+  gather_facts: true
+
+  tasks:
+  - name: Setup testing environment.
+    import_tasks: env_setup.yml
+
+  - name: Ensure standard vault is present
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure standard vault is present, again
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+    register: result
+    failed_when: result.changed
+
+  - name: Archive data to standard vault
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_data: Hello World.
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      state: retrieved
+    register: result
+    failed_when: result.data != 'Hello World.' or result.changed
+
+  - name: Retrieve data from standard vault into file {{ ansible_env.HOME }}/data.txt.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      out: "{{ ansible_env.HOME }}/data.txt"
+      state: retrieved
+    register: result
+    failed_when: result.changed
+
+  - name: Verify retrieved data.
+    slurp:
+      src: "{{ ansible_env.HOME }}/data.txt"
+    register: slurpfile
+    failed_when: slurpfile['content'] | b64decode != 'Hello World.'
+
+  - name: Archive data with non-ASCII characters to standard vault
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_data: The world of π is half rounded.
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      state: retrieved
+    register: result
+    failed_when: result.data != 'The world of π is half rounded.' or result.changed
+
+  - name: Archive data in standard vault, from file.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+      in: "{{ ansible_env.HOME }}/in.txt"
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      state: retrieved
+    register: result
+    failed_when: result.data != 'Another World.' or result.changed
+
+  - name: Archive data with single character to standard vault
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_data: c
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      state: retrieved
+    register: result
+    failed_when: result.data != 'c' or result.changed
+
+  - name: Ensure standard vault is absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure standard vault is absent, again
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Cleanup testing environment.
+    import_tasks: env_setup.yml

@@ -1,0 +1,198 @@
+---
+- name: Test vault
+  hosts: ipaserver
+  become: true
+  # Need to gather facts for ansible_env.
+  gather_facts: true
+
+  tasks:
+  - name: Setup testing environment.
+    import_tasks: env_setup.yml
+
+  - name: Ensure symmetric vault is present
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      vault_type: symmetric
+      password: SomeVAULTpassword
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure symmetric vault is present, again
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      vault_type: symmetric
+      password: SomeVAULTpassword
+    register: result
+    failed_when: result.changed
+
+  - name: Archive data to symmetric vault
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      vault_data: Hello World.
+      password: SomeVAULTpassword
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from symmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      state: retrieved
+    register: result
+    failed_when: result.data != 'Hello World.' or result.changed
+
+  - name: Retrieve data from symmetric vault into file {{ ansible_env.HOME }}/data.txt.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      out: "{{ ansible_env.HOME }}/data.txt"
+      state: retrieved
+    register: result
+    failed_when: result.changed
+
+  - name: Verify retrieved data.
+    slurp:
+      src: "{{ ansible_env.HOME }}/data.txt"
+    register: slurpfile
+    failed_when: slurpfile['content'] | b64decode != 'Hello World.'
+
+  - name: Archive data with non-ASCII characters to symmetric vault
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      vault_data: The world of π is half rounded.
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from symmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      state: retrieved
+    register: result
+    failed_when: result.data != 'The world of π is half rounded.' or result.changed
+
+  - name: Archive data in symmetric vault, from file.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      in: "{{ ansible_env.HOME }}/in.txt"
+      password: SomeVAULTpassword
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from symmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      state: retrieved
+    register: result
+    failed_when: result.data != 'Another World.' or result.changed
+
+  - name: Archive data with single character to symmetric vault
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      vault_data: c
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from symmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      state: retrieved
+    register: result
+    failed_when: result.data != 'c' or result.changed
+
+  - name: Ensure symmetric vault is absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure symmetric vault is absent, again
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure symmetric vault is present, with password from file.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      username: user01
+      password_file: "{{ ansible_env.HOME }}/password.txt"
+      vault_type: symmetric
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure symmetric vault is present, with password from file, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      username: user01
+      password_file: "{{ ansible_env.HOME }}/password.txt"
+      vault_type: symmetric
+    register: result
+    failed_when: result.changed
+
+  - name: Archive data to symmetric vault
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      vault_data: Hello World.
+      password: SomeVAULTpassword
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from symmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      state: retrieved
+    register: result
+    failed_when: result.data != 'Hello World.' or result.changed
+
+  - name: Retrieve data from symmetric vault, with password file.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password_file: "{{ ansible_env.HOME }}/password.txt"
+      state: retrieved
+    register: result
+    failed_when: result.data != 'Hello World.' or result.changed
+
+  - name: Ensure symmetric vault is absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure symmetric vault is absent, again
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Cleanup testing environment.
+    import_tasks: env_cleanup.yml
