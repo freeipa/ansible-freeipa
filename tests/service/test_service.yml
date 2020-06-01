@@ -113,7 +113,7 @@
         - PAD
       auth_ind: otp
       skip_host_check: no
-      force: no
+      force: yes
       requires_pre_auth: yes
       ok_as_delegate: no
       ok_to_auth_as_delegate: no
@@ -472,6 +472,26 @@
       ipaadmin_password: SomeADMINpassword
       name: "HTTP/{{ svc_fqdn }}"
       state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure service is present, with multiple auth_ind values.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "HTTP/{{ svc_fqdn }}"
+      auth_ind: otp,radius
+      skip_host_check: no
+      force: yes
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure service is present, with multiple auth_ind values, again.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "HTTP/{{ svc_fqdn }}"
+      auth_ind: otp,radius
+      skip_host_check: no
+      force: yes
     register: result
     failed_when: result.changed
 
