@@ -304,8 +304,8 @@ def check_parameters(module, state, action, names, parameters):
     for _invalid in invalid:
         if parameters[_invalid] is not None:
             module.fail_json(
-                msg="Argument '%s' can not be used with state '%s'" %
-                (_invalid, state))
+                msg="Argument '%s' can not be used with state '%s', "
+                "action '%s'" % (_invalid, state, action))
 
 
 def init_ansible_module():
