@@ -327,7 +327,7 @@ def init_ansible_module():
                           choices=["MS-PAC", "PAD", "NONE"]),
             auth_ind=dict(type="list",
                           aliases=["krbprincipalauthind"],
-                          choices=["otp", "radius", "pkinit", "hardened"]),
+                          choices=["otp", "radius", "pkinit", "hardened", ""]),
             skip_host_check=dict(type="bool"),
             force=dict(type="bool"),
             requires_pre_auth=dict(
