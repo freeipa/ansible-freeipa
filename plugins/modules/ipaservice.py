@@ -142,7 +142,7 @@ options:
   state:
     description: State to ensure
     default: present
-    choices: ["present", "absent", "enabled", "disabled"]
+    choices: ["present", "absent", "disabled"]
 author:
     - Rafael Jeffman
 """
@@ -365,8 +365,7 @@ def init_ansible_module():
                         choices=["member", "service"]),
             # state
             state=dict(type="str", default="present",
-                       choices=["present", "absent",
-                                "enabled", "disabled"]),
+                       choices=["present", "absent", "disabled"]),
         ),
         supports_check_mode=True,
     )
