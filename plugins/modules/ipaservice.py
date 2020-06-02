@@ -135,6 +135,12 @@ options:
     required: false
     type: list
     aliases: ["ipaallowedtoperform_read_keys_hostgroup"]
+  continue:
+    description:
+      Continuous mode. Don't stop on errors. Valid only if `state` is `absent`.
+    required: false
+    default: True
+    type: bool
   action:
     description: Work on service or member level
     default: service
@@ -284,7 +290,9 @@ def check_parameters(module, state, action, names, parameters):
             module.fail_json(msg="Only one service can be added at a time.")
 
         if action == 'service':
-            invalid = []
+            invalid = ['delete_continue']
+        else:
+            invalid.append('delete_continue')
 
     elif state == 'absent':
         if len(names) < 1:
@@ -292,9 +300,12 @@ def check_parameters(module, state, action, names, parameters):
 
         if action == "service":
             invalid.extend(invalid_not_member)
+        else:
+            invalid.extend('delete_continue')
 
     elif state == 'disabled':
         invalid.extend(invalid_not_member)
+        invalid.append('delete_continue')
         if action != "service":
             module.fail_json(
                 msg="Invalid action '%s' for state '%s'" % (action, state))
@@ -303,7 +314,7 @@ def check_parameters(module, state, action, names, parameters):
         module.fail_json(msg="Invalid state '%s'" % (state))
 
     for _invalid in invalid:
-        if parameters[_invalid] is not None:
+        if _invalid in parameters and parameters[_invalid] is not None:
             module.fail_json(
                 msg="Argument '%s' can not be used with state '%s', "
                 "action '%s'" % (_invalid, state, action))
@@ -360,6 +371,8 @@ def init_ansible_module():
             allow_retrieve_keytab_hostgroup=dict(
                 type="list", required=False,
                 aliases=['ipaallowedtoperform_read_keys_hostgroup']),
+            delete_continue=dict(type="bool", required=False,
+                                 aliases=['continue']),
             # action
             action=dict(type="str", default="service",
                         choices=["member", "service"]),
@@ -417,6 +430,7 @@ def main():
         ansible_module, "allow_create_keytab_host")
     allow_retrieve_keytab_hostgroup = module_params_get(
         ansible_module, "allow_retrieve_keytab_hostgroup")
+    delete_continue = module_params_get(ansible_module, "delete_continue")
 
     # action
     action = module_params_get(ansible_module, "action")
@@ -699,7 +713,8 @@ def main():
             elif state == "absent":
                 if action == "service":
                     if res_find is not None:
-                        commands.append([name, 'service_del', {}])
+                        args = {'continue': True if delete_continue else False}
+                        commands.append([name, 'service_del', args])
 
                 elif action == "member":
                     if res_find is None:
