@@ -541,6 +541,40 @@
     register: result
     failed_when: result.changed
 
+  - name: Ensure SMB service is present.
+    ipaservice:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      smb: yes
+      netbiosname: SAMBASVC
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure SMB service is again.
+    ipaservice:
+      ipaadmin_password: MyPassword123
+      name: "{{ host1_fqdn }}"
+      smb: yes
+      netbiosname: SAMBASVC
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure SMB service is absent.
+    ipaservice:
+      ipaadmin_password: MyPassword123
+      name: "cifs/{{ host1_fqdn }}"
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure SMB service is absent, again.
+    ipaservice:
+      ipaadmin_password: MyPassword123
+      name: "cifs/{{ host1_fqdn }}"
+      state: absent
+    register: result
+    failed_when: result.changed
+
   # cleanup
 
   - name: Ensure services are absent.
@@ -551,6 +585,7 @@
       - HTTP/www.ansible.com
       - HTTP/svc.ihavenodns.info
       - HTTP/no.idontexist.local
+      - "cifs/{{ host1_fqdn }}"
       state: absent
 
   - name: Ensure host "{{ svc_fqdn }}" is absent

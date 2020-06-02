@@ -90,6 +90,14 @@ options:
     required: false
     type: list
     aliases: ["krbprincipalname"]
+  smb:
+    description: Add a SMB service. Can only be used with new services.
+    required: false
+    type: bool
+  netbiosname:
+    description: NETBIOS name for the SMB service.
+    required: false
+    type: str
   host:
     description: Host that can manage the service.
     required: false
@@ -226,10 +234,20 @@ from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
 import ipalib.errors
 
 
-def find_service(module, name):
+def find_service(module, name, netbiosname):
     _args = {
         "all": True,
     }
+
+    # Search for a SMB/cifs service.
+    if netbiosname is not None:
+        _result = api_command(
+            module, "service_find", to_text(netbiosname), _args)
+
+        for _res_find in _result.get('result', []):
+            for uid in _res_find.get('uid', []):
+                if uid.startswith("%s$@" % netbiosname):
+                    return _res_find
 
     try:
         _result = api_command(module, "service_show", to_text(name), _args)
@@ -275,7 +293,7 @@ def check_parameters(module, state, action, names, parameters):
     # invalid parameters for everything but state 'present', action 'service'.
     invalid = ['pac_type', 'auth_ind', 'skip_host_check',
                'force', 'requires_pre_auth', 'ok_as_delegate',
-               'ok_to_auth_as_delegate']
+               'ok_to_auth_as_delegate', 'smb', 'netbiosname']
 
     # invalid parameters when not handling service members.
     invalid_not_member = \
@@ -291,6 +309,16 @@ def check_parameters(module, state, action, names, parameters):
 
         if action == 'service':
             invalid = ['delete_continue']
+
+            if parameters.get('smb', False):
+                invalid.extend(['force', 'auth_ind', 'skip_host_check',
+                                'requires_pre_auth', 'auth_ind', 'pac_type'])
+
+                for _invalid in invalid:
+                    if parameters.get(_invalid, False):
+                        module.fail_json(
+                            msg="Argument '%s' can not be used with SMB "
+                                "service." % _invalid)
         else:
             invalid.append('delete_continue')
 
@@ -334,6 +362,8 @@ def init_ansible_module():
                              default=None, required=False),
             principal=dict(type="list", aliases=["krbprincipalname"],
                            default=None),
+            smb=dict(type="bool", required=False),
+            netbiosname=dict(type="str", required=False),
             pac_type=dict(type="list", aliases=["ipakrbauthzdata"],
                           choices=["MS-PAC", "PAD", "NONE"]),
             auth_ind=dict(type="list",
@@ -411,6 +441,9 @@ def main():
     ok_to_auth_as_delegate = module_params_get(ansible_module,
                                                "ok_to_auth_as_delegate")
 
+    smb = module_params_get(ansible_module, "smb")
+    netbiosname = module_params_get(ansible_module, "netbiosname")
+
     host = module_params_get(ansible_module, "host")
 
     allow_create_keytab_user = module_params_get(
@@ -461,9 +494,11 @@ def main():
         commands = []
 
         for name in names:
-            res_find = find_service(ansible_module, name)
+            res_find = find_service(ansible_module, name, netbiosname)
 
             if state == "present":
+                # if service exists, 'smb' cannot be used.
+
                 if action == "service":
                     args = gen_args(
                         pac_type, auth_ind, skip_host_check, force,
@@ -473,7 +508,12 @@ def main():
                         del args['skip_host_check']
 
                     if res_find is None:
-                        commands.append([name, 'service_add', args])
+                        if smb:
+                            if netbiosname is not None:
+                                args['ipantflatname'] = netbiosname
+                            commands.append([name, 'service_add_smb', args])
+                        else:
+                            commands.append([name, 'service_add', args])
 
                         certificate_add = certificate or []
                         certificate_del = []
