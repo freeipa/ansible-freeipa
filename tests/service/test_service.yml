@@ -515,6 +515,32 @@
     register: result
     failed_when: result.changed
 
+  - name: Ensure services are absent.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - "HTTP/{{ svc_fqdn }}"
+      - HTTP/www.ansible.com
+      - HTTP/svc.ihavenodns.info
+      - HTTP/no.idontexist.local
+      continue: yes
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure services are absent.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - "HTTP/{{ svc_fqdn }}"
+      - HTTP/www.ansible.com
+      - HTTP/svc.ihavenodns.info
+      - HTTP/no.idontexist.local
+      continue: yes
+      state: absent
+    register: result
+    failed_when: result.changed
+
   # cleanup
 
   - name: Ensure services are absent.
