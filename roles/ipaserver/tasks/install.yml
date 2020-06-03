@@ -449,6 +449,16 @@
 
     when: not result_ipaserver_setup_ca.csr_generated | bool
 
+  always:
+  - name: Cleanup temporary files
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+    - "/etc/ipa/.tmp_pkcs12_dirsrv"
+    - "/etc/ipa/.tmp_pkcs12_http"
+    - "/etc/ipa/.tmp_pkcs12_pkinit"
+
   when: not ansible_check_mode and not
         (not result_ipaserver_test.changed and
          (result_ipaserver_test.client_already_configured is defined or
