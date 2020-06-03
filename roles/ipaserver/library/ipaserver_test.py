@@ -209,6 +209,7 @@ import sys
 import six
 import inspect
 import random
+from shutil import copyfile
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_native
@@ -219,7 +220,8 @@ from ansible.module_utils.ansible_ipa_server import (
     NUM_VERSION, is_ipa_configured, sysrestore, paths, bindinstance,
     read_cache, ca, tasks, check_ldap_conf, timeconf, httpinstance,
     check_dirsrv, ScriptError, get_fqdn, verify_fqdn, BadHostError,
-    validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION
+    validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION,
+    encode_certificate
 )
 
 if six.PY3:
@@ -252,7 +254,7 @@ def main():
             dirsrv_config_file=dict(required=False),
             # ssl certificate
             dirsrv_cert_files=dict(required=False, type='list', default=None),
-            http_cert_files=dict(required=False, type='list', defaullt=None),
+            http_cert_files=dict(required=False, type='list', default=None),
             pkinit_cert_files=dict(required=False, type='list', default=None),
             dirsrv_pin=dict(required=False),
             http_pin=dict(required=False),
@@ -967,25 +969,37 @@ def main():
         if options.http_pin is None:
             ansible_module.fail_json(
                 msg="Apache Server private key unlock password required")
-        http_pkcs12_info = [options.http_cert_files[0], options.http_pin]
-        with open(options.ca_cert_files[0]) as http_ca_cert_file:
-            http_ca_cert = http_ca_cert_file.read()
+        http_pkcs12_file, http_pin, http_ca_cert = load_pkcs12(
+            cert_files=options.http_cert_files,
+            key_password=options.http_pin,
+            key_nickname=options.http_cert_name,
+            ca_cert_files=options.ca_cert_files,
+            host_name=host_name)
+        http_pkcs12_info = (http_pkcs12_file.name, http_pin)
 
     if options.dirsrv_cert_files:
         if options.dirsrv_pin is None:
             ansible_module.fail_json(
                 msg="Directory Server private key unlock password required")
-        dirsrv_pkcs12_info = [options.dirsrv_cert_files[0], options.dirsrv_pin]
-        with open(options.ca_cert_files[0]) as dirsrv_ca_cert_file:
-           dirsrv_ca_cert = dirsrv_ca_cert_file.read()
+        dirsrv_pkcs12_file, dirsrv_pin, dirsrv_ca_cert = load_pkcs12(
+            cert_files=options.dirsrv_cert_files,
+            key_password=options.dirsrv_pin,
+            key_nickname=options.dirsrv_cert_name,
+            ca_cert_files=options.ca_cert_files,
+            host_name=host_name)
+        dirsrv_pkcs12_info = (dirsrv_pkcs12_file.name, dirsrv_pin)
 
     if options.pkinit_cert_files:
         if options.pkinit_pin is None:
             ansible_module.fail_json(
                 msg="Kerberos KDC private key unlock password required")
-        pkinit_pkcs12_info = [options.pkinit_cert_files[0], options.pkinit_pin]
-        with open(options.ca_cert_files[0]) as pkinit_ca_cert_file:
-           pkinit_ca_cert = pkinit_ca_cert_file.read()
+        pkinit_pkcs12_file, pkinit_pin, pkinit_ca_cert = load_pkcs12(
+            cert_files=options.pkinit_cert_files,
+            key_password=options.pkinit_pin,
+            key_nickname=options.pkinit_cert_name,
+            ca_cert_files=options.ca_cert_files,
+            realm_name=realm_name)
+        pkinit_pkcs12_info = (pkinit_pkcs12_file.name, pkinit_pin)
 
     if options.http_cert_files and options.dirsrv_cert_files and \
        http_ca_cert != dirsrv_ca_cert:
@@ -1000,6 +1014,21 @@ def main():
             "certificate are not signed by the same CA certificate")
 
     # done ##################################################################
+
+    # Copy pkcs12_files to make them persistent till deployment is done
+    # and encode certificates for ansible compatibility
+    if http_pkcs12_info is not None:
+        copyfile(http_pkcs12_file.name, "/etc/ipa/.tmp_pkcs12_http")
+        http_pkcs12_info = ("/etc/ipa/.tmp_pkcs12_http", http_pin)
+        http_ca_cert = encode_certificate(http_ca_cert)
+    if dirsrv_pkcs12_info is not None:
+        copyfile(dirsrv_pkcs12_file.name, "/etc/ipa/.tmp_pkcs12_dirsrv")
+        dirsrv_pkcs12_info = ("/etc/ipa/.tmp_pkcs12_dirsrv", dirsrv_pin)
+        dirsrv_ca_cert = encode_certificate(dirsrv_ca_cert)
+    if pkinit_pkcs12_info is not None:
+        copyfile(pkinit_pkcs12_file.name, "/etc/ipa/.tmp_pkcs12_pkinit")
+        pkinit_pkcs12_info = ("/etc/ipa/.tmp_pkcs12_pkinit", pkinit_pin)
+        pkinit_ca_cert = encode_certificate(pkinit_ca_cert)
 
     ansible_module.exit_json(changed=False,
                              ipa_python_version=IPA_PYTHON_VERSION,
