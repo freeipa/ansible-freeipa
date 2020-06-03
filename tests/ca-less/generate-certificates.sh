@@ -69,53 +69,48 @@ if [ -z "$domain" ]; then
     exit 0;
 fi
 
+# Generate certificate directories
+mkdir -p certificates/dirsrv/ipaserver
+mkdir -p certificates/httpd/ipaserver
+mkdir -p certificates/pkinit/ipaserver
+
+# Cleanup
+rm -f certificates/*/ipaserver/*
+rm -f certificates/root-ca/*
+
 # Generate root CA
-if [ ! -f "${ROOT_CA_DIR}/cert.pem" ]; then
-    openssl genrsa \
+openssl genrsa \
         -out ${ROOT_CA_DIR}/private.key 4096
 
-    openssl req -new -x509 -sha256 -nodes -days 3650 \
+openssl req -new -x509 -sha256 -nodes -days 3650 \
         -subj "/C=US/ST=Test/L=Testing/O=Default" \
         -key ${ROOT_CA_DIR}/private.key \
         -out ${ROOT_CA_DIR}/cert.pem
-fi
 
 # [ipaserver] Generate a certificate for the Directory Server
-if [ ! -f "${DIRSRV_CERTS_DIR}/ipaserver/cert.p12" ]; then
-    generate_ipa_pkcs12_certificate \
-        "dirsrv-cert" \
-        $master \
-        "${DIRSRV_CERTS_DIR}/ipaserver" \
-        "${ROOT_CA_DIR}/cert.pem" \
-        "${ROOT_CA_DIR}/private.key"
-else
-    echo "[ipaserver] Certificate for the Directory Server already exists."
-fi
+generate_ipa_pkcs12_certificate \
+    "dirsrv-cert" \
+    $master \
+    "${DIRSRV_CERTS_DIR}/ipaserver" \
+    "${ROOT_CA_DIR}/cert.pem" \
+    "${ROOT_CA_DIR}/private.key"
 
 # [ipaserver] Generate a certificate for the Apache server
-if [ ! -f "${HTTPD_CERTS_DIR}/ipaserver/cert.p12" ]; then
-    generate_ipa_pkcs12_certificate \
-        "httpd-cert" \
-        $master \
-        "${HTTPD_CERTS_DIR}/ipaserver" \
-        "${ROOT_CA_DIR}/cert.pem" \
-        "${ROOT_CA_DIR}/private.key"
-else
-    echo "[ipaserver] Certificate for the Apache server already exists."
-fi
+generate_ipa_pkcs12_certificate \
+    "httpd-cert" \
+    $master \
+    "${HTTPD_CERTS_DIR}/ipaserver" \
+    "${ROOT_CA_DIR}/cert.pem" \
+    "${ROOT_CA_DIR}/private.key"
 
 # [ipaserver] Generate a certificate for the KDC PKINIT
-if [ ! -f "${PKINIT_CERTS_DIR}/ipaserver/cert.p12" ]; then
-    export REALM=${domain^^}
+export REALM=${domain^^}
 
-    generate_ipa_pkcs12_certificate \
-        "pkinit-cert" \
-        $master \
-        "${PKINIT_CERTS_DIR}/ipaserver" \
-        "${ROOT_CA_DIR}/cert.pem" \
-        "${ROOT_CA_DIR}/private.key" \
-        "${PKINIT_CERTS_DIR}/extensions.conf" \
-        "kdc_cert"
-else
-    echo "[ipaserver] Certificate for the KDC PKINIT already exists."
-fi
+generate_ipa_pkcs12_certificate \
+    "pkinit-cert" \
+    $master \
+    "${PKINIT_CERTS_DIR}/ipaserver" \
+    "${ROOT_CA_DIR}/cert.pem" \
+    "${ROOT_CA_DIR}/private.key" \
+    "${PKINIT_CERTS_DIR}/extensions.conf" \
+    "kdc_cert"
