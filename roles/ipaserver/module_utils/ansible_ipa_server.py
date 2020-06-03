@@ -37,11 +37,13 @@ __all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
            "validate_dm_password", "read_cache", "write_cache",
            "adtrustinstance", "IPAAPI_USER", "sync_time", "PKIIniLoader",
            "default_subject_base", "default_ca_subject_dn",
-           "check_ldap_conf"]
+           "check_ldap_conf", "encode_certificate", "decode_certificate"]
 
 import sys
 import logging
 from contextlib import contextmanager as contextlib_contextmanager
+import six
+import base64
 
 
 from ipapython.version import NUM_VERSION, VERSION
@@ -136,6 +138,17 @@ if NUM_VERSION >= 40500:
         from ipaclient.install.client import check_ldap_conf
     except ImportError:
         check_ldap_conf = None
+
+    try:
+        from ipalib.x509 import Encoding
+    except ImportError:
+        from cryptography.hazmat.primitives.serialization import Encoding
+
+    try:
+        from ipalib.x509 import load_pem_x509_certificate
+    except ImportError:
+        from ipalib.x509 import load_certificate
+        load_pem_x509_certificate = None
 
 else:
     # IPA version < 4.5
@@ -322,3 +335,41 @@ def ansible_module_get_parsed_ip_addresses(ansible_module,
             ansible_module.fail_json(msg="Invalid IP Address %s: %s" % (ip, e))
         ip_addrs.append(ip_parsed)
     return ip_addrs
+
+
+def encode_certificate(cert):
+    """
+    Encode a certificate using base64.
+
+    It also takes FreeIPA and Python versions into account.
+    """
+    if isinstance(cert, (str, bytes)):
+        encoded = base64.b64encode(cert)
+    else:
+        encoded = base64.b64encode(cert.public_bytes(Encoding.DER))
+    if not six.PY2:
+        encoded = encoded.decode('ascii')
+    return encoded
+
+
+def decode_certificate(cert):
+    """
+    Decode a certificate using base64.
+
+    It also takes FreeIPA versions into account and returns a IPACertificate
+    for newer IPA versions.
+    """
+    if hasattr(x509, "IPACertificate"):
+        cert = cert.strip()
+        if not cert.startswith("-----BEGIN CERTIFICATE-----"):
+            cert = "-----BEGIN CERTIFICATE-----\n" + cert
+        if not cert.endswith("-----END CERTIFICATE-----"):
+            cert += "\n-----END CERTIFICATE-----"
+
+        if load_pem_x509_certificate is not None:
+            cert = load_pem_x509_certificate(cert.encode('utf-8'))
+        else:
+            cert = load_certificate(cert.encode('utf-8'))
+    else:
+        cert = base64.b64decode(cert)
+    return cert
