@@ -163,7 +163,7 @@ from ansible.module_utils.ansible_ipa_server import (
     AnsibleModuleLog, setup_logging, options, sysrestore, paths,
     ansible_module_get_parsed_ip_addresses,
     api_Backend_ldap2, redirect_stdout, ca, installutils, ds_init_info,
-    custodiainstance, write_cache, x509
+    custodiainstance, write_cache, x509, decode_certificate
 )
 
 
@@ -265,8 +265,8 @@ def main():
     # additional
     options.domainlevel = ansible_module.params.get('domainlevel')
     options._http_ca_cert = ansible_module.params.get('_http_ca_cert')
-    # tions._update_hosts_file = ansible_module.params.get(
-    #   'update_hosts_file')
+    if options._http_ca_cert is not None:
+        options._http_ca_cert = decode_certificate(options._http_ca_cert)
 
     # init #################################################################
 
@@ -322,20 +322,18 @@ def main():
                                      csr_generated=True)
     else:
         # Put the CA cert where other instances expect it
-        with open(paths.IPA_CA_CRT, "w") as http_ca_cert_file:
-            http_ca_cert_file.write(options._http_ca_cert)
+        x509.write_certificate(options._http_ca_cert, paths.IPA_CA_CRT)
         os.chmod(paths.IPA_CA_CRT, 0o444)
 
         if not options.no_pkinit:
-            with open(paths.KDC_CA_BUNDLE_PEM, "w") as http_ca_cert_file:
-                http_ca_cert_file.write(options._http_ca_cert)
+            x509.write_certificate(options._http_ca_cert,
+                                   paths.KDC_CA_BUNDLE_PEM)
         else:
             with open(paths.KDC_CA_BUNDLE_PEM, 'w'):
                 pass
         os.chmod(paths.KDC_CA_BUNDLE_PEM, 0o444)
 
-        with open(paths.CA_BUNDLE_PEM, "w") as http_ca_cert_file:
-            http_ca_cert_file.write(options._http_ca_cert)
+        x509.write_certificate(options._http_ca_cert, paths.CA_BUNDLE_PEM)
         os.chmod(paths.CA_BUNDLE_PEM, 0o444)
 
     with redirect_stdout(ansible_log):
