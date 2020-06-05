@@ -452,7 +452,7 @@ def find_dnsrecord(module, name):
                               _args)
     except ipalib_errors.NotFound as e:
         msg = str(e)
-        if "record not found" in msg:
+        if "record not found" in msg or "zone not found" in msg:
             return None
         module.fail_json(msg="dnsrecord_show failed: %s" % msg)
 
