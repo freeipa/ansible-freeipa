@@ -817,7 +817,7 @@ def main():
             preserve=dict(required=False, type='bool', default=None),
 
             # mod
-            update_password=dict(type='str', default=None,
+            update_password=dict(type='str', default=None, no_log=False,
                                  choices=['always', 'on_create']),
 
             # general
