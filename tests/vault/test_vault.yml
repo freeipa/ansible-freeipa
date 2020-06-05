@@ -389,6 +389,48 @@
     register: result
     failed_when: result.changed
 
+  - name: Ensure vault member service is present.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      action: member
+      services: "HTTP/{{ groups.ipaserver[0] }}"
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault member service is present, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      action: member
+      services: "HTTP/{{ groups.ipaserver[0] }}"
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault member service is absent.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      action: member
+      services: "HTTP/{{ groups.ipaserver[0] }}"
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault member service is absent, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      action: member
+      services: "HTTP/{{ groups.ipaserver[0] }}"
+      state: absent
+    register: result
+    failed_when: result.changed
+
   - name: Ensure vault is absent.
     ipavault:
       ipaadmin_password: SomeADMINpassword
@@ -550,6 +592,90 @@
       name: stdvault
       username: user01
       owners: user03
+      state: absent
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vaultgroup is owner of stdvault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownergroups: vaultgroup
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vaultgroup is owner of stdvault, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownergroups: vaultgroup
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vaultgroup is not owner of stdvault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownergroups: vaultgroup
+      state: absent
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vaultgroup is not owner of stdvault, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownergroups: vaultgroup
+      state: absent
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault is owned by HTTP service.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownerservices: "HTTP/{{ groups.ipaserver[0] }}"
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault is owned by HTTP service, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownerservices: "HTTP/{{ groups.ipaserver[0] }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault is not owned by HTTP service.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownerservices: "HTTP/{{ groups.ipaserver[0] }}"
+      state: absent
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault is not owned by HTTP service, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownerservices: "HTTP/{{ groups.ipaserver[0] }}"
       state: absent
       action: member
     register: result

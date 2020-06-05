@@ -186,6 +186,7 @@ Variable | Description | Required
 `shared` | Vault is shared. Default to false. (bool) | no
 `users` | Users that are members of the vault. | no
 `groups` | Groups that are member of the vault. | no
+`services` | Services that are member of the vault. | no
 `vault_data` \| `ipavaultdata` | Data to be stored in the vault. | no
 `action` | Work on vault or member level. It can be on of `member` or `vault` and defaults to `vault`. | no
 `state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. | no
