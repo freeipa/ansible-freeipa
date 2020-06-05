@@ -1,0 +1,27 @@
+---
+#
+# Example keys for this playbook were generated with the commands:
+#    $ openssl genrsa -out private.pem 2048
+#    $ openssl rsa -in private.pem -pubout > public.pem
+#
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: True
+
+  tasks:
+  - copy:
+      src: "{{ playbook_dir }}/public.pem"
+      dest: "{{ ansible_env.HOME }}/public.pem"
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+      mode: 0600
+  - ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      username: admin
+      vault_type: asymmetric
+      vault_public_key_file: "{{ ansible_env.HOME }}/public.pem"
+  - file:
+      path: "{{ ansible_env.HOME }}/public.pem"
+      state: absent

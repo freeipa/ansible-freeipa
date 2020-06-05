@@ -41,7 +41,7 @@ Example inventory file
 ipaserver.test.local
 ```
 
-Example playbook to make sure vault is present:
+Example playbook to make sure vault is present (by default, vault type is `symmetric`):
 
 ```yaml
 ---
@@ -53,8 +53,7 @@ Example playbook to make sure vault is present:
   - ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
-      username: admin
-      vault_password: MyVaultPassword123
+      password: SomeVAULTpassword
       description: A standard private vault.
 ```
 
@@ -124,10 +123,28 @@ Example playbook to make sure vault data is present in a symmetric vault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
-      vault_password: MyVaultPassword123
-      vault_data: >
+      password: SomeVAULTpassword
+      data: >
         Data archived.
         More data archived.
+      action: member
+```
+
+Example playbook to retrieve vault data from a symmetric vault:
+
+```yaml
+---
+- name: Playbook to handle vaults
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      username: admin
+      password: SomeVAULTpassword
+      retrieve: true
       action: member
 ```
 
@@ -144,7 +161,7 @@ Example playbook to make sure vault data is absent in a symmetric vault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
-      vault_password: MyVaultPassword123
+      password: SomeVAULTpassword
       action: member
       state: absent
 ```
@@ -178,8 +195,12 @@ Variable | Description | Required
 `name` \| `cn` | The list of vault name strings. | yes
 `description` | The vault description string. | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
-`vault_public_key` \| `ipavaultpublickey` | Vault public key. | no
-`vault_salt` \| `ipavaultsalt` | Vault salt. | no
+`password ` \| `vault_password` \| `ipavaultpassword` | Vault password. | no
+`public_key ` \| `vault_public_key` \| `ipavaultpublickey` | Base64 encoded vault public key. | no
+`public_key_file` \| `vault_public_key_file` | Path to file with public key. | no
+`private_key `\| `vault_private_key` | Base64 encoded vault private key. Used only to retrieve data. | no
+`private_key_file` \| `vault_private_key_file` | Path to file with private key. | no
+`salt` \| `vault_salt` \| `ipavaultsalt` | Vault salt. | no
 `vault_type` \| `ipavaulttype` | Vault types are based on security level. It can be one of `standard`, `symmetric` or `asymmetric`, default: `symmetric` | no
 `user` \| `username` | Any user can own one or more user vaults. | no
 `service` | Any service can own one or more service vaults. | no
@@ -187,7 +208,10 @@ Variable | Description | Required
 `users` | Users that are members of the vault. | no
 `groups` | Groups that are member of the vault. | no
 `services` | Services that are member of the vault. | no
-`vault_data` \| `ipavaultdata` | Data to be stored in the vault. | no
+`data` \|`vault_data` \| `ipavaultdata` | Data to be stored in the vault. | no
+`in` \| `datafile_in` | Path to file with data to be stored in the vault. | no
+`out` \| `datafile_out` | Path to file to store data retrieved from the vault. | no
+`retrieve` | If set to True, retrieve data stored in the vault. (bool) | no
 `action` | Work on vault or member level. It can be on of `member` or `vault` and defaults to `vault`. | no
 `state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. | no
 

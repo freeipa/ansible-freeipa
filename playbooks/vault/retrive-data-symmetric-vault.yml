@@ -1,0 +1,18 @@
+---
+- name: Tests
+  hosts: ipaserver
+  become: true
+  gather_facts: True
+
+  tasks:
+    - name: Retrieve data from symmetric vault.
+      ipavault:
+        ipaadmin_password: SomeADMINpassword
+        name: symvault
+        username: admin
+        password: SomeVAULTpassword
+        retrieve: yes
+        action: member
+      register: result
+    - debug:
+        msg: "{{ result.data | b64decode }}"

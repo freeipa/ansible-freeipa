@@ -9,5 +9,4 @@
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
-      vault_password: MyVaultPassword123
-      vault_type: symmetric
+      vault_password: SomeVAULTpassword
