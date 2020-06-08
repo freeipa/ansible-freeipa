@@ -3,9 +3,30 @@
 - name: Test vault
   hosts: ipaserver
   become: true
-  gather_facts: false
+  # Need to gather facts for ansible_env.
+  gather_facts: true
 
   tasks:
+
+  - name: Copy password file to target host.
+    copy:
+      src: "{{ playbook_dir }}/password.txt"
+      dest: "{{ ansible_env.HOME }}/password.txt"
+
+  - name: Copy public key file to target host.
+    copy:
+      src: "{{ playbook_dir }}/public.pem"
+      dest: "{{ ansible_env.HOME }}/public.pem"
+
+  - name: Copy private key file to target host.
+    copy:
+      src: "{{ playbook_dir }}/private.pem"
+      dest: "{{ ansible_env.HOME }}/private.pem"
+
+  - name: Copy input data file to target host.
+    copy:
+      src: "{{ playbook_dir }}/in.txt"
+      dest: "{{ ansible_env.HOME }}/in.txt"
 
   - name: Ensure user vaults are absent
     ipavault:
@@ -65,19 +86,60 @@
       shared: True
       state: absent
 
-  - name: Ensure service vaults are absent
+  - name: Ensure standard vault is absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      state: absent
+
+  - name: Ensure service vault is absent
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: svcvault
       service: "HTTP/{{ groups.ipaserver[0] }}"
       state: absent
 
+  # tests
+  - name: Ensure standard vault is present
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure standard vault is present, again
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure standard vault is absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure standard vault is absent, again
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+      state: absent
+    register: result
+    failed_when: result.changed
+
   - name: Ensure symmetric vault is present
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
-      vault_password: MyVaultPassword123
+      vault_password: SomeVAULTpassword
       vault_type: symmetric
     register: result
     failed_when: not result.changed
@@ -87,7 +149,7 @@
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
-      vault_password: MyVaultPassword123
+      vault_password: SomeVAULTpassword
       vault_type: symmetric
     register: result
     failed_when: result.changed
@@ -97,9 +159,8 @@
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
-      vault_password: MyVaultPassword123
+      vault_password: SomeVAULTpassword
       vault_data: Hello World.
-      action: member
     register: result
     failed_when: not result.changed
 
@@ -108,9 +169,8 @@
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
-      vault_password: MyVaultPassword123
+      vault_password: SomeVAULTpassword
       vault_data: The world of π is half rounded.
-      action: member
     register: result
     failed_when: not result.changed
 
@@ -132,19 +192,113 @@
     register: result
     failed_when: result.changed
 
+  - name: Ensure symmetric vault is present
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      username: user01
+      vault_password: SomeVAULTpassword
+      vault_type: symmetric
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure symmetric vault is present, with a different password
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      username: user01
+      vault_password: SomeOtherVAULTpassword
+      vault_type: symmetric
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure symmetric vault is absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      username: user01
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+
+  - name: Ensure symmetric vault is present, with password from file.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      username: user01
+      vault_password_file: "{{ ansible_env.HOME }}/password.txt"
+      vault_type: symmetric
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure symmetric vault is present, with password from file, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      username: user01
+      vault_password_file: password.txt
+      vault_type: symmetric
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure asymmetric vault is present, with public key file.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      username: admin
+      description: An asymmetric private vault.
+      public_key_file: "{{ ansible_env.HOME }}/public.pem"
+      vault_type: asymmetric
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure asymmetric vault is present, with public key file, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      username: admin
+      description: An asymmetric private vault.
+      public_key_file: "{{ ansible_env.HOME }}/public.pem"
+      vault_type: asymmetric
+    register: result
+    failed_when: result.changed
+
+  - name: Archive data in asymmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      username: admin
+      vault_data: Hello World.
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure asymmetric vault is absent.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      username: admin
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure asymmetric vault is absent, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      username: admin
+      state: absent
+    register: result
+    failed_when: result.changed
+
   - name: Ensure asymmetric vault is present.
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       username: user01
-      description: A symmetric private vault.
+      description: An asymmetric private vault.
       vault_public_key:
-        LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTR
-        HTkFEQ0JpUUtCZ1FDdGFudjRkK3ptSTZ0T3ova1RXdGowY3AxRAowUENoYy8vR0pJMTUzTi
-        9CN3UrN0h3SXlRVlZoNUlXZG1UcCtkWXYzd09yeVpPbzYvbHN5eFJaZ2pZRDRwQ3VGCjlxM
-        295VTFEMnFOZERYeGtSaFFETXBiUEVSWWlHbE1jbzdhN0hIVDk1bGNQbmhObVFkb3VGdHlV
-        bFBUVS96V1kKZldYWTBOeU1UbUtoeFRseUV3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVk
-        tLS0tLQo=
+        LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFyTTUvZjZkZC9ZSW0vYTllb0dWVApXOGpvYkVncmY5UFhSQTNhSHNBN2tKbzZmQjE4SEQ0K1JWVXd4L2xxbGtQWWJVaTliWFYvckpBa1V3QUVET25KCmVxWEVTWitnVkNWbWlnUnptS1dLMmFkOWFnbVlTaXF5eU54RklKdlpBbzBkRzRDQVdqWUsyN3RMZzRJaDZvR3MKWklERytXVkVTNVc4OUsrTDBid1ZqcTR0c2hoZURNTzU3dW52bUlLRW1hQkUwZXdQZnZrZFpoNWs4R3RzOUg0ZgpoMGZHazV0YklZYTBiaHdNVXBMK1dIT202bmJkK243QmJhVmM4MjBUZ1pETy9yU1l0bnVYYUljNld4MFU5TFhaCmtVbWszYXBNbnprbk5hVHFndUFRZFRuNzlHOFBxckdxbXlXZC9FMWNIMmI1anpJeGlHbzhwc0w1c3hXVlk3V0oKZHdJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
       vault_type: asymmetric
     register: result
     failed_when: not result.changed
@@ -154,13 +308,9 @@
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       username: user01
+      description: An asymmetric private vault.
       vault_public_key:
-        LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTR
-        HTkFEQ0JpUUtCZ1FDdGFudjRkK3ptSTZ0T3ova1RXdGowY3AxRAowUENoYy8vR0pJMTUzTi
-        9CN3UrN0h3SXlRVlZoNUlXZG1UcCtkWXYzd09yeVpPbzYvbHN5eFJaZ2pZRDRwQ3VGCjlxM
-        295VTFEMnFOZERYeGtSaFFETXBiUEVSWWlHbE1jbzdhN0hIVDk1bGNQbmhObVFkb3VGdHlV
-        bFBUVS96V1kKZldYWTBOeU1UbUtoeFRseUV3SURBUUFCCi0tLS0tRU5EIFBVQkxJQyBLRVk
-        tLS0tLQo=
+        LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFyTTUvZjZkZC9ZSW0vYTllb0dWVApXOGpvYkVncmY5UFhSQTNhSHNBN2tKbzZmQjE4SEQ0K1JWVXd4L2xxbGtQWWJVaTliWFYvckpBa1V3QUVET25KCmVxWEVTWitnVkNWbWlnUnptS1dLMmFkOWFnbVlTaXF5eU54RklKdlpBbzBkRzRDQVdqWUsyN3RMZzRJaDZvR3MKWklERytXVkVTNVc4OUsrTDBid1ZqcTR0c2hoZURNTzU3dW52bUlLRW1hQkUwZXdQZnZrZFpoNWs4R3RzOUg0ZgpoMGZHazV0YklZYTBiaHdNVXBMK1dIT202bmJkK243QmJhVmM4MjBUZ1pETy9yU1l0bnVYYUljNld4MFU5TFhaCmtVbWszYXBNbnprbk5hVHFndUFRZFRuNzlHOFBxckdxbXlXZC9FMWNIMmI1anpJeGlHbzhwc0w1c3hXVlk3V0oKZHdJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
       vault_type: asymmetric
     register: result
     failed_when: result.changed
@@ -171,9 +321,31 @@
       name: asymvault
       username: user01
       vault_data: Hello World.
-      action: member
     register: result
     failed_when: not result.changed
+
+  - name: Retrieve data from asymmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      username: user01
+      vault_type: asymmetric
+      retrieve: true
+      private_key:
+        LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBck01L2Y2ZGQvWUltL2E5ZW9HVlRXOGpvYkVncmY5UFhSQTNhSHNBN2tKbzZmQjE4CkhENCtSVlV3eC9scWxrUFliVWk5YlhWL3JKQWtVd0FFRE9uSmVxWEVTWitnVkNWbWlnUnptS1dLMmFkOWFnbVkKU2lxeXlOeEZJSnZaQW8wZEc0Q0FXallLMjd0TGc0SWg2b0dzWklERytXVkVTNVc4OUsrTDBid1ZqcTR0c2hoZQpETU81N3Vudm1JS0VtYUJFMGV3UGZ2a2RaaDVrOEd0czlINGZoMGZHazV0YklZYTBiaHdNVXBMK1dIT202bmJkCituN0JiYVZjODIwVGdaRE8vclNZdG51WGFJYzZXeDBVOUxYWmtVbWszYXBNbnprbk5hVHFndUFRZFRuNzlHOFAKcXJHcW15V2QvRTFjSDJiNWp6SXhpR284cHNMNXN4V1ZZN1dKZHdJREFRQUJBb0lCQUE2ZTlpaXQxNFVBZ3g0Sgp2WDdpczlmYk90Y1drQitqbzk0Tk1meFNGWGdacElNbDEzOW9RTXFLOTdLanhzSHFBYURWZTdtTUxINUVQOTZKCjdNM081ZzRyZ2wwY1ZXdHBNckRReVpzTHZxREZ6Qld4dENIcVZQQXJ1dW1VWmhzU0ozbFJPUXJvOGFnL3c1YmYKNXRDNW9nVnE0K3JzQjRoQnBoZ3Axakdyc1VNK0U4TzdEWFhGSDY4RjhXZ0JpNzI1V3Zjam5iSTlpcmtiMEdjcQoxYkNQSndOM2ZBMWkyVldpUndWWVdiTlRXbkRvTk05WmRZWXhLMGt1VWtEK1F0cmV5Y1dQZjlWNDlsdlVpMVZwCkZWTm1CVUR2R0szSzFNd2JnWFJ3T1hoYWNZN1B0amtkdmFlYjJRY3U1UmpUa3J1R2h6VVlzT1AzcC9jdyt3S1YKdnpRcWNlRUNnWUVBNVd6N1YyU2xSYTJyLy96K0VUUWtKZkVOSjBLRG5DYjBwTUNsQ1FoM2pUTlBBNkRiaGlNawpGVGtjb05icWNwVGlWU2x2aGg2VEtzY1NncVlRVWpRL09xeUc3U2tqS1ZqUTcyajViZVFMeGlMVHRVeWoxT21QClhoOWNXSlh4OGlRKzQ1Y1BvbitrTU9BSWlUd2lCM21tRlJmUWpJR3ZlMURQVW85SitOWjRYZEVDZ1lFQXdOS2cKT2RHWXh4S3RDclhWejFtZGc2UERsVjhxaDdueHhaYlBjaCthTUlRbDErb1RDZ1NpdzhvT1lFZDhnMEhPZFY2dAoxRytJV2h2UHhpaVd5My9BRTBRaGdvS2syR1VzU2pXU01MY0piYVV6RG9FSEZqVExqZWNSbHFkem83cXhSWHFCCm1lTjRMNVdKWUtuTEM0ODJLN2h2dWZTK3VvNWZCNXF3UG10MTNNY0NnWUFlNFRWUFJQK3R5anR0WUNyK084dGwKdy9VbVJLQ2NRdTRJd3Rrenh3ejRWMkNhTjJ0MHVZUWd5eWdjU2ZFU2JSR3RycjhSQ1VwN3BvSEtUZm5DWnIvZgo4TnJVVHdZcGlZZk53WTVaQ1NuQWlHMkFhSWxnbmZNckV3T0Y5T0MwMjhZUE1nVHJ0VXh2TzZoS2VHcUlJUXFHCnFrYnFzb1hoRGpacGdWbk9nV2VBRVFLQmdHdWlaMHcvSXFBbFhiQzMxZlViMmlCTWZ2WFhuSjhNL2RmRkdtRmoKSUtmcWJGRjlXVWxqVXhRbHF5YTFZTnpJRkI1U1RvaGlCZVArMkZtTitMYjV4ZGM3VmRWTFpnZGhXbnJHTXFlOAoxS2QrNnVReXhDanlLWm81blFqU3ltdGY0R3FmT3M4VE9kaWVDWVNLNDB1OWtvaVBPTmE5dHVYZWFVK09Xc2xOCkpRcXJBb0dCQUozTUtPdnNuUXp1WlZQMnZ6MFpxTHdJRTNYalJpRkd2ZVZwaXpxNGh3T1ZldU5zVjA4SnZBMHQKcHVlTkl5OWtsUFNjRmM5T1VkaVpXa0VYMDlCd0prVklyT0hvdHVTQjhBU3RPNVVBbnRObnV5V0xKRUZDNFVxNApHcEI4bGJqOWpreFNLYVU3WDNHYWMyM0s5Skw4ZXVMaDdFN3JQdVpSWWE2bVlONG5iS3F1Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+    register: result
+    failed_when: result.data | b64decode != 'Hello World.' or result.changed
+
+  - name: Retrieve data from asymmetric vault, with private key file.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      username: user01
+      vault_type: asymmetric
+      retrieve: true
+      private_key_file: "{{ ansible_env.HOME }}/private.pem"
+    register: result
+    failed_when: result.data | b64decode != 'Hello World.' or result.changed
 
   - name: Ensure asymmetric vault is absent.
     ipavault:
@@ -219,9 +391,43 @@
       name: stdvault
       username: user01
       vault_data: Hello World.
-      action: member
     register: result
     failed_when: not result.changed
+
+  - name: Retrieve data from standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      retrieve: yes
+      out: "{{ ansible_env.HOME }}/data.txt"
+    register: result
+    failed_when: result.changed
+
+  - name: Verify retrieved data.
+    slurp:
+      src: "{{ ansible_env.HOME }}/data.txt"
+    register: slurpfile
+    failed_when: slurpfile['content'] | b64decode != 'Hello World.'
+
+  - name: Archive data in standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      in: "{{ ansible_env.HOME }}/in.txt"
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      vault_type: standard
+      retrieve: true
+    register: result
+    failed_when: result.data | b64decode != 'Another World.' or result.changed
 
   - name: Ensure standard vault member user is present.
     ipavault:
@@ -348,6 +554,48 @@
     register: result
     failed_when: result.changed
 
+  - name: Ensure vault member service is present.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      action: member
+      services: "HTTP/{{ groups.ipaserver[0] }}"
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault member service is present, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      action: member
+      services: "HTTP/{{ groups.ipaserver[0] }}"
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault member service is absent.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      action: member
+      services: "HTTP/{{ groups.ipaserver[0] }}"
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault member service is absent, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      action: member
+      services: "HTTP/{{ groups.ipaserver[0] }}"
+      state: absent
+    register: result
+    failed_when: result.changed
+
   - name: Ensure vault is absent.
     ipavault:
       ipaadmin_password: SomeADMINpassword
@@ -371,7 +619,7 @@
       ipaadmin_password: SomeADMINpassword
       name: sharedvault
       shared: True
-      ipavaultpassword: MyVaultPassword123
+      ipavaultpassword: SomeVAULTpassword
     register: result
     failed_when: not result.changed
 
@@ -388,7 +636,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: svcvault
-      ipavaultpassword: MyVaultPassword123
+      ipavaultpassword: SomeVAULTpassword
       service: "HTTP/{{ groups.ipaserver[0] }}"
     register: result
     failed_when: not result.changed
@@ -514,6 +762,90 @@
     register: result
     failed_when: result.changed
 
+  - name: Ensure vaultgroup is owner of stdvault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownergroups: vaultgroup
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vaultgroup is owner of stdvault, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownergroups: vaultgroup
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vaultgroup is not owner of stdvault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownergroups: vaultgroup
+      state: absent
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vaultgroup is not owner of stdvault, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownergroups: vaultgroup
+      state: absent
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault is owned by HTTP service.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownerservices: "HTTP/{{ groups.ipaserver[0] }}"
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault is owned by HTTP service, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownerservices: "HTTP/{{ groups.ipaserver[0] }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure vault is not owned by HTTP service.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownerservices: "HTTP/{{ groups.ipaserver[0] }}"
+      state: absent
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure vault is not owned by HTTP service, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      username: user01
+      ownerservices: "HTTP/{{ groups.ipaserver[0] }}"
+      state: absent
+      action: member
+    register: result
+    failed_when: result.changed
+
   - name: Ensure vault is absent.
     ipavault:
       ipaadmin_password: SomeADMINpassword
@@ -522,7 +854,7 @@
       state: absent
 
   # cleaup
-  - name: Ensure test vaults are absent
+  - name: Ensure user01 vaults are absent
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name:
@@ -530,6 +862,16 @@
       - symvault
       - asymvault
       username: user01
+      state: absent
+
+  - name: Ensure test vaults are absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - stdvault
+      - symvault
+      - asymvault
+      username: admin
       state: absent
 
   - name: Ensure shared vaults are absent
@@ -559,4 +901,29 @@
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: vaultgroup
+      state: absent
+
+  - name: Remove password file from target host.
+    file:
+      path: "{{ ansible_env.HOME }}/password.txt"
+      state: absent
+
+  - name: Remove public key file from target host.
+    file:
+      path: "{{ ansible_env.HOME }}/public.pem"
+      state: absent
+
+  - name: Remove private key file from target host.
+    file:
+      path: "{{ ansible_env.HOME }}/private.pem"
+      state: absent
+
+  - name: Remove output data file from target host.
+    file:
+      path: "{{ ansible_env.HOME }}/data.txt"
+      state: absent
+
+  - name: Remove input data file from target host.
+    file:
+      path: "{{ ansible_env.HOME }}/in.txt"
       state: absent

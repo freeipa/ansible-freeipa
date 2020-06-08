@@ -1,0 +1,12 @@
+---
+- name: Test host
+  hosts: ipaserver
+  become: yes
+
+  tasks:
+  - name: Ensure host with inexistent zone is absent.
+    ipahost:
+      name: host01.absentzone.test
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed

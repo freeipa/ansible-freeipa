@@ -186,7 +186,9 @@ options:
         description: List of base-64 encoded user certificates
         required: false
       certmapdata:
-        description: List of certificate mappings
+        description:
+        - List of certificate mappings
+        - Only usable with IPA versions 4.5 and up.
         options:
           certificate:
             description: Base-64 encoded user certificate
@@ -196,6 +198,9 @@ options:
             required: false
           subject:
             description: Subject of the certificate
+            required: false
+          data:
+            description: Certmap data
             required: false
         required: false
       noprivate:
@@ -346,7 +351,9 @@ options:
     description: List of base-64 encoded user certificates
     required: false
   certmapdata:
-    description: List of certificate mappings
+    description:
+    - List of certificate mappings
+    - Only usable with IPA versions 4.5 and up.
     options:
       certificate:
         description: Base-64 encoded user certificate
@@ -356,6 +363,9 @@ options:
         required: false
       subject:
         description: Subject of the certificate
+        required: false
+      data:
+        description: Certmap data
         required: false
     required: false
   noprivate:
@@ -467,7 +477,8 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, date_format, \
     compare_args_ipa, module_params_get, api_check_param, api_get_realm, \
-    api_command_no_name
+    api_command_no_name, gen_add_del_lists, encode_certificate, \
+    load_cert_from_str, DN_x500_text, api_check_command
 import six
 
 
@@ -497,6 +508,11 @@ def find_user(module, name, preserved=False):
             for x in _result["krbprincipalname"]:
                 _list.append(str(x))
             _result["krbprincipalname"] = _list
+        certs = _result.get("usercertificate")
+        if certs is not None:
+            _result["usercertificate"] = [encode_certificate(x)
+                                          for x in certs]
+
         return _result
     else:
         return None
@@ -640,13 +656,21 @@ def check_parameters(module, state, action,
             certificate = x.get("certificate")
             issuer = x.get("issuer")
             subject = x.get("subject")
+            data = x.get("data")
 
+            if data is not None:
+                if certificate is not None or issuer is not None or \
+                   subject is not None:
+                    module.fail_json(
+                        msg="certmapdata: data can not be used with "
+                        "certificate, issuer or subject")
+                check_certmapdata(data)
             if certificate is not None \
                and (issuer is not None or subject is not None):
                 module.fail_json(
                     msg="certmapdata: certificate can not be used with "
                     "issuer or subject")
-            if certificate is None:
+            if data is None and certificate is None:
                 if issuer is None:
                     module.fail_json(msg="certmapdata: issuer is missing")
                 if subject is None:
@@ -655,25 +679,54 @@ def check_parameters(module, state, action,
 
 def extend_emails(email, default_email_domain):
     if email is not None:
-        return [ "%s@%s" % (_email, default_email_domain)
-                 if "@" not in _email else _email
-                 for _email in email]
+        return ["%s@%s" % (_email, default_email_domain)
+                if "@" not in _email else _email
+                for _email in email]
     return email
 
 
-def gen_certmapdata_args(certmapdata):
-    certificate = certmapdata.get("certificate")
-    issuer = certmapdata.get("issuer")
-    subject = certmapdata.get("subject")
+def convert_certmapdata(certmapdata):
+    if certmapdata is None:
+        return None
 
-    _args = {}
-    if certificate is not None:
-        _args["certificate"] = certificate
-    if issuer is not None:
-        _args["issuer"] = issuer
-    if subject is not None:
-        _args["subject"] = subject
-    return _args
+    _result = []
+    for x in certmapdata:
+        certificate = x.get("certificate")
+        issuer = x.get("issuer")
+        subject = x.get("subject")
+        data = x.get("data")
+
+        if data is None:
+            if issuer is None and subject is None:
+                cert = load_cert_from_str(certificate)
+                issuer = cert.issuer
+                subject = cert.subject
+
+            _result.append("X509:<I>%s<S>%s" % (DN_x500_text(issuer),
+                                                DN_x500_text(subject)))
+        else:
+            _result.append(data)
+
+    return _result
+
+
+def check_certmapdata(data):
+    if not data.startswith("X509:"):
+        return False
+
+    i = data.find("<I>", 4)
+    s = data.find("<S>", i)
+    issuer = data[i+3:s]
+    subject = data[s+3:]
+
+    if i < 0 or s < 0 or "CN" not in issuer or "CN" not in subject:
+        return False
+
+    return True
+
+
+def gen_certmapdata_args(certmapdata):
+    return {"ipacertmapdata": to_text(certmapdata)}
 
 
 def main():
@@ -735,7 +788,8 @@ def main():
                              # Here certificate is a simple string
                              certificate=dict(type="str", default=None),
                              issuer=dict(type="str", default=None),
-                             subject=dict(type="str", default=None)
+                             subject=dict(type="str", default=None),
+                             data=dict(type="str", default=None)
                          ),
                          elements='dict', required=False),
         noprivate=dict(type='bool', default=None),
@@ -763,7 +817,7 @@ def main():
             preserve=dict(required=False, type='bool', default=None),
 
             # mod
-            update_password=dict(type='str', default=None,
+            update_password=dict(type='str', default=None, no_log=False,
                                  choices=['always', 'on_create']),
 
             # general
@@ -870,6 +924,7 @@ def main():
         departmentnumber, employeenumber, employeetype, preferredlanguage,
         certificate, certmapdata, noprivate, nomembers, preserve,
         update_password)
+    certmapdata = convert_certmapdata(certmapdata)
 
     # Use users if names is None
     if users is not None:
@@ -967,6 +1022,7 @@ def main():
                     employeetype, preferredlanguage, certificate,
                     certmapdata, noprivate, nomembers, preserve,
                     update_password)
+                certmapdata = convert_certmapdata(certmapdata)
 
                 # Extend email addresses
 
@@ -994,6 +1050,16 @@ def main():
                not api_check_param("user_add", "krbpasswordexpiration"):
                 ansible_module.fail_json(
                     msg="The use of passwordexpiration is not supported by "
+                    "your IPA version")
+
+            # Check certmapdata availability.
+            # We need the connected API for this test, therefore it can not
+            # be part of check_parameters as this is used also before the
+            # connection to the API has been established.
+            if certmapdata is not None and \
+               not api_check_command("user_add_certmapdata"):
+                ansible_module.fail_json(
+                    msg="The use of certmapdata is not supported by "
                     "your IPA version")
 
             # Make sure user exists
@@ -1063,36 +1129,21 @@ def main():
                     # certmapdata
                     if res_find is not None:
                         # Generate addition and removal lists
-                        manager_add = list(
-                            set(manager or []) -
-                            set(res_find.get("manager", [])))
-                        manager_del = list(
-                            set(res_find.get("manager", [])) -
-                            set(manager or []))
-                        principal_add = list(
-                            set(principal or []) -
-                            set(res_find.get("krbprincipalname", [])))
-                        principal_del = list(
-                            set(res_find.get("krbprincipalname", [])) -
-                            set(principal or []))
+                        manager_add, manager_del = gen_add_del_lists(
+                            manager, res_find.get("manager"))
 
+                        principal_add, principal_del = gen_add_del_lists(
+                            principal, res_find.get("krbprincipalname"))
                         # Principals are not returned as utf8 for IPA using
                         # python2 using user_find, therefore we need to
                         # convert the principals that we should remove.
                         principal_del = [to_text(x) for x in principal_del]
 
-                        certificate_add = list(
-                            set(certificate or []) -
-                            set(res_find.get("certificate", [])))
-                        certificate_del = list(
-                            set(res_find.get("certificate", [])) -
-                            set(certificate or []))
-                        certmapdata_add = list(
-                            set(certmapdata or []) -
-                            set(res_find.get("ipaCertMapData", [])))
-                        certmapdata_del = list(
-                            set(res_find.get("ipaCertMapData", [])) -
-                            set(certmapdata or []))
+                        certificate_add, certificate_del = gen_add_del_lists(
+                            certificate, res_find.get("usercertificate"))
+
+                        certmapdata_add, certmapdata_del = gen_add_del_lists(
+                            certmapdata, res_find.get("ipacertmapdata"))
 
                     else:
                         # Use given managers and principals
@@ -1179,7 +1230,7 @@ def main():
                     # Remove certmapdata
                     if len(certmapdata_del) > 0:
                         for _data in certmapdata_del:
-                            commands.append([name, "user_add_certmapdata",
+                            commands.append([name, "user_remove_certmapdata",
                                              gen_certmapdata_args(_data)])
 
                 elif action == "member":
@@ -1376,7 +1427,6 @@ def main():
         temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
-
     ansible_module.exit_json(changed=changed, user=exit_args)
 
 

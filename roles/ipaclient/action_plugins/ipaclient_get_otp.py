@@ -33,9 +33,7 @@ from ansible.plugins.action import ActionBase
 
 
 def run_cmd(args, stdin=None):
-    """
-    Execute an external command.
-    """
+    """Execute an external command."""
     p_in = None
     p_out = subprocess.PIPE
     p_err = subprocess.PIPE
@@ -53,8 +51,10 @@ def run_cmd(args, stdin=None):
 
 def kinit_password(principal, password, ccache_name, config):
     """
-    Perform kinit using principal/password, with the specified config file
-    and store the TGT in ccache_name.
+    Perform kinit using principal/password.
+
+    It uses the specified config file to kinit and stores the TGT
+    in ccache_name.
     """
     args = ["/usr/bin/kinit", principal, '-c', ccache_name]
     old_config = os.environ.get('KRB5_CONFIG')
@@ -71,8 +71,10 @@ def kinit_password(principal, password, ccache_name, config):
 
 def kinit_keytab(principal, keytab, ccache_name, config):
     """
-    Perform kinit using principal/keytab, with the specified config file
-    and store the TGT in ccache_name.
+    Perform kinit using principal/keytab.
+
+    It uses the specified config file to kinit and stores the TGT
+    in ccache_name.
     """
     if gssapi is None:
         raise ImportError("gssapi is not available")
@@ -126,7 +128,7 @@ class ActionModule(ActionBase):
 
     def run(self, tmp=None, task_vars=None):
         """
-        handler for credential cache transfer
+        Handle credential cache transfer.
 
         ipa* commands can either provide a password or a keytab file
         in order to authenticate on the managed node with Kerberos.
@@ -142,7 +144,6 @@ class ActionModule(ActionBase):
 
         Then the IPA commands can use this credential cache file.
         """
-
         if task_vars is None:
             task_vars = dict()
 

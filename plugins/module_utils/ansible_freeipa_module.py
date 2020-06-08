@@ -39,6 +39,7 @@ try:
 except ImportError:
     from ipapython.ipautil import kinit_password, kinit_keytab
 from ipapython.ipautil import run
+from ipapython.dn import DN
 from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
 from ansible.module_utils.basic import AnsibleModule
@@ -48,9 +49,21 @@ try:
     from ipalib.x509 import Encoding
 except ImportError:
     from cryptography.hazmat.primitives.serialization import Encoding
+
+try:
+    from ipalib.x509 import load_pem_x509_certificate
+except ImportError:
+    from ipalib.x509 import load_certificate
+    load_pem_x509_certificate = None
+
 import socket
 import base64
 import six
+
+try:
+    from collections.abc import Mapping  # noqa
+except ImportError:
+    from collections import Mapping  # noqa
 
 
 if six.PY3:
@@ -58,9 +71,7 @@ if six.PY3:
 
 
 def valid_creds(module, principal):  # noqa
-    """
-    Get valid credintials matching the princial, try GSSAPI first
-    """
+    """Get valid credentials matching the princial, try GSSAPI first."""
     if "KRB5CCNAME" in os.environ:
         ccache = os.environ["KRB5CCNAME"]
         module.debug('KRB5CCNAME set to %s' % ccache)
@@ -98,9 +109,7 @@ def valid_creds(module, principal):  # noqa
 
 
 def temp_kinit(principal, password):
-    """
-    kinit with password using a temporary ccache
-    """
+    """Kinit with password using a temporary ccache."""
     if not password:
         raise RuntimeError("The password is not set")
     if not principal:
@@ -114,22 +123,27 @@ def temp_kinit(principal, password):
     except RuntimeError as e:
         raise RuntimeError("Kerberos authentication failed: {}".format(e))
 
+    os.environ["KRB5CCNAME"] = ccache_name
     return ccache_dir, ccache_name
 
 
 def temp_kdestroy(ccache_dir, ccache_name):
-    """
-    Destroy temporary ticket and remove temporary ccache
-    """
+    """Destroy temporary ticket and remove temporary ccache."""
     if ccache_name is not None:
         run([paths.KDESTROY, '-c', ccache_name], raiseonerr=False)
+        del os.environ['KRB5CCNAME']
     if ccache_dir is not None:
         shutil.rmtree(ccache_dir, ignore_errors=True)
 
 
 def api_connect(context=None):
     """
-    Create environment, initialize api and connect to ldap2
+    Initialize IPA API with the provided context.
+
+    `context` can be any of:
+        * `server` (default)
+        * `ansible-freeipa`
+        * `cli_installer`
     """
     env = Env()
     env._bootstrap()
@@ -148,32 +162,33 @@ def api_connect(context=None):
         backend = api.Backend.rpcclient
 
     if not backend.isconnected():
-        backend.connect()
+        backend.connect(ccache=os.environ.get('KRB5CCNAME', None))
 
 
 def api_command(module, command, name, args):
-    """
-    Call ipa.Command
-    """
+    """Call ipa.Command."""
     return api.Command[command](name, **args)
 
 
 def api_command_no_name(module, command, args):
-    """
-    Call ipa.Command without a name.
-    """
+    """Call ipa.Command without a name."""
     return api.Command[command](**args)
 
 
+def api_check_command(command):
+    """Return if command exists in command list."""
+    return command in api.Command
+
+
 def api_check_param(command, name):
-    """
-    Return if param exists in command param list
-    """
+    """Check if param exists in command param list."""
     return name in api.Command[command].params
 
 
 def execute_api_command(module, principal, password, command, name, args):
     """
+    Execute an API command.
+
     Get KRB ticket if not already there, initialize api, connect,
     execute command and destroy ticket again if it has been created also.
     """
@@ -295,10 +310,11 @@ def api_get_realm():
 
 
 def gen_add_del_lists(user_list, res_list):
-    """
-    Generate the lists for the addition and removal of members using the
-    provided user and ipa settings
-    """
+    """Generate the lists for the addition and removal of members."""
+    # The user list is None, therefore the parameter should not be touched
+    if user_list is None:
+        return [], []
+
     add_list = list(set(user_list or []) - set(res_list or []))
     del_list = list(set(res_list or []) - set(user_list or []))
 
@@ -307,8 +323,9 @@ def gen_add_del_lists(user_list, res_list):
 
 def encode_certificate(cert):
     """
-    Encode a certificate using base64 with also taking FreeIPA and Python
-    versions into account
+    Encode a certificate using base64.
+
+    It also takes FreeIPA and Python versions into account.
     """
     if isinstance(cert, (str, unicode, bytes)):
         encoded = base64.b64encode(cert)
@@ -317,6 +334,30 @@ def encode_certificate(cert):
     if not six.PY2:
         encoded = encoded.decode('ascii')
     return encoded
+
+
+def load_cert_from_str(cert):
+    cert = cert.strip()
+    if not cert.startswith("-----BEGIN CERTIFICATE-----"):
+        cert = "-----BEGIN CERTIFICATE-----\n" + cert
+    if not cert.endswith("-----END CERTIFICATE-----"):
+        cert += "\n-----END CERTIFICATE-----"
+
+    if load_pem_x509_certificate is not None:
+        cert = load_pem_x509_certificate(cert.encode('utf-8'))
+    else:
+        cert = load_certificate(cert.encode('utf-8'))
+    return cert
+
+
+def DN_x500_text(text):
+    if hasattr(DN, "x500_text"):
+        return DN(text).x500_text()
+    else:
+        # Emulate x500_text
+        dn = DN(text)
+        dn.rdns = reversed(dn.rdns)
+        return str(dn)
 
 
 def is_valid_port(port):
@@ -330,9 +371,7 @@ def is_valid_port(port):
 
 
 def is_ipv4_addr(ipaddr):
-    """
-    Test if figen IP address is a valid IPv4 address
-    """
+    """Test if given IP address is a valid IPv4 address."""
     try:
         socket.inet_pton(socket.AF_INET, ipaddr)
     except socket.error:
@@ -341,9 +380,7 @@ def is_ipv4_addr(ipaddr):
 
 
 def is_ipv6_addr(ipaddr):
-    """
-    Test if figen IP address is a valid IPv6 address
-    """
+    """Test if given IP address is a valid IPv6 address."""
     try:
         socket.inet_pton(socket.AF_INET6, ipaddr)
     except socket.error:
@@ -351,19 +388,28 @@ def is_ipv6_addr(ipaddr):
     return True
 
 
-class AnsibleFreeIPAParams(dict):
+class AnsibleFreeIPAParams(Mapping):
     def __init__(self, ansible_module):
-        self.update(ansible_module.params)
+        self.mapping = ansible_module.params
         self.ansible_module = ansible_module
+
+    def __getitem__(self, key):
+        param = self.mapping[key]
+        if param is not None:
+            return _afm_convert(param)
+
+    def __iter__(self):
+        return iter(self.mapping)
+
+    def __len__(self):
+        return len(self.mapping)
 
     @property
     def names(self):
         return self.name
 
     def __getattr__(self, name):
-        param = self.get(name)
-        if param is not None:
-            return _afm_convert(param)
+        return self.get(name)
 
 
 class FreeIPABaseModule(AnsibleModule):

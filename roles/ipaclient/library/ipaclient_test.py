@@ -235,7 +235,6 @@ def is_client_configured():
 
     :returns: boolean
     """
-
     return (os.path.isfile(paths.IPA_DEFAULT_CONF) and
             os.path.isfile(os.path.join(paths.IPA_CLIENT_SYSRESTORE,
                                         sysrestore.SYSRESTORE_STATEFILE)))
@@ -243,11 +242,10 @@ def is_client_configured():
 
 def get_ipa_conf():
     """
-    Return IPA configuration read from /etc/ipa/default.conf
+    Return IPA configuration read from `/etc/ipa/default.conf`.
 
     :returns: dict containing key,value
     """
-
     parser = RawConfigParser()
     parser.read(paths.IPA_DEFAULT_CONF)
     result = dict()

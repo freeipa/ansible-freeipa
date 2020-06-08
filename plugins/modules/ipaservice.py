@@ -90,6 +90,14 @@ options:
     required: false
     type: list
     aliases: ["krbprincipalname"]
+  smb:
+    description: Add a SMB service. Can only be used with new services.
+    required: false
+    type: bool
+  netbiosname:
+    description: NETBIOS name for the SMB service.
+    required: false
+    type: str
   host:
     description: Host that can manage the service.
     required: false
@@ -135,6 +143,12 @@ options:
     required: false
     type: list
     aliases: ["ipaallowedtoperform_read_keys_hostgroup"]
+  continue:
+    description:
+      Continuous mode. Don't stop on errors. Valid only if `state` is `absent`.
+    required: false
+    default: True
+    type: bool
   action:
     description: Work on service or member level
     default: service
@@ -142,7 +156,7 @@ options:
   state:
     description: State to ensure
     default: present
-    choices: ["present", "absent", "enabled", "disabled"]
+    choices: ["present", "absent", "disabled"]
 author:
     - Rafael Jeffman
 """
@@ -217,20 +231,31 @@ from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
     encode_certificate, gen_add_del_lists, module_params_get, to_text, \
     api_check_param
+import ipalib.errors
 
 
-def find_service(module, name):
+def find_service(module, name, netbiosname):
     _args = {
         "all": True,
     }
 
-    _result = api_command(module, "service_find", to_text(name), _args)
+    # Search for a SMB/cifs service.
+    if netbiosname is not None:
+        _result = api_command(
+            module, "service_find", to_text(netbiosname), _args)
 
-    if len(_result["result"]) > 1:
-        module.fail_json(
-            msg="There is more than one service '%s'" % (name))
-    elif len(_result["result"]) == 1:
-        _res = _result["result"][0]
+        for _res_find in _result.get('result', []):
+            for uid in _res_find.get('uid', []):
+                if uid.startswith("%s$@" % netbiosname):
+                    return _res_find
+
+    try:
+        _result = api_command(module, "service_show", to_text(name), _args)
+    except ipalib.errors.NotFound:
+        return None
+
+    if "result" in _result:
+        _res = _result["result"]
         certs = _res.get("usercertificate")
         if certs is not None:
             _res["usercertificate"] = [encode_certificate(cert) for
@@ -268,7 +293,7 @@ def check_parameters(module, state, action, names, parameters):
     # invalid parameters for everything but state 'present', action 'service'.
     invalid = ['pac_type', 'auth_ind', 'skip_host_check',
                'force', 'requires_pre_auth', 'ok_as_delegate',
-               'ok_to_auth_as_delegate']
+               'ok_to_auth_as_delegate', 'smb', 'netbiosname']
 
     # invalid parameters when not handling service members.
     invalid_not_member = \
@@ -283,7 +308,19 @@ def check_parameters(module, state, action, names, parameters):
             module.fail_json(msg="Only one service can be added at a time.")
 
         if action == 'service':
-            invalid = []
+            invalid = ['delete_continue']
+
+            if parameters.get('smb', False):
+                invalid.extend(['force', 'auth_ind', 'skip_host_check',
+                                'requires_pre_auth', 'auth_ind', 'pac_type'])
+
+                for _invalid in invalid:
+                    if parameters.get(_invalid, False):
+                        module.fail_json(
+                            msg="Argument '%s' can not be used with SMB "
+                                "service." % _invalid)
+        else:
+            invalid.append('delete_continue')
 
     elif state == 'absent':
         if len(names) < 1:
@@ -291,9 +328,12 @@ def check_parameters(module, state, action, names, parameters):
 
         if action == "service":
             invalid.extend(invalid_not_member)
+        else:
+            invalid.extend('delete_continue')
 
     elif state == 'disabled':
         invalid.extend(invalid_not_member)
+        invalid.append('delete_continue')
         if action != "service":
             module.fail_json(
                 msg="Invalid action '%s' for state '%s'" % (action, state))
@@ -302,10 +342,10 @@ def check_parameters(module, state, action, names, parameters):
         module.fail_json(msg="Invalid state '%s'" % (state))
 
     for _invalid in invalid:
-        if parameters[_invalid] is not None:
+        if _invalid in parameters and parameters[_invalid] is not None:
             module.fail_json(
-                msg="Argument '%s' can not be used with state '%s'" %
-                (_invalid, state))
+                msg="Argument '%s' can not be used with state '%s', "
+                "action '%s'" % (_invalid, state, action))
 
 
 def init_ansible_module():
@@ -322,11 +362,13 @@ def init_ansible_module():
                              default=None, required=False),
             principal=dict(type="list", aliases=["krbprincipalname"],
                            default=None),
+            smb=dict(type="bool", required=False),
+            netbiosname=dict(type="str", required=False),
             pac_type=dict(type="list", aliases=["ipakrbauthzdata"],
                           choices=["MS-PAC", "PAD", "NONE"]),
-            auth_ind=dict(type="str",
+            auth_ind=dict(type="list",
                           aliases=["krbprincipalauthind"],
-                          choices=["otp", "radius", "pkinit", "hardened"]),
+                          choices=["otp", "radius", "pkinit", "hardened", ""]),
             skip_host_check=dict(type="bool"),
             force=dict(type="bool"),
             requires_pre_auth=dict(
@@ -359,13 +401,14 @@ def init_ansible_module():
             allow_retrieve_keytab_hostgroup=dict(
                 type="list", required=False,
                 aliases=['ipaallowedtoperform_read_keys_hostgroup']),
+            delete_continue=dict(type="bool", required=False,
+                                 aliases=['continue']),
             # action
             action=dict(type="str", default="service",
                         choices=["member", "service"]),
             # state
             state=dict(type="str", default="present",
-                       choices=["present", "absent",
-                                "enabled", "disabled"]),
+                       choices=["present", "absent", "disabled"]),
         ),
         supports_check_mode=True,
     )
@@ -398,6 +441,9 @@ def main():
     ok_to_auth_as_delegate = module_params_get(ansible_module,
                                                "ok_to_auth_as_delegate")
 
+    smb = module_params_get(ansible_module, "smb")
+    netbiosname = module_params_get(ansible_module, "netbiosname")
+
     host = module_params_get(ansible_module, "host")
 
     allow_create_keytab_user = module_params_get(
@@ -417,6 +463,7 @@ def main():
         ansible_module, "allow_create_keytab_host")
     allow_retrieve_keytab_hostgroup = module_params_get(
         ansible_module, "allow_retrieve_keytab_hostgroup")
+    delete_continue = module_params_get(ansible_module, "delete_continue")
 
     # action
     action = module_params_get(ansible_module, "action")
@@ -447,9 +494,11 @@ def main():
         commands = []
 
         for name in names:
-            res_find = find_service(ansible_module, name)
+            res_find = find_service(ansible_module, name, netbiosname)
 
             if state == "present":
+                # if service exists, 'smb' cannot be used.
+
                 if action == "service":
                     args = gen_args(
                         pac_type, auth_ind, skip_host_check, force,
@@ -459,7 +508,12 @@ def main():
                         del args['skip_host_check']
 
                     if res_find is None:
-                        commands.append([name, 'service_add', args])
+                        if smb:
+                            if netbiosname is not None:
+                                args['ipantflatname'] = netbiosname
+                            commands.append([name, 'service_add_smb', args])
+                        else:
+                            commands.append([name, 'service_add', args])
 
                         certificate_add = certificate or []
                         certificate_del = []
@@ -699,7 +753,8 @@ def main():
             elif state == "absent":
                 if action == "service":
                     if res_find is not None:
-                        commands.append([name, 'service_del', {}])
+                        args = {'continue': True if delete_continue else False}
+                        commands.append([name, 'service_del', args])
 
                 elif action == "member":
                     if res_find is None:

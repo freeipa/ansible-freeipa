@@ -122,11 +122,11 @@ Variable | Description | Required
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `name` \| `cn` | The list of sudorule name strings. | yes
 `description` | The sudorule description string. | no
-`usercategory` | User category the rule applies to. Choices: ["all"] | no
-`hostcategory` | Host category the rule applies to. Choices: ["all"] | no
-`cmdcategory` | Command category the rule applies to. Choices: ["all"] | no
-`runasusercategory` | RunAs User category the rule applies to. Choices: ["all"] | no
-`runasgroupcategory` | RunAs Group category the rule applies to. Choices: ["all"] | no
+`usercategory` \| `usercat` | User category the rule applies to. Choices: ["all", ""] | no
+`hostcategory` \| `hostcat` | Host category the rule applies to. Choices: ["all", ""] | no
+`cmdcategory` \| `cmdcat` | Command category the rule applies to. Choices: ["all", ""] | no
+`runasusercategory` \| `rusasusercat` | RunAs User category the rule applies to. Choices: ["all", ""] | no
+`runasgroupcategory` \| `runasgroupcat` | RunAs Group category the rule applies to. Choices: ["all", ""] | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
 `host` | List of host name strings assigned to this sudorule. | no
 `hostgroup` | List of host group name strings assigned to this sudorule. | no

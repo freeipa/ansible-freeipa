@@ -7,6 +7,38 @@
 
   tasks:
 
+  # setup
+  - name: Ensure user is absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: user01
+      state: absent
+
+  - name: Ensure group is absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: group01
+      state: absent
+
+  - name: Ensure user is present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: user01
+      first: user
+      last: zeroone
+
+  - name: Ensure group is present, with user01 on it.
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: group01
+      user: user01
+
+  - name: Ensure sudocmdgroup is absent
+    ipasudocmdgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: test_sudorule
+      state: absent
+
   - name: Ensure hostgroup is present, with a host.
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
@@ -39,6 +71,8 @@
       - allcommands
       state: absent
 
+  # tests
+
   - name: Ensure sudorule is present
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
@@ -53,11 +87,87 @@
     register: result
     failed_when: result.changed
 
-  - name: Ensure sudorule is present, runAsUserCategory.
+  - name: Ensure user01 is on the list of users sudorule execute as.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
-      runAsUserCategory: all
+      runasuser:
+        - user01
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user01 is on the list of users sudorule execute as, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      runasuser:
+        - user01
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user01 is not on the list of users sudorule execute as.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      runasuser:
+        - user01
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user01 is not on the list of users sudorule execute as, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      runasuser:
+        - user01
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure group01 is on the list of group sudorule execute as.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      runasgroup:
+        - group01
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure group01 is on the list of group sudorule execute as, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      runasgroup:
+        - group01
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure group01 is not on the list of group sudorule execute as.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      runasgroup:
+        - group01
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure group01 is not on the list of groups sudorule execute as, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      runasgroup:
+        - group01
+      action: member
+      state: absent
     register: result
     failed_when: result.changed
 
@@ -70,6 +180,78 @@
     failed_when: not result.changed
 
   - name: Ensure sudorule is present, with usercategory 'all', again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      usercategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is with usercategory 'all' is absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with runasusercategory 'all'.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasusercategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with runasusercategory 'all', again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasusercategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is with runasusercategory 'all' is absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with runasgroupcategory 'all'.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasgroupcategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with runasgroupcategory 'all', again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      runasgroupcategory: all
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule is with runasgroupcategory 'all' is absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with usercategory 'all'.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      usercategory: all
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule is present, with usercategory 'all', again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: allusers
@@ -122,6 +304,124 @@
       state: enabled
     register: result
     failed_when: result.changed
+
+  - name: Ensure user is present in sudorule.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      user: user01
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user is present in sudorule, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      user: user01
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user is absent from sudorule.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      user: user01
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure user is absent from sudorule, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      user: user01
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure group is present in sudorule.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      group: group01
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure group is present in sudorule, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      group: group01
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure group is absent from sudorule.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      group: group01
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure group is absent from sudorule, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      group: group01
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule has a sudooption.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      sudooption: '!authenticate'
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule has a sudooption, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      sudooption: '!authenticate'
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule has an order.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      order: 1
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudorule has an order, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      order: 1
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudorule has another order.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      order: 10
+    register: result
+    failed_when: not result.changed
 
   - name: Ensure sudorule is present and some sudocmd are allowed.
     ipasudorule:
@@ -384,16 +684,26 @@
       name: test_sudorule
       state: absent
 
-  - name: Ensure hostgroup is absent.
-    ipahostgroup:
-      ipaadmin_password: SomeADMINpassword
-      name: cluster
-      state: absent
-
   - name: Ensure sudocmds are absent
     ipasudocmd:
       ipaadmin_password: SomeADMINpassword
       name:
       - /sbin/ifconfig
       - /usr/bin/vim
+      state: absent
+
+  - name: Ensure sudorules are absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testrule1
+      - allusers
+      - allhosts
+      - allcommands
+      state: absent
+
+  - name: Ensure hostgroup is absent.
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: cluster
       state: absent

@@ -126,8 +126,6 @@
       certmapdata:
       - issuer: CN=issuer1
         subject: CN=subject1
-      - issuer: CN=issuer2
-        subject: CN=subject2
       - issuer: CN=issuer3
         subject: CN=subject3
       action: member
@@ -142,10 +140,87 @@
       certmapdata:
       - issuer: CN=issuer1
         subject: CN=subject1
-      - issuer: CN=issuer2
-        subject: CN=subject2
       - issuer: CN=issuer3
         subject: CN=subject3
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: User test certmapdata members absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - issuer: CN=issuer2
+        subject: CN=subject2
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata members absent again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - issuer: CN=issuer2
+        subject: CN=subject2
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: User test certmapdata member present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - issuer: CN=ca,dc=example,dc=com
+        subject: CN=test,dc=example,dc=com
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata member present again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - issuer: CN=ca,dc=example,dc=com
+        subject: CN=test,dc=example,dc=com
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: User test certmapdata member (data) present again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - data: X509:<I>dc=com,dc=example,CN=ca<S>dc=com,dc=example,CN=test
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: User test certmapdata member absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - issuer: CN=ca,dc=example,dc=com
+        subject: CN=test,dc=example,dc=com
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: User test certmapdata member (data) absent again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: test
+      certmapdata:
+      - data: X509:<I>dc=com,dc=example,CN=ca<S>dc=com,dc=example,CN=test
       action: member
       state: absent
     register: result
