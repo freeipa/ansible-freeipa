@@ -1,0 +1,194 @@
+---
+- name: Test group membermanagers
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure user manangeruser1 and manageruser2 is absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: manageruser1,manageruser2
+      state: absent
+
+  - name: Ensure group testgroup, managergroup1 and managergroup2 are absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup,managergroup1,managergroup2
+      state: absent
+
+  - name: Ensure user manageruser1 and manageruser2 are present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: manageruser1
+        first: manageruser1
+        last: Last1
+      - name: manageruser2
+        first: manageruser2
+        last: Last2
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure testgroup is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure managergroup1 is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: managergroup1
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure managergroup2 is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: managergroup2
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure membermanager user1 is present for testgroup
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser1
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure membermanager user1 is present for testgroup again
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser1
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure membermanager group1 is present for testgroup
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_group: managergroup1
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure membermanager group1 is present for testgroup again
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_group: managergroup1
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure membermanager user2 and group2 members are present for testgroup
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser2
+      membermanager_group: managergroup2
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure membermanager user2 and group2 members are present for testgroup again
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser2
+      membermanager_group: managergroup2
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure membermanager user and group members are present for testgroup again
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser1,manageruser2
+      membermanager_group: managergroup1,managergroup2
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure membermanager user1 and group1 members are absent for testgroup
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser1
+      membermanager_group: managergroup1
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure membermanager user1 and group1 members are absent for testgroup again
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser1
+      membermanager_group: managergroup1
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure membermanager user1 and group1 members are present for testgroup
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser1
+      membermanager_group: managergroup1
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure membermanager user1 and group1 members are present for testgroup again
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser1
+      membermanager_group: managergroup1
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure membermanager user and group members are absent for testgroup
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser1,manageruser2
+      membermanager_group: managergroup1,managergroup2
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure membermanager user and group members are absent for testgroup again
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: manageruser1,manageruser2
+      membermanager_group: managergroup1,managergroup2
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure user manangeruser1 and manageruser2 is absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: manageruser1,manageruser2
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure group testgroup, managergroup1 and managergroup2 are absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup,managergroup1,managergroup2
+      state: absent
+    register: result
+    failed_when: not result.changed
