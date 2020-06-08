@@ -58,6 +58,18 @@ options:
     description: List of hostgroup names assigned to this hostgroup.
     required: false
     type: list
+  membermanager_user:
+    description:
+    - List of member manager users assigned to this hostgroup.
+    - Only usable with IPA versions 4.8.4 and up.
+    required: false
+    type: list
+  membermanager_group:
+    description:
+    - List of member manager groups assigned to this hostgroup.
+    - Only usable with IPA versions 4.8.4 and up.
+    required: false
+    type: list
   action:
     description: Work on hostgroup or member level
     default: hostgroup
@@ -117,7 +129,7 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get, gen_add_del_lists
+    module_params_get, gen_add_del_lists, api_check_command
 
 
 def find_hostgroup(module, name):
@@ -171,6 +183,9 @@ def main():
             nomembers=dict(required=False, type='bool', default=None),
             host=dict(required=False, type='list', default=None),
             hostgroup=dict(required=False, type='list', default=None),
+            membermanager_user=dict(required=False, type='list', default=None),
+            membermanager_group=dict(required=False, type='list',
+                                     default=None),
             action=dict(type="str", default="hostgroup",
                         choices=["member", "hostgroup"]),
             # state
@@ -196,6 +211,10 @@ def main():
     nomembers = module_params_get(ansible_module, "nomembers")
     host = module_params_get(ansible_module, "host")
     hostgroup = module_params_get(ansible_module, "hostgroup")
+    membermanager_user = module_params_get(ansible_module,
+                                           "membermanager_user")
+    membermanager_group = module_params_get(ansible_module,
+                                            "membermanager_group")
     action = module_params_get(ansible_module, "action")
     # state
     state = module_params_get(ansible_module, "state")
@@ -238,6 +257,15 @@ def main():
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
         api_connect()
+
+        has_add_membermanager = api_check_command(
+            "hostgroup_add_member_manager")
+        if ((membermanager_user is not None or
+             membermanager_group is not None) and not has_add_membermanager):
+            ansible_module.fail_json(
+                msg="Managing a membermanager user or group is not supported "
+                "by your IPA version"
+            )
 
         commands = []
 
@@ -288,6 +316,41 @@ def main():
                                                  "host": host_del,
                                                  "hostgroup": hostgroup_del,
                                              }])
+
+                    membermanager_user_add, membermanager_user_del = \
+                        gen_add_del_lists(
+                            membermanager_user,
+                            res_find.get("membermanager_user")
+                        )
+
+                    membermanager_group_add, membermanager_group_del = \
+                        gen_add_del_lists(
+                            membermanager_group,
+                            res_find.get("membermanager_group")
+                        )
+
+                    if has_add_membermanager:
+                        # Add membermanager users and groups
+                        if len(membermanager_user_add) > 0 or \
+                           len(membermanager_group_add) > 0:
+                            commands.append(
+                                [name, "hostgroup_add_member_manager",
+                                 {
+                                     "user": membermanager_user_add,
+                                     "group": membermanager_group_add,
+                                 }]
+                            )
+                        # Remove member manager
+                        if len(membermanager_user_del) > 0 or \
+                           len(membermanager_group_del) > 0:
+                            commands.append(
+                                [name, "hostgroup_remove_member_manager",
+                                 {
+                                     "user": membermanager_user_del,
+                                     "group": membermanager_group_del,
+                                 }]
+                            )
+
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
@@ -299,6 +362,19 @@ def main():
                                          "host": host,
                                          "hostgroup": hostgroup,
                                      }])
+
+                    if has_add_membermanager:
+                        # Add membermanager users and groups
+                        if membermanager_user is not None or \
+                           membermanager_group is not None:
+                            commands.append(
+                                [name, "hostgroup_add_member_manager",
+                                 {
+                                     "user": membermanager_user,
+                                     "group": membermanager_group,
+                                 }]
+                            )
+
             elif state == "absent":
                 if action == "hostgroup":
                     if res_find is not None:
@@ -315,6 +391,19 @@ def main():
                                          "host": host,
                                          "hostgroup": hostgroup,
                                      }])
+
+                    if has_add_membermanager:
+                        # Remove membermanager users and groups
+                        if membermanager_user is not None or \
+                           membermanager_group is not None:
+                            commands.append(
+                                [name, "hostgroup_remove_member_manager",
+                                 {
+                                     "user": membermanager_user,
+                                     "group": membermanager_group,
+                                 }]
+                            )
+
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
