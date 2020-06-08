@@ -137,6 +137,8 @@ Variable | Description | Required
 `nomembers` | Suppress processing of membership attributes. (bool) | no
 `host` | List of host name strings assigned to this hostgroup. | no
 `hostgroup` | List of hostgroup name strings assigned to this hostgroup. | no
+`membermanager_user` | List of member manager users assigned to this hostgroup. Only usable with IPA versions 4.8.4 and up. | no
+`membermanager_group` | List of member manager groups assigned to this hostgroup. Only usable with IPA versions 4.8.4 and up. | no
 `action` | Work on hostgroup or member level. It can be on of `member` or `hostgroup` and defaults to `hostgroup`. | no
 `state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. | no
 
