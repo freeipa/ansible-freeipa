@@ -115,7 +115,7 @@ def find_dnsconfig(module):
             _result["result"]['idnsforwarders'] = ['']
         return _result["result"]
     else:
-        module.fail("Could not retrieve current DNS configuration.")
+        module.fail_json(msg="Could not retrieve current DNS configuration.")
     return None
 
 
@@ -129,7 +129,7 @@ def gen_args(module, state, dnsconfig, forwarders, forward_policy,
             ip_address = forwarder.get('ip_address')
             port = forwarder.get('port')
             if not (is_ipv4_addr(ip_address) or is_ipv6_addr(ip_address)):
-                module.fail(
+                module.fail_json(
                     msg="Invalid IP for DNS forwarder: %s" % ip_address)
             if port is None:
                 _forwarders.append(ip_address)
@@ -153,7 +153,7 @@ def gen_args(module, state, dnsconfig, forwarders, forward_policy,
 
         else:
             # shouldn't happen, but let's be paranoid.
-            module.fail(msg="Invalid state: %s" % state)
+            module.fail_json(msg="Invalid state: %s" % state)
 
     if forward_policy is not None:
         _args['idnsforwardpolicy'] = forward_policy
