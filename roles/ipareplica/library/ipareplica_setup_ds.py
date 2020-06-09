@@ -190,7 +190,7 @@ def main():
             ccache=dict(required=True),
             installer_ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
-            _dirsrv_pkcs12_info=dict(required=False),
+            _dirsrv_pkcs12_info=dict(required=False, type='list'),
             _top_dir=dict(required=True),
             _add_to_ipaservers=dict(required=True, type='bool'),
             _ca_subject=dict(required=True),

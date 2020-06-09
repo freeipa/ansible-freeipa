@@ -195,6 +195,7 @@ import os
 import tempfile
 import traceback
 import six
+from shutil import copyfile
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
@@ -484,6 +485,21 @@ def main():
             msg="Apache Server SSL certificate and PKINIT KDC "
             "certificate are not signed by the same CA "
             "certificate")
+
+    # Copy pkcs12_files to make them persistent till deployment is done
+    # and encode certificates for ansible compatibility
+    if http_pkcs12_info is not None:
+        copyfile(http_pkcs12_file.name, "/etc/ipa/.tmp_pkcs12_http")
+        http_pkcs12_info = ("/etc/ipa/.tmp_pkcs12_http", http_pin)
+        http_ca_cert = ""
+    if dirsrv_pkcs12_info is not None:
+        copyfile(dirsrv_pkcs12_file.name, "/etc/ipa/.tmp_pkcs12_dirsrv")
+        dirsrv_pkcs12_info = ("/etc/ipa/.tmp_pkcs12_dirsrv", dirsrv_pin)
+        dirsrv_ca_cert = ""
+    if pkinit_pkcs12_info is not None:
+        copyfile(pkinit_pkcs12_file.name, "/etc/ipa/.tmp_pkcs12_pkinit")
+        pkinit_pkcs12_info = ("/etc/ipa/.tmp_pkcs12_pkinit", pkinit_pin)
+        pkinit_ca_cert = ""
 
     ansible_log.debug("-- FQDN --")
 

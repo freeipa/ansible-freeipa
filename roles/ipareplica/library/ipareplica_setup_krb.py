@@ -96,7 +96,7 @@ def main():
             # additional
             config_master_host_name=dict(required=True),
             ccache=dict(required=True),
-            _pkinit_pkcs12_info=dict(required=False),
+            _pkinit_pkcs12_info=dict(required=False, type='list'),
             _top_dir=dict(required=True),
         ),
         supports_check_mode=True,
