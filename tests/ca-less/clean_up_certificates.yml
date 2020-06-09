@@ -1,0 +1,15 @@
+---
+- name: Clean up certificates
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+  - name: Run generate-certificates.sh
+    command: >
+      /bin/bash
+      generate-certificates.sh delete "{{ item }}"
+    args:
+      chdir: "{{ playbook_dir }}"
+    with_items:
+      - "{{ groups.ipaserver[0] }}"
+      - "{{ groups.ipareplicas[0] }}"

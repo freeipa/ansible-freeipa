@@ -1,0 +1,74 @@
+---
+- name: Generate certificates
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+  - name: Run generate-certificates.sh
+    command: >
+      /bin/bash
+      generate-certificates.sh create
+      "{{ groups.ipaserver[0] }}"
+      "{{ ipaserver_domain | default(groups.ipaserver[0].split('.')[1:] | join ('.')) }}"
+    args:
+      chdir: "{{ playbook_dir }}"
+
+- name: Test ipaserver installation without CA
+  hosts: ipaserver
+  become: true
+
+  vars:
+    # Root CA certificate
+    ipaserver_ca_cert_files:
+      - /root/ca-less-test/ca.crt
+    # Directory server certificates
+    ipaserver_dirsrv_cert_name: dirsrv-cert
+    ipaserver_dirsrv_cert_files:
+      - /root/ca-less-test/dirsrv.p12
+    ipaserver_dirsrv_pin: SomePKCS12password
+    # Apache certificates
+    ipaserver_http_cert_name: httpd-cert
+    ipaserver_http_cert_files:
+      - /root/ca-less-test/httpd.p12
+    ipaserver_http_pin: SomePKCS12password
+    # PKINIT configuration
+    ipaserver_no_pkinit: no
+    ipaserver_pkinit_cert_name: pkinit-cert
+    ipaserver_pkinit_cert_files:
+      - /root/ca-less-test/pkinit.p12
+    ipaserver_pkinit_pin: SomePKCS12password
+
+  pre_tasks:
+    - name: Remove "/root/ca-less-test"
+      file:
+        path: "/root/ca-less-test"
+        state: absent
+
+    - name: Generate "/root/ca-less-test"
+      file:
+        path: "/root/ca-less-test"
+        state: directory
+
+    - name: Copy CA certificate
+      copy:
+        src: "{{ playbook_dir }}/certificates/root-ca/cert.pem"
+        dest: "/root/ca-less-test/ca.crt"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Copy p12 certificates
+      copy:
+        src: "{{ playbook_dir }}/certificates/{{ item }}/{{ groups.ipaserver[0] }}/cert.p12"
+        dest: "/root/ca-less-test/{{ item }}.p12"
+        owner: root
+        group: root
+        mode: "0644"
+      with_items:
+        - dirsrv
+        - httpd
+        - pkinit
+
+  roles:
+    - role: ipaserver
+      state: present
