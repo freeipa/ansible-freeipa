@@ -7,11 +7,7 @@
   - name: Run generate-certificates.sh
     command: >
       /bin/bash
-<<<<<<< HEAD
       generate-certificates.sh create
-=======
-      generate-certificates.sh
->>>>>>> t-woerner/server_ca_less
       "{{ groups.ipaserver[0] }}"
       "{{ ipaserver_domain | default(groups.ipaserver[0].split('.')[1:] | join ('.')) }}"
     args:
@@ -63,11 +59,7 @@
 
     - name: Copy p12 certificates
       copy:
-<<<<<<< HEAD
         src: "{{ playbook_dir }}/certificates/{{ item }}/{{ groups.ipaserver[0] }}/cert.p12"
-=======
-        src: "{{ playbook_dir }}/certificates/{{ item }}/ipaserver/cert.p12"
->>>>>>> t-woerner/server_ca_less
         dest: "/root/ca-less-test/{{ item }}.p12"
         owner: root
         group: root
