@@ -751,6 +751,16 @@
       state: absent
     when: result_ipareplica_enable_ipa.changed
 
+  always:
+  - name: Cleanup temporary files
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+    - "/etc/ipa/.tmp_pkcs12_dirsrv"
+    - "/etc/ipa/.tmp_pkcs12_http"
+    - "/etc/ipa/.tmp_pkcs12_pkinit"
+
   when: not ansible_check_mode and
         not (result_ipareplica_test.client_already_configured is defined or
              result_ipareplica_test.server_already_configured is defined)
