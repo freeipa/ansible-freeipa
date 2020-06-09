@@ -286,6 +286,7 @@
       reverse_zones: "{{ result_ipaserver_prepare.reverse_zones }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"
+      _http_ca_cert: "{{ result_ipaserver_test._http_ca_cert }}"
     register: result_ipaserver_setup_ca
 
   - name: Copy /root/ipa.csr to "{{ inventory_hostname }}-ipa.csr"
@@ -447,6 +448,16 @@
       when: ipaserver_setup_firewalld | bool
 
     when: not result_ipaserver_setup_ca.csr_generated | bool
+
+  always:
+  - name: Cleanup temporary files
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+    - "/etc/ipa/.tmp_pkcs12_dirsrv"
+    - "/etc/ipa/.tmp_pkcs12_http"
+    - "/etc/ipa/.tmp_pkcs12_pkinit"
 
   when: not ansible_check_mode and not
         (not result_ipaserver_test.changed and
