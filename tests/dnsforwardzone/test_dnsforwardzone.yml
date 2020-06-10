@@ -7,13 +7,13 @@
   tasks:
   - name: ensure forwardzone example.com is absent - prep
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: absent
 
   - name: ensure forwardzone example.com is created
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -25,7 +25,7 @@
 
   - name: ensure forwardzone example.com is present again
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -37,7 +37,7 @@
 
   - name: ensure forwardzone example.com has two forwarders
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -50,7 +50,7 @@
 
   - name: ensure forwardzone example.com has one forwarder again
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       forwarders:
         - 8.8.8.8
@@ -62,7 +62,7 @@
 
   - name: skip_overlap_check can only be set on creation so change nothing
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       forwarders:
         - 8.8.8.8
@@ -74,7 +74,7 @@
 
   - name: change all the things at once
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -87,13 +87,13 @@
 
   - name: ensure forwardzone example.com is absent for next testset
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: absent
 
   - name: ensure forwardzone example.com is created with minimal args
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       skip_overlap_check: true
@@ -104,7 +104,7 @@
 
   - name: add a forwarder to any existing ones
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -115,7 +115,7 @@
 
   - name: check the list of forwarders is what we expect
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -127,7 +127,7 @@
 
   - name: remove a single forwarder
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: absent
       name: example.com
       forwarders:
@@ -138,7 +138,7 @@
 
   - name: check the list of forwarders is what we expect now
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -149,13 +149,13 @@
 
   - name: ensure forwardzone example.com is absent again
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: absent
 
   - name: try to create a new forwarder with action=member
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -167,13 +167,13 @@
 
   - name: ensure forwardzone example.com is absent - tidy up
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: absent
 
   - name: try to create a new forwarder is disabled state
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: disabled
       name: example.com
       forwarders:
@@ -184,7 +184,7 @@
 
   - name: enable the forwarder
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: enabled
     register: result
@@ -192,7 +192,7 @@
 
   - name: disable the forwarder again
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: disabled
       action: member
@@ -201,7 +201,7 @@
 
   - name: ensure it stays disabled
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: disabled
     register: result
@@ -209,6 +209,6 @@
 
   - name: ensure forwardzone example.com is absent - tidy up
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: absent
