@@ -1,5 +1,5 @@
 ---
-- name: Playbook to handle users
+- name: Playbook to handle server configuration
   hosts: ipaserver
   become: true
   gather_facts: false
