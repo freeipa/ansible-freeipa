@@ -45,6 +45,10 @@ options:
         description: Set the maximum username length between 1-255
         required: false
         aliases: ['ipamaxusernamelength']
+    maxhostname:
+        description: Set the maximum hostname length between 64-255
+        required: false
+        aliases: ['ipamaxhostnamelength']
     homedirectory:
         description: Set the default location of home directories
         required: false
@@ -87,7 +91,7 @@ options:
         description: Enable migration mode
         type: bool
         required: false
-        aliases: ['enable-migration','ipamigrationenabled']
+        aliases: ['ipamigrationenabled']
     groupobjectclasses:
         description: Set default group objectclasses (comma-separated list)
         required: false
@@ -113,6 +117,7 @@ options:
         - "KDC:Disable Last Success"
         - "KDC:Disable Lockout"
         - "KDC:Disable Default Preauth for SPNs"
+        - ""
         aliases: ['ipaconfigstring']
     selinuxusermaporder:
         description: Set order in increasing priority of SELinux users
@@ -127,21 +132,23 @@ options:
         description: set default types of PAC supported for services
         required: false
         type: list
-        choices: ["MS-PAC", "PAD", "nfs:NONE"]
-        aliases: ["pac-type","ipakrbauthzdata"]
+        choices: ["MS-PAC", "PAD", "nfs:NONE", ""]
+        aliases: ["ipakrbauthzdata"]
     user_auth_type:
         description: set default types of supported user authentication
         required: false
         type: list
-        choices: ["password", "radius", "otp", "disabled"]
-        aliases: ["user-auth_type","user-auth-type","ipauserauthtype"]
+        choices: ["password", "radius", "otp", "disabled", ""]
+        aliases: ["ipauserauthtype"]
+    ca_renewal_master_server:
+        description: Renewal master for IPA certificate authority.
+        required: false
+        type: string
     domain_resolution_order:
         description: set list of domains used for short name qualification
         required: false
         type: list
-        aliases: ["domain-resolution_order",
-                  "domain-resolution-order",
-                  "ipadomainresolutionorder"]
+        aliases: ["ipadomainresolutionorder"]
 '''
 
 EXAMPLES = '''
@@ -173,6 +180,9 @@ config:
   options:
     maxusername:
         description: maximum username length
+        returned: always
+    maxhostname:
+        description: maximum hostname length
         returned: always
     homedirectory:
         description: default location of home directories
@@ -232,6 +242,9 @@ config:
     user_auth_type:
         description: default types of supported user authentication
         returned: always
+    ca_renewal_master_server:
+        description: master for IPA certificate authority.
+        returned: always
     domain_resolution_order:
         description: list of domains used for short name qualification
         returned: always
@@ -242,6 +255,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command_no_name, \
     compare_args_ipa, module_params_get
+import ipalib.errors
 
 
 def config_show(module):
@@ -267,6 +281,8 @@ def main():
             ipaadmin_password=dict(type="str", required=False, no_log=True),
             maxusername=dict(type="int", required=False,
                              aliases=['ipamaxusernamelength']),
+            maxhostname=dict(type="int", required=False,
+                             aliases=['ipamaxhostnamelength']),
             homedirectory=dict(type="str", required=False,
                                aliases=['ipahomesrootdir']),
             defaultshell=dict(type="str", required=False,
@@ -285,8 +301,7 @@ def main():
             groupsearch=dict(type="list", required=False,
                              aliases=['ipagroupsearchfields']),
             enable_migration=dict(type="bool", required=False,
-                                  aliases=['ipamigrationenabled',
-                                           'enable-migration']),
+                                  aliases=['ipamigrationenabled']),
             groupobjectclasses=dict(type="list", required=False,
                                     aliases=['ipagroupobjectclasses']),
             userobjectclasses=dict(type="list", required=False,
@@ -298,22 +313,22 @@ def main():
                               choices=["AllowNThash",
                                        "KDC:Disable Last Success",
                                        "KDC:Disable Lockout",
-                                       "KDC:Disable Default Preauth for SPNs"]), # noqa E128
+                                       "KDC:Disable Default Preauth for SPNs",
+                                       ""]), # noqa E128
             selinuxusermaporder=dict(type="list", required=False,
                                      aliases=['ipaselinuxusermaporder']),
             selinuxusermapdefault=dict(type="str", required=False,
                                        aliases=['ipaselinuxusermapdefault']),
             pac_type=dict(type="list", required=False,
-                          aliases=["ipakrbauthzdata", "pac-type"],
-                          choices=["MS-PAC", "PAD", "nfs:NONE"]),
+                          aliases=["ipakrbauthzdata"],
+                          choices=["MS-PAC", "PAD", "nfs:NONE", ""]),
             user_auth_type=dict(type="list", required=False,
-                                aliases=["ipauserauthtype",
-                                         "user-auth_type",
-                                         "user-auth-type"]),
+                                choices=["password", "radius", "otp",
+                                         "disabled", ""],
+                                aliases=["ipauserauthtype"]),
+            ca_renewal_master_server=dict(type="str", required=False),
             domain_resolution_order=dict(type="list", required=False,
-                                         aliases=["ipadomainresolutionorder",
-                                                  "domain-resolution_order",
-                                                  "domain-resolution-order"])
+                                         aliases=["ipadomainresolutionorder"])
         ),
         supports_check_mode=True,
     )
@@ -330,6 +345,7 @@ def main():
 
     field_map = {
         "maxusername": "ipamaxusernamelength",
+        "maxhostname": "ipamaxhostnamelength",
         "homedirectory": "ipahomesrootdir",
         "defaultshell": "ipadefaultloginshell",
         "defaultgroup": "ipadefaultprimarygroup",
@@ -347,6 +363,7 @@ def main():
         "selinuxusermapdefault": "ipaselinuxusermapdefault",
         "pac_type": "ipakrbauthzdata",
         "user_auth_type": "ipauserauthtype",
+        "ca_renewal_master_server": "ca_renewal_master_server",
         "domain_resolution_order": "ipadomainresolutionorder"
     }
     reverse_field_map = {v: k for k, v in field_map.items()}
@@ -378,22 +395,19 @@ def main():
         params["ipagroupsearchfields"] = \
              ",".join(params["ipagroupsearchfields"])
 
-    if params.get("ipamaxusernamelength", 0) > 255 \
-            or params.get("ipamaxusernamelength", 2) < 1:
-        ansible_module.fail_json(
-            msg="Argument 'maxusername' mustn range 1 to 255")
-
-    for x in ["ipasearchtimelimit",
-              "ipasearchrecordslimit",
-              "ipapwdexpadvnotify"]:
-        if params.get(x, 0) > 2147483647:
+    # verify limits on INT values.
+    args_with_limits = [
+        ("ipamaxusernamelength", 1, 255),
+        ("ipamaxhostnamelength", 64, 255),
+        ("ipasearchtimelimit", -1, 2147483647),
+        ("ipasearchrecordslimit", -1, 2147483647),
+        ("ipapwdexpadvnotify", 0, 2147483647),
+    ]
+    for arg, min, max in args_with_limits:
+        if arg in params and (params[arg] > max or params[arg] < min):
             ansible_module.fail_json(
-                msg="Argument '%s' has a maximum value of 2147483647" % (x))
-
-    for x in ["ipasearchtimelimit", "ipasearchrecordslimit"]:
-        if params.get(x, 0) < -2147483648:
-            ansible_module.fail_json(
-                msg="Argument '%s' has  minimum value of -2147483648" % (x))
+                msg="Argument '%s' must be between %d and %d."
+                    % (arg, min, max))
 
     changed = False
     exit_args = {}
@@ -405,10 +419,14 @@ def main():
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
         api_connect()
-
-        if params.keys():
+        if params:
             res_show = config_show(ansible_module)
-            if not compare_args_ipa(ansible_module, params, res_show):
+            params = {
+                k: v for k, v in params.items()
+                if k not in res_show or res_show[k] != v
+            }
+            if params \
+               and not compare_args_ipa(ansible_module, params, res_show):
                 changed = True
                 api_command_no_name(ansible_module, "config_mod", params)
 
@@ -445,7 +463,8 @@ def main():
                         exit_args[k] = (v[0] == "TRUE")
                     else:
                         exit_args[k] = v
-
+    except ipalib.errors.EmptyModlist:
+        changed = False
     except Exception as e:
         ansible_module.fail_json(msg="%s %s" % (params, str(e)))
 
