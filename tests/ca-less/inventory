@@ -1,0 +1,17 @@
+[ipaserver]
+ipaserver.test.local
+
+[ipaserver:vars]
+ipaserver_domain=test.local
+ipaserver_realm=TEST.LOCAL
+ipaadmin_password=SomeADMINpassword
+ipadm_password=SomeDMpassword
+
+[ipareplicas]
+ipareplica.test.local
+
+[ipareplicas:vars]
+ipareplica_domain=test.local
+ipareplica_realm=TEST.LOCAL
+ipaadmin_password=SomeADMINpassword
+ipadm_password=SomeDMpassword

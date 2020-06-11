@@ -160,7 +160,7 @@ def main():
             no_reverse=dict(required=False, type='bool', default=False),
             auto_forwarders=dict(required=False, type='bool', default=False),
 
-            _pkinit_pkcs12_info=dict(required=False),
+            _pkinit_pkcs12_info=dict(required=False, type='list'),
         ),
     )
 

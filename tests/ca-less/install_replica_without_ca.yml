@@ -1,0 +1,82 @@
+---
+- name: Generate certificates
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+  - name: Run generate-certificates.sh
+    command: >
+      /bin/bash
+      generate-certificates.sh create
+      "{{ groups.ipareplicas[0] }}"
+      "{{ ipareplica_domain | default(groups.ipareplicas[0].split('.')[1:] | join ('.')) }}"
+    args:
+      chdir: "{{ playbook_dir }}"
+
+- name: Test ipareplicas installation without CA
+  hosts: ipareplicas
+  become: true
+
+  vars:
+    # Root CA certificate
+    ipareplica_ca_cert_files:
+      - /root/ca-less-test/ca.crt
+    # Directory server certificates
+    ipareplica_dirsrv_cert_name: dirsrv-cert
+    ipareplica_dirsrv_cert_files:
+      - /root/ca-less-test/dirsrv.p12
+    ipareplica_dirsrv_pin: SomePKCS12password
+    # Apache certificates
+    ipareplica_http_cert_name: httpd-cert
+    ipareplica_http_cert_files:
+      - /root/ca-less-test/httpd.p12
+    ipareplica_http_pin: SomePKCS12password
+    # PKINIT configuration
+    ipareplica_no_pkinit: no
+    ipareplica_pkinit_cert_name: pkinit-cert
+    ipareplica_pkinit_cert_files:
+      - /root/ca-less-test/pkinit.p12
+    ipareplica_pkinit_pin: SomePKCS12password
+
+  pre_tasks:
+    - name: Remove "/root/ca-less-test"
+      file:
+        path: "/root/ca-less-test"
+        state: absent
+
+    - name: Generate "/root/ca-less-test"
+      file:
+        path: "/root/ca-less-test"
+        state: directory
+
+    - name: Copy CA certificate
+      copy:
+        src: "{{ playbook_dir }}/certificates/root-ca/cert.pem"
+        dest: "/root/ca-less-test/ca.crt"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Copy p12 certificates
+      copy:
+        src: "{{ playbook_dir }}/certificates/{{ item }}/{{ groups.ipareplicas[0] }}/cert.p12"
+        dest: "/root/ca-less-test/{{ item }}.p12"
+        owner: root
+        group: root
+        mode: "0644"
+      with_items:
+        - dirsrv
+        - httpd
+        - pkinit
+
+  roles:
+    - role: ipareplica
+      state: present
+
+  post_tasks:
+    - name: Fix KDC certificate permissions
+      file:
+        path: /var/kerberos/krb5kdc/kdc.crt
+        owner: root
+        group: root
+        mode: '0644'

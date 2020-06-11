@@ -106,7 +106,7 @@ def main():
             ccache=dict(required=True),
             _ca_enabled=dict(required=False, type='bool'),
             _ca_file=dict(required=False),
-            _pkinit_pkcs12_info=dict(required=False),
+            _pkinit_pkcs12_info=dict(required=False, type='list'),
             _top_dir=dict(required=True),
             dirman_password=dict(required=True, no_log=True),
         ),

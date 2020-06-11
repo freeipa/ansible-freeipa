@@ -199,8 +199,8 @@ def main():
 
             # _update_hosts_file=dict(required=False, type='bool',
             #                         default=False),
-            _dirsrv_pkcs12_info=dict(required=False),
-            _http_pkcs12_info=dict(required=False),
+            _dirsrv_pkcs12_info=dict(required=False, type='list'),
+            _http_pkcs12_info=dict(required=False, type='list'),
         ),
     )
 

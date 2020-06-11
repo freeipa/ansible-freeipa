@@ -126,7 +126,7 @@ def main():
             dirsrv_config_file=dict(required=False),
             # ssl certificate
             dirsrv_cert_files=dict(required=False, type='list', default=[]),
-            _dirsrv_pkcs12_info=dict(required=False),
+            _dirsrv_pkcs12_info=dict(required=False, type='list'),
             # certificate system
             external_cert_files=dict(required=False, type='list', default=[]),
             subject_base=dict(required=False),

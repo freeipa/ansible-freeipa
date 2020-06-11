@@ -163,7 +163,7 @@ from ansible.module_utils.ansible_ipa_server import (
     AnsibleModuleLog, setup_logging, options, sysrestore, paths,
     ansible_module_get_parsed_ip_addresses,
     api_Backend_ldap2, redirect_stdout, ca, installutils, ds_init_info,
-    custodiainstance, write_cache, x509
+    custodiainstance, write_cache, x509, decode_certificate
 )
 
 
@@ -191,7 +191,7 @@ def main():
             no_pkinit=dict(required=False, type='bool', default=False),
             dirsrv_config_file=dict(required=False),
             dirsrv_cert_files=dict(required=False, type='list'),
-            _dirsrv_pkcs12_info=dict(required=False),
+            _dirsrv_pkcs12_info=dict(required=False, type='list'),
             # certificate system
             external_ca=dict(required=False, type='bool', default=False),
             external_ca_type=dict(required=False),
@@ -265,8 +265,8 @@ def main():
     # additional
     options.domainlevel = ansible_module.params.get('domainlevel')
     options._http_ca_cert = ansible_module.params.get('_http_ca_cert')
-    # tions._update_hosts_file = ansible_module.params.get(
-    #   'update_hosts_file')
+    if options._http_ca_cert is not None:
+        options._http_ca_cert = decode_certificate(options._http_ca_cert)
 
     # init #################################################################
 
