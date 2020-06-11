@@ -5,10 +5,12 @@
   gather_facts: false
 
   tasks:
-  - name: ensure forwardzone example.com is absent - prep
+  - name: ensure test forwardzones are absent - prep
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
-      name: example.com
+      name:
+      - example.com
+      - newfailzone.com
       state: absent
 
   - name: ensure forwardzone example.com is created
@@ -206,6 +208,13 @@
       state: disabled
     register: result
     failed_when: result.changed
+
+  - name: Ensure forwardzone is not added without forwarders, with correct message.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: newfailzone.com
+    register: result
+    failed_when: not result.failed or "No forwarders specified" not in result.msg
 
   - name: ensure forwardzone example.com is absent - tidy up
     ipadnsforwardzone:

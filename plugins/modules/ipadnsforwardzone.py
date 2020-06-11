@@ -217,6 +217,11 @@ def main():
             # Make sure forwardzone exists
             existing_resource = find_dnsforwardzone(ansible_module, name)
 
+            # validate parameters
+            if state == 'present':
+                if existing_resource is None and not forwarders:
+                    ansible_module.fail_json(msg='No forwarders specified.')
+
             if existing_resource is None and operation == "update":
                 # does not exist and is updating
                 # trying to update something that doesn't exist, so error
