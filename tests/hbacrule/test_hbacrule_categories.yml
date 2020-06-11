@@ -109,6 +109,60 @@
     register: result
     failed_when: result.changed
 
+  - name: Ensure `user` cannot be added if usercategory is `all`.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      user: shouldfail01
+      usercategory: "all"
+    register: result
+    failed_when: not result.failed or "Users cannot be added when user category='all'" not in result.msg
+
+  - name: Ensure `group` cannot be added if usercategory is `all`.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      group: shouldfail01
+      usercategory: "all"
+    register: result
+    failed_when: not result.failed or "Users cannot be added when user category='all'" not in result.msg
+
+  - name: Ensure `host` cannot be added if hostcategory is `all`.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      host: host.shouldfail.com
+      hostcategory: "all"
+    register: result
+    failed_when: not result.failed or "Hosts cannot be added when host category='all'" not in result.msg
+
+  - name: Ensure `hostgroup` cannot be added if hostcategory is `all`.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      hostgroup: shouldfail_hostgroup
+      hostcategory: "all"
+    register: result
+    failed_when: not result.failed or "Hosts cannot be added when host category='all'" not in result.msg
+
+  - name: Ensure `hbacsvc` cannot be added if hbacsvccategory is `all`.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      hbacsvc: "HTTP/fail.example.com"
+      servicecategory: "all"
+    register: result
+    failed_when: not result.failed or "Services cannot be added when service category='all'" not in result.msg
+
+  - name: Ensure `hbacsvcgroup` cannot be added if hbacsvccategory is `all`.
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      hbacsvcgroup: shouldfail_svcgroup
+      servicecategory: "all"
+    register: result
+    failed_when: not result.failed or "Services cannot be added when service category='all'" not in result.msg
+
   - name: Ensure HBAC rules are absent
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword

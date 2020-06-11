@@ -1,10 +1,13 @@
 ---
 - name: Test sudorule user category
   hosts: ipaserver
-  become: true
-  gather_facts: false
+  become: yes
+  gather_facts: yes
 
   tasks:
+  - name: Get Domain from the server name
+    set_fact:
+      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
 
   - name: Ensure sudorules are absent
     ipasudorule:
@@ -172,6 +175,75 @@
       runasgroupcategory: ""
     register: result
     failed_when: result.changed
+
+  - name: Ensure sudorules are absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - allusers
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure `host` cannot be added if hostcategory is `all`.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      description: sudo rule
+      host: "{{ 'shouldfail.' + ipaserver_domain }}"
+      hostcategory: "all"
+    register: result
+    failed_when: not result.failed or "Hosts cannot be added when host category='all'" not in result.msg
+
+  - name: Ensure `hostgroup` cannot be added if hostcategory is `all`.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      description: sudo rule
+      hostgroup: shouldfail_hostgroup
+      hostcategory: "all"
+    register: result
+    failed_when: not result.failed or "Hosts cannot be added when host category='all'" not in result.msg
+
+  - name: Ensure `user` cannot be added if usercategory is `all`.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      description: sudo rule
+      user: "shouldfail01"
+      usercategory: "all"
+    register: result
+    failed_when: not result.failed or "Users cannot be added when user category='all'" not in result.msg
+
+  - name: Ensure `group` cannot be added if usercategory is `all`.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      description: sudo rule
+      group: "shouldfail01"
+      usercategory: "all"
+    register: result
+    failed_when: not result.failed or "Users cannot be added when user category='all'" not in result.msg
+
+  - name: Ensure `command` cannot be added if cmdcategory is `all`.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      description: sudo rule
+      allow_sudocmd: "/bin/shouldfail"
+      cmdcategory: "all"
+    register: result
+    failed_when: not result.failed or "Commands cannot be added when command category='all'" not in result.msg
+
+  - name: Ensure `command group` cannot be added if cmdcategory is `all`.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: allusers
+      description: sudo rule
+      allow_sudocmdgroup: shouldfail_cmdgroup
+      cmdcategory: "all"
+    register: result
+    failed_when: not result.failed or "Commands cannot be added when command category='all'" not in result.msg
 
   # cleanup
   - name: Ensure sudorules are absent

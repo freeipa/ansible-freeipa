@@ -339,6 +339,17 @@ def main():
                     ansible_module.fail_json(
                         msg="Argument '%s' can not be used with action "
                         "'%s'" % (arg, action))
+        else:
+            if hostcategory == 'all' and any([host, hostgroup]):
+                ansible_module.fail_json(
+                    msg="Hosts cannot be added when host category='all'")
+            if usercategory == 'all' and any([user, group]):
+                ansible_module.fail_json(
+                    msg="Users cannot be added when user category='all'")
+            if cmdcategory == 'all' \
+               and any([allow_sudocmd, allow_sudocmdgroup]):
+                ansible_module.fail_json(
+                    msg="Commands cannot be added when command category='all'")
 
     elif state == "absent":
         if len(names) < 1:

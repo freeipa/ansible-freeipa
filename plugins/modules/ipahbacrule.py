@@ -270,6 +270,16 @@ def main():
                     ansible_module.fail_json(
                         msg="Argument '%s' can not be used with action "
                         "'%s'" % (x, action))
+        else:
+            if hostcategory == 'all' and any([host, hostgroup]):
+                ansible_module.fail_json(
+                    msg="Hosts cannot be added when host category='all'")
+            if usercategory == 'all' and any([user, group]):
+                ansible_module.fail_json(
+                    msg="Users cannot be added when user category='all'")
+            if servicecategory == 'all' and any([hbacsvc, hbacsvcgroup]):
+                ansible_module.fail_json(
+                    msg="Services cannot be added when service category='all'")
 
     elif state == "absent":
         if len(names) < 1:
