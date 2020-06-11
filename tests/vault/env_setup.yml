@@ -1,0 +1,55 @@
+# Tasks executed to ensure a sane environment to test IPA Vault module.
+
+  - name: Create private key file.
+    shell:
+      cmd: openssl genrsa -out private.pem 2048
+    delegate_to: localhost
+    become: no
+
+  - name: Create public key file.
+    shell:
+      cmd: openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+    delegate_to: localhost
+    become: no
+
+  - name: Ensure environment is clean.
+    import_tasks: env_cleanup.yml
+
+  - name: Copy password file to target host.
+    copy:
+      src: "{{ playbook_dir }}/password.txt"
+      dest: "{{ ansible_env.HOME }}/password.txt"
+
+  - name: Copy public key file to target host.
+    copy:
+      src: "{{ playbook_dir }}/public.pem"
+      dest: "{{ ansible_env.HOME }}/public.pem"
+
+  - name: Copy private key file to target host.
+    copy:
+      src: "{{ playbook_dir }}/private.pem"
+      dest: "{{ ansible_env.HOME }}/private.pem"
+
+  - name: Copy input data file to target host.
+    copy:
+      src: "{{ playbook_dir }}/in.txt"
+      dest: "{{ ansible_env.HOME }}/in.txt"
+
+  - name: Ensure vaultgroup exists.
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: vaultgroup
+
+  - name: Ensure testing users exist.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: user01
+        first: First
+        last: Start
+      - name: user02
+        first: Second
+        last: Middle
+      - name: user03
+        first: Third
+        last: Last

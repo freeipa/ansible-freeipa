@@ -1,8 +1,8 @@
 ---
 - name: Tests
   hosts: ipaserver
-  become: true
-  gather_facts: True
+  become: no
+  gather_facts: no
 
   tasks:
     - name: Retrieve data from symmetric vault.
@@ -11,8 +11,7 @@
         name: symvault
         username: admin
         password: SomeVAULTpassword
-        retrieve: yes
-        action: member
+        state: retrieved
       register: result
     - debug:
         msg: "{{ result.data | b64decode }}"

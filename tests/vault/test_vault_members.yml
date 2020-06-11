@@ -1,0 +1,20 @@
+---
+- name: Test vault
+  hosts: ipaserver
+  become: true
+  # Need to gather facts for ansible_env.
+  gather_facts: true
+
+  tasks:
+  - name: Test vault module member operations.
+    include_tasks:
+      file: tasks_vault_members.yml
+      apply:
+        tags:
+          - "{{ vault.vault_type }}"
+    loop_control:
+        loop_var: vault
+    loop:
+      - { name: "stdvault", vault_type: "standard" }
+      - { name: "symvault", vault_type: "symmetric" }
+      - { name: "asymvault", vault_type: "asymmetric" }

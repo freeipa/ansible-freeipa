@@ -1,0 +1,64 @@
+# Tasks executed to clean up test environment for Vault module.
+
+  - name: Ensure user vaults are absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - stdvault
+      - symvault
+      - asymvault
+      username: "{{username}}"
+      state: absent
+    loop:
+      - admin
+      - user01
+    loop_control:
+      loop_var: username
+
+  - name: Ensure shared vaults are absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - sharedvault
+      - svcvault
+      state: absent
+
+  - name: Ensure test users do not exist.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - user01
+      - user02
+      - user03
+      state: absent
+
+  - name: Ensure test groups do not exist.
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: vaultgroup
+      state: absent
+
+  - name: Remove password file from target host.
+    file:
+      path: "{{ ansible_env.HOME }}/password.txt"
+      state: absent
+
+  - name: Remove public key file from target host.
+    file:
+      path: "{{ ansible_env.HOME }}/public.pem"
+      state: absent
+
+  - name: Remove private key file from target host.
+    file:
+      path: "{{ ansible_env.HOME }}/private.pem"
+      state: absent
+
+  - name: Remove output data file from target host.
+    file:
+      path: "{{ ansible_env.HOME }}/data.txt"
+      state: absent
+
+  - name: Remove input data file from target host.
+    file:
+      path: "{{ ansible_env.HOME }}/in.txt"
+      state: absent
