@@ -1,0 +1,12 @@
+---
+- name: Playbook to handle hostgroups
+  hosts: ipaserver
+  become: yes
+
+  tasks:
+  - name : Rename host-group from `databases` to `datalake`
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: databases
+      rename: datalake
+      state: renamed

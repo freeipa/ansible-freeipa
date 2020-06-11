@@ -1,0 +1,105 @@
+---
+- name: Test hostgroup
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Ensure testing host-group are absent
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - databases
+      - datalake
+      - inexistenthostgroup
+      state: absent
+
+  - name: Ensure host-group databases is present
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: databases
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Rename host-group from `databases` to `datalake`
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: databases
+      rename: datalake
+      state: renamed
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure host-group database was already absent
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: database
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Rename host-group from `databases` to `datalake`, again
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: databases
+      rename: datalake
+      state: renamed
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Rename host-group with same name.
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: datalake
+      rename: datalake
+      state: renamed
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure testing hostgroups do not exist.
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: inexistenthostgroup,alsoinexistent
+      state: absent
+
+  - name: Rename inexistent host-group to an existing one.
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: inexistenthostgroup
+      rename: datalake
+      state: renamed
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Rename inexistent host-group to a non-existing one.
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: inexistenthostgroup
+      rename: alsoinexistent
+      state: renamed
+    register: result
+    failed_when: not result.failed or "Attribute `rename` can not be used, unless hostgroup exists." not in result.msg
+
+  - name: Ensure host-group databases is present
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: databases
+      state: present
+
+  - name: Rename host-group to an existing one.
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: databases
+      rename: datalake
+      state: renamed
+    register: result
+    failed_when: not result.failed or "This entry already exists" not in result.msg
+
+  - name: Ensure host-group databases and datalake are absent
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - databases
+      - datalake
+      state: absent
