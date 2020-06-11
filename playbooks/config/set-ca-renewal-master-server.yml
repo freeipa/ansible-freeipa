@@ -1,0 +1,11 @@
+---
+- name: Playbook to handle global DNS configuration
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: set ca_renewal_master_server
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ca_renewal_master_server: carenewal.example.com

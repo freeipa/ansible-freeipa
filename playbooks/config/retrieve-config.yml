@@ -1,0 +1,14 @@
+---
+- name: Playbook to handle global DNS configuration
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Query IPA global configuration
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+    register: serverconfig
+
+  - debug:
+      msg: "{{ serverconfig }}"
