@@ -13,7 +13,6 @@ issues: "https://github.com/freeipa/ansible-freeipa/issues"
 
 readme: "README.md"
 license: "GPL-3.0-or-later"
-license_file: "COPYING"
 
 dependencies:
 
