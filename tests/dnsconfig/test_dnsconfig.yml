@@ -18,6 +18,29 @@
       state: absent
 
   # Tests.
+  - name: Set config to invalid IPv4.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      forwarders:
+        - ip_address: 1.2.3.500
+    register: result
+    failed_when: not result.failed or "Invalid IP for DNS forwarder" not in result.msg
+
+  - name: Set config to invalid IP.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      forwarders:
+        - ip_address: 1.in.va.lid
+    register: result
+    failed_when: not result.failed or "Invalid IP for DNS forwarder" not in result.msg
+
+  - name: Set config to invalid IPv6.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      forwarders:
+        - ip_address: fd00::invalid
+    register: result
+    failed_when: not result.failed or "Invalid IP for DNS forwarder" not in result.msg
 
   - name: Set dnsconfig.
     ipadnsconfig:
