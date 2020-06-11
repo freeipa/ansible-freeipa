@@ -1,0 +1,16 @@
+---
+- name: Test SSHFP Record is present.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure a SSHFP record is present
+  - ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: example.com
+      name: host04
+      tlsa_cert_usage: 3
+      tlsa_selector: 1
+      tlsa_matching_type: 1
+      tlsa_cert_association_data: 9c0ad776dbeae8d9d55b0ad42899d30235c114d5f918fd69746e4279e47bdaa2

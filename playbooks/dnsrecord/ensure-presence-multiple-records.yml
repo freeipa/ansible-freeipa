@@ -1,0 +1,21 @@
+---
+- name: Test multiple DNS Records are present.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure that multiple dns records are present
+  - ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      records:
+        - name: host01
+          zone_name: example.com
+          record_type: A
+          record_value:
+            - 192.168.122.112
+            - 192.168.122.122
+        - name: host01
+          zone_name: testzone.local
+          record_type: AAAA
+          record_value: ::1

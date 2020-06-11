@@ -1,0 +1,15 @@
+---
+- name: Test DNS Record is absent.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure that dns record is absent
+  - ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      name: host01
+      zone_name: example.com
+      record_type: 'AAAA'
+      record_value: '::1'
+      state: absent

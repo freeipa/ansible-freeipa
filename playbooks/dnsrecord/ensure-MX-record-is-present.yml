@@ -1,0 +1,15 @@
+---
+- name: Ensure MX Record is present.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure an MX record is absent
+  - ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      name: '@'
+      record_type: 'MX'
+      record_value: '1 mailserver.example.com'
+      zone_name: example.com
+      state: present

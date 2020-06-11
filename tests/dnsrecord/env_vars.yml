@@ -1,0 +1,17 @@
+---
+# Set common vars and facts for test.
+- name: Set IPv4 address prefix.
+  set_fact:
+    ipv4_prefix: '192.168.122'
+    ipv4_reverse_sufix: '122.168.192'
+
+- name: Set zone prefixes.
+  set_fact:
+    testzone: 'testzone.test'
+    safezone: 'safezone.test'
+    zone_ipv6_reverse: "ip6.arpa."
+    zone_ipv6_reverse_workaround: "d.f.ip6.arpa."
+    zone_prefix_reverse: "in-addr.arpa"
+    zone_prefix_reverse_24: "{{ ipv4_prefix.split('.')[::-1] | join ('.') }}.in-addr.arpa"
+    zone_prefix_reverse_16: "{{ ipv4_prefix.split('.')[1::-1] | join ('.') }}.in-addr.arpa"
+    zone_prefix_reverse_8: "{{ ipv4_prefix.split('.')[2::-1] | join ('.') }}.in-addr.arpa"

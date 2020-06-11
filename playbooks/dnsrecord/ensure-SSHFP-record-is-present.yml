@@ -1,0 +1,16 @@
+---
+- name: Test SSHFP Record is present.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure a SSHFP record is present
+  # SSHFP fingerprint generated with `ssh-keygen -r host04.testzone.local`
+  - ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: example.com
+      name: host04
+      sshfp_algorithm: 1
+      sshfp_fp_type: 1
+      sshfp_fingerprint: d21802c61733e055b8d16296cbce300efb8a167a

@@ -1,0 +1,17 @@
+---
+- name: Test URI Record is present.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure a URI record is absent
+  - ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      name: _ftp._tcp
+      record_type: 'URI'
+      uri_priority: 10
+      uri_weight: 1
+      uri_target: ftp://ftp.example.com/public
+      zone_name: example.com
+      state: present

@@ -1,0 +1,18 @@
+---
+- name: Test PTR Record is present.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure a PTR record is present
+  - name: Ensure that 'host04' has A and AAAA records.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: ipatest.local
+      records:
+      - name: host04
+        a_ip_address: 192.168.122.104
+      - name: host04
+        aaaa_ip_address: ::1
+      state: absent
