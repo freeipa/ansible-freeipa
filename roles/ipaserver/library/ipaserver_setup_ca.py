@@ -265,7 +265,7 @@ def main():
     # additional
     options.domainlevel = ansible_module.params.get('domainlevel')
     options._http_ca_cert = ansible_module.params.get('_http_ca_cert')
-    if options._http_ca_cert is not None:
+    if options._http_ca_cert:
         options._http_ca_cert = decode_certificate(options._http_ca_cert)
 
     # init #################################################################
