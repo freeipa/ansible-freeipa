@@ -51,8 +51,6 @@
     register: result
     failed_when: not result.changed
 
-  - pause:
-
   - name: ensure forwardzone example.com has one forwarder again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
@@ -63,7 +61,7 @@
       skip_overlap_check: true
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: result.changed
 
   - name: skip_overlap_check can only be set on creation so change nothing
     ipadnsforwardzone:
@@ -77,6 +75,22 @@
     register: result
     failed_when: result.changed
 
+  - name: ensure forwardzone example.com is absent.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: ensure forwardzone example.com is absent, again.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      state: absent
+    register: result
+    failed_when: result.changed
+
   - name: change all the things at once
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
@@ -87,11 +101,12 @@
         - ip_address: 4.4.4.4
           port: 8053
       forwardpolicy: only
-      skip_overlap_check: false
+      skip_overlap_check: true
+      permission: yes
     register: result
     failed_when: not result.changed
 
-  - name: ensure forwardzone example.com is absent for next testset
+  - name: ensure forwardzone example.com is absent.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       name: example.com
@@ -156,6 +171,74 @@
     register: result
     failed_when: result.changed
 
+  - name: Add a permission for per-forward zone access delegation.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      permission: yes
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Add a permission for per-forward zone access delegation, again.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      permission: yes
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Remove a permission for per-forward zone access delegation.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      permission: no
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Remove a permission for per-forward zone access delegation, again.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      permission: no
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: disable the forwarder
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      state: disabled
+    register: result
+    failed_when: not result.changed
+
+  - name: disable the forwarder again
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      state: disabled
+    register: result
+    failed_when: result.changed
+
+  - name: enable the forwarder
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      state: enabled
+    register: result
+    failed_when: not result.changed
+
+  - name: enable the forwarder, again
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      state: enabled
+    register: result
+    failed_when: result.changed
+
   - name: ensure forwardzone example.com is absent again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
@@ -175,13 +258,7 @@
     register: result
     failed_when: result.changed
 
-  - name: ensure forwardzone example.com is absent - tidy up
-    ipadnsforwardzone:
-      ipaadmin_password: SomeADMINpassword
-      name: example.com
-      state: absent
-
-  - name: try to create a new forwarder is disabled state
+  - name: try to create a new forwarder with disabled state
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       state: disabled
@@ -189,24 +266,7 @@
       forwarders:
         - ip_address: 4.4.4.4
           port: 8053
-      skip_overlap_check: true
-    register: result
-    failed_when: not result.changed
-
-  - name: enable the forwarder
-    ipadnsforwardzone:
-      ipaadmin_password: SomeADMINpassword
-      name: example.com
-      state: enabled
-    register: result
-    failed_when: not result.changed
-
-  - name: disable the forwarder again
-    ipadnsforwardzone:
-      ipaadmin_password: SomeADMINpassword
-      name: example.com
-      state: disabled
-      action: member
+      skip_overlap_check: yes
     register: result
     failed_when: not result.changed
 
@@ -228,5 +288,7 @@
   - name: ensure forwardzone example.com is absent - tidy up
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
-      name: example.com
+      name:
+      - example.com
+      - newfailzone.com
       state: absent

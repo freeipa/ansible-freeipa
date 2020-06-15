@@ -104,6 +104,7 @@ Variable | Description | Required
 &nbsp; | `port`: The forwarder IP port. | no
 `forwardpolicy` \| `idnsforwardpolicy` | Per-zone conditional forwarding policy. Possible values are `only`, `first`, `none`. Set to "none" to disable forwarding to global forwarder for this zone. In that case, conditional zone forwarders are disregarded. | no
 `skip_overlap_check` | Force DNS zone creation even if it will overlap with an existing zone. Defaults to False. | no
+`permission` | Allow DNS Forward Zone to be managed. (bool) | no
 `action` | Work on group or member level. It can be on of `member` or `dnsforwardzone` and defaults to `dnsforwardzone`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, `enabled` or `disabled`, default: `present`. | yes
 
