@@ -5,7 +5,7 @@
   gather_facts: false
 
   tasks:
-  - name: ensure test forwardzones are absent - prep
+  - name: ensure test forwardzones are absent
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       name:
@@ -19,7 +19,7 @@
       state: present
       name: example.com
       forwarders:
-        - 8.8.8.8
+        - ip_address: 8.8.8.8
       forwardpolicy: first
       skip_overlap_check: true
     register: result
@@ -31,7 +31,7 @@
       state: present
       name: example.com
       forwarders:
-        - 8.8.8.8
+        - ip_address: 8.8.8.8
       forwardpolicy: first
       skip_overlap_check: true
     register: result
@@ -43,19 +43,22 @@
       state: present
       name: example.com
       forwarders:
-        - 8.8.8.8
-        - 4.4.4.4
+        - ip_address: 8.8.8.8
+        - ip_address: 4.4.4.4
+          port: 8053
       forwardpolicy: first
       skip_overlap_check: true
     register: result
     failed_when: not result.changed
+
+  - pause:
 
   - name: ensure forwardzone example.com has one forwarder again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       name: example.com
       forwarders:
-        - 8.8.8.8
+        - ip_address: 8.8.8.8
       forwardpolicy: first
       skip_overlap_check: true
       state: present
@@ -67,7 +70,7 @@
       ipaadmin_password: SomeADMINpassword
       name: example.com
       forwarders:
-        - 8.8.8.8
+        - ip_address: 8.8.8.8
       forwardpolicy: first
       skip_overlap_check: false
       state: present
@@ -80,8 +83,9 @@
       state: present
       name: example.com
       forwarders:
-        - 8.8.8.8
-        - 4.4.4.4
+        - ip_address: 8.8.8.8
+        - ip_address: 4.4.4.4
+          port: 8053
       forwardpolicy: only
       skip_overlap_check: false
     register: result
@@ -100,7 +104,7 @@
       name: example.com
       skip_overlap_check: true
       forwarders:
-        - 8.8.8.8
+        - ip_address: 8.8.8.8
     register: result
     failed_when: not result.changed
 
@@ -110,7 +114,8 @@
       state: present
       name: example.com
       forwarders:
-        - 4.4.4.4
+        - ip_address: 4.4.4.4
+          port: 8053
       action: member
     register: result
     failed_when: not result.changed
@@ -121,8 +126,9 @@
       state: present
       name: example.com
       forwarders:
-        - 4.4.4.4
-        - 8.8.8.8
+        - ip_address: 4.4.4.4
+          port: 8053
+        - ip_address: 8.8.8.8
       action: member
     register: result
     failed_when: result.changed
@@ -133,7 +139,7 @@
       state: absent
       name: example.com
       forwarders:
-        - 8.8.8.8
+        - ip_address: 8.8.8.8
       action: member
     register: result
     failed_when: not result.changed
@@ -144,7 +150,8 @@
       state: present
       name: example.com
       forwarders:
-        - 4.4.4.4
+        - ip_address: 4.4.4.4
+          port: 8053
       action: member
     register: result
     failed_when: result.changed
@@ -161,7 +168,8 @@
       state: present
       name: example.com
       forwarders:
-        - 4.4.4.4
+        - ip_address: 4.4.4.4
+          port: 8053
       action: member
       skip_overlap_check: true
     register: result
@@ -179,7 +187,8 @@
       state: disabled
       name: example.com
       forwarders:
-        - 4.4.4.4
+        - ip_address: 4.4.4.4
+          port: 8053
       skip_overlap_check: true
     register: result
     failed_when: not result.changed

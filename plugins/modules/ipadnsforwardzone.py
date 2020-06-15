@@ -54,9 +54,16 @@ options:
   forwarders:
     description:
     - List of the DNS servers to forward to
-    required: true
-    type: list
     aliases: ["idnsforwarders"]
+    options:
+      ip_address:
+        description: Forwarder IP address (either IPv4 or IPv6).
+        required: false
+        type: string
+      port:
+        description: Forwarder port.
+        required: false
+        type: int
   forwardpolicy:
     description: Per-zone conditional forwarding policy
     required: false
@@ -128,6 +135,20 @@ def gen_args(forwarders, forwardpolicy, skip_overlap_check):
     return _args
 
 
+def forwarder_list(forwarders):
+    """Convert the forwarder dict into a list compatible with IPA API."""
+    if forwarders is None:
+        return None
+    fwd_list = []
+    for forwarder in forwarders:
+        if forwarder.get('port', None) is not None:
+            formatter = "{ip_address} port {port}"
+        else:
+            formatter = "{ip_address}"
+        fwd_list.append(formatter.format(**forwarder))
+    return fwd_list
+
+
 def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
@@ -136,8 +157,13 @@ def main():
             ipaadmin_password=dict(type="str", required=False, no_log=True),
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
-            forwarders=dict(type='list', aliases=["idnsforwarders"],
-                            required=False),
+            forwarders=dict(type="list", default=None, required=False,
+                            aliases=["idnsforwarders"], elements='dict',
+                            options=dict(
+                                 ip_address=dict(type='str', required=True),
+                                 port=dict(type='int', required=False,
+                                           default=None),
+                            )),
             forwardpolicy=dict(type='str', aliases=["idnsforwardpolicy"],
                                required=False,
                                choices=['only', 'first', 'none']),
@@ -160,7 +186,8 @@ def main():
                                           "ipaadmin_password")
     names = module_params_get(ansible_module, "name")
     action = module_params_get(ansible_module, "action")
-    forwarders = module_params_get(ansible_module, "forwarders")
+    forwarders = forwarder_list(
+        module_params_get(ansible_module, "forwarders"))
     forwardpolicy = module_params_get(ansible_module, "forwardpolicy")
     skip_overlap_check = module_params_get(ansible_module,
                                            "skip_overlap_check")
