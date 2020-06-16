@@ -106,6 +106,22 @@
     register: result
     failed_when: not result.changed
 
+  - name: change zone forward policy
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      forwardpolicy: first
+    register: result
+    failed_when: not result.changed
+
+  - name: change zone forward policy, again
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      forwardpolicy: first
+    register: result
+    failed_when: result.changed
+
   - name: ensure forwardzone example.com is absent.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
@@ -256,27 +272,15 @@
       action: member
       skip_overlap_check: true
     register: result
-    failed_when: result.changed
+    failed_when: not result.failed or "not found" not in result.msg
 
   - name: try to create a new forwarder with disabled state
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
-      state: disabled
-      name: example.com
-      forwarders:
-        - ip_address: 4.4.4.4
-          port: 8053
-      skip_overlap_check: yes
-    register: result
-    failed_when: not result.changed
-
-  - name: ensure it stays disabled
-    ipadnsforwardzone:
-      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: disabled
     register: result
-    failed_when: result.changed
+    failed_when: not result.failed or "not found" not in result.msg
 
   - name: Ensure forwardzone is not added without forwarders, with correct message.
     ipadnsforwardzone:

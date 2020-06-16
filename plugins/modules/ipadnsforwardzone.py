@@ -217,10 +217,20 @@ def main():
     else:
         operation = "add"
 
-    if state == "disabled":
-        wants_enable = False
-    else:
-        wants_enable = True
+    if state in ["enabled", "disabled"]:
+        if action == "member":
+            ansible_module.fail_json(
+                msg="Action `member` cannot be used with state `%s`"
+                    % (state))
+        invalid = [
+            "forwarders", "forwardpolicy", "skip_overlap_check", "permission"
+        ]
+        for x in invalid:
+            if vars()[x] is not None:
+                ansible_module.fail_json(
+                    msg="Argument '%s' can not be used with action "
+                    "'%s', state `%s`" % (x, action, state))
+        wants_enable = (state == "enabled")
 
     if operation == "del":
         invalid = [
@@ -230,7 +240,7 @@ def main():
             if vars()[x] is not None:
                 ansible_module.fail_json(
                     msg="Argument '%s' can not be used with action "
-                    "'%s'" % (x, action))
+                    "'%s', state `%s`" % (x, action, state))
 
     changed = False
     exit_args = {}
@@ -262,7 +272,27 @@ def main():
                 if existing_resource is None and not forwarders:
                     ansible_module.fail_json(msg='No forwarders specified.')
 
-            if existing_resource is not None:
+            if existing_resource is None:
+                if operation == "add":
+                    # does not exist but should be present
+                    # determine args
+                    args = gen_args(forwarders, forwardpolicy,
+                                    skip_overlap_check)
+                    # set command
+                    command = "dnsforwardzone_add"
+                    # enabled or disabled?
+
+                elif operation == "update":
+                    # does not exist and is updating
+                    # trying to update something that doesn't exist, so error
+                    ansible_module.fail_json(
+                        msg="dnsforwardzone '%s' not found." % (name))
+
+                elif operation == "del":
+                    # there's nothnig to do.
+                    continue
+
+            else:   # existing_resource is not None
                 if state != "absent":
                     if forwarders:
                         forwarders = list(
@@ -274,66 +304,51 @@ def main():
                             set(existing_resource["idnsforwarders"])
                             - set(forwarders))
 
-            if existing_resource is None and operation == "update":
-                # does not exist and is updating
-                # trying to update something that doesn't exist, so error
-                ansible_module.fail_json(msg="""dnsforwardzone '%s' is not
-                                                         valid""" % (name))
-            elif existing_resource is None and operation == "del":
-                # does not exists and should be absent
-                # enabled or disabled?
-                is_enabled = "IGNORE"
-            elif existing_resource is not None and operation == "del":
-                # exists but should be absent
-                # set command
-                command = "dnsforwardzone_del"
-                args = {}
-                # enabled or disabled?
-                is_enabled = "IGNORE"
-            elif forwarders is None:
-                # forwarders are not defined its not a delete, update state?
-                # enabled or disabled?
+                if operation == "add":
+                    # exists and should be present, has it changed?
+                    # determine args
+                    args = gen_args(
+                        forwarders, forwardpolicy, skip_overlap_check)
+                    if 'skip_overlap_check' in args:
+                        del args['skip_overlap_check']
+
+                    # set command
+                    if not compare_args_ipa(
+                            ansible_module, args, existing_resource):
+                        command = "dnsforwardzone_mod"
+
+                elif operation == "del":
+                    # exists but should be absent
+                    # set command
+                    command = "dnsforwardzone_del"
+                    args = {}
+
+                elif operation == "update":
+                    # exists and is updating
+                    # calculate the new forwarders and mod
+                    args = gen_args(
+                        forwarders, forwardpolicy, skip_overlap_check)
+                    if "skip_overlap_check" in args:
+                        del args['skip_overlap_check']
+
+                    # command
+                    if not compare_args_ipa(
+                            ansible_module, args, existing_resource):
+                        command = "dnsforwardzone_mod"
+
+            if state in ['enabled', 'disabled']:
                 if existing_resource is not None:
                     is_enabled = existing_resource["idnszoneactive"][0]
                 else:
-                    is_enabled = "IGNORE"
-            elif existing_resource is not None and operation == "update":
-                # exists and is updating
-                # calculate the new forwarders and mod
-                args = gen_args(forwarders, forwardpolicy, skip_overlap_check)
-                if "skip_overlap_check" in args:
-                    del args['skip_overlap_check']
+                    ansible_module.fail_json(
+                        msg="dnsforwardzone '%s' not found." % (name))
 
-                # command
-                if not compare_args_ipa(ansible_module, args, existing_resource):
-                    command = "dnsforwardzone_mod"
-
-                # enabled or disabled?
-                is_enabled = existing_resource["idnszoneactive"][0]
-
-            elif existing_resource is None and operation == "add":
-                # does not exist but should be present
-                # determine args
-                args = gen_args(forwarders, forwardpolicy,
-                                skip_overlap_check)
-                # set command
-                command = "dnsforwardzone_add"
-                # enabled or disabled?
-                is_enabled = "TRUE"
-
-            elif existing_resource is not None and operation == "add":
-                # exists and should be present, has it changed?
-                # determine args
-                args = gen_args(forwarders, forwardpolicy, skip_overlap_check)
-                if 'skip_overlap_check' in args:
-                    del args['skip_overlap_check']
-
-                # set command
-                if not compare_args_ipa(ansible_module, args, existing_resource):
-                    command = "dnsforwardzone_mod"
-
-                # enabled or disabled?
-                is_enabled = existing_resource["idnszoneactive"][0]
+            # does the enabled state match what we want (if we care)
+            if is_enabled != "IGNORE":
+                if wants_enable and is_enabled != "TRUE":
+                    commands.append([name, "dnsforwardzone_enable", {}])
+                elif not wants_enable and is_enabled != "FALSE":
+                    commands.append([name, "dnsforwardzone_disable", {}])
 
             # if command is set...
             if command is not None:
@@ -354,19 +369,8 @@ def main():
                     )
 
             for name, command, args in commands:
-                result = api_command(ansible_module, command, name, args)
+                api_command(ansible_module, command, name, args)
                 changed = True
-
-            # does the enabled state match what we want (if we care)
-            if is_enabled != "IGNORE":
-                if wants_enable and is_enabled != "TRUE":
-                    api_command(ansible_module, "dnsforwardzone_enable",
-                                name, {})
-                    changed = True
-                elif not wants_enable and is_enabled != "FALSE":
-                    api_command(ansible_module, "dnsforwardzone_disable",
-                                name, {})
-                    changed = True
 
     except Exception as e:
         ansible_module.fail_json(msg=str(e))
