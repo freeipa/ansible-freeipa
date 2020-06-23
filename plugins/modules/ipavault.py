@@ -69,12 +69,20 @@ options:
     description: password to be used on symmetric vault.
     required: false
     type: string
-    aliases: ["ipavaultpassword", "vault_password"]
+    aliases: ["ipavaultpassword", "vault_password", "old_password"]
   password_file:
     description: file with password to be used on symmetric vault.
     required: false
     type: string
-    aliases: ["vault_password_file"]
+    aliases: ["vault_password_file", "old_password_file"]
+  new_password:
+    description: new password to be used on symmetric vault.
+    required: false
+    type: string
+  new_password_file:
+    description: file with new password to be used on symmetric vault.
+    required: false
+    type: string
   salt:
     description: Vault salt.
     required: false
@@ -235,7 +243,15 @@ EXAMPLES = """
     state: retrieved
   register: result
 - debug:
-    msg: "{{ result.data | b64decode }}"
+    msg: "{{ result.data }}"
+
+# Change password of a symmetric vault
+- ipavault:
+    ipaadmin_password: SomeADMINpassword
+    name: symvault
+    username: admin
+    old_password: SomeVAULTpassword
+    new_password: SomeNEWpassword
 
 # Ensure vault symvault is absent
 - ipavault:
@@ -416,10 +432,21 @@ def check_parameters(module, state, action, description, username, service,
                      shared, users, groups, services, owners, ownergroups,
                      ownerservices, vault_type, salt, password, password_file,
                      public_key, public_key_file, private_key,
-                     private_key_file, vault_data, datafile_in, datafile_out):
+                     private_key_file, vault_data, datafile_in, datafile_out,
+                     new_password, new_password_file):
     invalid = []
     if state == "present":
         invalid = ['private_key', 'private_key_file', 'datafile_out']
+
+        if all([password, password_file]) \
+           or all([new_password, new_password_file]):
+            module.fail_json(msg="Password specified multiple times.")
+
+        if any([new_password, new_password_file]) \
+           and not any([password, password_file]):
+            module.fail_json(
+                msg="Either `password` or `password_file` must be provided to "
+                    "change symmetric vault password.")
 
         if action == "member":
             invalid.extend(['description'])
@@ -427,7 +454,7 @@ def check_parameters(module, state, action, description, username, service,
     elif state == "absent":
         invalid = ['description', 'salt', 'vault_type', 'private_key',
                    'private_key_file', 'datafile_in', 'datafile_out',
-                   'vault_data']
+                   'vault_data', 'new_password', 'new_password_file']
 
         if action == "vault":
             invalid.extend(['users', 'groups', 'services', 'owners',
@@ -437,7 +464,7 @@ def check_parameters(module, state, action, description, username, service,
     elif state == "retrieved":
         invalid = ['description', 'salt', 'datafile_in', 'users', 'groups',
                    'owners', 'ownergroups', 'public_key', 'public_key_file',
-                   'vault_data']
+                   'vault_data', 'new_password', 'new_password_file']
         if action == 'member':
             module.fail_json(
                 msg="State `retrieved` do not support action `member`.")
@@ -458,11 +485,17 @@ def check_parameters(module, state, action, description, username, service,
 def check_encryption_params(module, state, action, vault_type, salt,
                             password, password_file, public_key,
                             public_key_file, private_key, private_key_file,
-                            vault_data, datafile_in, datafile_out, res_find):
+                            vault_data, datafile_in, datafile_out,
+                            new_password, new_password_file, res_find):
     vault_type_invalid = []
+
+    if res_find is not None:
+        vault_type = res_find['ipavaulttype']
+
     if vault_type == "standard":
         vault_type_invalid = ['public_key', 'public_key_file', 'password',
-                              'password_file', 'salt']
+                              'password_file', 'salt', 'new_password',
+                              'new_password_file']
 
     if vault_type is None or vault_type == "symmetric":
         vault_type_invalid = ['public_key', 'public_key_file',
@@ -473,8 +506,14 @@ def check_encryption_params(module, state, action, vault_type, salt,
                 msg="Symmetric vault requires password or password_file "
                     "to store data or change `salt`.")
 
+        if any([new_password, new_password_file]) and res_find is None:
+            module.fail_json(
+                msg="Cannot modify password of inexistent vault.")
+
     if vault_type == "asymmetric":
-        vault_type_invalid = ['password', 'password_file']
+        vault_type_invalid = [
+            'password', 'password_file', 'new_password', 'new_password_file'
+        ]
         if not any([public_key, public_key_file]) and res_find is None:
             module.fail_json(
                 msg="Assymmetric vault requires public_key "
@@ -485,6 +524,43 @@ def check_encryption_params(module, state, action, vault_type, salt,
             module.fail_json(
                 msg="Argument '%s' cannot be used with vault type '%s'" %
                 (param, vault_type or 'symmetric'))
+
+
+def change_password(module, res_find, password, password_file, new_password,
+                    new_password_file):
+    """
+    Change the password of a symmetric vault.
+
+    To change the password of a vault, it is needed to retrieve the stored
+    data with the current password, and store the data again, with the new
+    password, forcing it to override the old one.
+    """
+    # verify parameters.
+    if not any([new_password, new_password_file]):
+        return []
+    if res_find["ipavaulttype"][0] != "symmetric":
+        module.fail_json(msg="Cannot change password of `%s` vault."
+                             % res_find["ipavaulttype"])
+
+    # prepare arguments to retrieve data.
+    name = res_find["cn"][0]
+    args = {}
+    if password:
+        args["password"] = password
+    if password_file:
+        args["password"] = password_file
+    # retrieve current stored data
+    result = api_command(module, 'vault_retrieve', name, args)
+    args['data'] = result['result']['data']
+
+    # modify arguments to store data with new password.
+    if password:
+        args["password"] = new_password
+    if password_file:
+        args["password"] = new_password_file
+    args["override_password"] = True
+    # return the command to store data with the new password.
+    return [(name, "vault_archive", args)]
 
 
 def main():
@@ -533,10 +609,18 @@ def main():
             datafile_out=dict(type="str", required=False, default=None,
                               aliases=['out']),
             vault_password=dict(type="str", required=False, default=None,
-                                aliases=['ipavaultpassword', 'password'],
-                                no_log=True),
+                                no_log=True,
+                                aliases=['ipavaultpassword', 'password',
+                                         "old_password"]),
             vault_password_file=dict(type="str", required=False, default=None,
-                                     no_log=False, aliases=['password_file']),
+                                     no_log=False,
+                                     aliases=[
+                                        'password_file', "old_password_file"
+                                     ]),
+            new_password=dict(type="str", required=False, default=None,
+                              no_log=True),
+            new_password_file=dict(type="str", required=False, default=None,
+                                   no_log=False),
             # state
             action=dict(type="str", default="vault",
                         choices=["vault", "data", "member"]),
@@ -546,6 +630,7 @@ def main():
         supports_check_mode=True,
         mutually_exclusive=[['username', 'service', 'shared'],
                             ['datafile_in', 'vault_data'],
+                            ['new_password', 'new_password_file'],
                             ['vault_password', 'vault_password_file'],
                             ['vault_public_key', 'vault_public_key_file']],
     )
@@ -576,6 +661,8 @@ def main():
     salt = module_params_get(ansible_module, "vault_salt")
     password = module_params_get(ansible_module, "vault_password")
     password_file = module_params_get(ansible_module, "vault_password_file")
+    new_password = module_params_get(ansible_module, "new_password")
+    new_password_file = module_params_get(ansible_module, "new_password_file")
     public_key = module_params_get(ansible_module, "vault_public_key")
     public_key_file = module_params_get(ansible_module,
                                         "vault_public_key_file")
@@ -614,7 +701,8 @@ def main():
                      service, shared, users, groups, services, owners,
                      ownergroups, ownerservices, vault_type, salt, password,
                      password_file, public_key, public_key_file, private_key,
-                     private_key_file, vault_data, datafile_in, datafile_out)
+                     private_key_file, vault_data, datafile_in, datafile_out,
+                     new_password, new_password_file)
     # Init
 
     changed = False
@@ -660,7 +748,7 @@ def main():
                     ansible_module, state, action, vault_type, salt, password,
                     password_file, public_key, public_key_file, private_key,
                     private_key_file, vault_data, datafile_in, datafile_out,
-                    res_find)
+                    new_password, new_password_file, res_find)
 
                 # Found the vault
                 if action == "vault":
@@ -721,7 +809,6 @@ def main():
                     owner_add_args = gen_member_args(
                         args, owner_add, ownergroups_add, ownerservice_add)
                     if owner_add_args is not None:
-                        # ansible_module.warn("OWNER ADD: %s" % owner_add_args)
                         commands.append(
                             [name, 'vault_add_owner', owner_add_args])
 
@@ -729,7 +816,6 @@ def main():
                     owner_del_args = gen_member_args(
                         args, owner_del, ownergroups_del, ownerservice_del)
                     if owner_del_args is not None:
-                        # ansible_module.warn("OWNER DEL: %s" % owner_del_args)
                         commands.append(
                             [name, 'vault_remove_owner', owner_del_args])
 
@@ -758,19 +844,22 @@ def main():
                 if any([vault_data, datafile_in]):
                     commands.append([name, "vault_archive", pwdargs])
 
+                cmds = change_password(
+                    ansible_module, res_find, password, password_file,
+                    new_password, new_password_file)
+                commands.extend(cmds)
+
             elif state == "retrieved":
                 if res_find is None:
                     ansible_module.fail_json(
                         msg="Vault `%s` not found to retrieve data." % name)
-
-                vault_type = res_find['cn']
 
                 # verify data encription args
                 check_encryption_params(
                     ansible_module, state, action, vault_type, salt, password,
                     password_file, public_key, public_key_file, private_key,
                     private_key_file, vault_data, datafile_in, datafile_out,
-                    res_find)
+                    new_password, new_password_file, res_find)
 
                 pwdargs = data_storage_args(
                     args, vault_data, password, password_file, private_key,
@@ -813,7 +902,6 @@ def main():
         errors = []
         for name, command, args in commands:
             try:
-                # ansible_module.warn("RUN: %s %s %s" % (command, name, args))
                 result = api_command(ansible_module, command, name, args)
 
                 if command == 'vault_archive':
@@ -829,7 +917,6 @@ def main():
                         raise Exception("No data retrieved.")
                     changed = False
                 else:
-                    # ansible_module.warn("RESULT: %s" % (result))
                     if "completed" in result:
                         if result["completed"] > 0:
                             changed = True
