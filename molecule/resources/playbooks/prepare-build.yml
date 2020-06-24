@@ -1,0 +1,54 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+  - name: Ensure IPv6 is ENABLED
+    sysctl:
+      name: "{{ item.name }}"
+      value: "{{ item.value }}"
+      sysctl_set: yes
+      state: present
+      reload: yes
+    with_items :
+      - name: net.ipv6.conf.all.disable_ipv6
+        value: 0
+      - name: net.ipv6.conf.lo.disable_ipv6
+        value: 0
+      - name: net.ipv6.conf.eth0.disable_ipv6
+        value: 1
+
+  - name: stat protected_regular
+    stat:
+      path: /proc/sys/fs/protected_regular
+    register: result
+
+  - name: Ensure fs.protected_regular is disabled
+    sysctl:
+      name: fs.protected_regular
+      value: 0
+      sysctl_set: yes
+      state: present
+      reload: yes
+    when: result.stat.exists
+
+  - name: Ensure sudo package is installed
+    package:
+      name: sudo
+
+  - name: Ensure nss package is updated
+    package:
+      name: nss
+      state: latest
+
+  - include_role:
+      name: ipaserver
+    vars:
+      ipaserver_setup_dns: yes
+      ipaserver_setup_kra: yes
+      ipaserver_auto_forwarders: yes
+      ipaserver_no_dnssec_validation: yes
+      ipaserver_auto_reverse: yes
+      ipaadmin_password: SomeADMINpassword
+      ipadm_password: SomeDMpassword
+      ipaserver_domain: test.local
+      ipaserver_realm: TEST.LOCAL

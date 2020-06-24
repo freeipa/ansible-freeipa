@@ -1,0 +1,20 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: centos-7-build
+    image: centos/systemd
+    pre_build_image: true
+    hostname: ipaserver.test.local
+    dns_servers:
+      - 8.8.8.8
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /usr/sbin/init
+    privileged: true
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: ../resources/playbooks/prepare-build.yml
