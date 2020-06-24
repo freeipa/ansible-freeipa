@@ -1,0 +1,61 @@
+
+parameters:
+  - name: group_number
+    type: number
+    default: 1
+  - name: number_of_groups
+    type: number
+    default: 1
+  - name: scenario
+    type: string
+    default: centos-8
+  - name: ansible_version
+    type: string
+    default: ">=2.9,<2.10"
+  - name: python_version
+    type: string
+    default: 3.6
+  - name: build_number
+
+jobs:
+- job: RunTests${{ parameters.group_number }}
+  displayName: Run tests ${{ parameters.group_number }}/${{ parameters.number_of_groups }}
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '${{ parameters.python_version }}'
+
+  - script: |
+      pip install \
+        "molecule[docker]>=3" \
+        "ansible${{ parameters.ansible_version }}" \
+        pytest \
+        pytest-split-tests
+    displayName: Install dependencies
+
+  - script: |
+      mkdir -p ~/.ansible/roles ~/.ansible/library ~/.ansible/module_utils
+      cp -a roles/* ~/.ansible/roles
+      cp -a plugins/modules/* ~/.ansible/library
+      cp -a plugins/module_utils/* ~/.ansible/module_utils
+      molecule create -s ${{ parameters.scenario }}
+    displayName: Setup test container
+
+  - script: |
+      pytest \
+        --verbose \
+        --color=yes \
+        --test-group-count=${{ parameters.number_of_groups }} \
+        --test-group=${{ parameters.group_number }} \
+        --test-group-random-seed=97943259814 \
+        --junit-xml=TEST-results-group-${{ parameters.group_number }}.xml
+    displayName: Run playbook tests
+    env:
+      IPA_SERVER_HOST: ${{ parameters.scenario }}
+      RUN_TESTS_IN_DOCKER: true
+
+  - task: PublishTestResults@2
+    inputs:
+      mergeTestResults: true
+      testRunTitle: PlaybookTests-Build${{ parameters.build_number }}
+    condition: succeededOrFailed()
