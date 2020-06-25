@@ -812,9 +812,11 @@ def main():
 
             elif state == "disabled":
                 if action == "service":
-                    if res_find is not None and \
-                       len(res_find.get('usercertificate', [])) > 0:
-                        commands.append([name, 'service_disable', {}])
+                    if res_find is not None:
+                        has_cert = bool(res_find.get('usercertificate'))
+                        has_keytab = res_find.get('has_keytab', False)
+                        if has_cert or has_keytab:
+                            commands.append([name, 'service_disable', {}])
                 else:
                     ansible_module.fail_json(
                         msg="Invalid action '%s' for state '%s'" %
