@@ -11,6 +11,7 @@ Features
 * Cluster deployments: Server, replicas and clients in one playbook
 * One-time-password (OTP) support for client installation
 * Repair mode for clients
+* Ansible dynamic inventory plugin for using ipaHostGroups
 * Modules for dns forwarder management
 * Modules for dns record management
 * Modules for dns zone management
