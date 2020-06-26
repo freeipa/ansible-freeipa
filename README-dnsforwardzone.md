@@ -49,7 +49,7 @@ Example playbook to ensure presence of a forwardzone to ipa DNS:
   tasks:
   - name: ensure presence of forwardzone for DNS requests for example.com to 8.8.8.8
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -59,13 +59,13 @@ Example playbook to ensure presence of a forwardzone to ipa DNS:
 
   - name: ensure the forward zone is disabled
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: disabled
 
   - name: ensure presence of multiple upstream DNS servers for example.com
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -74,7 +74,7 @@ Example playbook to ensure presence of a forwardzone to ipa DNS:
 
   - name: ensure presence of another forwarder to any existing ones for example.com
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
@@ -83,7 +83,7 @@ Example playbook to ensure presence of a forwardzone to ipa DNS:
 
   - name: ensure the forwarder for example.com does not exists (delete it if needed)
     ipadnsforwardzone:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       name: example.com
       state: absent
 ```
@@ -99,9 +99,12 @@ Variable | Description | Required
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `name` \| `cn` | Zone name (FQDN). | yes if `state` == `present`
-`forwarders` \| `idnsforwarders` |  Per-zone conditional forwarding policy. Possible values are `only`, `first`, `none`) | no
-`forwardpolicy` \| `idnsforwardpolicy` | Per-zone conditional forwarding policy. Set to "none" to disable forwarding to global forwarder for this zone. In that case, conditional zone forwarders are disregarded. | no
+`forwarders` \| `idnsforwarders` |  Per-zone forwarders. A custom port can be specified for each forwarder. Options | no
+&nbsp; | `ip_address`: The forwarder IP address. | yes
+&nbsp; | `port`: The forwarder IP port. | no
+`forwardpolicy` \| `idnsforwardpolicy` | Per-zone conditional forwarding policy. Possible values are `only`, `first`, `none`. Set to "none" to disable forwarding to global forwarder for this zone. In that case, conditional zone forwarders are disregarded. | no
 `skip_overlap_check` | Force DNS zone creation even if it will overlap with an existing zone. Defaults to False. | no
+`permission` | Allow DNS Forward Zone to be managed. (bool) | no
 `action` | Work on group or member level. It can be on of `member` or `dnsforwardzone` and defaults to `dnsforwardzone`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, `enabled` or `disabled`, default: `present`. | yes
 
