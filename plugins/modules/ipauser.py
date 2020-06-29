@@ -958,10 +958,15 @@ def main():
         # commands
 
         commands = []
+        user_set = set()
 
         for user in names:
             if isinstance(user, dict):
                 name = user.get("name")
+                if name in user_set:
+                    ansible_module.fail_json(
+                        msg="user '%s' is used more than once" % name)
+                user_set.add(name)
                 # present
                 first = user.get("first")
                 last = user.get("last")
@@ -1369,6 +1374,8 @@ def main():
 
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+        del user_set
 
         # Execute commands
 
