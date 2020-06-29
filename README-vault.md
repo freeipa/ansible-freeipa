@@ -165,6 +165,22 @@ Example playbook to make sure vault data is absent in a symmetric vault:
       state: absent
 ```
 
+Example playbook to change the password of a symmetric:
+
+```yaml
+---
+- name: Playbook to handle vaults
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      old_password: SomeVAULTpassword
+      new_password: SomeNEWpassword
+```
+
 Example playbook to make sure vault is absent:
 
 ```yaml
@@ -197,8 +213,11 @@ Variable | Description | Required
 `name` \| `cn` | The list of vault name strings. | yes
 `description` | The vault description string. | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
-`password ` \| `vault_password` \| `ipavaultpassword` | Vault password. | no
-`public_key ` \| `vault_public_key` \| `ipavaultpublickey` | Base64 encoded vault public key. | no
+`password` \| `vault_password` \| `ipavaultpassword` \| `old_password`| Vault password. | no
+`password_file` \| `vault_password_file` \| `old_password_file`| File containing Base64 encoded Vault password. | no
+`new_password` | Vault new password. | no
+`new_password_file` | File containing Base64 encoded new Vault password. | no
+`public_key ` \| `vault_public_key` \| `old_password_file` | Base64 encoded vault public key. | no
 `public_key_file` \| `vault_public_key_file` | Path to file with public key. | no
 `private_key `\| `vault_private_key` | Base64 encoded vault private key. Used only to retrieve data. | no
 `private_key_file` \| `vault_private_key_file` | Path to file with private key. Used only to retrieve data. | no

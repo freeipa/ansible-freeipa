@@ -178,6 +178,61 @@
     register: result
     failed_when: result.data != 'Hello World.' or result.changed
 
+  - name: Change vault password.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      new_password: SomeNEWpassword
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from symmetric vault, with wrong password.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      state: retrieved
+    register: result
+    failed_when: not result.failed or "Invalid credentials" not in result.msg
+
+  - name: Change vault password, with wrong `old_password`.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      new_password: SomeNEWpassword
+    register: result
+    failed_when: not result.failed or "Invalid credentials" not in result.msg
+
+  - name: Retrieve data from symmetric vault, with new password.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeNEWpassword
+      state: retrieved
+    register: result
+    failed_when: result.data != 'Hello World.' or result.changed
+
+  - name: Try to add vault with multiple passwords.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: inexistentvault
+      password: SomeVAULTpassword
+      password_file: "{{ ansible_env.HOME }}/password.txt"
+    register: result
+    failed_when: not result.failed or "parameters are mutually exclusive" not in result.msg
+
+  - name: Try to add vault with multiple new passwords.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: inexistentvault
+      password: SomeVAULTpassword
+      new_password: SomeVAULTpassword
+      new_password_file: "{{ ansible_env.HOME }}/password.txt"
+    register: result
+    failed_when: not result.failed or "parameters are mutually exclusive" not in result.msg
+
   - name: Ensure symmetric vault is absent
     ipavault:
       ipaadmin_password: SomeADMINpassword
@@ -193,6 +248,15 @@
       state: absent
     register: result
     failed_when: result.changed
+
+  - name: Try to change password of inexistent vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: inexistentvault
+      password: SomeVAULTpassword
+      new_password: SomeNEWpassword
+    register: result
+    failed_when: not result.failed or "Cannot modify password of inexistent vault" not in result.msg
 
   - name: Cleanup testing environment.
     import_tasks: env_cleanup.yml
