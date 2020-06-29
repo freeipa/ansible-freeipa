@@ -1,14 +1,26 @@
+# Due to not having some Ansible modules for IPA, some tasks are executed
+# in this playbook using the `shell` module, as a Kerberos tikcket is needed
+# for these tasks.
+# The Kerberos cache is cleaned in the end, so you might need to `kinit` on
+# the testing target after running this playbook.
 ---
 - name: Playbook to manage IPA service.
   hosts: ipaserver
   become: yes
   gather_facts: yes
 
+  environment:
+    KRB5CCNAME: test_service_disable_ccache
+
   tasks:
+  - name: Get Kerberos ticket for `admin`.
+    shell: echo SomeADMINpassword | kinit -c ${KRB5CCNAME} admin
+
   - name: Ensure service is absent
     ipaservice:
       ipaadmin_password: SomeADMINpassword
       name: "mysvc1/{{ ansible_fqdn }}"
+      state: absent
 
   - name: Ensure service is present
     ipaservice:
@@ -66,3 +78,6 @@
     ipaservice:
       ipaadmin_password: SomeADMINpassword
       name: "mysvc1/{{ ansible_fqdn }}"
+
+  - name: Destroy Kerberos tickets.
+    shell: kdestroy -A -q -c ${KRB5CCNAME}
