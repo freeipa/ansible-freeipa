@@ -8,7 +8,7 @@
   - name: Ensure user manangeruser1 and manageruser2 is absent
     ipauser:
       ipaadmin_password: SomeADMINpassword
-      name: manageruser1,manageruser2
+      name: manageruser1,manageruser2,unknown_user
       state: absent
 
   - name: Ensure group testgroup, managergroup1 and managergroup2 are absent
@@ -184,6 +184,15 @@
       state: absent
     register: result
     failed_when: not result.changed
+
+  - name: Ensure unknown membermanager_user member failure
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      membermanager_user: unknown_user
+      action: member
+    register: result
+    failed_when: result.changed or "no such entry" not in result.msg
 
   - name: Ensure group testgroup, managergroup1 and managergroup2 are absent
     ipagroup:
