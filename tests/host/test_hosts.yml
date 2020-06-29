@@ -96,3 +96,18 @@
       state: absent
     register: result
     failed_when: result.changed
+
+  - name: Duplicate names in hosts failure test
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        force: yes
+      - name: "{{ host2_fqdn }}"
+        force: yes
+      - name: "{{ host3_fqdn }}"
+        force: yes
+      - name: "{{ host3_fqdn }}"
+        force: yes
+    register: result
+    failed_when: result.changed or "is used more than once" not in result.msg

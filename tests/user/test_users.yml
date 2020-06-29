@@ -85,6 +85,25 @@
     register: result
     failed_when: result.changed
 
+  - name: Duplicate names in users failure test
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: user1
+        givenname: user1
+        last: Last
+      - name: user2
+        first: user2
+        last: Last
+      - name: user3
+        first: user3
+        last: Last
+      - name: user3
+        first: user3
+        last: Last
+    register: result
+    failed_when: result.changed or "is used more than once" not in result.msg
+
   - name: Remove test users
     ipauser:
       ipaadmin_password: SomeADMINpassword
