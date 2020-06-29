@@ -423,14 +423,15 @@ def main():
             # All "already a member" and "not a member" failures in the
             # result are ignored. All others are reported.
             errors = []
-            if "failed" in result and "member" in result["failed"]:
-                failed = result["failed"]["member"]
+            for failed_item in result.get("failed", []):
+                failed = result["failed"][failed_item]
                 for member_type in failed:
                     for member, failure in failed[member_type]:
-                        if "already a member" not in failure \
-                           and "not a member" not in failure:
-                            errors.append("%s: %s %s: %s" % (
-                                command, member_type, member, failure))
+                        if "already a member" in failure \
+                           or "not a member" in failure:
+                            continue
+                        errors.append("%s: %s %s: %s" % (
+                            command, member_type, member, failure))
             if len(errors) > 0:
                 ansible_module.fail_json(msg=", ".join(errors))
 
