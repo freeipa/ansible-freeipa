@@ -164,7 +164,8 @@ class ActionModule(ActionBase):
             return result
 
         data = self._execute_module(module_name='ipaclient_get_facts',
-                                    module_args=dict(), task_vars=None)
+                                    module_args=dict(), task_vars=task_vars)
+
         try:
             domain = data['ansible_facts']['ipa']['domain']
             realm = data['ansible_facts']['ipa']['realm']
@@ -245,4 +246,3 @@ class ActionModule(ActionBase):
         finally:
             # delete the local temp directory
             shutil.rmtree(local_temp_dir, ignore_errors=True)
-            run_cmd(['/usr/bin/kdestroy', '-c', tmp_ccache])
