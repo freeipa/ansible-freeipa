@@ -134,7 +134,6 @@
                    "Password cannot be set on enrolled host" not
                        in result_ipaclient_get_otp.msg
       delegate_to: "{{ result_ipaclient_test.servers[0] }}"
-      delegate_facts: yes
       ignore_errors: yes
 
     - name: Install - Report error for OTP generation
