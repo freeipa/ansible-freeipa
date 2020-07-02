@@ -203,7 +203,7 @@
       # no_host_dns: "{{ result_ipaserver_test.no_host_dns }}"
       dirsrv_config_file: "{{ ipaserver_dirsrv_config_file | default(omit) }}"
       dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default(omit) }}"
-      _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info }}"
+      _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info if result_ipaserver_test._dirsrv_pkcs12_info != None else omit }}"
       external_cert_files:
         "{{ ipaserver_external_cert_files | default(omit) }}"
       subject_base: "{{ result_ipaserver_prepare.subject_base }}"
@@ -240,7 +240,7 @@
       no_hbac_allow: "{{ ipaserver_no_hbac_allow }}"
       idstart: "{{ result_ipaserver_test.idstart }}"
       idmax: "{{ result_ipaserver_test.idmax }}"
-      _pkinit_pkcs12_info: "{{ result_ipaserver_test._pkinit_pkcs12_info }}"
+      _pkinit_pkcs12_info: "{{ result_ipaserver_test._pkinit_pkcs12_info if result_ipaserver_test._pkinit_pkcs12_info != None else omit }}"
 
   - name: Install - Setup custodia
     ipaserver_setup_custodia:
@@ -270,7 +270,7 @@
       no_pkinit: "{{ result_ipaserver_test.no_pkinit }}"
       dirsrv_config_file: "{{ ipaserver_dirsrv_config_file | default(omit) }}"
       dirsrv_cert_files: "{{ ipaserver_dirsrv_cert_files | default([]) }}"
-      _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info }}"
+      _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info if result_ipaserver_test._dirsrv_pkcs12_info != None else omit }}"
       external_ca: "{{ ipaserver_external_ca }}"
       external_ca_type: "{{ ipaserver_external_ca_type | default(omit) }}"
       external_ca_profile:
@@ -334,7 +334,7 @@
         idmax: "{{ result_ipaserver_test.idmax }}"
         http_cert_files: "{{ ipaserver_http_cert_files | default([]) }}"
         no_ui_redirect: "{{ ipaserver_no_ui_redirect }}"
-        _http_pkcs12_info: "{{ result_ipaserver_test._http_pkcs12_info }}"
+        _http_pkcs12_info: "{{ result_ipaserver_test._http_pkcs12_info if result_ipaserver_test._http_pkcs12_info != None else omit }}"
 
     - name: Install - Setup KRA
       ipaserver_setup_kra:
@@ -394,7 +394,7 @@
         idstart: "{{ result_ipaserver_test.idstart }}"
         idmax: "{{ result_ipaserver_test.idmax }}"
         dirsrv_config_file: "{{ ipaserver_dirsrv_config_file | default(omit) }}"
-        _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info }}"
+        _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info if result_ipaserver_test._dirsrv_pkcs12_info != None else omit }}"
 
     - name: Install - Setup client
       include_role:
