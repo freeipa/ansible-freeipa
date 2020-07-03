@@ -1,3 +1,16 @@
+# Using Ansible 2.10.0a1 under Azure there might happen that the output of a
+# task is changed if a module uses no_log = True for an attribute.
+#
+# For example, if the output of the module should contain "changed: True", and
+# an attribute with no_log set contains the value `hang` it might happen that
+# the output is modified to "c******ed: True", and if this output is further
+# processed (registering the result and comparing the value of `changed`),
+# the test might fail, but not because of module code, but because of unexpected
+# output processing.
+#
+# This behavior was, currently, only reproduced with Ansible 2.10.0a1 running
+# under Azure.
+---
 trigger:
 - master
 
