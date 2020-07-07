@@ -110,7 +110,7 @@ def main():
             # additional
             ccache=dict(required=True),
             _top_dir=dict(required=True),
-            setup_ca=dict(required=True),
+            setup_ca=dict(required=True, type='bool'),
             config_master_host_name=dict(required=True),
         ),
         supports_check_mode=True,

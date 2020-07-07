@@ -169,6 +169,7 @@ def main():
     config.promote = installer.promote
     config.kra_enabled = kra_enabled
     config.kra_host_name = kra_host_name
+    config.setup_ca = options.setup_ca
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
 

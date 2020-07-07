@@ -164,7 +164,7 @@ def main():
     config.subject_base = options.subject_base
     config.dirman_password = dirman_password
     config.setup_ca = options.setup_ca
-    # config.master_host_name = master_host_name
+    config.master_host_name = master_host_name
     config.ca_host_name = ca_host_name
     config.promote = installer.promote
 
