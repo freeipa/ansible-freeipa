@@ -63,6 +63,9 @@ options:
   _top_dir:
     description: The installer _top_dir setting
     required: no
+  dirman_password:
+    description: Directory Manager (master) password
+    required: no
 author:
     - Thomas Woerner
 '''
@@ -98,6 +101,7 @@ def main():
             ccache=dict(required=True),
             _pkinit_pkcs12_info=dict(required=False, type='list'),
             _top_dir=dict(required=True),
+            dirman_password=dict(required=True, no_log=True),
         ),
         supports_check_mode=True,
     )
@@ -126,6 +130,7 @@ def main():
         '_pkinit_pkcs12_info')
 
     options._top_dir = ansible_module.params.get('_top_dir')
+    dirman_password = ansible_module.params.get('dirman_password')
 
     # init #
 
@@ -141,8 +146,10 @@ def main():
                                          constants.DEFAULT_CONFIG)
     api_bootstrap_finalize(env)
     config = gen_ReplicaConfig()
+    config.dirman_password = dirman_password
     config.master_host_name = config_master_host_name
     config.subject_base = options.subject_base
+    config.setup_ca = options.setup_ca
 
     ccache = os.environ['KRB5CCNAME']
 

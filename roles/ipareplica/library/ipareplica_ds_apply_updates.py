@@ -177,6 +177,7 @@ def main():
     config = gen_ReplicaConfig()
     config.dirman_password = dirman_password
     config.subject_base = options.subject_base
+    config.master_host_name = master_host_name
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
 

@@ -262,6 +262,7 @@ def main():
     config.subject_base = options.subject_base
     config.dirman_password = dirman_password
     config.ca_host_name = ca_host_name
+    config.setup_ca = options.setup_ca
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api

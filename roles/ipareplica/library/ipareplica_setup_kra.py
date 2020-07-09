@@ -120,6 +120,9 @@ options:
   _subject_base:
     description: The installer _subject_base setting
     required: no
+  dirman_password:
+    description: Directory Manager (master) password
+    required: no
 author:
     - Thomas Woerner
 '''
@@ -173,10 +176,12 @@ def main():
             _ca_enabled=dict(required=False, type='bool'),
             _kra_enabled=dict(required=False, type='bool'),
             _kra_host_name=dict(required=False),
+            _ca_host_name=dict(required=False),
             _top_dir=dict(required=True),
             _add_to_ipaservers=dict(required=True, type='bool'),
             _ca_subject=dict(required=True),
             _subject_base=dict(required=True),
+            dirman_password=dict(required=True, no_log=True),
         ),
         supports_check_mode=True,
     )
@@ -233,6 +238,7 @@ def main():
     ca_enabled = ansible_module.params.get('_ca_enabled')
     kra_enabled = ansible_module.params.get('_kra_enabled')
     kra_host_name = ansible_module.params.get('_kra_host_name')
+    ca_host_name = ansible_module.params.get('_ca_host_name')
 
     options.subject_base = ansible_module.params.get('subject_base')
     if options.subject_base is not None:
@@ -243,6 +249,7 @@ def main():
 
     options._ca_subject = ansible_module.params.get('_ca_subject')
     options._subject_base = ansible_module.params.get('_subject_base')
+    dirman_password = ansible_module.params.get('dirman_password')
 
     # init #
 
@@ -254,13 +261,24 @@ def main():
                                          constants.DEFAULT_CONFIG)
     api_bootstrap_finalize(env)
     config = gen_ReplicaConfig()
+    config.dirman_password = dirman_password
     config.subject_base = options.subject_base
     config.promote = installer.promote
     config.kra_enabled = kra_enabled
     config.kra_host_name = kra_host_name
+    config.ca_host_name = ca_host_name
+    config.master_host_name = master_host_name
 
     remote_api = gen_remote_api(master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
+
+    conn = remote_api.Backend.ldap2
+    ccache = os.environ['KRB5CCNAME']
+
+    # There is a api.Backend.ldap2.connect call somewhere in ca, ds, dns or
+    # ntpinstance
+    api.Backend.ldap2.connect()
+    conn.connect(ccache=ccache)
 
     with redirect_stdout(ansible_log):
         ansible_log.debug("-- INSTALL KRA --")

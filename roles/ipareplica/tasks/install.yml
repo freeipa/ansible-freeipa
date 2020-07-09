@@ -226,6 +226,8 @@
       setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
       setup_kra: "{{ result_ipareplica_test.setup_kra }}"
       setup_dns: "{{ ipareplica_setup_dns }}"
+      ### server ###
+      setup_ca: "{{ ipareplica_setup_ca }}"
       ### ssl certificate ###
       dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
       ### client ###
@@ -332,6 +334,7 @@
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
       dirman_password: "{{ ipareplica_dirman_password }}"
+      setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
 
   - name: Install - Setup KRB
     ipareplica_setup_krb:
@@ -347,6 +350,7 @@
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info  if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
 
   # We need to point to the master in ipa default conf when certmonger
   # asks for HTTP certificate in newer ipa versions. In these versions
@@ -388,6 +392,7 @@
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
       dirman_password: "{{ ipareplica_dirman_password }}"
+      setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
       master:
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
     when: result_ipareplica_test.change_master_for_certmonger
@@ -471,6 +476,7 @@
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
       dirman_password: "{{ ipareplica_dirman_password }}"
+      setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
     when: result_ipareplica_test.change_master_for_certmonger
 
   - name: Install - Setup otpd
@@ -611,10 +617,12 @@
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
       _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
       _kra_host_name: "{{ result_ipareplica_prepare.config_kra_host_name }}"
+      _ca_host_name: "{{ result_ipareplica_prepare.config_ca_host_name }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
+      dirman_password: "{{ ipareplica_dirman_password }}"
     when: result_ipareplica_test.setup_kra
 
   - name: Install - Restart KDC
