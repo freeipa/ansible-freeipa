@@ -150,10 +150,10 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
     api_check_param, module_params_get, gen_add_del_lists, api_check_command
+from ansible.module_utils.basic import AnsibleModule
 
 
 def find_group(module, name):
@@ -173,7 +173,7 @@ def find_group(module, name):
         return None
 
 
-def gen_args(description, gid, nonposix, external, nomembers):
+def gen_args(description, gid, nonposix, posix, external, nomembers):
     _args = {}
     if description is not None:
         _args["description"] = description
@@ -181,6 +181,8 @@ def gen_args(description, gid, nonposix, external, nomembers):
         _args["gidnumber"] = gid
     if nonposix is not None:
         _args["nonposix"] = nonposix
+    if posix is not None:
+        _args["posix"] = posix
     if external is not None:
         _args["external"] = external
     if nomembers is not None:
@@ -320,10 +322,47 @@ def main():
             # Make sure group exists
             res_find = find_group(ansible_module, name)
 
+            # Ensure the external and nonposix settings work
+            posix = None  # used when changing from nonposix to posix
+            if res_find is not None:
+                # the external group setting is stored in the objectclass
+                if external is not None:
+                    if external:
+                        if 'ipaexternalgroup' in res_find['objectclass']:
+                            # If the group already exists it will break
+                            # the module if this is not None
+                            external = None
+                        elif 'posixgroup' in res_find['objectclass']:
+                            ansible_module.fail_json(
+                                msg="Cannot change a posix group to external")
+                    elif 'ipaexternalgroup' not in res_find['objectclass']:
+                        # This will break the module if this is not None
+                        external = None
+                    else:
+                        ansible_module.fail_json(
+                                msg="Cannot remove external setting")
+
+                if nonposix is not None:
+                    # the nonposix setting is configured by
+                    # NOT setting it in the objectclass
+                    if nonposix:
+                        if 'posixgroup' in res_find['objectclass']:
+                            ansible_module.fail_json(
+                                msg="Cannot change posix group to nonposix")
+                        else:
+                            # This will break the module if this is not None
+                            nonposix = None
+                    elif 'posixgroup' in res_find['objectclass']:
+                        # This will break the module if this is not None
+                        nonposix = None
+                    else:
+                        nonposix = None
+                        posix = True
+
             # Create command
             if state == "present":
                 # Generate args
-                args = gen_args(description, gid, nonposix, external,
+                args = gen_args(description, gid, nonposix, posix, external,
                                 nomembers)
 
                 if action == "group":
