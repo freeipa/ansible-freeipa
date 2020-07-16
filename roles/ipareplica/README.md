@@ -95,7 +95,7 @@ ipareplica1.example.com
 ipareplica2.example.com
 
 [ipareplicas:vars]
-ipaclient_domain=example.com
+ipareplica_domain=example.com
 ipaadmin_principal=admin
 ipaadmin_password=MySecretPassword123
 ipadm_password=MySecretPassword456
