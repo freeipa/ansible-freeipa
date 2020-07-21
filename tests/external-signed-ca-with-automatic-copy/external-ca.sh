@@ -8,7 +8,7 @@ if [ -z "$master" ]; then
     exit 0;
 fi
 
-PASSWORD="SomeCApassword"
+PASSWORD="SomeCApassword.123"
 DBDIR="${master}-nssdb"
 PWDFILE="$DBDIR/pwdfile.txt"
 NOISE="$DBDIR/noise.txt"
