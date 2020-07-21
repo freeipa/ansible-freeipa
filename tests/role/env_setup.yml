@@ -1,0 +1,34 @@
+---
+- name: Cleanup environment.
+  import_tasks: env_cleanup.yml
+
+- name: Ensure test user is present.
+  ipauser:
+    ipaadmin_password: SomeADMINpassword
+    name: user01
+    first: First
+    last: Last
+
+- name: Ensure test group is present.
+  ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    name: group01
+
+- name: Ensure test host is present.
+  ipahost:
+    ipaadmin_password: SomeADMINpassword
+    name: "{{ host1_fqdn }}"
+    force: yes
+
+- name: Ensure test hostgroup is present.
+  ipahostgroup:
+    ipaadmin_password: SomeADMINpassword
+    name: hostgroup01
+    host:
+    - "{{ host1_fqdn }}"
+
+- name: Ensure test service is present.
+  ipaservice:
+    ipaadmin_password: SomeADMINpassword
+    name: "service01/{{ host1_fqdn }}"
+    force: yes

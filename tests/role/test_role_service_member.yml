@@ -1,0 +1,95 @@
+---
+- name: Test service member in role module.
+  hosts: ipaserver
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - name: Set environment facts.
+    import_tasks: env_facts.yml
+
+  - name: Setup environment.
+    import_tasks: env_setup.yml
+
+  # tests
+
+  - name: Ensure role with member service is present.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      service:
+      - "service01/{{ host1_fqdn }}"
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role with member service is present, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      service:
+      - "service01/{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member service absent.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      service:
+      - "service01/{{ host1_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member service absent, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      service:
+      - "service01/{{ host1_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role has member service with principal name.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      service:
+      - "service01/{{ host1_fqdn }}@{{ ipaserver_realm }}"
+      action: member
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role has member service with principal name, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      service:
+      - "service01/{{ host1_fqdn }}@{{ ipaserver_realm }}"
+      action: member
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure role is absent.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure role is absent, again.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  # cleanup
+  - name: Cleanup environment.
+    include_tasks: env_cleanup.yml

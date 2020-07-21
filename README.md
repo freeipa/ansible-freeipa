@@ -21,6 +21,7 @@ Features
 * Modules for host management
 * Modules for hostgroup management
 * Modules for pwpolicy management
+* Modules for role management
 * Modules for service management
 * Modules for sudocmd management
 * Modules for sudocmdgroup management
@@ -421,6 +422,7 @@ Modules in plugin/modules
 * [ipahost](README-host.md)
 * [ipahostgroup](README-hostgroup.md)
 * [ipapwpolicy](README-pwpolicy.md)
+* [iparole](README-role.md)
 * [ipaservice](README-service.md)
 * [ipasudocmd](README-sudocmd.md)
 * [ipasudocmdgroup](README-sudocmdgroup.md)

@@ -1,0 +1,14 @@
+---
+- name: Get Domain from server name
+  set_fact:
+    ipaserver_domain: "{{ ansible_fqdn | join ('.') }}"
+  when: ipaserver_domain is not defined
+
+- name: Set fact for realm name
+  set_fact:
+    ipaserver_realm: "{{ ipaserver_domain }}  | upper"
+  when: ipaserver_domain is not defined
+
+- name: Create FQDN for host01
+  set_fact:
+    host1_fqdn: "host01.{{ ipaserver_domain }}"
