@@ -106,6 +106,7 @@ RETURN = '''
 
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
     module_params_get
@@ -150,7 +151,7 @@ def forwarder_list(forwarders):
             formatter = "{ip_address} port {port}"
         else:
             formatter = "{ip_address}"
-        fwd_list.append(formatter.format(**forwarder))
+        fwd_list.append(to_text(formatter.format(**forwarder)))
     return fwd_list
 
 
