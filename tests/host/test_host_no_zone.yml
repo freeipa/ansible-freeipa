@@ -6,6 +6,7 @@
   tasks:
   - name: Ensure host with inexistent zone is absent.
     ipahost:
+      ipaadmin_password: SomeADMINpassword
       name: host01.absentzone.test
       state: absent
     register: result
