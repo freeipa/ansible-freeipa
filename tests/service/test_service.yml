@@ -52,7 +52,6 @@
       hosts:
           - name: "{{ host1_fqdn }}"
             ip_address: "{{ ipv4_prefix + '.101' }}"
-            force: yes
           - name: "{{ host2_fqdn }}"
             ip_address: "{{ ipv4_prefix + '.102' }}"
             force: yes
