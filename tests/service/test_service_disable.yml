@@ -74,6 +74,14 @@
     register: result
     failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
 
+  - name: Ensure service is disabled, with no keytab.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc1/{{ ansible_fqdn }}"
+      state: disabled
+    register: result
+    failed_when: result.changed
+
   - name: Ensure service is absent
     ipaservice:
       ipaadmin_password: SomeADMINpassword
