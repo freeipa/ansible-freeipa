@@ -7,5 +7,5 @@
   tasks:
   # Ensure service is present
   - ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com

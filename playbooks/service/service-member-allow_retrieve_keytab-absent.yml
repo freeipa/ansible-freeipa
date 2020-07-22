@@ -6,7 +6,7 @@
   tasks:
   - name: Service HTTP/www.example.com members allow_retrieve_keytab absent for users, groups, hosts and hostgroups
     ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com
       allow_retrieve_keytab_user:
       - user01

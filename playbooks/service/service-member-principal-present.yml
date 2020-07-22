@@ -6,7 +6,7 @@
   tasks:
   - name: Service HTTP/www.exmaple.com member principals host/test.exmaple.com present
     ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com
       principal:
         - host/test.exmaple.com
