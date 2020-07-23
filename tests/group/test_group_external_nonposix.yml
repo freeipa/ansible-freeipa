@@ -1,0 +1,133 @@
+---
+- name: Test group
+  hosts: ipaserver
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Remove testing groups.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name:
+        - extgroup
+        - nonposixgroup
+        - posixgroup
+        state: absent
+
+    - name: Add nonposix group.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: extgroup
+        nonposix: yes
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Add nonposix group, again.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: extgroup
+        nonposix: yes
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Set group to be external
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: extgroup
+        external: yes
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Set group to be external, again.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: extgroup
+        external: yes
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Set external group to be non-external.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: extgroup
+        external: no
+      register: result
+      failed_when: not result.failed or "Cannot change `external` status of group" not in result.msg
+
+    - name: Set external group to be posix.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: extgroup
+        posix: yes
+      register: result
+      failed_when: not result.failed or "Cannot change `external` status of group" not in result.msg
+
+    - name: Add nonposix group.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        nonposix: yes
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Set group to be posix
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        posix: yes
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Set group to be posix, again.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        posix: yes
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Set posix group to be external.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        external: yes
+      register: result
+      failed_when: not result.failed or "Cannot change `POSIX` status of a group" not in result.msg
+
+    - name: Set posix group to be non-POSIX.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        posix: no
+      register: result
+      failed_when: not result.failed or "Cannot change `POSIX` status of a group" not in result.msg
+
+    - name: Set posix group to be non-POSIX.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        nonposix: yes
+      register: result
+      failed_when: not result.failed or "Cannot change `POSIX` status of a group" not in result.msg
+
+    - name: Add nonposix group.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: nonposixgroup
+        posix: no
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Add nonposix group, again.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: nonposixgroup
+        nonposix: yes
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Remove testing groups.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: extgroup,nonposixgroup,posixgroup
+        state: absent
