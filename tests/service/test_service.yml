@@ -51,13 +51,16 @@
       ipaadmin_password: SomeADMINpassword
       hosts:
           - name: "{{ host1_fqdn }}"
+            ip_address: "{{ ipv4_prefix + '.101' }}"
             force: yes
           - name: "{{ host2_fqdn }}"
+            ip_address: "{{ ipv4_prefix + '.102' }}"
             force: yes
           - name: "{{ svc_fqdn }}"
             ip_address: "{{ ipv4_prefix + '.201' }}"
           - name: svc.ihavenodns.info
             force: yes
+      update_dns: yes
 
   - name: Ensure testing user user01 is present.
     ipauser:
