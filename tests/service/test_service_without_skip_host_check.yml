@@ -358,7 +358,7 @@
       - group02
       allow_retrieve_keytab_host:
       - "{{ host1_fqdn }}"
-      - host02.exampl "{{ groups.ipaserver[0] }}"e.com
+      - "{{ host2_fqdn }}"
       allow_retrieve_keytab_hostgroup:
       - hostgroup01
       - hostgroup02
