@@ -543,7 +543,7 @@
 
   - name: Ensure SMB service is present.
     ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       smb: yes
       netbiosname: SAMBASVC
@@ -552,7 +552,7 @@
 
   - name: Ensure SMB service is again.
     ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       smb: yes
       netbiosname: SAMBASVC
@@ -561,7 +561,7 @@
 
   - name: Ensure SMB service is absent.
     ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "cifs/{{ host1_fqdn }}"
       state: absent
     register: result
@@ -569,7 +569,7 @@
 
   - name: Ensure SMB service is absent, again.
     ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "cifs/{{ host1_fqdn }}"
       state: absent
     register: result
