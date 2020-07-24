@@ -7,7 +7,7 @@
   tasks:
   - name: Get Domain from server name
     set_fact:
-      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_fqdn.split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Set host1_fqdn
@@ -22,19 +22,42 @@
       update_dns: yes
       state: absent
 
+  - name: Remove reverse IPv4 zones.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ ansible_default_ipv4.address.split('.')[item::-1] | join('.') }}.in-addr.arpa."
+      state: absent
+    with_items:
+      - 0
+      - 1
+      - 2
+
+  - name: Remove reverse IPv6 zones.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: ip6.arpa
+      state: absent
+
   - name: Get IPv4 address prefix from server node
     set_fact:
       ipv4_prefix: "{{ ansible_default_ipv4.address.split('.')[:-1] |
                        join('.') }}"
-      reverse_zone: "{{ ansible_default_ipv4.address.split('.')[2::-1] |
-                        join('.') }}"
 
-  - name: Set zone for reverse address.
-    command: ipa dnszone-add "{{ item }}" --skip-nameserver-check --skip-overlap-check
+  - name: Set zone for reverse IPv6 address.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: ip6.arpa
+      skip_overlap_check: yes
+
+  - name: Set zone for reverse IPv4 address.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ ansible_default_ipv4.address.split('.')[item::-1] | join('.') }}.in-addr.arpa."
+      skip_overlap_check: yes
     with_items:
-      - "{{ reverse_zone + '.in-addr.arpa.' }}"
-      - 'ip6.arpa.'
-    ignore_errors: yes
+      - 0
+      - 1
+      - 2
 
   - name: Host "{{ host1_fqdn }}" present
     ipahost:
@@ -96,8 +119,18 @@
     register: result
     failed_when: not result.changed
 
-  - name: Set zone for reverse address.
-    command: ipa dnszone-del "{{ item }}"
+  - name: Remove reverse IPv4 zones.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ ansible_default_ipv4.address.split('.')[item::-1] | join('.') }}.in-addr.arpa."
+      state: absent
     with_items:
-      - "{{ reverse_zone + '.in-addr.arpa.' }}"
-      - 'ip6.arpa.'
+      - 0
+      - 1
+      - 2
+
+  - name: Remove reverse IPv6 zones.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: ip6.arpa
+      state: absent
