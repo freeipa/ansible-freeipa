@@ -57,6 +57,11 @@ options:
     description: Allow adding external non-IPA members from trusted domains
     required: false
     type: bool
+  posix:
+    description:
+      Create a non-POSIX group or change a non-POSIX to a posix group.
+    required: false
+    type: bool
   nomembers:
     description: Suppress processing of membership attributes
     required: false
@@ -140,10 +145,23 @@ EXAMPLES = """
     - sysops
     - appops
 
-# Remove goups sysops, appops and ops
+
+# Create a non-POSIX group
 - ipagroup:
     ipaadmin_password: SomeADMINpassword
-    name: sysops,appops,ops
+    name: nongroup
+    nonposix: yes
+
+# Turn a non-POSIX group into a POSIX group.
+- ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    name: nonposix
+    posix: yes
+
+# Remove goups sysops, appops, ops and nongroup
+- ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    name: sysops,appops,ops, nongroup
     state: absent
 """
 
@@ -173,16 +191,12 @@ def find_group(module, name):
         return None
 
 
-def gen_args(description, gid, nonposix, external, nomembers):
+def gen_args(description, gid, nomembers):
     _args = {}
     if description is not None:
         _args["description"] = description
     if gid is not None:
         _args["gidnumber"] = gid
-    if nonposix is not None:
-        _args["nonposix"] = nonposix
-    if external is not None:
-        _args["external"] = external
     if nomembers is not None:
         _args["nomembers"] = nomembers
 
@@ -201,6 +215,41 @@ def gen_member_args(user, group, service):
     return _args
 
 
+def check_objectclass_args(module, res_find, nonposix, posix, external):
+    if res_find and 'posixgroup' in res_find['objectclass']:
+        if (
+            (posix is not None and posix is False)
+            or nonposix
+            or external
+        ):
+            module.fail_json(
+                msg="Cannot change `POSIX` status of a group "
+                    "to `non-POSIX` or `external`.")
+    # Can't change an existing external group
+    if res_find and 'ipaexternalgroup' in res_find['objectclass']:
+        if (
+            posix
+            or (nonposix is not None and nonposix is False)
+            or (external is not None and external is False)
+        ):
+            module.fail_json(
+                msg="Cannot change `external` status of group "
+                    "to `POSIX` or `non-external`.")
+
+
+def should_modify_group(module, res_find, args, nonposix, posix, external):
+    if not compare_args_ipa(module, args, res_find):
+        return True
+    if any([posix, nonposix]):
+        set_posix = posix or (nonposix is not None and not nonposix)
+        if set_posix and 'posixgroup' not in res_find['objectclass']:
+            return True
+    if 'ipaexternalgroup' not in res_find['objectclass'] and external:
+        if 'posixgroup' not in res_find['objectclass']:
+            return True
+    return False
+
+
 def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
@@ -215,6 +264,7 @@ def main():
             gid=dict(type="int", aliases=["gidnumber"], default=None),
             nonposix=dict(required=False, type='bool', default=None),
             external=dict(required=False, type='bool', default=None),
+            posix=dict(required=False, type='bool', default=None),
             nomembers=dict(required=False, type='bool', default=None),
             user=dict(required=False, type='list', default=None),
             group=dict(required=False, type='list', default=None),
@@ -228,6 +278,7 @@ def main():
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
         ),
+        mutually_exclusive=[['posix', 'nonposix']],
         supports_check_mode=True,
     )
 
@@ -248,6 +299,7 @@ def main():
     gid = module_params_get(ansible_module, "gid")
     nonposix = module_params_get(ansible_module, "nonposix")
     external = module_params_get(ansible_module, "external")
+    posix = module_params_get(ansible_module, "posix")
     nomembers = module_params_get(ansible_module, "nomembers")
     user = module_params_get(ansible_module, "user")
     group = module_params_get(ansible_module, "group")
@@ -267,7 +319,7 @@ def main():
             ansible_module.fail_json(
                 msg="Only one group can be added at a time.")
         if action == "member":
-            invalid = ["description", "gid", "nonposix", "external",
+            invalid = ["description", "gid", "posix", "nonposix", "external",
                        "nomembers"]
             for x in invalid:
                 if vars()[x] is not None:
@@ -279,7 +331,8 @@ def main():
         if len(names) < 1:
             ansible_module.fail_json(
                 msg="No name given.")
-        invalid = ["description", "gid", "nonposix", "external", "nomembers"]
+        invalid = ["description", "gid", "posix", "nonposix", "external",
+                   "nomembers"]
         if action == "group":
             invalid.extend(["user", "group", "service"])
         for x in invalid:
@@ -322,9 +375,12 @@ def main():
 
             # Create command
             if state == "present":
+                # Can't change an existing posix group
+                check_objectclass_args(ansible_module, res_find, nonposix,
+                                       posix, external)
+
                 # Generate args
-                args = gen_args(description, gid, nonposix, external,
-                                nomembers)
+                args = gen_args(description, gid, nomembers)
 
                 if action == "group":
                     # Found the group
@@ -332,10 +388,21 @@ def main():
                         # For all settings is args, check if there are
                         # different settings in the find result.
                         # If yes: modify
-                        if not compare_args_ipa(ansible_module, args,
-                                                res_find):
+                        if should_modify_group(ansible_module, res_find, args,
+                                               nonposix, posix, external):
+                            if (
+                                posix
+                                or (nonposix is not None and not nonposix)
+                            ):
+                                args['posix'] = True
+                            if external:
+                                args['external'] = True
                             commands.append([name, "group_mod", args])
                     else:
+                        if nonposix or (posix is not None and not posix):
+                            args['nonposix'] = True
+                        if external:
+                            args['external'] = True
                         commands.append([name, "group_add", args])
                         # Set res_find to empty dict for next step
                         res_find = {}
