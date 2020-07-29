@@ -1,5 +1,5 @@
-Service module
-==============
+Role module
+===========
 
 Description
 -----------
