@@ -178,6 +178,15 @@
     register: result
     failed_when: result.data != 'Hello World.' or result.changed
 
+  - name: Retrieve data from symmetric vault, with wrong password.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeWRONGpassword
+      state: retrieved
+    register: result
+    failed_when: not result.failed or "Invalid credentials" not in result.msg
+
   - name: Change vault password.
     ipavault:
       ipaadmin_password: SomeADMINpassword
