@@ -12,7 +12,6 @@
 
 - name: Create CA, get /root/ipa.csr signed by your CA, ..
   hosts: localhost
-  gather_facts: false
 
   tasks:
   - name: Run external-ca.sh

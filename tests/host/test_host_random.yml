@@ -6,7 +6,7 @@
   tasks:
   - name: Get Domain from server name
     set_fact:
-      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_fqdn.split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Set host1_fqdn and host2_fqdn
@@ -77,11 +77,11 @@
     debug:
       var: ipahost.host["{{host2_fqdn }}"].randompassword
 
-  - name: Enrolled host "{{ groups.ipaserver[0] }}" fails to set random password with update_password always
+  - name: Enrolled host "{{ ansible_fqdn }}" fails to set random password with update_password always
     ipahost:
       ipaadmin_password: SomeADMINpassword
       hosts:
-      - name: "{{ groups.ipaserver[0] }}"
+      - name: "{{ ansible_fqdn }}"
         random: yes
       update_password: always
     register: ipahost
@@ -89,7 +89,7 @@
 
   - assert:
       that:
-      - ipahost.host["{{ groups.ipaserver[0] }}"].randompassword is
+      - ipahost.host["{{ ansible_fqdn }}"].randompassword is
         not defined
       - "'Password cannot be set on enrolled host' in ipahost.msg"
 

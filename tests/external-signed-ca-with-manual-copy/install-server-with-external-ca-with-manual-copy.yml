@@ -18,7 +18,6 @@
 
 - name: Get /root/ipa.csr, create CA, sign with our CA and copy to node
   hosts: localhost
-  gather_facts: false
 
   tasks:
   - name: Run external-ca.sh

@@ -2,8 +2,11 @@
 # Set common vars and facts for test.
 - name: Set IPv4 address prefix.
   set_fact:
-    ipv4_prefix: '192.168.122'
-    ipv4_reverse_sufix: '122.168.192'
+    ipv4_prefix: "{{ ansible_default_ipv4.address.split('.')[:-1] |
+                     join('.') }}"
+    ipv4_reverse_sufix: "{{ ansible_default_ipv4.address.split('.')[:-1] |
+                            reverse |
+                            join('.') }}"
 
 - name: Set zone prefixes.
   set_fact:

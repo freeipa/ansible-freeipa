@@ -7,7 +7,7 @@
   # setup
   - name: Get Domain from server name
     set_fact:
-      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_fqdn.split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Set host1, host2 and svc hosts fqdn
@@ -358,7 +358,7 @@
       - group02
       allow_retrieve_keytab_host:
       - "{{ host1_fqdn }}"
-      - host02.exampl "{{ groups.ipaserver[0] }}"e.com
+      - "{{ host2_fqdn }}"
       allow_retrieve_keytab_hostgroup:
       - hostgroup01
       - hostgroup02

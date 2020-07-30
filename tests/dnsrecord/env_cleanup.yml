@@ -129,7 +129,7 @@
        - "{{ zone_prefix_reverse_24 }}"
        - "{{ zone_prefix_reverse_16 }}"
        - "{{ zone_prefix_reverse_8 }}"
+       - "{{ zone_ipv6_reverse }}"
+       - "{{ zone_ipv6_reverse_workaround }}"
        - "{{ testzone }}"
-       - ip6.arpa.
-       - d.f.ip6.arpa.
        - "{{ safezone }}"

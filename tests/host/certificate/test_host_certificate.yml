@@ -21,12 +21,11 @@
 - name: Test host certificates
   hosts: ipaserver
   become: true
-  gather_facts: false
 
   tasks:
   - name: Get Domain from server name
     set_fact:
-      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_fqdn.split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Host test absent

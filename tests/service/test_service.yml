@@ -19,7 +19,7 @@
   # setup
   - name: Get Domain from server name
     set_fact:
-      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_fqdn.split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Set host1, host2 and svc hosts fqdn
@@ -51,13 +51,16 @@
       ipaadmin_password: SomeADMINpassword
       hosts:
           - name: "{{ host1_fqdn }}"
+            ip_address: "{{ ipv4_prefix + '.101' }}"
             force: yes
           - name: "{{ host2_fqdn }}"
+            ip_address: "{{ ipv4_prefix + '.102' }}"
             force: yes
           - name: "{{ svc_fqdn }}"
             ip_address: "{{ ipv4_prefix + '.201' }}"
           - name: svc.ihavenodns.info
             force: yes
+      update_dns: yes
 
   - name: Ensure testing user user01 is present.
     ipauser:
@@ -408,7 +411,7 @@
       - group02
       allow_retrieve_keytab_host:
       - "{{ host1_fqdn }}"
-      - host02.exampl "{{ groups.ipaserver[0] }}"e.com
+      - "{{ host2_fqdn }}"
       allow_retrieve_keytab_hostgroup:
       - hostgroup01
       - hostgroup02
@@ -543,7 +546,7 @@
 
   - name: Ensure SMB service is present.
     ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       smb: yes
       netbiosname: SAMBASVC
@@ -552,7 +555,7 @@
 
   - name: Ensure SMB service is again.
     ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       smb: yes
       netbiosname: SAMBASVC
@@ -561,7 +564,7 @@
 
   - name: Ensure SMB service is absent.
     ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "cifs/{{ host1_fqdn }}"
       state: absent
     register: result
@@ -569,7 +572,7 @@
 
   - name: Ensure SMB service is absent, again.
     ipaservice:
-      ipaadmin_password: MyPassword123
+      ipaadmin_password: SomeADMINpassword
       name: "cifs/{{ host1_fqdn }}"
       state: absent
     register: result

@@ -3,7 +3,7 @@
 - name: Test sudorule
   hosts: ipaserver
   become: true
-  gather_facts: false
+  gather_facts: true
 
   tasks:
 
@@ -43,8 +43,7 @@
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
       name: cluster
-      host:
-      - "{{ groups.ipaserver[0] }}"
+      host: "{{ ansible_fqdn }}"
 
   - name: Ensure some sudocmds are available
     ipasudocmd:
@@ -501,20 +500,20 @@
     register: result
     failed_when: result.changed
 
-  - name: Ensure host "{{ groups.ipaserver[0] }}" is present in sudorule.
+  - name: Ensure host "{{ ansible_fqdn }}" is present in sudorule.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
-      host: "{{ groups.ipaserver[0] }}"
+      host: "{{ ansible_fqdn }}"
       action: member
     register: result
     failed_when: not result.changed
 
-  - name: Ensure host "{{ groups.ipaserver[0] }}" is present in sudorule, again.
+  - name: Ensure host "{{ ansible_fqdn }}" is present in sudorule, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
-      host: "{{ groups.ipaserver[0] }}"
+      host: "{{ ansible_fqdn }}"
       action: member
     register: result
     failed_when: result.changed

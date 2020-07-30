@@ -2,12 +2,11 @@
 - name: Test host
   hosts: ipaserver
   become: true
-  gather_facts: true
 
   tasks:
   - name: Get Domain from server name
     set_fact:
-      ipaserver_domain: "{{ groups.ipaserver[0].split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_fqdn.split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Set host1_fqdn
@@ -26,15 +25,29 @@
     set_fact:
       ipv4_prefix: "{{ ansible_default_ipv4.address.split('.')[:-1] |
                        join('.') }}"
-      reverse_zone: "{{ ansible_default_ipv4.address.split('.')[2::-1] |
-                        join('.') }}"
+
+  - name: Set zone prefixes.
+    set_fact:
+      zone_ipv6_reverse: "ip6.arpa."
+      zone_ipv6_reverse_workaround: "d.f.ip6.arpa."
+      zone_prefix_reverse: "in-addr.arpa"
+      zone_prefix_reverse_8: "{{ ipv4_prefix.split('.')[2::-1] | join ('.') }}.in-addr.arpa"
+      zone_prefix_reverse_16: "{{ ipv4_prefix.split('.')[1::-1] | join ('.') }}.in-addr.arpa"
+      zone_prefix_reverse_24: "{{ ipv4_prefix.split('.')[::-1] | join ('.') }}.in-addr.arpa"
 
   - name: Set zone for reverse address.
-    command: ipa dnszone-add "{{ item }}" --skip-nameserver-check --skip-overlap-check
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ item }}"
+      skip_nameserver_check: yes
+      skip_overlap_check: yes
     with_items:
-      - "{{ reverse_zone + '.in-addr.arpa.' }}"
-      - 'ip6.arpa.'
-    ignore_errors: yes
+      - "{{ zone_ipv6_reverse }}"
+      - "{{ zone_ipv6_reverse_workaround }}"
+      - "{{ zone_prefix_reverse }}"
+      - "{{ zone_prefix_reverse_8 }}"
+      - "{{ zone_prefix_reverse_16 }}"
+      - "{{ zone_prefix_reverse_24 }}"
 
   - name: Host "{{ host1_fqdn }}" present
     ipahost:
@@ -96,8 +109,15 @@
     register: result
     failed_when: not result.changed
 
-  - name: Set zone for reverse address.
-    command: ipa dnszone-del "{{ item }}"
+  - name: Delete zone for reverse address.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ item }}"
+      state: absent
     with_items:
-      - "{{ reverse_zone + '.in-addr.arpa.' }}"
-      - 'ip6.arpa.'
+      - "{{ zone_ipv6_reverse }}"
+      - "{{ zone_ipv6_reverse_workaround }}"
+      - "{{ zone_prefix_reverse }}"
+      - "{{ zone_prefix_reverse_8 }}"
+      - "{{ zone_prefix_reverse_16 }}"
+      - "{{ zone_prefix_reverse_24 }}"
