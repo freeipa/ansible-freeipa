@@ -4,7 +4,7 @@
 # To test against earlier versions, use test_without_skip_host_check.yml.
 #
 # This test define 6 hosts:
-#    - www.ansible.com: a host with a DNS setup (external), not present in IPA
+#    - nohost_fqdn: a host with a DNS setup, not enrolled as a host in IPA.
 #    - no.idontexist.info: a host without DNS and not present in IPA.
 #    - svc.ihavenodns.inf: a host without DNS, but present in IPA.
 #    - svc_fqdn: a host with DNS and present in IPA.
@@ -27,12 +27,21 @@
       host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
       host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
       svc_fqdn: "{{ 'svc.' + ipaserver_domain }}"
+      nohost_fqdn: "{{ 'nohost.' + ipaserver_domain }}"
+
+  - name: Remove IP address for "nohost" host.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ ipaserver_domain }}"
+      name: nohost
+      del_all: yes
+      state: absent
 
   - name: Host absent
     ipahost:
       ipaadmin_password: SomeADMINpassword
       name:
-      - www.ansible.com
+      - "{{ nohost_fqdn }}"
       - no.idontexist.info
       - svc.ihavenodns.info
       - "{{ host1_fqdn }}"
@@ -45,6 +54,13 @@
     set_fact:
       ipv4_prefix: "{{ ansible_default_ipv4.address.split('.')[:-1] |
                        join('.') }}"
+
+  - name: Add IP address for "nohost" host.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ ipaserver_domain }}"
+      name: nohost
+      a_ip_address: "{{ ipv4_prefix + '.100' }}"
 
   - name: Add hosts for tests.
     ipahost:
@@ -100,7 +116,7 @@
       ipaadmin_password: SomeADMINpassword
       name:
       - "HTTP/{{ svc_fqdn }}"
-      - HTTP/www.ansible.com
+      - "HTTP/{{ nohost_fqdn }}"
       - HTTP/svc.ihavenodns.info
       - HTTP/no.idontexist.info
       state: absent
@@ -161,7 +177,7 @@
   - name: Ensure service is present, without host object.
     ipaservice:
       ipaadmin_password: SomeADMINpassword
-      name: HTTP/www.ansible.com
+      name: "HTTP/{{ nohost_fqdn }}"
       skip_host_check: yes
     register: result
     failed_when: not result.changed
@@ -169,7 +185,7 @@
   - name: Ensure service is present, without host object, again.
     ipaservice:
       ipaadmin_password: SomeADMINpassword
-      name: HTTP/www.ansible.com
+      name: "HTTP/{{ nohost_fqdn }}"
       skip_host_check: yes
     register: result
     failed_when: result.changed
@@ -522,7 +538,7 @@
       ipaadmin_password: SomeADMINpassword
       name:
       - "HTTP/{{ svc_fqdn }}"
-      - HTTP/www.ansible.com
+      - "HTTP/{{ nohost_fqdn }}"
       - HTTP/svc.ihavenodns.info
       - HTTP/no.idontexist.local
       continue: yes
@@ -535,7 +551,7 @@
       ipaadmin_password: SomeADMINpassword
       name:
       - "HTTP/{{ svc_fqdn }}"
-      - HTTP/www.ansible.com
+      - "HTTP/{{ nohost_fqdn }}"
       - HTTP/svc.ihavenodns.info
       - HTTP/no.idontexist.local
       continue: yes
@@ -584,7 +600,7 @@
       ipaadmin_password: SomeADMINpassword
       name:
       - "HTTP/{{ svc_fqdn }}"
-      - HTTP/www.ansible.com
+      - "HTTP/{{ nohost_fqdn }}"
       - HTTP/svc.ihavenodns.info
       - HTTP/no.idontexist.local
       - "cifs/{{ host1_fqdn }}"
@@ -603,7 +619,7 @@
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
-      - www.ansible.com
+      - "{{ nohost_fqdn }}"
       - svc.ihavenodns.info
       update_dns: no
       state: absent
@@ -636,4 +652,12 @@
       ipaadmin_password: SomeADMINpassword
       name:
       - hostgroup02
+      state: absent
+
+  - name: Remove IP address for "nohost" host.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ ipaserver_domain }}"
+      name: nohost
+      del_all: yes
       state: absent
