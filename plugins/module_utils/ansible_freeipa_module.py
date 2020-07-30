@@ -610,11 +610,14 @@ class FreeIPABaseModule(AnsibleModule):
         exit the module with proper arguments.
 
         """
-        if exc_val:
-            self.fail_json(msg=str(exc_val))
-
         # TODO: shouldn't we also disconnect from api backend?
         temp_kdestroy(self.ccache_dir, self.ccache_name)
+
+        if exc_type == SystemExit:
+            raise
+
+        if exc_val:
+            self.fail_json(msg=str(exc_val))
 
         self.exit_json(changed=self.changed, user=self.exit_args)
 
