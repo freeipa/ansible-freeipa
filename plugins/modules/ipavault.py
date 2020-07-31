@@ -768,7 +768,12 @@ def main():
                             commands.append([name, "vault_mod_internal", args])
 
                     else:
+                        if vault_type == 'symmetric' \
+                           and 'ipavaultsalt' not in args:
+                            args['ipavaultsalt'] = os.urandom(32)
+
                         commands.append([name, "vault_add_internal", args])
+
                         if vault_type != 'standard' and vault_data is None:
                             vault_data = ''
 
@@ -825,14 +830,6 @@ def main():
                     if owner_del_args is not None:
                         commands.append(
                             [name, 'vault_remove_owner', owner_del_args])
-
-                    if vault_type == 'symmetric' \
-                       and 'ipavaultsalt' not in args:
-                        args['ipavaultsalt'] = os.urandom(32)
-
-                    if vault_type == 'symmetric' \
-                       and 'ipavaultsalt' not in args:
-                        args['ipavaultsalt'] = os.urandom(32)
 
                 elif action in "member":
                     # Add users and groups
