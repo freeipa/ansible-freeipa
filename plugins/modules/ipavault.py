@@ -494,8 +494,10 @@ def check_encryption_params(module, state, action, vault_type, salt,
                             new_password, new_password_file, res_find):
     vault_type_invalid = []
 
-    if res_find is not None:
+    if vault_type is None and res_find is not None:
         vault_type = res_find['ipavaulttype']
+        if isinstance(vault_type, (tuple, list)):
+            vault_type = vault_type[0]
 
     if vault_type == "standard":
         vault_type_invalid = ['public_key', 'public_key_file', 'password',
