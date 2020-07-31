@@ -517,6 +517,16 @@ def check_encryption_params(module, state, action, vault_type, salt,
             module.fail_json(
                 msg="Cannot modify password of inexistent vault.")
 
+        if (
+            salt is not None
+            and not(
+                any([password, password_file])
+                and any([new_password, new_password_file])
+            )
+        ):
+            module.fail_json(
+                msg="Vault `salt` can only change when changing the password.")
+
     if vault_type == "asymmetric":
         vault_type_invalid = [
             'password', 'password_file', 'new_password', 'new_password_file'
