@@ -7,11 +7,8 @@
   tasks:
 
   # Setup
-  - name: Ensure zone is absent.
-    ipadnszone:
-      ipaadmin_password: SomeADMINpassword
-      name: testzone.local
-      state: absent
+  - name: Setup testing environment
+    include_tasks: env_setup.yml
 
   # Tests
   - name: Ensure zone is present.
@@ -317,3 +314,7 @@
       admin_email: admin2@example.com
     register: result
     failed_when: result.changed
+
+  # Teardown
+  - name: Teardown testing environment
+    include_tasks: env_teardown.yml

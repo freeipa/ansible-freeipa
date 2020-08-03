@@ -1,0 +1,13 @@
+---
+- name: Ensure zone is absent.
+  ipadnszone:
+    ipaadmin_password: SomeADMINpassword
+    name:
+      - testzone.local
+      - test1.testzone.local
+      - test2.testzone.local
+      - test3.testzone.local
+      - 2.0.192.in-addr.arpa.
+      - 0.0.0.0.0.0.0.0.0.0.0.0.0.0.d.f.ip6.arpa.
+      - 1.0.0.0.e.f.a.c.8.b.d.0.1.0.0.2.ip6.arpa.
+    state: absent

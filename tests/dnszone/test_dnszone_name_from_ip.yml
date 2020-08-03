@@ -7,17 +7,10 @@
   tasks:
 
   # Setup
-  - name: Ensure zone is absent.
-    ipadnszone:
-      ipaadmin_password: SomeADMINpassword
-      name: "{{ item }}"
-      state: absent
-    with_items:
-      - 2.0.192.in-addr.arpa.
-      - 0.0.0.0.0.0.0.0.0.0.0.0.0.0.d.f.ip6.arpa.
-      - 1.0.0.0.e.f.a.c.8.b.d.0.1.0.0.2.ip6.arpa.
+  - name: Setup testing environment
+    include_tasks: env_setup.yml
 
-  # tests
+  # Tests
   - name: Ensure zone exists for reverse IP.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
@@ -100,13 +93,6 @@
     register: result
     failed_when: result.changed
 
-  # Cleanup
-  - name: Ensure zone is absent.
-    ipadnszone:
-      ipaadmin_password: SomeADMINpassword
-      name: "{{ item }}"
-      state: absent
-    with_items:
-      - "{{ ipv6_zone.dnszone.name }}"
-      - "{{ ipv6_sec_zone.dnszone.name }}"
-      - "{{ ipv4_zone.dnszone.name }}"
+  # Teardown
+  - name: Teardown testing environment
+    include_tasks: env_teardown.yml
