@@ -41,7 +41,7 @@ options:
   name:
     description: The zone name string.
     required: true
-    type: str
+    type: list
     alises: ["zone_name"]
   forwarders:
     description: The list of global DNS forwarders.
@@ -268,7 +268,7 @@ class DNSZoneModule(FreeIPABaseModule):
 
         return True
 
-    def get_ipa_nsec3paramrecord(self):
+    def get_ipa_nsec3paramrecord(self, **kwargs):
         nsec3param_rec = self.ipa_params.nsec3param_rec
         if nsec3param_rec is not None:
             error_msg = (
@@ -280,7 +280,7 @@ class DNSZoneModule(FreeIPABaseModule):
                 self.fail_json(msg=error_msg)
             return nsec3param_rec
 
-    def get_ipa_idnsforwarders(self):
+    def get_ipa_idnsforwarders(self, **kwargs):
         if self.ipa_params.forwarders is not None:
             forwarders = []
             for forwarder in self.ipa_params.forwarders:
@@ -304,14 +304,14 @@ class DNSZoneModule(FreeIPABaseModule):
 
             return forwarders
 
-    def get_ipa_idnsallowtransfer(self):
+    def get_ipa_idnsallowtransfer(self, **kwargs):
         if self.ipa_params.allow_transfer is not None:
             error_msg = "Invalid ip_address for DNS allow_transfer: %s"
             self.validate_ips(self.ipa_params.allow_transfer, error_msg)
 
             return (";".join(self.ipa_params.allow_transfer) or "none") + ";"
 
-    def get_ipa_idnsallowquery(self):
+    def get_ipa_idnsallowquery(self, **kwargs):
         if self.ipa_params.allow_query is not None:
             error_msg = "Invalid ip_address for DNS allow_query: %s"
             self.validate_ips(self.ipa_params.allow_query, error_msg)
@@ -334,81 +334,89 @@ class DNSZoneModule(FreeIPABaseModule):
 
         return ".".join((name, domain))
 
-    def get_ipa_idnssoarname(self):
+    def get_ipa_idnssoarname(self, **kwargs):
         if self.ipa_params.admin_email is not None:
             return DNSName(
                 self._replace_at_symbol_in_rname(self.ipa_params.admin_email)
             )
 
-    def get_ipa_idnssoamname(self):
+    def get_ipa_idnssoamname(self, **kwargs):
         if self.ipa_params.name_server is not None:
             return DNSName(self.ipa_params.name_server)
 
-    def get_ipa_skip_overlap_check(self):
-        if not self.zone and self.ipa_params.skip_overlap_check is not None:
+    def get_ipa_skip_overlap_check(self, **kwargs):
+        zone = kwargs.get('zone')
+        if not zone and self.ipa_params.skip_overlap_check is not None:
             return self.ipa_params.skip_overlap_check
 
-    def get_ipa_skip_nameserver_check(self):
-        if not self.zone and self.ipa_params.skip_nameserver_check is not None:
+    def get_ipa_skip_nameserver_check(self, **kwargs):
+        zone = kwargs.get('zone')
+        if not zone and self.ipa_params.skip_nameserver_check is not None:
             return self.ipa_params.skip_nameserver_check
 
     def get_zone(self, zone_name):
         get_zone_args = {"idnsname": zone_name, "all": True}
         response = self.api_command("dnszone_find", args=get_zone_args)
 
+        zone = None
+        is_zone_active = False
+
         if response["count"] == 1:
-            self.zone = response["result"][0]
-            self.is_zone_active = self.zone.get("idnszoneactive") == ["TRUE"]
-            return self.zone
+            zone = response["result"][0]
+            is_zone_active = zone.get("idnszoneactive") == ["TRUE"]
 
-        # Zone doesn't exist yet
-        self.zone = None
-        self.is_zone_active = False
+        return zone, is_zone_active
 
-    @property
-    def zone_name(self):
+    def get_zone_names(self):
+        if len(self.ipa_params.name) > 1 and self.ipa_params.state != "absent":
+            self.fail_json(
+                msg=("Please provide a single name. Multiple values for 'name'"
+                     "can only be supplied for state 'absent'.")
+            )
+
         return self.ipa_params.name
 
     def define_ipa_commands(self):
-        # Look for existing zone in IPA
-        self.get_zone(self.zone_name)
-        args = self.get_ipa_command_args()
-        just_added = False
+        for zone_name in self.get_zone_names():
+            # Look for existing zone in IPA
+            zone, is_zone_active = self.get_zone(zone_name)
+            args = self.get_ipa_command_args(zone=zone)
+            just_added = False
 
-        if self.ipa_params.state in ["present", "enabled", "disabled"]:
-            if not self.zone:
-                # Since the zone doesn't exist we just create it
-                #   with given args
-                self.add_ipa_command("dnszone_add", self.zone_name, args)
-                self.is_zone_active = True
-                just_added = True
+            if self.ipa_params.state in ["present", "enabled", "disabled"]:
+                if not zone:
+                    # Since the zone doesn't exist we just create it
+                    #   with given args
+                    self.add_ipa_command("dnszone_add", zone_name, args)
+                    is_zone_active = True
+                    just_added = True
 
-            else:
-                # Zone already exist so we need to verify if given args
-                #   matches the current config. If not we updated it.
-                if self.require_ipa_attrs_change(args, self.zone):
-                    self.add_ipa_command("dnszone_mod", self.zone_name, args)
+                else:
+                    # Zone already exist so we need to verify if given args
+                    #   matches the current config. If not we updated it.
+                    if self.require_ipa_attrs_change(args, zone):
+                        self.add_ipa_command("dnszone_mod", zone_name, args)
 
-            if self.ipa_params.state == "enabled" and not self.is_zone_active:
-                self.add_ipa_command("dnszone_enable", self.zone_name)
+                if self.ipa_params.state == "enabled" and not is_zone_active:
+                    self.add_ipa_command("dnszone_enable", zone_name)
 
-            if self.ipa_params.state == "disabled" and self.is_zone_active:
-                self.add_ipa_command("dnszone_disable", self.zone_name)
+                if self.ipa_params.state == "disabled" and is_zone_active:
+                    self.add_ipa_command("dnszone_disable", zone_name)
 
-        if self.ipa_params.state == "absent":
-            if self.zone:
-                self.add_ipa_command("dnszone_del", self.zone_name)
+            if self.ipa_params.state == "absent":
+                if zone:
+                    self.add_ipa_command("dnszone_del", zone_name)
 
-        # Due to a bug in FreeIPA dnszone-add won't set
-        #   SOA Serial. The good news is that dnszone-mod does the job.
-        # See: https://pagure.io/freeipa/issue/8227
-        # Because of that, if the zone was just added with a given serial
-        #   we run mod just after to workaround the bug
-        if just_added and self.ipa_params.serial is not None:
-            args = {
-                "idnssoaserial": self.ipa_params.serial,
-            }
-            self.add_ipa_command("dnszone_mod", self.zone_name, args)
+            # Due to a bug in FreeIPA dnszone-add won't set
+            #   SOA Serial. The good news is that dnszone-mod does the job.
+            # See: https://pagure.io/freeipa/issue/8227
+            # Because of that, if the zone was just added with a given serial
+            #   we run mod just after to workaround the bug
+            if just_added and self.ipa_params.serial is not None:
+                args = {
+                    "idnssoaserial": self.ipa_params.serial,
+                }
+                self.add_ipa_command("dnszone_mod", zone_name, args)
 
 
 def get_argument_spec():
@@ -426,7 +434,7 @@ def get_argument_spec():
         ipaadmin_principal=dict(type="str", default="admin"),
         ipaadmin_password=dict(type="str", required=False, no_log=True),
         name=dict(
-            type="str", default=None, required=True, aliases=["zone_name"]
+            type="list", default=None, required=True, aliases=["zone_name"]
         ),
         forwarders=dict(
             type="list",

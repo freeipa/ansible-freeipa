@@ -149,3 +149,40 @@
       forwarders: []
     register: result
     failed_when: not result.changed
+
+  - name: Create zones test1
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: test1.testzone.local
+
+  - name: Create zones test2
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: test2.testzone.local
+
+  - name: Create zones test3
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: test3.testzone.local
+
+  - name: Ensure multiple zones are absent
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name:
+        - test1.testzone.local
+        - test2.testzone.local
+        - test3.testzone.local
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure multiple zones are absent, again
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name:
+        - test1.testzone.local
+        - test2.testzone.local
+        - test3.testzone.local
+      state: absent
+    register: result
+    failed_when: result.changed
