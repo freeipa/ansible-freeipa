@@ -163,7 +163,8 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
-`name` \| `zone_name` | The zone name string or list of strings. | yes
+`name` \| `zone_name` | The zone name string or list of strings. | no
+`name_from_ip` | Derive zone name from reverse of IP (PTR). | no
 `forwarders` | The list of forwarders dicts. Each `forwarders` dict entry has:| no
 &nbsp; | `ip_address` - The IPv4 or IPv6 address of the DNS server. | yes
 &nbsp; | `port` - The custom port that should be used on this server. | no
