@@ -30,9 +30,9 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = """
 ---
-module: ipaservice
-short description: Manage FreeIPA service
-description: Manage FreeIPA service
+module: iparole
+short description: Manage FreeIPA role
+description: Manage FreeIPA role
 options:
   ipaadmin_principal:
     description: The admin principal.
@@ -66,7 +66,7 @@ options:
     description: List of services.
     required: false
   action:
-    description: Work on service or member level.
+    description: Work on role or member level.
     choices: ["role", "member"]
     default: role
     required: false
