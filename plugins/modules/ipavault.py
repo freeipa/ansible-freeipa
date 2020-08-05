@@ -267,7 +267,7 @@ EXAMPLES = """
     username: user01
     description: An asymmetric vault
     vault_type: asymmetric
-    public_key:
+    public_key: |
       LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHZk1BMEdDU3FHU0liM0RRRUJBUVVBQTR
       HTkFEQ0JpUUtCZ1FDdGFudjRkK3ptSTZ0T3ova1RXdGowY3AxRAowUENoYy8vR0pJMTUzTi
       9CN3UrN0h3SXlRVlZoNUlXZG1UcCtkWXYzd09yeVpPbzYvbHN5eFJaZ2pZRDRwQ3VGCjlxM
@@ -303,7 +303,7 @@ EXAMPLES = """
 """
 
 RETURN = """
-user:
+data:
   description: The vault data.
   returned: If state is retrieved.
   type: string
