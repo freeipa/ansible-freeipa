@@ -472,6 +472,14 @@ class DNSZoneModule(FreeIPABaseModule):
                 }
                 self.add_ipa_command("dnszone_mod", zone_name, args)
 
+    def process_command_result(self, name, command, args, result):
+        super(DNSZoneModule, self).process_command_result(
+            name, command, args, result
+        )
+        if command == "dnszone_add" and self.ipa_params.name_from_ip:
+            dnszone_exit_args = self.exit_args.setdefault('dnszone', {})
+            dnszone_exit_args['name'] = name
+
 
 def get_argument_spec():
     forwarder_spec = dict(
