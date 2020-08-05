@@ -56,7 +56,7 @@ Example playbook to make sure service is present:
   - ipaservice:
       ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com
-      certificate:
+      certificate: |
         - MIIC/zCCAeegAwIBAgIUMNHIbn+hhrOVew/2WbkteisV29QwDQYJKoZIhvcNAQELBQAw
         DzENMAsGA1UEAwwEdGVzdDAeFw0yMDAyMDQxNDQxMDhaFw0zMDAyMDExNDQxMDhaMA8xDT
         ALBgNVBAMMBHRlc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC+XVVGFYpH
@@ -77,7 +77,7 @@ Example playbook to make sure service is present:
       requires_pre_auth: false
       ok_as_delegate: false
       ok_to_auth_as_delegate: false
-      skip-host-check: true
+      skip_host_check: true
       force: true
 ```
 
@@ -167,7 +167,7 @@ Example playbook to ensure service has a certificate:
   - ipaservice:
       ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com
-      certificate:
+      certificate: |
         - MIIC/zCCAeegAwIBAgIUMNHIbn+hhrOVew/2WbkteisV29QwDQYJKoZIhvcNAQELBQAw
         DzENMAsGA1UEAwwEdGVzdDAeFw0yMDAyMDQxNDQxMDhaFw0zMDAyMDExNDQxMDhaMA8xDT
         ALBgNVBAMMBHRlc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC+XVVGFYpH
