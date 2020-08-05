@@ -190,6 +190,17 @@ Variable | Description | Required
 `skip_nameserver_check` | Force DNS zone creation even if nameserver is not resolvable | no
 
 
+Return Values
+=============
+
+ipadnszone
+----------
+
+Variable | Description | Returned When
+-------- | ----------- | -------------
+`dnszone` | DNS Zone dict with zone name infered from `name_from_ip`. <br>Options: |  If `state` is `present`, `name_from_ip` is used, and a zone was created.
+&nbsp; | `name` - The name of the zone created, inferred from `name_from_ip`. | Always
+
 Authors
 =======
 

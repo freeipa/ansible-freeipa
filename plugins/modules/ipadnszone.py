@@ -192,6 +192,14 @@ EXAMPLES = """
 """
 
 RETURN = """
+dnszone:
+  description: DNS Zone dict with zone name infered from `name_from_ip`.
+  returned:
+    If `state` is `present`, `name_from_ip` is used, and a zone was created.
+  options:
+    name:
+      description: The name of the zone created, inferred from `name_from_ip`.
+      returned: always
 """
 
 from ipapython.dnsutil import DNSName  # noqa: E402
