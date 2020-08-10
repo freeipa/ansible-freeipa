@@ -14,4 +14,4 @@
         state: retrieved
       register: result
     - debug:
-       msg: "Data: {{ result.data }}"
+       msg: "Data: {{ result.vault.data }}"

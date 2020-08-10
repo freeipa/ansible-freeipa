@@ -43,7 +43,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.data != 'Hello World.' or result.changed
+    failed_when: result.vault.data != 'Hello World.' or result.changed
 
   - name: Retrieve data from symmetric vault into file {{ ansible_env.HOME }}/data.txt.
     ipavault:
@@ -77,7 +77,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.data != 'The world of π is half rounded.' or result.changed
+    failed_when: result.vault.data != 'The world of π is half rounded.' or result.changed
 
   - name: Archive data in symmetric vault, from file.
     ipavault:
@@ -95,7 +95,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.data != 'Another World.' or result.changed
+    failed_when: result.vault.data != 'Another World.' or result.changed
 
   - name: Archive data with single character to symmetric vault
     ipavault:
@@ -113,7 +113,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.data != 'c' or result.changed
+    failed_when: result.vault.data != 'c' or result.changed
 
   - name: Ensure symmetric vault is absent
     ipavault:
@@ -167,7 +167,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.data != 'Hello World.' or result.changed
+    failed_when: result.vault.data != 'Hello World.' or result.changed
 
   - name: Retrieve data from symmetric vault, with password file.
     ipavault:
@@ -176,7 +176,7 @@
       password_file: "{{ ansible_env.HOME }}/password.txt"
       state: retrieved
     register: result
-    failed_when: result.data != 'Hello World.' or result.changed
+    failed_when: result.vault.data != 'Hello World.' or result.changed
 
   - name: Change vault password.
     ipavault:
@@ -212,7 +212,7 @@
       password: SomeNEWpassword
       state: retrieved
     register: result
-    failed_when: result.data != 'Hello World.' or result.changed
+    failed_when: result.vault.data != 'Hello World.' or result.changed
 
   - name: Try to add vault with multiple passwords.
     ipavault:

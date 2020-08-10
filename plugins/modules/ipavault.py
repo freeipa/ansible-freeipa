@@ -303,10 +303,15 @@ EXAMPLES = """
 """
 
 RETURN = """
-data:
-  description: The vault data.
-  returned: If state is retrieved.
-  type: string
+vault:
+  description: Vault dict with archived data.
+  returned: If state is `retrieved`.
+  type: dict
+  options:
+    data:
+      description: The vault data.
+      returned: always
+      type: string
 """
 
 import os
@@ -910,9 +915,11 @@ def main():
                     if 'result' not in result:
                         raise Exception("No result obtained.")
                     if 'data' in result['result']:
-                        exit_args['data'] = result['result']['data']
+                        data_return = exit_args.setdefault('vault', {})
+                        data_return['data'] = result['result']['data']
                     elif 'vault_data' in result['result']:
-                        exit_args['data'] = result['result']['vault_data']
+                        data_return = exit_args.setdefault('vault', {})
+                        data_return['data'] = result['result']['vault_data']
                     else:
                         raise Exception("No data retrieved.")
                     changed = False
