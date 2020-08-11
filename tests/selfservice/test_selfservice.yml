@@ -1,0 +1,160 @@
+---
+- name: Test selfservice
+  hosts: ipaserver
+  become: true
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure selfservice "Users can manage their own name details" is absent
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  # TESTS
+
+  - name: Ensure selfservice "Users can manage their own name details" is present
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      permission: write
+      attribute:
+      - givenname
+      - displayname
+      - title
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure selfservice "Users can manage their own name details" is present again
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      permission: write
+      attribute:
+      - givenname
+      - displayname
+      - title
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure selfservice "Users can manage their own name details" is present with different attribute initials
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      permission: write
+      attribute:
+      - initials
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure selfservice "Users can manage their own name details" is present with different attribute initials again
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      permission: write
+      attribute:
+      - initials
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure selfservice "Users can manage their own name details" member attributes givenname, displayname and title are present
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      attribute:
+      - givenname
+      - displayname
+      - title
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure selfservice "Users can manage their own name details" member attributes givenname, displayname and title are present again
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      attribute:
+      - givenname
+      - displayname
+      - title
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure selfservice "Users can manage their own name details" member attribute title is absent
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      attribute:
+      - title
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure selfservice "Users can manage their own name details" member attribute title is absent again
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      attribute:
+      - title
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # TEST permission change
+
+  - name: Ensure selfservice "Users can manage their own name details" is present with different read,write permission
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      permission: read,write
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure selfservice "Users can manage their own name details" is present with different read,write permission again
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      permission: read,write
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure selfservice "Users can manage their own name details" fails with bad permission read,read
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      permission: read,read
+    register: result
+    failed_when: not result.failed or "Invalid permission" not in result.msg
+
+  - name: Ensure selfservice "Users can manage their own name details" fails with bad permission read,write,write
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      permission: read,write,write
+    register: result
+    failed_when: not result.failed or "Invalid permission" not in result.msg
+
+  - name: Ensure selfservice "Users can manage their own name details" fails with bad attribute title,title
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      attribute:
+      - title
+      - title
+    register: result
+    failed_when: not result.failed or "Invalid attribute" not in result.msg
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure selfservice "Users can manage their own name details" is absent
+    ipaselfservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "Users can manage their own name details"
+      state: absent

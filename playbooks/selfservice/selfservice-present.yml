@@ -1,0 +1,13 @@
+---
+- name: Delegation present
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure delegation "basic manager attributes" is present
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      permission: read
+      attribute:
+      - businesscategory

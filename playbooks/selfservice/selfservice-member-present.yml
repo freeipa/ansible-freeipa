@@ -1,0 +1,13 @@
+---
+- name: Delegation member present
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure delegation "basic manager attributes" member attribute departmentnumber is present
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      attribute:
+      - departmentnumber
+      action: member
