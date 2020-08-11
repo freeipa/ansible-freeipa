@@ -1,0 +1,256 @@
+---
+- name: Test delegation
+  hosts: ipaserver
+  become: true
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure test groups are absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: managers,managers2,employees,employees2
+      state: absent
+
+  - name: Ensure delegation "basic manager attributes" is absent
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure test group managers is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: managers
+
+  - name: Ensure test group managers2 is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: managers2
+
+  - name: Ensure test group employees is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: employees
+
+  - name: Ensure test group employees2 is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: employees2
+
+  # TESTS
+
+  - name: Ensure delegation "basic manager attributes" is present
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      permission: read
+      attribute:
+      - businesscategory
+      group: managers
+      membergroup: employees
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" is present again
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      permission: read
+      attribute:
+      - businesscategory
+      group: managers
+      membergroup: employees
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" is present with different attribute employeetype
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      permission: read
+      attribute:
+      - employeetype
+      group: managers
+      membergroup: employees
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" is present with different attribute employeetype again
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      permission: read
+      attribute:
+      - employeetype
+      group: managers
+      membergroup: employees
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" member attribute departmentnumber is present
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      attribute:
+      - departmentnumber
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" member attribute departmentnumber is present again
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      attribute:
+      - departmentnumber
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" member attributes employeetype and employeenumber are present
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      attribute:
+      - employeetype
+      - employeenumber
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" member attributes employeetype and employeenumber are present again
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      attribute:
+      - employeetype
+      - employeenumber
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" member attributes employeenumber and employeetype are absent
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      attribute:
+      - employeenumber
+      - employeetype
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" member attributes employeenumber and employeetype are absent again
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      attribute:
+      - employeenumber
+      - employeetype
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # TEST permission change
+
+  - name: Ensure delegation "basic manager attributes" is present with different read,write permission
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      permission: read,write
+      attribute:
+      - businesscategory
+      group: managers
+      membergroup: employees
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" is present with different read,write permission again
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      permission: read,write
+      attribute:
+      - businesscategory
+      group: managers
+      membergroup: employees
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" is present with different group managers2
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      group: managers2
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" is present with different group managers2 again
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      group: managers2
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" is present with different membergroup employees2
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      membergroup: employees2
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" is present with different membergroup employees2 again
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      membergroup: employees2
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure delegation "basic manager attributes" fails with bad permission read,read
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      permission: read,read
+    register: result
+    failed_when: not result.failed or "Invalid permission" not in result.msg
+
+  - name: Ensure delegation "basic manager attributes" fails with bad permission read,write,write
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      permission: read,write,write
+    register: result
+    failed_when: not result.failed or "Invalid permission" not in result.msg
+
+  - name: Ensure delegation "basic manager attributes" fails with bad attribute businesscategory,businesscategory
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      attribute:
+      - businesscategory
+      - businesscategory
+    register: result
+    failed_when: not result.failed or "Invalid attribute" not in result.msg
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure delegation "basic manager attributes" is absent
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      state: absent
+
+  - name: Ensure test groups are absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: managers,managers2,employees,employees2
+      state: absent

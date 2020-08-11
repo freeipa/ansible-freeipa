@@ -1,0 +1,11 @@
+---
+- name: Delegation absent
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure delegation "basic manager attributes" is absent
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      state: absent
