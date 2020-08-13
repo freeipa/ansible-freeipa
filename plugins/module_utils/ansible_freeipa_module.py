@@ -506,7 +506,7 @@ class FreeIPABaseModule(AnsibleModule):
         #   when needed.
         self.ipa_params = AnsibleFreeIPAParams(self)
 
-    def get_ipa_command_args(self):
+    def get_ipa_command_args(self, **kwargs):
         """
         Return a dict to be passed to an IPA command.
 
@@ -538,7 +538,7 @@ class FreeIPABaseModule(AnsibleModule):
             elif hasattr(self, param_name):
                 method = getattr(self, param_name)
                 if callable(method):
-                    value = method()
+                    value = method(**kwargs)
 
             # We don't have a way to guess the value so fail.
             else:
