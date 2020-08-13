@@ -19,6 +19,8 @@ Supported FreeIPA Versions
 
 FreeIPA versions 4.4.0 and up are supported by the ipahostgroup module.
 
+Some variables are only supported on newer versions of FreeIPA. Check `Variables` section for details.
+
 
 Requirements
 ------------
@@ -105,6 +107,23 @@ Example playbook to make sure hosts and hostgroups are absent in databases hostg
       state: absent
 ```
 
+Example playbook to rename an existing playbook:
+
+```yaml
+---
+- name: Playbook to handle hostgroups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure host-group databases is absent
+  - ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: databases
+      rename: datalake
+      state: renamed
+```
+
 Example playbook to make sure host-group databases is absent:
 
 ```yaml
@@ -120,7 +139,6 @@ Example playbook to make sure host-group databases is absent:
       name: databases
       state: absent
 ```
-
 
 Variables
 =========
@@ -139,8 +157,9 @@ Variable | Description | Required
 `hostgroup` | List of hostgroup name strings assigned to this hostgroup. | no
 `membermanager_user` | List of member manager users assigned to this hostgroup. Only usable with IPA versions 4.8.4 and up. | no
 `membermanager_group` | List of member manager groups assigned to this hostgroup. Only usable with IPA versions 4.8.4 and up. | no
+`rename` \| `new_name` | Rename hostgroup to the provided name. Only usable with IPA versions 4.8.7 and up. | no
 `action` | Work on hostgroup or member level. It can be on of `member` or `hostgroup` and defaults to `hostgroup`. | no
-`state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. | no
+`state` | The state to ensure. It can be one of `present`, `absent` or `renamed`, default: `present`. | no
 
 
 Authors
