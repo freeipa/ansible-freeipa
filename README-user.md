@@ -437,7 +437,7 @@ There are only return values if one or more random passwords have been generated
 
 Variable | Description | Returned When
 -------- | ----------- | -------------
-`host` | Host dict with random password. (dict) <br>Options: | If random is yes and user did not exist or update_password is yes
+`user` | User dict with random password. (dict) <br>Options: | If random is yes and user did not exist or update_password is yes
 &nbsp; | `randompassword` - The generated random password | If only one user is handled by the module
 &nbsp; | `name` - The user name of the user that got a new random password. (dict) <br> Options: <br> &nbsp; `randompassword` - The generated random password | If several users are handled by the module
 
