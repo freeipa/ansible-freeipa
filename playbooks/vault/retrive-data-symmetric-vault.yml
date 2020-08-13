@@ -14,4 +14,4 @@
         state: retrieved
       register: result
     - debug:
-        msg: "{{ result.data | b64decode }}"
+        msg: "{{ result.vault.data }}"
