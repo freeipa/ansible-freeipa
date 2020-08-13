@@ -1,0 +1,96 @@
+${name^} module
+============
+
+Description
+-----------
+
+The $name module allows to ensure presence and absence of ${name}s.
+
+Features
+--------
+
+* ${name^} management
+
+
+Supported FreeIPA Versions
+--------------------------
+
+FreeIPA versions 4.4.0 and up are supported by the ipa$name module.
+
+
+Requirements
+------------
+
+**Controller**
+* Ansible version: 2.8+
+
+**Node**
+* Supported FreeIPA version (see above)
+
+
+Usage
+=====
+
+Example inventory file
+
+```ini
+[ipaserver]
+ipaserver.test.local
+```
+
+
+Example playbook to make sure $name "NAME" is present:
+
+```yaml
+---
+- name: Playbook to manage IPA $name.
+  hosts: ipaserver
+  become: yes
+
+  tasks:
+  - ipa$name:
+      ipaadmin_password: SomeADMINpassword
+      name: NAME
+      # Add needed parameters here
+```
+
+
+Example playbook to make sure $name "NAME" is absent:
+
+```yaml
+---
+- name: Playbook to manage IPA $name.
+  hosts: ipaserver
+  become: yes
+
+  tasks:
+  - ipa$name:
+      ipaadmin_password: SomeADMINpassword
+      name: NAME
+      state: absent
+```
+
+
+MORE EXAMPLE PLAYBOOKS HERE
+
+
+Variables
+---------
+
+ipa$name
+-------
+
+Variable | Description | Required
+-------- | ----------- | --------
+`ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
+`ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`name` \| `ALIAS` | The list of $name name strings. | yes
+`PARAMETER1` \| `API_PARAMETER_NAME` | DESCRIPTION | BOOL
+`PARAMETER2` \| `API_PARAMETER_NAME` | DESCRIPTION | BOOL
+`state` | The state to ensure. It can be one of `present`, `absent`, default: `present`. | no
+
+
+Authors
+=======
+
+$author

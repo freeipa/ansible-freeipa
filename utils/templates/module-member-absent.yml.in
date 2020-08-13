@@ -1,0 +1,12 @@
+---
+- name: ${name^} absent example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure $name NAME is absent
+    ipa$name:
+     name: NAME
+     PARAMETER2: VALUE
+     action: member
+     state: absent

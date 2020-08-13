@@ -1,0 +1,185 @@
+#!/bin/bash
+# -*- coding: utf-8 -*-
+
+# Authors:
+#   Thomas Woerner <twoerner@redhat.com>
+#
+# Copyright (C) 2020 Red Hat
+# see file 'COPYING' for use and warranty information
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+prog=`basename $0`
+topdir=$(dirname $0)
+
+function usage() {
+    cat <<EOF
+Usage: $prog [options] <module name> <author name> <author email address>
+
+Create new ansible-freeipa module using templates.
+
+Options:
+  -m          Create module with member support
+  -f          Force creation
+  -h          Print this help
+
+EOF
+}
+
+member=0
+force=0
+while getopts "mfh" arg; do
+    case $arg in
+        m) member=1;;
+        f) force=1;;
+        h)
+            usage;
+            exit 0
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument." >&2
+            exit 1
+            ;;
+    esac
+done
+
+for (( i=0; i<OPTIND-1; i++)); do
+    shift
+done
+
+if [ ${#@} -ne 3 ]; then
+    usage;
+    exit 1
+fi
+
+name=$1
+author=$2
+email=$3
+year=$(date +"%Y")
+
+if [ -z "$name" -o -z "$author" -o -z "$email" ]; then
+    [ -z "$name" ] && echo "ERROR: name is not valid"
+    [ -z "$author" ] && echo "ERROR: author is not valid"
+    [ -z "$email" ] && echo "ERROR: email is not valid"
+    echo
+    usage;
+    exit 1;
+fi
+
+if [ -f "plugins/modules/ipa$name.py" ]; then
+    if [ $force == 0 ]; then
+        echo "ERROR: The module plugins/modules/ipa$name.py already exists"
+        exit 0
+    else
+        echo "WARNING: Overwriting module plugins/modules/ipa$name.py"
+    fi
+fi
+if [ -f "README-$name.md" ]; then
+    if [ $force == 0 ]; then
+        echo "ERROR: The module docs file README-$name.md already exists"
+        exit 0
+    else
+        echo "WARNING: Overwriting module docs file README-$name.md"
+    fi
+fi
+if [ -f "playbooks/$name" ]; then
+    if [ $force == 0 ]; then
+        echo "ERROR: playbooks/$name already exists"
+        exit 0
+    else
+        echo "WARNING: Overwriting playbooks/$name"
+    fi
+fi
+if [ -d "playbooks/$name" ]; then
+    if [ $force == 0 ]; then
+        echo "ERROR: The playbooks folder playbooks/$name already exists"
+        exit 0
+    else
+        echo "WARNING: Overwriting playbooks in folder playbooks/$name"
+    fi
+else
+    if [ -f "playbooks/$name" ]; then
+        echo "ERROR: playbooks/$name is not a directory"
+        exit 0
+    fi
+fi
+if [ -d "tests/$name" ]; then
+    if [ $force == 0 ]; then
+        echo "ERROR: The tests folder tests/$name already exists"
+        exit 0
+    else
+        echo "WARNING: Overwriting the tests in folder tests/$name"
+    fi
+else
+    if [ -f "tests/$name" ]; then
+        echo "ERROR: tests/$name is not a directory"
+        exit 0
+    fi
+fi
+
+# TEMPLATE function
+
+function template() {
+    s=$1
+    d=$2
+    sed -e "s/\$name/$name/g" \
+        -e "s/\${name}/${name}/g" \
+        -e "s/\${name^}/${name^}/g" \
+        -e "s/\$author/$author/g" \
+        -e "s/\$email/$email/" \
+        -e "s/\$year/$year/" \
+        $topdir/templates/$s > $d
+}
+
+# MODULE
+
+dest=plugins/modules
+mkdir -p $dest
+
+src=ipamodule.py.in
+[ $member == 1 ] && src=ipamodule+member.py.in
+template $src $dest/ipa$name.py
+
+# README
+
+src=README-module.md.in
+[ $member == 1 ] && src=README-module+member.md.in
+template $src README-$name.md
+
+# PLAYBOOKS
+
+dest=playbooks/$name
+mkdir -p $dest
+
+template module-present.yml.in $dest/$name-present.yml
+template module-absent.yml.in $dest/$name-absent.yml
+
+if [ $member == 1 ]; then
+    template module-member-present.yml.in $dest/$name-member-present.yml
+    template module-member-absent.yml.in $dest/$name-member-absent.yml
+fi
+
+# TESTS
+
+dest=tests/$name
+mkdir -p $dest
+
+src=test_module.yml.in
+[ $member == 1 ] && src=test_module+member.yml.in
+template $src $dest/test_$name.yml
