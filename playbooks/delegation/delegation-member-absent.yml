@@ -1,0 +1,15 @@
+---
+- name: Delegation member absent
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure delegation "basic manager attributes" member attributes employeenumber and employeetype are absent
+    ipadelegation:
+      ipaadmin_password: SomeADMINpassword
+      name: "basic manager attributes"
+      attribute:
+      - employeenumber
+      - employeetype
+      action: member
+      state: absent
