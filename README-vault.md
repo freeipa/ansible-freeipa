@@ -197,7 +197,7 @@ Example playbook to make sure vault is absent:
       state: absent
     register: result
   - debug:
-      msg: "{{ result.data }}"
+      msg: "{{ result.vault.data }}"
 ```
 
 Variables

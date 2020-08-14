@@ -203,7 +203,7 @@
       password: SomeNEWpassword
       state: retrieved
     register: result
-    failed_when: result.data != 'Hello World.' or result.changed
+    failed_when: result.vault.data != 'Hello World.' or result.changed
 
   - name: Retrieve data from symmetric vault, with old password.
     ipavault:

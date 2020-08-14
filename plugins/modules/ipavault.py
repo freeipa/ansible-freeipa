@@ -243,7 +243,7 @@ EXAMPLES = """
     state: retrieved
   register: result
 - debug:
-    msg: "{{ result.data }}"
+    msg: "{{ result.vault.data }}"
 
 # Change password of a symmetric vault
 - ipavault:
