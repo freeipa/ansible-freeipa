@@ -9,8 +9,9 @@
 
   - name: Ensure location my_location1 is absent
     ipalocation:
-     name: my_location1
-     state: absent
+      ipaadmin_password: SomeADMINpassword
+      name: my_location1
+      state: absent
 
   # CREATE TEST ITEMS
 
@@ -18,41 +19,47 @@
 
   - name: Ensure location my_location1 is present
     ipalocation:
-     name: my_location1
+      ipaadmin_password: SomeADMINpassword
+      name: my_location1
     register: result
     failed_when: not result.changed or result.failed
 
   - name: Ensure location my_location1 is present again
     ipalocation:
-     name: my_location1
+      ipaadmin_password: SomeADMINpassword
+      name: my_location1
     register: result
     failed_when: result.changed or result.failed
 
   - name: Ensure location my_location1 is present with description
     ipalocation:
-     name: my_location1
-     description: My Location 1
+      ipaadmin_password: SomeADMINpassword
+      name: my_location1
+      description: My Location 1
     register: result
     failed_when: not result.changed or result.failed
 
   - name: Ensure location my_location1 is present again with description
     ipalocation:
-     name: my_location1
-     description: My Location 1
+      ipaadmin_password: SomeADMINpassword
+      name: my_location1
+      description: My Location 1
     register: result
     failed_when: result.changed or result.failed
 
   - name: Ensure location my_location1 is absent
     ipalocation:
-     name: my_location1
-     state: absent
+      ipaadmin_password: SomeADMINpassword
+      name: my_location1
+      state: absent
     register: result
     failed_when: not result.changed or result.failed
 
   - name: Ensure location my_location1 is absent again
     ipalocation:
-     name: my_location1
-     state: absent
+      ipaadmin_password: SomeADMINpassword
+      name: my_location1
+      state: absent
     register: result
     failed_when: result.changed or result.failed
 
@@ -60,5 +67,6 @@
 
   - name: Ensure location my_location1 is absent
     ipalocation:
-     name: my_location1
-     state: absent
+      ipaadmin_password: SomeADMINpassword
+      name: my_location1
+      state: absent

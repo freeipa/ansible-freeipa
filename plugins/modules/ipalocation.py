@@ -55,11 +55,13 @@ options:
 EXAMPLES = """
 # Ensure location my_location1 is present
 - ipalocation:
+    ipaadmin_password: SomeADMINpassword
     name: my_location1
     description: My location 1
 
 # Ensure location my_location1 is absent
 - ipalocation:
+    ipaadmin_password: SomeADMINpassword
     name: my_location1
     state: absent
 """
