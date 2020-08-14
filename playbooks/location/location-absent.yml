@@ -1,0 +1,10 @@
+---
+- name: Location absent test
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure location my_location1 is absent
+    ipalocation:
+     name: my_location1
+     state: absent

@@ -1,0 +1,9 @@
+---
+- name: Location present test
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure location my_location1 is present
+    ipalocation:
+     name: my_location1
