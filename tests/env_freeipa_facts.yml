@@ -1,0 +1,18 @@
+# This playbook should be included with `include_tasks` as the first task
+# of a test playbook that requires FreeIPA information.
+#
+# Available Facts:
+#
+# ipa_version: The installed FreeIPA version.
+# ipa_api_version: The installed FreeIPA API version.
+#
+---
+- name: Retrieving FreeIPA version.
+  shell:
+    cmd: 'ipa --version | sed -n "s/VERSION: \([^,]*\).*API_VERSION: \([^,]*\).*/\1\\n\2/p"'
+  register: ipa_cmd_version
+
+- name: Set FreeIPA facts.
+  set_fact:
+    ipa_version: "{{ ipa_cmd_version.stdout_lines[0] }}"
+    ipa_api_version: "{{ ipa_cmd_version.stdout_lines[1] }}"
