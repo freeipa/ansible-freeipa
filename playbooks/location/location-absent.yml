@@ -6,5 +6,6 @@
   tasks:
   - name: Ensure location my_location1 is absent
     ipalocation:
-     name: my_location1
-     state: absent
+      ipaadmin_password: SomeADMINpassword
+      name: my_location1
+      state: absent

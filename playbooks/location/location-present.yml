@@ -6,4 +6,5 @@
   tasks:
   - name: Ensure location my_location1 is present
     ipalocation:
-     name: my_location1
+      ipaadmin_password: SomeADMINpassword
+      name: my_location1
