@@ -1,0 +1,68 @@
+---
+# Cleanup tasks for the service module tests.
+- name: Ensure services are absent.
+  ipaservice:
+    ipaadmin_password: SomeADMINpassword
+    name:
+      - "HTTP/{{ svc_fqdn }}"
+      - "HTTP/{{ nohost_fqdn }}"
+      - HTTP/svc.ihavenodns.info
+      - HTTP/no.idontexist.local
+      - "cifs/{{ host1_fqdn }}"
+    state: absent
+
+- name: Ensure host "{{ svc_fqdn }}" is absent
+  ipahost:
+    ipaadmin_password: SomeADMINpassword
+    name: "{{ svc_fqdn }}"
+    update_dns: yes
+    state: absent
+
+- name: Ensure host is absent
+  ipahost:
+    ipaadmin_password: SomeADMINpassword
+    name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      - "{{ nohost_fqdn }}"
+      - svc.ihavenodns.info
+    update_dns: no
+    state: absent
+
+- name: Ensure testing users are absent.
+  ipauser:
+    ipaadmin_password: SomeADMINpassword
+    name:
+    - user01
+    - user02
+    state: absent
+
+- name: Ensure testing groups are absent.
+  ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    name:
+    - group01
+    - group02
+    state: absent
+
+- name: Ensure testing hostgroup hostgroup01 is absent.
+  ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    name:
+      - hostgroup01
+    state: absent
+
+- name: Ensure testing hostgroup hostgroup02 is absent.
+  ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    name:
+      - hostgroup02
+    state: absent
+
+- name: Remove IP address for "nohost" host.
+  ipadnsrecord:
+    ipaadmin_password: SomeADMINpassword
+    zone_name: "{{ test_domain }}."
+    name: nohost
+    del_all: yes
+    state: absent

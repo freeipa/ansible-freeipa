@@ -1,0 +1,73 @@
+# Setup environment for service module tests.
+---
+- name: Setup variables and facts.
+  include_tasks: env_vars.yml
+
+# Cleanup before setup.
+- name: Cleanup test environment.
+  include_tasks: env_cleanup.yml
+
+- name: Add IP address for "nohost" host.
+  ipadnsrecord:
+    ipaadmin_password: SomeADMINpassword
+    zone_name: "{{ test_domain }}."
+    name: nohost
+    a_ip_address: "{{ ipv4_prefix + '.100' }}"
+
+- name: Add hosts for tests.
+  ipahost:
+    ipaadmin_password: SomeADMINpassword
+    hosts:
+      - name: "{{ host1_fqdn }}"
+        ip_address: "{{ ipv4_prefix + '.101' }}"
+      - name: "{{ host2_fqdn }}"
+        ip_address: "{{ ipv4_prefix + '.102' }}"
+      - name: "{{ svc_fqdn }}"
+        ip_address: "{{ ipv4_prefix + '.201' }}"
+      - name: svc.ihavenodns.info
+        force: yes
+    update_dns: yes
+
+- name: Ensure testing user user01 is present.
+  ipauser:
+    ipaadmin_password: SomeADMINpassword
+    name: user01
+    first: user01
+    last: last
+
+- name: Ensure testing user user02 is present.
+  ipauser:
+    ipaadmin_password: SomeADMINpassword
+    name: user02
+    first: user02
+    last: last
+
+- name: Ensure testing group group01 is present.
+  ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    name: group01
+
+- name: Ensure testing group group02 is present.
+  ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    name: group02
+
+- name: Ensure testing hostgroup hostgroup01 is present.
+  ipahostgroup:
+    ipaadmin_password: SomeADMINpassword
+    name: hostgroup01
+
+- name: Ensure testing hostgroup hostgroup02 is present.
+  ipahostgroup:
+    ipaadmin_password: SomeADMINpassword
+    name: hostgroup02
+
+- name: Ensure services are absent.
+  ipaservice:
+    ipaadmin_password: SomeADMINpassword
+    name:
+    - "HTTP/{{ svc_fqdn }}"
+    - "HTTP/{{ nohost_fqdn }}"
+    - HTTP/svc.ihavenodns.info
+    - HTTP/no.idontexist.info
+    state: absent

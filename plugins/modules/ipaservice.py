@@ -460,7 +460,7 @@ def main():
     allow_retrieve_keytab_group = module_params_get(
         ansible_module, "allow_retrieve_keytab_group")
     allow_retrieve_keytab_host = module_params_get(
-        ansible_module, "allow_create_keytab_host")
+        ansible_module, "allow_retrieve_keytab_host")
     allow_retrieve_keytab_hostgroup = module_params_get(
         ansible_module, "allow_retrieve_keytab_hostgroup")
     delete_continue = module_params_get(ansible_module, "delete_continue")
@@ -727,7 +727,7 @@ def main():
                 # Allow retrieve keytab
                 if len(allow_retrieve_keytab_user_add) > 0 or \
                    len(allow_retrieve_keytab_group_add) > 0 or \
-                   len(allow_retrieve_keytab_hostgroup_add) > 0 or \
+                   len(allow_retrieve_keytab_host_add) > 0 or \
                    len(allow_retrieve_keytab_hostgroup_add) > 0:
                     commands.append(
                         [name, "service_allow_retrieve_keytab",
