@@ -24,11 +24,12 @@ import functools
 
 from unittest import TestCase
 
-from utils import get_test_playbooks, get_server_host, run_playbook
+from utils import get_test_playbooks, get_skip_conditions, run_playbook
 
 
-def prepare_test(test_name, test_path):
-    """Decorator for the tests generated automatically from playbooks.
+def prepare_test(testname, testpath):
+    """
+    Decorate tests generated automatically from playbooks.
 
     Injects 2 arguments to the test (`test_path` and `test_name`) and
     name the test method using test name (to ensure test reports are useful).
@@ -36,13 +37,13 @@ def prepare_test(test_name, test_path):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            kwargs["test_path"] = test_path
-            kwargs["test_name"] = test_name
+            kwargs["test_path"] = testpath
+            kwargs["test_name"] = testname
             return func(*args, **kwargs)
 
         return wrapper
 
-    decorator.__name__ = test_name
+    decorator.__name__ = testname
     return decorator
 
 
@@ -50,18 +51,21 @@ def prepare_test(test_name, test_path):
 #   test_* methods.
 for test_dir_name, playbooks_in_dir in get_test_playbooks().items():
     _tests = {}
+
     for playbook in playbooks_in_dir:
         test_name = playbook["name"].replace("-", "_")
         test_path = playbook["path"]
 
-        @pytest.mark.skipif(
-            not get_server_host(),
-            reason="Environment variable IPA_SERVER_HOST must be set",
-        )
+        skip = get_skip_conditions(test_dir_name, test_name) or {}
+
+        # pylint: disable=W0621,W0640,W0613
+        @pytest.mark.skipif(**skip)
         @pytest.mark.playbook
         @prepare_test(test_name, test_path)
         def method(self, test_path, test_name):
             run_playbook(test_path)
+        # pylint: enable=W0621,W0640,W0613
 
         _tests[test_name] = method
+
     globals()[test_dir_name] = type(test_dir_name, tuple([TestCase]), _tests,)

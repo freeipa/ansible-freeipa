@@ -45,6 +45,68 @@ def get_server_host():
     return os.getenv("IPA_SERVER_HOST")
 
 
+def get_disabled_test(group_name, test_name):
+    disabled_modules = [
+        disabled.strip()
+        for disabled in os.environ.get("IPA_DISABLED_MODULES", "").split(",")
+    ]
+    disabled_tests = [
+        disabled.strip()
+        for disabled in os.environ.get("IPA_DISABLED_TESTS", "").split(",")
+        if disabled.strip()
+    ]
+
+    if not any([disabled_modules, disabled_tests]):
+        return False
+
+    return group_name in disabled_modules or test_name in disabled_tests
+
+
+def get_enabled_test(group_name, test_name):
+    enabled_modules = [
+        enabled.strip()
+        for enabled in os.environ.get("IPA_ENABLED_MODULES", "").split(":")
+        if enabled.strip()
+    ]
+    enabled_tests = [
+        enabled.strip()
+        for enabled in os.environ.get("IPA_ENABLED_TESTS", "").split(":")
+        if enabled.strip()
+    ]
+
+    if not any([enabled_modules, enabled_tests]):
+        return True
+
+    group_enabled = group_name in enabled_modules
+    test_enabled = test_name in enabled_tests
+
+    return group_enabled or test_enabled
+
+
+def get_skip_conditions(group_name, test_name):
+    """
+    Check tests that need to be skipped.
+
+    The return is a dict containing `condition` and `reason`. For the test
+    to be skipped, `condition` must be True, if it is `False`, the test is
+    to be skipped. Although "reason" must be always provided, it can be
+    `None` if `condition` is True.
+    """
+    if not get_server_host():
+        return {
+            "condition": True,
+            "reason": "Environment variable IPA_SERVER_HOST must be set",
+        }
+
+    if not get_enabled_test(group_name, test_name):
+        return {"condition": True, "reason": "Test not configured to run"}
+
+    if get_disabled_test(group_name, test_name):
+        return {"condition": True, "reason": "Test configured to not run"}
+
+    return {"condition": False, "reason": "Test will run."}
+
+
 def get_inventory_content():
     """Create the content of an inventory file for a test run."""
     ipa_server_host = get_server_host()
