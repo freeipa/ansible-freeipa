@@ -44,7 +44,9 @@ options:
     type: list
     alises: ["zone_name"]
   name_from_ip:
-    description: Derive zone name from reverse of IP (PTR).
+    description: |
+      Derive zone name from reverse of IP (PTR).
+      Can only be used with `state: present`.
     required: false
     type: str
   forwarders:
