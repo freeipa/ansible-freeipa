@@ -19,6 +19,10 @@ def is_docker_env():
     return True
 
 
+def get_ssh_password():
+    return os.getenv("IPA_SSH_PASSWORD")
+
+
 def get_server_host():
     return os.getenv("IPA_SERVER_HOST")
 
@@ -32,6 +36,10 @@ def get_inventory_content():
 
     if is_docker_env():
         ipa_server_host += " ansible_connection=docker"
+
+    sshpass = get_ssh_password()
+    if sshpass:
+        ipa_server_host += " ansible_ssh_pass=%s" % sshpass
 
     lines = [
         "[ipaserver]",
