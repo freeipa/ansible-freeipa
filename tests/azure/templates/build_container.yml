@@ -1,0 +1,35 @@
+
+parameters:
+  - name: job_name_suffix
+    type: string
+  - name: container_name
+    type: string
+  - name: build_scenario_name
+    type: string
+
+jobs:
+- job: BuildTestImage${{ parameters.job_name_suffix }}
+  displayName: Build ${{ parameters.container_name }} test container
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.6'
+
+  - script: python -m pip install --upgrade pip setuptools wheel
+    displayName: Install tools
+
+  - script: pip install molecule[docker]
+    displayName: Install molecule
+
+  - script: molecule create -s ${{ parameters.build_scenario_name }}
+    displayName: Create test container
+
+  - script: |
+      docker stop ${{ parameters.build_scenario_name }}
+      docker commit ${{ parameters.build_scenario_name }} quay.io/ansible-freeipa/upstream-tests:${{ parameters.container_name }}
+      docker login -u="$QUAY_ROBOT_USERNAME" -p="$QUAY_ROBOT_TOKEN" quay.io
+      docker push quay.io/ansible-freeipa/upstream-tests:${{ parameters.container_name }}
+    displayName: Save image and upload
+    env:
+      # Secrets needs to be mapped as env vars to work properly
+      QUAY_ROBOT_TOKEN: $(QUAY_ROBOT_TOKEN)

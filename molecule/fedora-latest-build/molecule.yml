@@ -2,12 +2,12 @@
 driver:
   name: docker
 platforms:
-  - name: centos-7
-    image: quay.io/ansible-freeipa/upstream-tests:centos-7
-    pre_build_image: true
+  - name: fedora-latest-build
+    image: fedora-latest
+    dockerfile: Dockerfile
     hostname: ipaserver.test.local
     dns_servers:
-      - 127.0.0.1
+      - 8.8.8.8
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     command: /usr/sbin/init
@@ -15,4 +15,4 @@ platforms:
 provisioner:
   name: ansible
   playbooks:
-    prepare: ../resources/playbooks/prepare.yml
+    prepare: ../resources/playbooks/prepare-build.yml
