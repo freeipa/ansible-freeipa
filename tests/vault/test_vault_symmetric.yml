@@ -178,6 +178,15 @@
     register: result
     failed_when: result.vault.data != 'Hello World.' or result.changed
 
+  - name: Retrieve data from symmetric vault, with wrong password.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeWRONGpassword
+      state: retrieved
+    register: result
+    failed_when: not result.failed or "Invalid credentials" not in result.msg
+
   - name: Change vault password.
     ipavault:
       ipaadmin_password: SomeADMINpassword
@@ -186,24 +195,6 @@
       new_password: SomeNEWpassword
     register: result
     failed_when: not result.changed
-
-  - name: Retrieve data from symmetric vault, with wrong password.
-    ipavault:
-      ipaadmin_password: SomeADMINpassword
-      name: symvault
-      password: SomeVAULTpassword
-      state: retrieved
-    register: result
-    failed_when: not result.failed or "Invalid credentials" not in result.msg
-
-  - name: Change vault password, with wrong `old_password`.
-    ipavault:
-      ipaadmin_password: SomeADMINpassword
-      name: symvault
-      password: SomeVAULTpassword
-      new_password: SomeNEWpassword
-    register: result
-    failed_when: not result.failed or "Invalid credentials" not in result.msg
 
   - name: Retrieve data from symmetric vault, with new password.
     ipavault:
@@ -214,24 +205,70 @@
     register: result
     failed_when: result.vault.data != 'Hello World.' or result.changed
 
-  - name: Try to add vault with multiple passwords.
+  - name: Retrieve data from symmetric vault, with old password.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: inexistentvault
+      name: symvault
       password: SomeVAULTpassword
-      password_file: "{{ ansible_env.HOME }}/password.txt"
+      state: retrieved
     register: result
-    failed_when: not result.failed or "parameters are mutually exclusive" not in result.msg
+    failed_when: not result.failed or "Invalid credentials" not in result.msg
 
-  - name: Try to add vault with multiple new passwords.
+  - name: Change symmetric vault salt, changing password
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: inexistentvault
+      name: symvault
+      password: SomeNEWpassword
+      new_password: SomeVAULTpassword
+      salt: AAAAAAAAAAAAAAAAAAAAAAA=
+    register: result
+    failed_when: not result.changed
+
+  - name: Change symmetric vault salt, without changing password
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
       password: SomeVAULTpassword
       new_password: SomeVAULTpassword
-      new_password_file: "{{ ansible_env.HOME }}/password.txt"
+      salt: MTIzNDU2Nzg5MDEyMzQ1Ngo=
     register: result
-    failed_when: not result.failed or "parameters are mutually exclusive" not in result.msg
+    failed_when: not result.changed
+
+  - name: Try to change symmetric vault salt, without providing any password
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      salt: MTIzNDU2Nzg5MDEyMzQ1Ngo=
+    register: result
+    failed_when: not result.failed and  "Vault `salt` can only change when changing the password." not in result.msg
+
+  - name: Try to change symmetric vault salt, without providing `password`
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      salt: MTIzNDU2Nzg5MDEyMzQ1Ngo=
+      new_password: SomeVAULTpassword
+    register: result
+    failed_when: not result.failed and  "Vault `salt` can only change when changing the password." not in result.msg
+
+  - name: Try to change symmetric vault salt, without providing `new_password`
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      salt: MTIzNDU2Nzg5MDEyMzQ1Ngo=
+      password: SomeVAULTpassword
+    register: result
+    failed_when: not result.failed and  "Vault `salt` can only change when changing the password." not in result.msg
+
+  - name: Try to change symmetric vault salt, using wrong password.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeWRONGpassword
+      new_password: SomeWRONGpassword
+      salt: MDEyMzQ1Njc4OTAxMjM0NQo=
+    register: result
+    failed_when: not result.failed
 
   - name: Ensure symmetric vault is absent
     ipavault:

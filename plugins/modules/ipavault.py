@@ -243,7 +243,7 @@ EXAMPLES = """
     state: retrieved
   register: result
 - debug:
-    msg: "{{ result.data }}"
+    msg: "{{ result.vault.data }}"
 
 # Change password of a symmetric vault
 - ipavault:
@@ -494,8 +494,10 @@ def check_encryption_params(module, state, action, vault_type, salt,
                             new_password, new_password_file, res_find):
     vault_type_invalid = []
 
-    if res_find is not None:
+    if vault_type is None and res_find is not None:
         vault_type = res_find['ipavaulttype']
+        if isinstance(vault_type, (tuple, list)):
+            vault_type = vault_type[0]
 
     if vault_type == "standard":
         vault_type_invalid = ['public_key', 'public_key_file', 'password',
@@ -514,6 +516,16 @@ def check_encryption_params(module, state, action, vault_type, salt,
         if any([new_password, new_password_file]) and res_find is None:
             module.fail_json(
                 msg="Cannot modify password of inexistent vault.")
+
+        if (
+            salt is not None
+            and not(
+                any([password, password_file])
+                and any([new_password, new_password_file])
+            )
+        ):
+            module.fail_json(
+                msg="Vault `salt` can only change when changing the password.")
 
     if vault_type == "asymmetric":
         vault_type_invalid = [
@@ -766,7 +778,12 @@ def main():
                             commands.append([name, "vault_mod_internal", args])
 
                     else:
+                        if vault_type == 'symmetric' \
+                           and 'ipavaultsalt' not in args:
+                            args['ipavaultsalt'] = os.urandom(32)
+
                         commands.append([name, "vault_add_internal", args])
+
                         if vault_type != 'standard' and vault_data is None:
                             vault_data = ''
 
@@ -823,14 +840,6 @@ def main():
                     if owner_del_args is not None:
                         commands.append(
                             [name, 'vault_remove_owner', owner_del_args])
-
-                    if vault_type == 'symmetric' \
-                       and 'ipavaultsalt' not in args:
-                        args['ipavaultsalt'] = os.urandom(32)
-
-                    if vault_type == 'symmetric' \
-                       and 'ipavaultsalt' not in args:
-                        args['ipavaultsalt'] = os.urandom(32)
 
                 elif action in "member":
                     # Add users and groups
