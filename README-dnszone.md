@@ -152,6 +152,46 @@ Example playbook to remove a zone:
 
 ```
 
+Example playbook to create a zone for reverse DNS lookup, from an IP address:
+
+```yaml
+
+---
+- name: dnszone present
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure zone for reverse DNS lookup is present.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: 192.168.1.2
+      state: present
+```
+
+Note that, on the previous example the zone created with `name_from_ip` might be "1.168.192.in-addr.arpa.", "168.192.in-addr.arpa.", or "192.in-addr.arpa.", depending on the DNS response the system get while querying for zones, and for this reason, when creating a zone using `name_from_ip`, the inferred zone name is returned to the controller, in the attribute `dnszone.name`. Since the zone inferred might not be what a user expects, `name_from_ip` can only be used with `state: present`. To have more control over the zone name, the prefix length for the IP address can be provided.
+
+Example playbook to create a zone for reverse DNS lookup, from an IP address, given the prefix length and displaying the resulting zone name:
+
+```yaml
+
+---
+- name: dnszone present
+  hosts: ipaserver
+  become: true
+
+  tasks:
+      - name: Ensure zone for reverse DNS lookup is present.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: 192.168.1.2/24
+      state: present
+    register: result
+  - name: Display inferred zone name.
+    debug:
+      msg: "Zone name: {{ result.dnszone.name }}"
+```
+
 
 Variables
 =========
@@ -163,7 +203,8 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
-`name` \| `zone_name` | The zone name string or list of strings. | yes
+`name` \| `zone_name` | The zone name string or list of strings. | no
+`name_from_ip` | Derive zone name from reverse of IP (PTR). Can only be used with `state: present`. | no
 `forwarders` | The list of forwarders dicts. Each `forwarders` dict entry has:| no
 &nbsp; | `ip_address` - The IPv4 or IPv6 address of the DNS server. | yes
 &nbsp; | `port` - The custom port that should be used on this server. | no
@@ -188,6 +229,17 @@ Variable | Description | Required
 `skip_overlap_check`| Force DNS zone creation even if it will overlap with an existing zone | no
 `skip_nameserver_check` | Force DNS zone creation even if nameserver is not resolvable | no
 
+
+Return Values
+=============
+
+ipadnszone
+----------
+
+Variable | Description | Returned When
+-------- | ----------- | -------------
+`dnszone` | DNS Zone dict with zone name infered from `name_from_ip`. <br>Options: |  If `state` is `present`, `name_from_ip` is used, and a zone was created.
+&nbsp; | `name` - The name of the zone created, inferred from `name_from_ip`. | Always
 
 Authors
 =======

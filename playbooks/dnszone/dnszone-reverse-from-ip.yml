@@ -1,0 +1,15 @@
+---
+- name: Playbook to ensure DNS zone exist
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure zone exist, finding zone name from IP address.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: 10.1.2.3/24
+    register: result
+
+  - name: Zone name inferred from `name_from_ip`
+    debug:
+      msg: "Zone created: {{ result.dnszone.name }}"

@@ -619,7 +619,7 @@ class FreeIPABaseModule(AnsibleModule):
         if exc_val:
             self.fail_json(msg=str(exc_val))
 
-        self.exit_json(changed=self.changed, user=self.exit_args)
+        self.exit_json(changed=self.changed, **self.exit_args)
 
     def get_command_errors(self, command, result):
         """Look for erros into command results."""
@@ -658,13 +658,21 @@ class FreeIPABaseModule(AnsibleModule):
             except Exception as excpt:
                 self.fail_json(msg="%s: %s: %s" % (command, name, str(excpt)))
             else:
-                if "completed" in result:
-                    if result["completed"] > 0:
-                        self.changed = True
-                else:
-                    self.changed = True
-
+                self.process_command_result(name, command, args, result)
             self.get_command_errors(command, result)
+
+    def process_command_result(self, name, command, args, result):
+        """
+        Process an API command result.
+
+        This method can be overriden in subclasses, and change self.exit_values
+        to return data in the result for the controller.
+        """
+        if "completed" in result:
+            if result["completed"] > 0:
+                self.changed = True
+        else:
+            self.changed = True
 
     def require_ipa_attrs_change(self, command_args, ipa_attrs):
         """

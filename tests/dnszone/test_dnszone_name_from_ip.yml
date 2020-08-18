@@ -1,0 +1,112 @@
+---
+- name: Test dnszone
+  hosts: ipaserver
+  become: yes
+  gather_facts: yes
+
+  tasks:
+
+  # Setup
+  - name: Ensure zone is absent.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ item }}"
+      state: absent
+    with_items:
+      - 2.0.192.in-addr.arpa.
+      - 0.0.0.0.0.0.0.0.0.0.0.0.0.0.d.f.ip6.arpa.
+      - 1.0.0.0.e.f.a.c.8.b.d.0.1.0.0.2.ip6.arpa.
+
+  # tests
+  - name: Ensure zone exists for reverse IP.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: 192.0.2.3/24
+    register: ipv4_zone
+    failed_when: not ipv4_zone.changed or ipv4_zone.failed
+
+  - name: Ensure zone exists for reverse IP, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: 192.0.2.3/24
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure zone exists for reverse IP, given the zone name.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ ipv4_zone.dnszone.name }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Modify existing zone, using `name_from_ip`.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: 192.0.2.3/24
+      default_ttl: 1234
+    register: result
+    failed_when: not result.changed
+
+  - name: Modify existing zone, using `name_from_ip`, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: 192.0.2.3/24
+      default_ttl: 1234
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure ipv6 zone exists for reverse IPv6.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: fd00::0001
+    register: ipv6_zone
+    failed_when: not ipv6_zone.changed or ipv6_zone.failed
+
+  # - debug:
+  #     msg: "{{ipv6_zone}}"
+
+  - name: Ensure ipv6 zone was created.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ ipv6_zone.dnszone.name }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure ipv6 zone exists for reverse IPv6, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: fd00::0001
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure second ipv6 zone exists for reverse IPv6.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: 2001:db8:cafe:1::1
+    register: ipv6_sec_zone
+    failed_when: not ipv6_sec_zone.changed or ipv6_zone.failed
+
+  - name: Ensure second ipv6 zone was created.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ ipv6_sec_zone.dnszone.name }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure second ipv6 zone exists for reverse IPv6, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name_from_ip: 2001:db8:cafe:1::1
+    register: result
+    failed_when: result.changed
+
+  # Cleanup
+  - name: Ensure zone is absent.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ item }}"
+      state: absent
+    with_items:
+      - "{{ ipv6_zone.dnszone.name }}"
+      - "{{ ipv6_sec_zone.dnszone.name }}"
+      - "{{ ipv4_zone.dnszone.name }}"

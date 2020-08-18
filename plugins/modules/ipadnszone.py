@@ -43,6 +43,12 @@ options:
     required: true
     type: list
     alises: ["zone_name"]
+  name_from_ip:
+    description: |
+      Derive zone name from reverse of IP (PTR).
+      Can only be used with `state: present`.
+    required: false
+    type: str
   forwarders:
     description: The list of global DNS forwarders.
     required: false
@@ -188,6 +194,14 @@ EXAMPLES = """
 """
 
 RETURN = """
+dnszone:
+  description: DNS Zone dict with zone name infered from `name_from_ip`.
+  returned:
+    If `state` is `present`, `name_from_ip` is used, and a zone was created.
+  options:
+    name:
+      description: The name of the zone created, inferred from `name_from_ip`.
+      returned: always
 """
 
 from ipapython.dnsutil import DNSName  # noqa: E402
@@ -197,6 +211,12 @@ from ansible.module_utils.ansible_freeipa_module import (
     is_ipv6_addr,
     is_valid_port,
 )  # noqa: E402
+import netaddr
+import six
+
+
+if six.PY3:
+    unicode = str
 
 
 class DNSZoneModule(FreeIPABaseModule):
@@ -354,6 +374,31 @@ class DNSZoneModule(FreeIPABaseModule):
         if not zone and self.ipa_params.skip_nameserver_check is not None:
             return self.ipa_params.skip_nameserver_check
 
+    def __reverse_zone_name(self, ipaddress):
+        """
+        Infer reverse zone name from an ip address.
+
+        This function uses the same heuristics as FreeIPA to infer the zone
+        name from ip.
+        """
+        try:
+            ip = netaddr.IPAddress(str(ipaddress))
+        except (netaddr.AddrFormatError, ValueError):
+            net = netaddr.IPNetwork(ipaddress)
+            items = net.ip.reverse_dns.split('.')
+            prefixlen = net.prefixlen
+            ip_version = net.version
+        else:
+            items = ip.reverse_dns.split('.')
+            prefixlen = 24 if ip.version == 4 else 64
+            ip_version = ip.version
+        if ip_version == 4:
+            return u'.'.join(items[4 - prefixlen // 8:])
+        elif ip_version == 6:
+            return u'.'.join(items[32 - prefixlen // 4:])
+        else:
+            self.fail_json(msg="Invalid IP version for reverse zone.")
+
     def get_zone(self, zone_name):
         get_zone_args = {"idnsname": zone_name, "all": True}
         response = self.api_command("dnszone_find", args=get_zone_args)
@@ -368,13 +413,32 @@ class DNSZoneModule(FreeIPABaseModule):
         return zone, is_zone_active
 
     def get_zone_names(self):
-        if len(self.ipa_params.name) > 1 and self.ipa_params.state != "absent":
+        zone_names = self.__get_zone_names_from_params()
+        if len(zone_names) > 1 and self.ipa_params.state != "absent":
             self.fail_json(
                 msg=("Please provide a single name. Multiple values for 'name'"
                      "can only be supplied for state 'absent'.")
             )
 
+        return zone_names
+
+    def __get_zone_names_from_params(self):
+        if not self.ipa_params.name:
+            return [self.__reverse_zone_name(self.ipa_params.name_from_ip)]
         return self.ipa_params.name
+
+    def check_ipa_params(self):
+        if not self.ipa_params.name and not self.ipa_params.name_from_ip:
+            self.fail_json(
+                msg="Either `name` or `name_from_ip` must be provided."
+            )
+        if self.ipa_params.state != "present" and self.ipa_params.name_from_ip:
+            self.fail_json(
+                msg=(
+                    "Cannot use argument `name_from_ip` with state `%s`."
+                    % self.ipa_params.state
+                )
+            )
 
     def define_ipa_commands(self):
         for zone_name in self.get_zone_names():
@@ -418,6 +482,14 @@ class DNSZoneModule(FreeIPABaseModule):
                 }
                 self.add_ipa_command("dnszone_mod", zone_name, args)
 
+    def process_command_result(self, name, command, args, result):
+        super(DNSZoneModule, self).process_command_result(
+            name, command, args, result
+        )
+        if command == "dnszone_add" and self.ipa_params.name_from_ip:
+            dnszone_exit_args = self.exit_args.setdefault('dnszone', {})
+            dnszone_exit_args['name'] = name
+
 
 def get_argument_spec():
     forwarder_spec = dict(
@@ -434,8 +506,9 @@ def get_argument_spec():
         ipaadmin_principal=dict(type="str", default="admin"),
         ipaadmin_password=dict(type="str", required=False, no_log=True),
         name=dict(
-            type="list", default=None, required=True, aliases=["zone_name"]
+            type="list", default=None, required=False, aliases=["zone_name"]
         ),
+        name_from_ip=dict(type="str", default=None, required=False),
         forwarders=dict(
             type="list",
             default=None,
@@ -475,7 +548,11 @@ def get_argument_spec():
 
 
 def main():
-    DNSZoneModule(argument_spec=get_argument_spec()).ipa_run()
+    DNSZoneModule(
+        argument_spec=get_argument_spec(),
+        mutually_exclusive=[["name", "name_from_ip"]],
+        required_one_of=[["name", "name_from_ip"]],
+    ).ipa_run()
 
 
 if __name__ == "__main__":
