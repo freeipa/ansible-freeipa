@@ -1,0 +1,10 @@
+---
+- name: Privilege absent example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure privilege "Broad Privilege" is absent
+    ipaprivilege:
+      name: Broad Privilege
+      state: absent

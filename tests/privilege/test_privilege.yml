@@ -1,0 +1,151 @@
+---
+- name: Test privilege
+  hosts: ipaserver
+  become: true
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure privilege "Broad Privilege" is absent
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - Broad Privilege
+      - DNS Privilege
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  # TESTS
+
+  - name: Ensure privilege Broad Privilege is present
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      description: Broad Privilege
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure privilege Broad Privilege is present again
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      description: Broad Privilege
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Change privilege Broad Privilege description
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      description: Broad Privilege description
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure privilege Broad Privilege has permissions
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      permission:
+      - "Write IPA Configuration"
+      - "System: Write DNS Configuration"
+      - "System: Update DNS Entries"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure privilege Broad Privilege has permissions, again
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      permission:
+      - "Write IPA Configuration"
+      - "System: Write DNS Configuration"
+      - "System: Update DNS Entries"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure privilege Broad Privilege member permission "Write IPA Configuration" is absent
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      permission:
+      - "Write IPA Configuration"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure privilege Broad Privilege member permission "Write IPA Configuration" is absent again
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      permission:
+      - "Write IPA Configuration"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure privilege Broad Privilege is absent
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure privilege Broad Privilege is present
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure privilege Broad Privilege is renamed to "DNS Privilege"
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      rename: DNS Privilege
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure privilege Broad Privilege cannot be renamed, because it does not exist.
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      rename: DNS Privilege
+      state: renamed
+    register: result
+    failed_when: not result.failed or "No privilege found to be renamed" not in result.msg
+
+  - name: Ensure privilege cannot be renamed to the same name.
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: DNS Privilege
+      rename: DNS Privilege
+      state: renamed
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure privilege cannot be renamed to the same name.
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: DNS Privilege
+      rename: DNS Privilege
+      state: renamed
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure privilege testing privileges are absent
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - Broad Privilege
+      - DNS Privilege
+      state: absent
