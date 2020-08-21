@@ -6,6 +6,9 @@ schedules:
   branches:
     include:
     - master
+  always: true
+
+trigger: none
 
 pool:
   vmImage: 'ubuntu-18.04'
