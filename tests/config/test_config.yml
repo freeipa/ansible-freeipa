@@ -5,6 +5,8 @@
   gather_facts: false
 
   tasks:
+  - include_tasks: ../env_freeipa_facts.yml
+
   # Retrieve current configuration.
   - name: return current values of the global configuration options
     ipaconfig:
@@ -45,15 +47,17 @@
       ipaadmin_password: SomeADMINpassword
       pac_type: ""
 
-  - name: set maxusername to 255
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      maxusername: 255
-
   - name: set maxhostname to 255
+    block:
+      - ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxhostname: 255
+    when: ipa_version is version('4.8.0', '>=')
+
+  - name: set maxusername to 45
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
-      maxhostname: 255
+      maxusername: 45
 
   - name: set pwdexpnotify to 0
     ipaconfig:
@@ -186,18 +190,19 @@
     failed_when: result.changed
 
   - name: set maxhostname to 77
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      maxhostname: 77
-    register: result
-    failed_when: not result.changed
+    block:
+      - ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxhostname: 77
+        register: result
+        failed_when: not result.changed
 
-  - name: set maxhostname to 77, again
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      maxhostname: 77
-    register: result
-    failed_when: result.changed
+      - ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxhostname: 77
+        register: result
+        failed_when: result.changed
+    when: ipa_version is version('4.8.0', '>=')
 
   - name: set pwdexpnotify to 17
     ipaconfig:
@@ -329,7 +334,6 @@
     ipaconfig:
       ipaadmin_password: 'SomeADMINpassword'
       maxusername: '{{previousconfig.config.maxusername | default(omit)}}'
-      maxhostname: '{{previousconfig.config.maxhostname | default(omit)}}'
       homedirectory: '{{previousconfig.config.homedirectory | default(omit)}}'
       defaultshell: '{{previousconfig.config.defaultshell | default(omit)}}'
       defaultgroup: '{{previousconfig.config.defaultgroup | default(omit)}}'
@@ -352,11 +356,17 @@
     register: result
     failed_when: not result.changed
 
+  - name: reset maxhostname
+    block:
+      - ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxhostname: '{{previousconfig.config.maxhostname | default(omit)}}'
+    when: ipa_version is version('4.8.0', '>=')
+
   - name: reset changed fields, again
     ipaconfig:
       ipaadmin_password: 'SomeADMINpassword'
       maxusername: '{{previousconfig.config.maxusername | default(omit)}}'
-      maxhostname: '{{previousconfig.config.maxhostname | default(omit)}}'
       homedirectory: '{{previousconfig.config.homedirectory | default(omit)}}'
       defaultshell: '{{previousconfig.config.defaultshell | default(omit)}}'
       defaultgroup: '{{previousconfig.config.defaultgroup | default(omit)}}'
@@ -378,6 +388,13 @@
       ca_renewal_master_server: '{{previousconfig.config.ca_renewal_master_server | default(omit)}}'
     register: result
     failed_when: result.changed
+
+  - name: reset maxhostname
+    block:
+      - ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxhostname: '{{previousconfig.config.maxhostname | default(omit)}}'
+    when: ipa_version is version('4.8.0', '>=')
 
   # cleanup
 
