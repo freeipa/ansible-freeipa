@@ -1,0 +1,11 @@
+---
+- name: ${name^} member present example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure $name NAME is present
+    ipa$name:
+     name: NAME
+     PARAMETER2: VALUE
+     action: member

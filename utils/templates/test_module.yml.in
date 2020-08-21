@@ -1,0 +1,60 @@
+---
+- name: Test $name
+  hosts: ipaserver
+  become: true
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure $name NAME is absent
+    ipa$name:
+      ipaadmin_password: SomeADMINpassword
+      name: NAME
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  # TESTS
+
+  - name: Ensure $name NAME is present
+    ipa$name:
+      ipaadmin_password: SomeADMINpassword
+      name: NAME
+      # Add needed parameters here
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure $name NAME is present again
+    ipa$name:
+      ipaadmin_password: SomeADMINpassword
+      name: NAME
+      # Add needed parameters here
+    register: result
+    failed_when: result.changed or result.failed
+
+  # more tests here
+
+  - name: Ensure $name NAME is absent
+    ipa$name:
+      ipaadmin_password: SomeADMINpassword
+      name: NAME
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure $name NAME is absent again
+    ipa$name:
+      ipaadmin_password: SomeADMINpassword
+      name: NAME
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure $name NAME is absent
+    ipa$name:
+      ipaadmin_password: SomeADMINpassword
+      name: NAME
+      state: absent
