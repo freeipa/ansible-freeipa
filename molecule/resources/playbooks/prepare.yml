@@ -2,12 +2,14 @@
 - name: Converge
   hosts: all
   tasks:
+  - include_tasks: prepare-common.yml
+
   - name: Ensure lock dirs for DS exists
     file:
       state: directory
       owner: dirsrv
       group: dirsrv
-      path: "{{ item }} "
+      path: "{{ item }}"
     loop:
       - /var/lock/dirsrv/
       - /var/lock/dirsrv/slapd-TEST-LOCAL/

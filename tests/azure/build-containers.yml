@@ -1,0 +1,31 @@
+---
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - master
+
+pool:
+  vmImage: 'ubuntu-18.04'
+
+jobs:
+
+- template: templates/build_container.yml
+  parameters:
+    job_name_suffix: Centos7
+    container_name: centos-7
+    build_scenario_name: centos-7-build
+
+- template: templates/build_container.yml
+  parameters:
+    job_name_suffix: Centos8
+    container_name: centos-8
+    build_scenario_name: centos-8-build
+
+- template: templates/build_container.yml
+  parameters:
+    job_name_suffix: FedoraLatest
+    container_name: fedora-latest
+    build_scenario_name: fedora-latest-build
