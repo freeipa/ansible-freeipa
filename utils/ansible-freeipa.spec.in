@@ -1,0 +1,75 @@
+# Turn off automatic python byte compilation because these are Ansible
+# roles and the files are transferred to the node and compiled there with
+# the python version used in the node
+%define __brp_python_bytecompile %{nil}
+
+Summary: Roles and playbooks to deploy FreeIPA servers, replicas and clients
+Name: ansible-freeipa
+Version: @@VERSION@@
+Release: @@RELEASE@@%{?dist}
+URL: https://github.com/freeipa/ansible-freeipa
+License: GPLv3+
+Source: %{name}-%{version}-@@RELEASE@@.tar.bz2
+BuildArch: noarch
+
+%description
+ansible-freeipa provides Ansible roles and playbooks to install and uninstall
+FreeIPA servers, replicas and clients. Also modules for group, host, topology
+and user management.
+
+Note: The ansible playbooks and roles require a configured ansible environment
+where the ansible nodes are reachable and are properly set up to have an IP
+address and a working package manager.
+
+%package tests
+Summary: ansible-freeipa tests
+Requires: %{name}
+
+%description tests
+
+%prep
+%setup -q -n ansible-freeipa-%{version}-@@RELEASE@@
+# Do not create backup files with patches
+# Fix python modules and module utils:
+# - Remove shebang
+# - Remove execute flag
+for i in roles/ipa*/library/*.py roles/ipa*/module_utils/*.py plugins/*/*.py; do
+    sed -i '1{/\/usr\/bin\/python*/d;}' $i
+    chmod a-x $i
+done
+# Add execute flag to py3test.py scripts
+chmod a+x roles/ipa*/files/py3test.py
+
+%build
+
+%install
+install -m 755 -d %{buildroot}%{_datadir}/ansible/roles/
+cp -rp roles/ipaserver %{buildroot}%{_datadir}/ansible/roles/
+cp -rp roles/ipaserver/README.md README-server.md
+cp -rp roles/ipareplica %{buildroot}%{_datadir}/ansible/roles/
+cp -rp roles/ipareplica/README.md README-replica.md
+cp -rp roles/ipaclient %{buildroot}%{_datadir}/ansible/roles/
+cp -rp roles/ipaclient/README.md README-client.md
+install -m 755 -d %{buildroot}%{_datadir}/ansible/plugins/
+cp -rp plugins/* %{buildroot}%{_datadir}/ansible/plugins/
+
+
+install -m 755 -d %{buildroot}%{_datadir}/ansible-freeipa/tests
+cp -rp tests %{buildroot}%{_datadir}/ansible-freeipa/
+
+%files
+%license COPYING
+%{_datadir}/ansible/roles/ipaserver
+%{_datadir}/ansible/roles/ipareplica
+%{_datadir}/ansible/roles/ipaclient
+%{_datadir}/ansible/plugins/module_utils
+%{_datadir}/ansible/plugins/modules
+%doc README*.md
+%doc playbooks
+
+%files tests
+%{_datadir}/ansible-freeipa
+
+%changelog
+* @@DATE@@ Thomas Woerner <twoerner@redhat.com> - @@VERSION@@-@@RELEASE@@
+- GIT version @@VERSION@@-@@RELEASE@@
