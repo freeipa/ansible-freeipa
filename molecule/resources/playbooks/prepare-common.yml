@@ -1,3 +1,4 @@
+# IPA depends on IPv6 and without it dirsrv service won't start.
 - name: Ensure IPv6 is ENABLED
   sysctl:
     name: "{{ item.name }}"
@@ -13,6 +14,9 @@
     - name: net.ipv6.conf.eth0.disable_ipv6
       value: 1
 
+# Set fs.protected_regular to 0
+#   This is needed in some IPA versions in order to get KRA enabled.
+#   See https://pagure.io/freeipa/issue/7906 for more information.
 - name: stat protected_regular
   stat:
     path: /proc/sys/fs/protected_regular
