@@ -1,16 +1,19 @@
 ---
+- name: Include create_users_json.yml
+  import_playbook: create_users_json.yml
+
 - name: Test users absent
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  - name: Include users_absent.json
+  - name: Include users.json
     include_vars:
-      file: users_absent.json
+      file: users.json
 
-  - name: Users absent
+  - name: Users absent len:{{ users | length }}
     ipauser:
       ipaadmin_password: SomeADMINpassword
-      users: "{{ users }}"
+      users: "{{ users | json_query('[*].{name: name}') }}"
       state: absent

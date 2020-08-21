@@ -1,0 +1,13 @@
+---
+- name: Create users.json
+  hosts: localhost
+
+  tasks:
+  - name: Check if users.json exists
+    stat:
+      path: users.json
+    register: register_stat_users
+
+  - name: Create users.json
+    command: /bin/bash users.sh 500
+    when: not register_stat_users.stat.exists

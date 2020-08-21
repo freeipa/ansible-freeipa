@@ -29,6 +29,7 @@ jobs:
       pip install \
         "molecule[docker]>=3" \
         "ansible${{ parameters.ansible_version }}" \
+        jmespath \
         pytest \
         pytest-split-tests
     displayName: Install dependencies

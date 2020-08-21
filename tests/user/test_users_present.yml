@@ -1,15 +1,18 @@
 ---
+- name: Include create_users_json.yml
+  import_playbook: create_users_json.yml
+
 - name: Test users present
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  - name: Include users_present.json
+  - name: Include users.json
     include_vars:
-      file: users_present.json
+      file: users.json
 
-  - name: Users present
+  - name: Users present len:{{ users | length }}
     ipauser:
       ipaadmin_password: SomeADMINpassword
       users: "{{ users }}"
