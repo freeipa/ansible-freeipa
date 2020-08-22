@@ -1,0 +1,29 @@
+
+parameters:
+  - name: scenario
+    type: string
+    default: centos-8
+  - name: build_number
+    type: string
+
+jobs:
+- template: playbook_tests.yml
+  parameters:
+    group_number: 1
+    number_of_groups: 3
+    build_number: ${{ parameters.build_number }}
+    scenario: ${{ parameters.scenario }}
+
+- template: playbook_tests.yml
+  parameters:
+    group_number: 2
+    number_of_groups: 3
+    build_number: ${{ parameters.build_number }}
+    scenario: ${{ parameters.scenario }}
+
+- template: playbook_tests.yml
+  parameters:
+    group_number: 3
+    number_of_groups: 3
+    build_number: ${{ parameters.build_number }}
+    scenario: ${{ parameters.scenario }}

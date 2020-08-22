@@ -16,10 +16,12 @@ parameters:
     type: string
     default: 3.6
   - name: build_number
+    type: string
+
 
 jobs:
-- job: RunTests${{ parameters.group_number }}
-  displayName: Run tests ${{ parameters.group_number }}/${{ parameters.number_of_groups }}
+- job: Test_Group${{ parameters.group_number }}
+  displayName: Run tests ${{ parameters.scenario }} (${{ parameters.group_number }}/${{ parameters.number_of_groups }})
   steps:
   - task: UsePythonVersion@0
     inputs:
