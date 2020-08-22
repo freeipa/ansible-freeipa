@@ -19,6 +19,8 @@ Supported FreeIPA Versions
 
 FreeIPA versions 4.4.0 and up are supported by the ipagroup module.
 
+Some variables are only supported on newer versions of FreeIPA. Check `Variables` section for details.
+
 
 Requirements
 ------------

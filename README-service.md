@@ -18,7 +18,7 @@ Supported FreeIPA Versions
 
 FreeIPA versions 4.4.0 and up are supported by the ipaservice module.
 
-Option `skip_host_check` requires FreeIPA version 4.7.0 or later.
+Some variables are only supported on newer versions of FreeIPA. Check `Variables` section for details.
 
 
 Requirements
@@ -298,7 +298,7 @@ Variable | Description | Required
 `requires_pre_auth` \| `ipakrbrequirespreauth` | Pre-authentication is required for the service. Default to true. (bool) | no
 `ok_as_delegate` \|  `ipakrbokasdelegate` | Client credentials may be delegated to the service. Default to false. (bool) | no
 `ok_to_auth_as_delegate` \|  `ipakrboktoauthasdelegate` | The service is allowed to authenticate on behalf of a client. Default to false. (bool) | no
-`skip_host_check` | Force service to be created even when host object does not exist to manage it. Default to false. (bool)| no
+`skip_host_check` | Force service to be created even when host object does not exist to manage it. Only usable with IPA versions 4.7.0 and up. Default to false. (bool)| no
 `force` | Force principal name even if host not in DNS. Default to false. (bool) | no
 `host` \| `managedby_host`| Hosts that can manage the service. | no
 `principal` \| `krbprincipalname` | List of principal aliases for the service. | no
