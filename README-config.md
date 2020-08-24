@@ -19,6 +19,7 @@ Supported FreeIPA Versions
 
 FreeIPA versions 4.4.0 and up are supported by the ipaconfig module.
 
+Some variables are only supported on newer versions of FreeIPA. Check `Variables` section for details.
 
 Requirements
 ------------
@@ -91,7 +92,7 @@ Variable | Description | Required
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `maxusername` \| `ipamaxusernamelength` |  Set the maximum username length (1 to 255) | no
-`maxhostname` \| `ipamaxhostnamelength` |  Set the maximum hostname length between 64-255 | no
+`maxhostname` \| `ipamaxhostnamelength` |  Set the maximum hostname length between 64-255. Only usable with IPA versions 4.8.0 and up. | no
 `homedirectory` \| `ipahomesrootdir` |  Set the default location of home directories | no
 `defaultshell` \| `ipadefaultloginshell` |  Set the default shell for new users | no
 `defaultgroup` \| `ipadefaultprimarygroup` |  Set the default group for new users | no
