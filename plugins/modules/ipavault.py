@@ -756,7 +756,7 @@ def main():
                     res_vault_type = res_find.get('ipavaulttype')[0]
                     args['ipavaulttype'] = vault_type = res_vault_type
                 else:
-                    args['ipavaulttype'] = vault_type = "symmetric"
+                    args['ipavaulttype'] = vault_type = u"symmetric"
 
             # Create command
             if state == "present":
