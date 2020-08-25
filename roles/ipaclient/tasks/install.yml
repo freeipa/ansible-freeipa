@@ -350,6 +350,7 @@
     - name: Install - Configure firefox
       ipaclient_setup_firefox:
         firefox_dir: "{{ ipaclient_firefox_dir | default(omit) }}"
+        domain: "{{ result_ipaclient_test.domain }}"
       when: ipaclient_configure_firefox | bool
 
     - name: Install - Configure NIS
