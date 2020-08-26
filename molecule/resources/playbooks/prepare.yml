@@ -4,6 +4,12 @@
   tasks:
   - include_tasks: prepare-common.yml
 
+  # In some distros DS won't start up after reboot
+  #   This is due to a problem in 389-ds. See tickets:
+  #   * https://pagure.io/389-ds-base/issue/47429
+  #   * https://pagure.io/389-ds-base/issue/51039
+  #
+  # To avoid this problem we create the directories before starting IPA.
   - name: Ensure lock dirs for DS exists
     file:
       state: directory
