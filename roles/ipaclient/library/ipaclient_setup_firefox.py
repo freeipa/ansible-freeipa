@@ -37,12 +37,12 @@ description:
 options:
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: no
+    required: yes
   firefox_dir:
     description:
       Specify directory where Firefox is installed (for example
       '/usr/lib/firefox')
-    required: yes
+    required: no
 author:
     - Thomas Woerner
 '''
