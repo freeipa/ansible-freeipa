@@ -246,10 +246,6 @@ There is only a return value if `state` is `retrieved`.
 
 Variable | Description | Returned When
 -------- | ----------- | -------------
-`data` | The data stored in the vault. | If `state` is `retrieved`.
-
-Variable | Description | Returned When
--------- | ----------- | -------------
 `vault` | Vault dict with archived data. (dict) <br>Options: | If `state` is `retrieved`.
 &nbsp; | `data` - The vault data. | Always
 
