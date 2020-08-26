@@ -79,14 +79,13 @@ def run_playbook(playbook, test_name):
 
 def list_test_yaml(dir_path):
     yamls = []
-    for yaml_name in sorted(os.listdir(dir_path)):
-        if yaml_name.startswith("test_") and yaml_name.endswith(".yml"):
-            yamls.append(
-                {
-                    "path": os.path.join(dir_path, yaml_name),
-                    "name": yaml_name.split(".")[0],
-                }
-            )
+    for root, dirs, files in os.walk(dir_path):
+        for yaml_name in files:
+            if yaml_name.startswith("test_") and yaml_name.endswith(".yml"):
+                test_yaml_path = os.path.join(root, yaml_name)
+                yamls.append(
+                    {"path": test_yaml_path, "name": yaml_name.split(".")[0]}
+                )
     return yamls
 
 
