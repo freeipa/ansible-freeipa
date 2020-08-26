@@ -2,7 +2,7 @@
 
 ## Before starting
 
-In order to run ansible-freeipa tests you will need to have `ansible` and `pytest` installed on your machine. We'll call this local machine `controller`.
+In order to run ansible-freeipa tests you will need to have `ansible`, `pytest` and `jmespath` installed on your machine. We'll call this local machine `controller`. `jmespath` is needed for the `json_query` filter.
 
 You will also need to have a remote host with freeipa server installed and configured. We'll call this remote host `ipaserver`.
 

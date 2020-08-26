@@ -7,9 +7,9 @@
   vars:
     slice_size: 500
   tasks:
-  - name: Include users_present.json
+  - name: Include users.json
     include_vars:
-      file: users_present.json
+      file: users.json
   - debug:
       msg: "{{ users | length }}"
   - name: Users present
