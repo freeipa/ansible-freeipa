@@ -29,6 +29,14 @@ environment variable. For example:
 ANSIBLE_REMOTE_USER=root IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest
 ```
 
+If you want to use ssh with password, you must set `IPA_SSH_PASSWORD`
+environment variable. For example:
+
+```
+IPA_SSH_PASSWORD=<ipaserver_ssh_password> IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest
+```
+
+
 To run a single test use the full path with the following format:
 
 ```
@@ -99,5 +107,3 @@ See [Running the tests](#running-the-tests) section for more information on avai
 
 * A script to pre-config the complete test environment using virsh.
 * A test matrix to run tests against different distros in parallel (probably using tox).
-* Allow to connect to `ipaserver` using ssh and password.
-
