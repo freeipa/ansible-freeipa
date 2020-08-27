@@ -4,6 +4,7 @@
   become: true
 
   tasks:
+  - name: Ensure hosts manadegby_host is absent.
     ipahost:
       ipaadmin_password: SomeADMINpassword
       hosts:
