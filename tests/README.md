@@ -2,7 +2,7 @@
 
 ## Before starting
 
-In order to run ansible-freeipa tests you will need to have `ansible`, `pytest` and `jmespath` installed on your machine. We'll call this local machine `controller`. `jmespath` is needed for the `json_query` filter.
+In order to run ansible-freeipa tests you will need to install the dependencies listed in the file `requirements-tests.txt` in your local machine. We'll call this local machine `controller`.
 
 You will also need to have a remote host with freeipa server installed and configured. We'll call this remote host `ipaserver`.
 
@@ -62,6 +62,20 @@ IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest -rs
 ```
 
 For a complete list of options check `pytest --help`.
+
+### Types of tests
+
+#### Playbook tests
+
+The playbook tests will run our roles / modules using Ansible with various parameters. Most of these tests will be executed more than once, to verify idempotence. In  general those tests don't verify the state of the machine after the playbook is executed.
+
+To select only these tests use the option `-m "playbook"`
+
+#### Python tests (pytests)
+
+The pytests are tests that will execute small playbooks and then will verify the test results immediately after, using python code for that.
+
+To select only these tests on a test execution use the option `-m "not playbook"`.
 
 
 ## Running tests in a docker container

@@ -1,0 +1,11 @@
+---
+- name: Playbook to with invalid IP’s in allow_transfer.
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: invalidzone.test
+      forwarders:
+        - ip_address: in.va.li.d
