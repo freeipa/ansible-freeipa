@@ -1,0 +1,9 @@
+---
+- name: Playbook to ensure the DNS zones disabled.
+  hosts: ipaserver
+
+  tasks:
+  - ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: 26testzone.test
+      state: disabled

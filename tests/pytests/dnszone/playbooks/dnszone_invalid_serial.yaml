@@ -1,0 +1,10 @@
+---
+- name: Playbook to ensure, not able to add invalid(more than 4294967295) serial numbers.
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: invalidserialzone.test
+      serial: 429496729599

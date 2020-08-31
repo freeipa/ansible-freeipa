@@ -27,3 +27,8 @@ jobs:
     number_of_groups: 3
     build_number: ${{ parameters.build_number }}
     scenario: ${{ parameters.scenario }}
+
+- template: pytest_tests.yml
+  parameters:
+    build_number: ${{ parameters.build_number }}
+    scenario: ${{ parameters.scenario }}

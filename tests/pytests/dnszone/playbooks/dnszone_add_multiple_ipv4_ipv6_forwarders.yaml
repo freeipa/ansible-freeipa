@@ -1,0 +1,15 @@
+---
+- name: Playbook to ensure the DNS zones is present with multiple forwarder ipv4, ipv6, and port.
+  hosts: ipaserver
+
+  tasks:
+  - ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: 04testzone.test
+      forwarders:
+        - ip_address: 192.11.22.33
+        - ip_address: 192.11.22.34
+          port: 23
+        - ip_address: 2001:db8:cafe:1::1
+        - ip_address: 2001:db8:cafe:1::4
+          port: 34
