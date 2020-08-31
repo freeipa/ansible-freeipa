@@ -181,7 +181,7 @@ Example playbook to create a zone for reverse DNS lookup, from an IP address, gi
   become: true
 
   tasks:
-      - name: Ensure zone for reverse DNS lookup is present.
+  - name: Ensure zone for reverse DNS lookup is present.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
       name_from_ip: 192.168.1.2/24
