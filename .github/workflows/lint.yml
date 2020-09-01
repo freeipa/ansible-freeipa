@@ -25,3 +25,7 @@ jobs:
         env:
           ANSIBLE_MODULE_UTILS: plugins/module_utils
           ANSIBLE_LIBRARY: plugins/modules
+
+      - name: Run yaml-lint
+        uses: ibiqlik/action-yamllint@v1
+
