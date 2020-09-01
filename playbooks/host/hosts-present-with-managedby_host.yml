@@ -4,7 +4,7 @@
   become: true
 
   tasks:
-    ipahost:
+  - ipahost:
       ipaadmin_password: SomeADMINpassword
       hosts:
       - name: host01.exmaple.com
