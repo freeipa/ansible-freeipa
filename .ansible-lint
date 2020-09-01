@@ -1,0 +1,23 @@
+exclude_paths:
+  - roles
+  - .tox
+  - .venv
+
+parseable: true
+
+quiet: false
+
+skip_list:
+  - '201'  # Trailing whitespace
+  - '204'  # Lines should be no longer than 160 chars
+  - '206'  # Variables should have spaces before and after: {{ var_name }}'
+  - '208'  # File permissions not mentioned
+  - '301'  # Commands should not change things if nothing needs doing'
+  - '305'  # Use shell only when shell functionality is required'
+  - '306'  # Shells that use pipes should set the pipefail option'
+  - '502'  # All tasks should be named
+  - '505'  # Referenced missing file
+
+use_default_rules: true
+
+verbosity: 1

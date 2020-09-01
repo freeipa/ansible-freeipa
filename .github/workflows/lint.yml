@@ -1,0 +1,33 @@
+---
+name: Run Linters
+on:
+  - push
+  - pull_request
+jobs:
+  linters:
+    name: Run Linters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.6"
+
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint-action@master
+        with:
+          targets: |
+            tests/*.yml
+            tests/*/*.yml
+            tests/*/*/*.yml
+            playbooks/*.yml
+            playbooks/*/*.yml
+        env:
+          ANSIBLE_MODULE_UTILS: plugins/module_utils
+          ANSIBLE_LIBRARY: plugins/modules
+
+      - name: Run yaml-lint
+        uses: ibiqlik/action-yamllint@v1
+
+      - name: Run Python linters
+        uses: rjeffman/python-lint-action@master

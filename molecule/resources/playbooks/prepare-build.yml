@@ -11,7 +11,7 @@
   - name: Ensure nss package is updated
     package:
       name: nss
-      state: latest
+      state: latest  # noqa 403
 
   - include_role:
       name: ipaserver
