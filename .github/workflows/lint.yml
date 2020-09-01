@@ -29,3 +29,5 @@ jobs:
       - name: Run yaml-lint
         uses: ibiqlik/action-yamllint@v1
 
+      - name: Run Python linters
+        uses: rjeffman/python-lint-action@master
