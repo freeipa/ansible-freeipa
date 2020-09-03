@@ -1,0 +1,14 @@
+---
+- name: Playbook to manage DNS forward zone
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # Ensure DNS zone is present
+  - ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      forwarders:
+        - ip_address: 192.168.100.123
+          port: 8063
