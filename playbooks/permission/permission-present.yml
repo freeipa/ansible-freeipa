@@ -1,0 +1,11 @@
+---
+- name: Permission present example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure permission TestPerm1 is present
+    ipapermission:
+      name: TestPerm1
+      object_type: host
+      perm_rights: all

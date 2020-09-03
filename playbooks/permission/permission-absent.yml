@@ -1,0 +1,11 @@
+---
+- name: Permission absent example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure permission TestPerm1 is absent
+    ipapermission:
+      name: TestPerm1
+      state: absent
+
