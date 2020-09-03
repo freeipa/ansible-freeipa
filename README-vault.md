@@ -130,7 +130,7 @@ Example playbook to make sure vault data is present in a symmetric vault:
       action: member
 ```
 
-Example playbook to retrieve vault data from a symmetric vault:
+When retrieving data from a vault, it is recommended that `no_log: yes` is used, so that sensitive data stored in a vault is not logged by Ansible. The data is returned in a dict `vault`, in the field `data` (e.g. `result.vault.data`). An example playbook to retrieve data from a symmetric vault:
 
 ```yaml
 ---
@@ -139,12 +139,19 @@ Example playbook to retrieve vault data from a symmetric vault:
   become: true
 
   tasks:
-  - ipavault:
+  - name: Retrieve data from vault and register it in 'ipavault'
+    ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin
       password: SomeVAULTpassword
       state: retrieved
+    no_log: yes
+    register: ipavault
+
+  - name: Print retrieved data from vault
+    debug:
+      var: ipavault.vault.data
 ```
 
 Example playbook to make sure vault data is absent in a symmetric vault:

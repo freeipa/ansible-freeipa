@@ -13,5 +13,6 @@
         password: SomeVAULTpassword
         state: retrieved
       register: result
+      no_log: true
     - debug:
         msg: "{{ result.vault.data }}"
