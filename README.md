@@ -27,6 +27,7 @@ Features
 * Modules for sudocmdgroup management
 * Modules for sudorule management
 * Modules for topology management
+* Modules fot trust management
 * Modules for user management
 * Modules for vault management
 
@@ -429,6 +430,7 @@ Modules in plugin/modules
 * [ipasudorule](README-sudorule.md)
 * [ipatopologysegment](README-topology.md)
 * [ipatopologysuffix](README-topology.md)
+* [ipatrust](README-trust.md)
 * [ipauser](README-user.md)
 * [ipavault](README-vault.md)
 

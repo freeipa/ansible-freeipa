@@ -1,0 +1,51 @@
+---
+- name: find trust
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+
+  - block:
+
+    - name: delete trust
+      ipatrust:
+        realm: windows.local
+        state: absent
+      register: del_trust
+
+    - name: check for trust
+      shell: |
+        echo 'SomeADMINpassword' | kinit admin
+        ipa trust-find windows.local
+      register: check_find_trust
+      failed_when: "'0 trusts matched' not in check_find_trust.stdout"
+
+    - name: delete id range
+      shell: |
+        echo 'SomeADMINpassword' | kinit admin
+        ipa idrange-del WINDOWS.LOCAL_id_range
+      when: del_trust['changed'] | bool
+
+    - name: check for range
+      shell: |
+        echo 'SomeADMINpassword' | kinit admin
+        ipa idrange-find WINDOWS.LOCAL_id_range
+      register: check_del_idrange
+      failed_when: "'0 ranges matched' not in check_del_idrange.stdout"
+
+    - name: add trust
+      ipatrust:
+        realm: windows.local
+        admin: Administrator
+        password: secret_ad_pw
+        state: present
+
+    - name: check for trust
+      shell: |
+        echo 'SomeADMINpassword' | kinit admin
+        ipa trust-find windows.local
+      register: check_add_trust
+      failed_when: "'1 trust matched' not in check_add_trust.stdout"
+
+    when: trust_test_is_supported | default(false)
