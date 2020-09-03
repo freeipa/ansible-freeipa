@@ -107,7 +107,7 @@ if NUM_VERSION >= 40500:
     adtrust_imported = True
     kra_imported = True
     from ipaserver.install.installutils import (
-        IPA_MODULES, BadHostError, get_fqdn, get_server_ip_address,
+        BadHostError, get_fqdn, get_server_ip_address,
         is_ipa_configured, load_pkcs12, read_password, verify_fqdn,
         update_hosts_file)
     from ipaserver.install.server.install import (
@@ -122,6 +122,10 @@ if NUM_VERSION >= 40500:
     except ImportError:
         def default_subject_base(realm_name):
             return DN(('O', realm_name))
+    try:
+        from ipalib.facts import IPA_MODULES
+    except ImportError:
+        from ipaserver.install.installutils import IPA_MODULES
     try:
         from ipaserver.install.installutils import default_ca_subject_dn
     except ImportError:
