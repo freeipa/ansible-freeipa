@@ -1,0 +1,14 @@
+---
+- name: Privilege absent example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure privilege "Broad Privilege" permission is absent
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      permission:
+      - "System: Write IPA Configuration"
+      action: member
+      state: absent

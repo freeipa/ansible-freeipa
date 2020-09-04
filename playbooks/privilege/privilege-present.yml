@@ -1,0 +1,11 @@
+---
+- name: Privilege present example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure privilege Broad Privilege is present
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      description: Broad Privilege

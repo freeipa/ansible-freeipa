@@ -1,0 +1,15 @@
+---
+- name: Privilege member present example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure privilege "Broad Privilege" permissions are present
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      permission:
+      - "System: Write IPA Configuration"
+      - "System: Write DNS Configuration"
+      - "System: Update DNS Entries"
+      action: member
