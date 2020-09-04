@@ -1,4 +1,7 @@
 ---
+- name: Include create_users_json.yml
+  import_playbook: create_users_json.yml
+
 - name: Test users present slice
   hosts: ipaserver
   become: true
