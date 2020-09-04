@@ -220,6 +220,7 @@ class AnsibleFreeIPATestCase(TestCase):
         if is_docker_env():
             protocol = "docker://"
             user = ""
+            ssh_identity_file = None
         else:
             protocol = "ssh://"
 
@@ -230,9 +231,12 @@ class AnsibleFreeIPATestCase(TestCase):
             current_user = os.getenv("USER")
             ansible_user = os.getenv("ANSIBLE_REMOTE_USER", current_user)
             user = ansible_user + password + "@"
+            ssh_identity_file = os.getenv("ANSIBLE_PRIVATE_KEY_FILE", None)
 
         host_connection_info = protocol + user + get_server_host()
-        self.master = testinfra.get_host(host_connection_info)
+        self.master = testinfra.get_host(
+            host_connection_info, ssh_identity_file=ssh_identity_file,
+        )
 
     def run_playbook(self, playbook, allow_failures=False):
         return run_playbook(playbook, allow_failures)
