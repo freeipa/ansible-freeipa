@@ -923,14 +923,12 @@ def main():
                 elif command == 'vault_retrieve':
                     if 'result' not in result:
                         raise Exception("No result obtained.")
-                    if 'data' in result['result']:
-                        data_return = exit_args.setdefault('vault', {})
-                        data_return['data'] = result['result']['data']
-                    elif 'vault_data' in result['result']:
-                        data_return = exit_args.setdefault('vault', {})
-                        data_return['data'] = result['result']['vault_data']
+                    if "data" in result["result"]:
+                        data_return = exit_args.setdefault("vault", {})
+                        data_return["data"] = result["result"]["data"]
                     else:
-                        raise Exception("No data retrieved.")
+                        if not datafile_out:
+                            raise Exception("No data retrieved.")
                     changed = False
                 else:
                     if "completed" in result:

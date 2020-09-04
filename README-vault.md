@@ -246,7 +246,7 @@ There is only a return value if `state` is `retrieved`.
 
 Variable | Description | Returned When
 -------- | ----------- | -------------
-`vault` | Vault dict with archived data. (dict) <br>Options: | If `state` is `retrieved`.
+`vault` | Vault dict with archived data. (dict) <br>Options: | If `state` is `retrieved` and `out` is not defined.
 &nbsp; | `data` - The vault data. | Always
 
 

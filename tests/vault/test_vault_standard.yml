@@ -48,7 +48,7 @@
       out: "{{ ansible_env.HOME }}/data.txt"
       state: retrieved
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed or (result.vault.data | default(false))
 
   - name: Verify retrieved data.
     slurp:
