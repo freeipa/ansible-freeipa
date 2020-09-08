@@ -26,14 +26,31 @@
       state: present
     when: ipareplica_setup_firewalld | bool
 
+  when: ipareplica_install_packages | bool
+
+- block:
   - name: Firewalld service - Ensure that firewalld is running
     systemd:
       name: firewalld
       enabled: yes
       state: started
-    when: ipareplica_setup_firewalld | bool
 
-  when: ipareplica_install_packages | bool
+  - name: Firewalld - Verify runtime zone "{{ ipareplica_firewalld_zone }}"
+    shell: >
+      firewall-cmd
+      --info-zone="{{ ipareplica_firewalld_zone }}"
+      >/dev/null
+    when: ipareplica_firewalld_zone is defined
+
+  - name: Firewalld - Verify permanent zone "{{ ipareplica_firewalld_zone }}"
+    shell: >
+      firewall-cmd
+      --permanent
+      --info-zone="{{ ipareplica_firewalld_zone }}"
+      >/dev/null
+    when: ipareplica_firewalld_zone is defined
+
+  when: ipareplica_setup_firewalld | bool
 
 #- name: Install - Include Python2/3 import test
 #  import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
@@ -109,6 +126,8 @@
     command: >
       firewall-cmd
       --permanent
+      --zone="{{ ipareplica_firewalld_zone if ipareplica_firewalld_zone is
+         defined else '' }}"
       --add-service=freeipa-ldap
       --add-service=freeipa-ldaps
       {{ "--add-service=freeipa-trust" if result_ipareplica_test.setup_adtrust
@@ -120,6 +139,8 @@
   - name: Install - Configure firewalld runtime
     command: >
       firewall-cmd
+      --zone="{{ ipareplica_firewalld_zone if ipareplica_firewalld_zone is
+         defined else '' }}"
       --add-service=freeipa-ldap
       --add-service=freeipa-ldaps
       {{ "--add-service=freeipa-trust" if result_ipareplica_test.setup_adtrust
