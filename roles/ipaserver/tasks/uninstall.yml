@@ -1,9 +1,6 @@
 ---
 # tasks to uninstall IPA server
 
-# - name: Uninstall - Include Python2/3 import test
-#   import: "{{ role_path }}/tasks/python_2_3_test.yml"
-
 - name: Uninstall - Uninstall IPA server
   command: >
     /usr/sbin/ipa-server-install
