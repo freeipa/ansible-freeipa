@@ -1,9 +1,6 @@
 ---
 # tasks to uninstall IPA client
 
-# - name: Uninstall - Include Python2/3 import test
-#   import_tasks: "{{ role_path }}/tasks/python_2_3_test.yml"
-
 - name: Uninstall - Uninstall IPA client
   command: >
     /usr/sbin/ipa-client-install

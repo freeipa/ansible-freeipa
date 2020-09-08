@@ -37,8 +37,6 @@ for i in roles/ipa*/library/*.py roles/ipa*/module_utils/*.py plugins/*/*.py; do
     sed -i '1{/\/usr\/bin\/python*/d;}' $i
     chmod a-x $i
 done
-# Add execute flag to py3test.py scripts
-chmod a+x roles/ipa*/files/py3test.py
 
 %build
 
