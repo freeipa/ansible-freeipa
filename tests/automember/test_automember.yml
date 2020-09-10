@@ -1,0 +1,164 @@
+---
+- name: Test automember
+  hosts: ipaserver
+  become: true
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure group automember rule admins is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: admins
+      state: absent
+      type: group
+
+  - name: Ensure hostgroup automember rule ipaservers is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: ipaservers
+      state: absent
+      type: hostgroup
+
+  # CREATE TEST ITEMS
+
+  # TESTS
+
+  - name: Ensure admins group automember rule is present
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: admins
+      description: Admins automember rule.
+      type: group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure admins group automember rule is present again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: admins
+      description: Admins automember rule.
+      type: group
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Change admins group automember rule description
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: admins
+      description: Admins automember rule description.
+      type: group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure admins group automember rule has conditions
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: admins
+      type: group
+      inclusive:
+        - key: 'mail'
+          expression: 'example.com$'
+        - key: 'uid'
+          expression: '1234'
+      exclusive:
+        - key: 'givenname'
+          expression: 'example'
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure admins group automember rule has conditions again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: admins
+      type: group
+      inclusive:
+        - key: 'mail'
+          expression: 'example.com$'
+        - key: 'uid'
+          expression: '1234'
+      exclusive:
+        - key: 'givenname'
+          expression: 'example'
+    register: result
+    failed_when: result.changed or result.failed
+
+######
+
+  - name: Ensure ipaservers hostgroup automember rule is present
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: ipaservers
+      description: ipaservers automember rule
+      type: hostgroup
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure ipaservers hostgroup automember rule is present again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: ipaservers
+      description: ipaservers automember rule
+      type: hostgroup
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Change ipaservers hostgroup automember rule description
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: ipaservers
+      description: ipaservers test automember rule
+      type: hostgroup
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure ipaservers hostgroup automember rule has conditions
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: admins
+      type: group
+      inclusive:
+        - key: 'description'
+          expression: 'example'
+        - key: 'fqdn'
+          expression: 'example'
+      exclusive:
+        - key: 'serverhostname'
+          expression: 'example'
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure ipaservers hostgroup automember rule has conditions again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: admins
+      type: group
+      inclusive:
+        - key: 'description'
+          expression: 'example'
+        - key: 'fqdn'
+          expression: 'example'
+      exclusive:
+        - key: 'serverhostname'
+          expression: 'example'
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure group automember rule admins is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      type: group
+      name:
+      - admins
+      state: absent
+
+  - name: Ensure hostgroup automember rule ipaservers is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      type: hostgroup
+      name:
+      - ipaservers
+      state: absent

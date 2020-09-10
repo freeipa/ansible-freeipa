@@ -225,7 +225,7 @@ def date_format(value):
     raise ValueError("Invalid date '%s'" % value)
 
 
-def compare_args_ipa(module, args, ipa):  # noqa
+def compare_args_ipa(module, args, ipa, ignore=[]):  # noqa
     """Compare IPA obj attrs with the command args.
 
     This function compares IPA objects attributes with the args the
@@ -239,6 +239,8 @@ def compare_args_ipa(module, args, ipa):  # noqa
     base_debug_msg = "Ansible arguments and IPA commands differed. "
 
     for key in args.keys():
+        if key in ignore:
+            continue
         if key not in ipa:
             module.debug(
                 base_debug_msg + "Command key not present in IPA: %s" % key
