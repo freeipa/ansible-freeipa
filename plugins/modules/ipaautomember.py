@@ -21,6 +21,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from ansible.module_utils._text import to_text
+from ansible.module_utils.ansible_freeipa_module import (api_command,
+                                                         api_connect,
+                                                         compare_args_ipa,
+                                                         temp_kdestroy,
+                                                         temp_kinit,
+                                                         valid_creds)
+from ansible.module_utils.basic import AnsibleModule
+
 ANSIBLE_METADATA = {
     "metadata_version": "1.0",
     "supported_by": "community",
@@ -91,10 +100,6 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible_collections.freeipa.ansible_freeipa.plugins.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa
-from ansible.module_utils._text import to_text
-from ansible.module_utils.basic import AnsibleModule
 
 def find_automember(module, name, grouping):
     _args = {
@@ -148,7 +153,10 @@ def transform_conditions(conditions):
     return transformed
 
 
-def gen_condition_commands(name, grouping, module_conditions, current_conditions):
+def gen_condition_commands(name,
+                           grouping,
+                           module_conditions,
+                           current_conditions):
     """Return a list of commands to add/remove automember rule conditions."""
     commands = []
     add_diff = set(module_conditions) - set(current_conditions)
@@ -181,7 +189,8 @@ def main():
             name=dict(type="list", aliases=["cn"],
                       default=None, required=True),
             description=dict(type="str", default=None),
-            type=dict(type='str', required=True, choices=['group', 'hostgroup']),
+            type=dict(type='str', required=True,
+                      choices=['group', 'hostgroup']),
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
         ),
@@ -234,7 +243,8 @@ def main():
                 args = gen_args(description, grouping)
 
                 if res_find is not None:
-                    if not compare_args_ipa(ansible_module, args, res_find, ['type']):
+                    if not compare_args_ipa(ansible_module,
+                                            args, res_find, ['type']):
                         commands.append([name, 'automember_mod', args])
                 else:
                     commands.append([name, 'automember_add', args])
@@ -267,7 +277,8 @@ def main():
                         name, grouping, module_conditions, current_conditions))
             elif state == 'absent':
                 if res_find is not None:
-                    commands.append([name, 'automember_del', {'type': grouping}])
+                    commands.append(
+                        [name, 'automember_del', {'type': grouping}])
 
         for name, command, args in commands:
             try:
@@ -275,10 +286,12 @@ def main():
                     ansible_module, command, to_text(name), args)
 
                 # Check if any changes were made by any command
-                if command in ('automember_del', 'automember_remove_condition'):
+                if command in ('automember_del',
+                               'automember_remove_condition'):
                     changed |= "Deleted" in result['summary']
-                    
-                elif command in ('automember_add', 'automember_add_condition'):
+
+                elif command in ('automember_add',
+                                 'automember_add_condition'):
                     changed |= "Added" in result['summary']
 
                 elif command == 'automember_mod':
@@ -288,7 +301,6 @@ def main():
 
                 res_find = find_automember(ansible_module, name, grouping)
 
-            
             except Exception as e:
                 ansible_module.fail_json(msg=str(e))
 
