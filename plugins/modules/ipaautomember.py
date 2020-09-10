@@ -79,12 +79,12 @@ EXAMPLES = """
 - ipaautomember:
     ipaadmin_password: SomeADMINpassword
     name: admins
-    description: "t"
+    description: "example description"
     grouping: group
     state: present
     inclusive:
-    - key: "audio"
-        expression: "test"
+    - key: "mail"
+      expression: "example.com$
 
 """
 
