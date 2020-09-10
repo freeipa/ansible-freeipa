@@ -80,7 +80,7 @@ EXAMPLES = """
     ipaadmin_password: SomeADMINpassword
     name: admins
     description: "example description"
-    grouping: group
+    type: group
     state: present
     inclusive:
     - key: "mail"
