@@ -1,0 +1,15 @@
+---
+- name: Automember hostgroup rule member present example
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure hostgroup automember condition is present
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: "My domain hosts"
+      automember_type: hostgroup
+      state: present
+      action: member
+      inclusive:
+        - key: fqdn
+          expression: ".*.mydomain.com"

@@ -12,6 +12,7 @@ Features
 * One-time-password (OTP) support for client installation
 * Repair mode for clients
 * Backup and restore, also to and from controller
+* Modules for automembership rule management
 * Modules for config management
 * Modules for delegation management
 * Modules for dns config management
@@ -422,6 +423,7 @@ Roles
 Modules in plugin/modules
 =========================
 
+* [ipaautomember](README-automember.md)
 * [ipaconfig](README-config.md)
 * [ipadelegation](README-delegation.md)
 * [ipadnsconfig](README-dnsconfig.md)

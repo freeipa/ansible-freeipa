@@ -1,0 +1,11 @@
+---
+- name: Automember group absent example
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure group automember rule admins is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: admins
+      automember_type: group
+      state: absent
