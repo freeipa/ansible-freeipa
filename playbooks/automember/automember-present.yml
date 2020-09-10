@@ -5,12 +5,14 @@
   tasks:
   - name: Ensure group automember rule admins is present
     ipaautomember:
+      ipaadmin_password: SomeADMINpassword
       name: admins
       type: group
       state: present
 
   - name: Ensure hostgroup automember rule ipaservers is absent
     ipaautomember:
+      ipaadmin_password: SomeADMINpassword
       name: ipaservers
       type: hostgroup
       state: present
