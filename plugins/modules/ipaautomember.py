@@ -141,7 +141,7 @@ def gen_args(description, grouping):
 
 
 def transform_conditions(conditions):
-    """ Transforms a list of dicts into a list with the format of key=value. """
+    """Transform a list of dicts into a list with the format of key=value."""
     transformed = []
     for condition in conditions:
         transformed.append('='.join(str(x) for x in condition.values()))
@@ -149,7 +149,7 @@ def transform_conditions(conditions):
 
 
 def gen_condition_commands(name, grouping, module_conditions, current_conditions):
-    """ Returns a list of commands to add/remove automember rule conditions. """
+    """Return a list of commands to add/remove automember rule conditions."""
     commands = []
     add_diff = set(module_conditions) - set(current_conditions)
     remove_diff = set(current_conditions) - set(module_conditions)
@@ -256,7 +256,7 @@ def main():
                 if exclusive is not None and False:
 
                     # Get the conditions from the module
-                    module_conditions = transform_conditions(inclusive)
+                    module_conditions = transform_conditions(exclusive)
 
                     # Get the conditions from the existing automember rule.
                     current_conditions = res_find.get(
