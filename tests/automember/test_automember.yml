@@ -151,14 +151,12 @@
     ipaautomember:
       ipaadmin_password: SomeADMINpassword
       type: group
-      name:
-      - admins
+      name: admins
       state: absent
 
   - name: Ensure hostgroup automember rule ipaservers is absent
     ipaautomember:
       ipaadmin_password: SomeADMINpassword
       type: hostgroup
-      name:
-      - ipaservers
+      name: ipaservers
       state: absent

@@ -1,5 +1,5 @@
 ---
-- name: Automember absent example
+- name: Automember present example
   hosts: ipaserver
   become: true
   tasks:
