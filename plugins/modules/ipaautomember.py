@@ -104,7 +104,7 @@ RETURN = """
 def find_automember(module, name, grouping):
     _args = {
         "all": True,
-        "type": grouping
+        "type": to_text(grouping)
     }
 
     _result = api_command(module, "automember_find", to_text(name), _args)
@@ -124,13 +124,13 @@ def gen_condition_args(grouping,
                        exclusiveregex):
     _args = {}
     if grouping is not None:
-        _args['type'] = grouping
+        _args['type'] = to_text(grouping)
     if key is not None:
-        _args['key'] = key
+        _args['key'] = to_text(key)
     if inclusiveregex is not None:
-        _args['automemberinclusiveregex'] = inclusiveregex
+        _args['automemberinclusiveregex'] = to_text(inclusiveregex)
     if exclusiveregex is not None:
-        _args['automemberexclusiveregex'] = exclusiveregex
+        _args['automemberexclusiveregex'] = to_text(exclusiveregex)
 
     return _args
 
@@ -140,7 +140,7 @@ def gen_args(description, grouping):
     if description is not None:
         _args["description"] = to_text(description)
     if grouping is not None:
-        _args['type'] = grouping
+        _args['type'] = to_text(grouping)
 
     return _args
 
@@ -278,7 +278,7 @@ def main():
             elif state == 'absent':
                 if res_find is not None:
                     commands.append(
-                        [name, 'automember_del', {'type': grouping}])
+                        [name, 'automember_del', {'type': to_text(grouping)}])
 
         for name, command, args in commands:
             try:
@@ -296,10 +296,6 @@ def main():
 
                 elif command == 'automember_mod':
                     changed |= "Modified" in result['summary']
-
-                ansible_module.warn(str(result))
-
-                res_find = find_automember(ansible_module, name, grouping)
 
             except Exception as e:
                 ansible_module.fail_json(msg=str(e))
