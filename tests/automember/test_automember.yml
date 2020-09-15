@@ -58,13 +58,13 @@
       name: admins
       type: group
       inclusive:
-        - key: 'mail'
-          expression: 'example.com$'
         - key: 'uid'
-          expression: '1234'
+          expression: 'uid'
+        - key: 'uidnumber'
+          expression: 'uidnumber'
       exclusive:
-        - key: 'givenname'
-          expression: 'example'
+        - key: 'uid'
+          expression: 'uid'
     register: result
     failed_when: not result.changed or result.failed
 
@@ -74,13 +74,13 @@
       name: admins
       type: group
       inclusive:
-        - key: 'mail'
-          expression: 'example.com$'
         - key: 'uid'
-          expression: '1234'
+          expression: 'uid'
+        - key: 'uidnumber'
+          expression: 'uidnumber'
       exclusive:
-        - key: 'givenname'
-          expression: 'example'
+        - key: 'uid'
+          expression: 'uid'
     register: result
     failed_when: result.changed or result.failed
 
@@ -116,32 +116,32 @@
   - name: Ensure ipaservers hostgroup automember rule has conditions
     ipaautomember:
       ipaadmin_password: SomeADMINpassword
-      name: admins
-      type: group
+      name: ipaservers
+      type: hostgroup
       inclusive:
         - key: 'description'
-          expression: 'example'
-        - key: 'fqdn'
-          expression: 'example'
+          expression: 'description'
+        - key: 'description'
+          expression: 'description'
       exclusive:
-        - key: 'serverhostname'
-          expression: 'example'
+        - key: 'cn'
+          expression: 'cn'
     register: result
     failed_when: not result.changed or result.failed
 
   - name: Ensure ipaservers hostgroup automember rule has conditions again
     ipaautomember:
       ipaadmin_password: SomeADMINpassword
-      name: admins
-      type: group
+      name: ipaservers
+      type: hostgroup
       inclusive:
         - key: 'description'
-          expression: 'example'
-        - key: 'fqdn'
-          expression: 'example'
+          expression: 'description'
+        - key: 'description'
+          expression: 'description'
       exclusive:
-        - key: 'serverhostname'
-          expression: 'example'
+        - key: 'cn'
+          expression: 'cn'
     register: result
     failed_when: result.changed or result.failed
 
