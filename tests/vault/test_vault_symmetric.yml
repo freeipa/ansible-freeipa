@@ -295,5 +295,42 @@
     register: result
     failed_when: not result.failed or "Cannot modify password of inexistent vault" not in result.msg
 
+  - name: Ensure symmetric vault is present
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      vault_type: symmetric
+      password: APasswordToChange
+      vault_data: Hello World.
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Change symmetric vault password, using password file.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: APasswordToChange
+      new_password_file: "{{ ansible_env.HOME }}/password.txt"
+      vault_type: symmetric
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Retrieve data from symmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      state: retrieved
+    register: result
+    failed_when: result.vault.data != 'Hello World.' or result.changed
+
+  - name: Ensure symmetric vault is absent
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      state: absent
+    register: result
+    failed_when: not result.changed
+
   - name: Cleanup testing environment.
     import_tasks: env_cleanup.yml

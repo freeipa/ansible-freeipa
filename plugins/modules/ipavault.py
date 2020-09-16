@@ -565,17 +565,16 @@ def change_password(module, res_find, password, password_file, new_password,
     if password:
         args["password"] = password
     if password_file:
-        args["password"] = password_file
+        args["password_file"] = password_file
     # retrieve current stored data
     result = api_command(module, 'vault_retrieve', name, args)
-    args['data'] = result['result']['data']
 
     # modify arguments to store data with new password.
-    if password:
+    args = {"override_password": True, "data": result['result']['data']}
+    if new_password:
         args["password"] = new_password
-    if password_file:
-        args["password"] = new_password_file
-    args["override_password"] = True
+    if new_password_file:
+        args["password_file"] = new_password_file
     # return the command to store data with the new password.
     return [(name, "vault_archive", args)]
 
