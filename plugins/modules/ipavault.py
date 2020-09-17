@@ -319,7 +319,7 @@ from base64 import b64decode
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, \
-    gen_add_del_lists, compare_args_ipa, module_params_get
+    gen_add_del_lists, compare_args_ipa, module_params_get, exit_raw_json
 from ipalib.errors import EmptyModlist
 
 
@@ -964,7 +964,10 @@ def main():
         temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
-    ansible_module.exit_json(changed=changed, **exit_args)
+
+    # exit_raw_json is a replacement for ansible_module.exit_json that
+    # does not mask the output.
+    exit_raw_json(ansible_module, changed=changed, **exit_args)
 
 
 if __name__ == "__main__":

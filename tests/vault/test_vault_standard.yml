@@ -25,6 +25,22 @@
     register: result
     failed_when: result.changed
 
+  - name: Archive data to standard vault, matching `no_log` field.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_data: SomeADMINpassword
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      state: retrieved
+    register: result
+    failed_when: result.vault.data != 'SomeADMINpassword' or result.changed
+
   - name: Archive data to standard vault
     ipavault:
       ipaadmin_password: SomeADMINpassword

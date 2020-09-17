@@ -22,6 +22,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import sys
 import os
 import uuid
 import tempfile
@@ -44,6 +45,7 @@ from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
+from ansible.module_utils.common.text.converters import jsonify
 
 try:
     from ipalib.x509 import Encoding
@@ -386,6 +388,26 @@ def is_ipv6_addr(ipaddr):
     except socket.error:
         return False
     return True
+
+
+def exit_raw_json(module, **kwargs):
+    """
+    Print the raw parameters in JSON format, without masking.
+
+    Due to Ansible filtering out values in the output that match values
+    in variables which has `no_log` set, if a module need to return user
+    defined dato to the controller, it cannot rely on
+    AnsibleModule.exit_json, as there is a chance that a partial match may
+    occur, masking the data returned.
+
+    This method is a replacement for AnsibleModule.exit_json. It has
+    nearly the same implementation as exit_json, but does not filter
+    data. Beware that this data will be logged by Ansible, and if it
+    contains sensible data, it will be appear in the logs.
+    """
+    module.do_cleanup_files()
+    print(jsonify(kwargs))
+    sys.exit(0)
 
 
 class AnsibleFreeIPAParams(Mapping):
