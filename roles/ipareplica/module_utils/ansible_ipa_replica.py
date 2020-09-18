@@ -101,7 +101,11 @@ if NUM_VERSION >= 40600:
         from ipaserver.install.service import (
             find_providing_servers, find_providing_server)
     from ipaserver.install.installutils import (
-        ReplicaConfig, load_pkcs12, is_ipa_configured)
+        ReplicaConfig, load_pkcs12)
+    try:
+        from ipalib.facts import is_ipa_configured
+    except ImportError:
+        from ipaserver.install.installutils import is_ipa_configured
     from ipaserver.install.replication import (
         ReplicationManager, replica_conn_check)
     from ipaserver.install.server.replicainstall import (

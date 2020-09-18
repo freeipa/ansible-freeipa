@@ -60,7 +60,11 @@ if NUM_VERSION >= 40500:
     # IPA version >= 4.5
 
     from ipaclient.install.ipachangeconf import IPAChangeConf
-    from ipalib.install import certmonger, sysrestore
+    from ipalib.install import certmonger
+    try:
+        from ipalib import sysrestore
+    except ImportError:
+        from ipalib.install import sysrestore
     from ipapython import ipautil
     from ipapython.ipa_log_manager import standard_logging_setup
     try:
@@ -108,8 +112,12 @@ if NUM_VERSION >= 40500:
     kra_imported = True
     from ipaserver.install.installutils import (
         BadHostError, get_fqdn, get_server_ip_address,
-        is_ipa_configured, load_pkcs12, read_password, verify_fqdn,
+        load_pkcs12, read_password, verify_fqdn,
         update_hosts_file)
+    try:
+        from ipalib.facts import is_ipa_configured
+    except ImportError:
+        from ipaserver.install.installutils import is_ipa_configured
     from ipaserver.install.server.install import (
         check_dirsrv, validate_admin_password, validate_dm_password,
         read_cache, write_cache)

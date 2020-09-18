@@ -107,9 +107,12 @@ if NUM_VERSION >= 40400:
     from ipalib import api, errors, x509
     from ipalib import constants
     try:
-        from ipalib.install import sysrestore
+        from ipalib import sysrestore
     except ImportError:
-        from ipapython import sysrestore
+        try:
+            from ipalib.install import sysrestore
+        except ImportError:
+            from ipapython import sysrestore
     try:
         from ipalib.install import certmonger
     except ImportError:
