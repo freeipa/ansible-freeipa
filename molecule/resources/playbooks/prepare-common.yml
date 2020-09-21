@@ -25,9 +25,8 @@
 - name: Ensure fs.protected_regular is disabled
   sysctl:
     name: fs.protected_regular
-    value: 0
+    value: '0'
     sysctl_set: yes
     state: present
     reload: yes
   when: result.stat.exists
-
