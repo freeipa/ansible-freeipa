@@ -16,13 +16,8 @@ rules:
   truthy:
     allowed-values: ["yes", "no", "true", "false", "True", "False"]
     level: error
+  line-length:
+    max: 160
   # Disabled rules
-  document-start: disable
   indentation: disable
-  line-length: disable
-  colons: disable
-  empty-lines: disable
   comments: disable
-  comments-indentation: disable
-  trailing-spaces: disable
-  new-line-at-end-of-file: disable
