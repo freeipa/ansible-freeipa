@@ -17,4 +17,3 @@
       passwordexpiration: "2023-01-19 23:59:59"
       password: "no-brain"
       update_password: on_create
-
