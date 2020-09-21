@@ -756,7 +756,7 @@
     failed_when: result.changed or result.failed
 
   # cleanup
-  - name : Ensure sudocmdgroup is absent
+  - name: Ensure sudocmdgroup is absent
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"

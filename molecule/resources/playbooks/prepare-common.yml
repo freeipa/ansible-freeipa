@@ -7,7 +7,7 @@
     sysctl_set: yes
     state: present
     reload: yes
-  with_items :
+  with_items:
     - name: net.ipv6.conf.all.disable_ipv6
       value: 0
     - name: net.ipv6.conf.lo.disable_ipv6

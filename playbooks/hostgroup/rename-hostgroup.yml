@@ -4,7 +4,7 @@
   become: yes
 
   tasks:
-  - name : Rename host-group from `databases` to `datalake`
+  - name: Rename host-group from `databases` to `datalake`
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
       name: databases
