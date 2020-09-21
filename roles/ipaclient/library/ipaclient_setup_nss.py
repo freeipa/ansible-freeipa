@@ -32,8 +32,7 @@ DOCUMENTATION = '''
 ---
 module: ipaclient_setup_nss
 short description: Create IPA client NSS database
-description:
-Create IPA NSS database
+description: Create IPA NSS database
 options:
   servers:
     description: Fully qualified name of IPA servers to enroll to
@@ -55,7 +54,7 @@ options:
       User Principal allowed to promote replicas and join IPA realm
     required: yes
   subject_base:
-    description:
+    description: |
       The certificate subject base (default O=<realm-name>).
       RDNs are in LDAP order (most specific RDN first).
     required: no
@@ -72,12 +71,12 @@ options:
     description: The installer dnsok setting
     required: yes
   enable_dns_updates:
-    description:
+    description: |
       Configures the machine to attempt dns updates when the ip address
       changes
     required: yes
   all_ip_addresses:
-    description:
+    description: |
       All routable IP addresses configured on any interface will be added
       to DNS
     required: yes

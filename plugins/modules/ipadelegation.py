@@ -50,7 +50,7 @@ options:
     description: Attribute list to which the delegation applies
     required: false
     aliases: ["attrs"]
-  membergroup
+  membergroup:
     description: User group to apply delegation to
     required: false
     aliases: ["memberof"]

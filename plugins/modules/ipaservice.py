@@ -47,7 +47,7 @@ options:
     description: Base-64 encoded service certificate.
     required: false
     type: list
-    aliases=['usercertificate']
+    aliases: ["usercertificate"]
   pac_type:
     description: Supported PAC type.
     required: false
@@ -79,12 +79,12 @@ options:
     type: bool
     default: False
     aliases: ["ipakrbokasdelegate"]
-  ok_to_auth_as_delegate: Allow service to authenticate on behalf of a client.
-    description: .
+  ok_to_auth_as_delegate:
+    description: Allow service to authenticate on behalf of a client.
     required: false
     type: bool
     default: False
-    aliases:["ipakrboktoauthasdelegate"]
+    aliases: ["ipakrboktoauthasdelegate"]
   principal:
     description: List of principal aliases for the service.
     required: false
@@ -104,42 +104,42 @@ options:
     type: list
     aliases: ["managedby_host"]
   allow_create_keytab_user:
-    descrption: Users allowed to create a keytab of this host.
+    description: Users allowed to create a keytab of this host.
     required: false
     type: list
     aliases: ["ipaallowedtoperform_write_keys_user"]
   allow_create_keytab_group:
-    descrption: Groups allowed to create a keytab of this host.
+    description: Groups allowed to create a keytab of this host.
     required: false
     type: list
     aliases: ["ipaallowedtoperform_write_keys_group"]
   allow_create_keytab_host:
-    descrption: Hosts allowed to create a keytab of this host.
+    description: Hosts allowed to create a keytab of this host.
     required: false
     type: list
     aliases: ["ipaallowedtoperform_write_keys_host"]
   allow_create_keytab_hostgroup:
-    descrption: Host group allowed to create a keytab of this host.
+    description: Host group allowed to create a keytab of this host.
     required: false
     type: list
     aliases: ["ipaallowedtoperform_write_keys_hostgroup"]
   allow_retrieve_keytab_user:
-    descrption: User allowed to retrieve a keytab of this host.
+    description: User allowed to retrieve a keytab of this host.
     required: false
     type: list
     aliases: ["ipaallowedtoperform_read_keys_user"]
   allow_retrieve_keytab_group:
-    descrption: Groups allowed to retrieve a keytab of this host.
+    description: Groups allowed to retrieve a keytab of this host.
     required: false
     type: list
     aliases: ["ipaallowedtoperform_read_keys_group"]
   allow_retrieve_keytab_host:
-    descrption: Hosts allowed to retrieve a keytab of this host.
+    description: Hosts allowed to retrieve a keytab of this host.
     required: false
     type: list
     aliases: ["ipaallowedtoperform_read_keys_host"]
   allow_retrieve_keytab_hostgroup:
-    descrption: Host groups allowed to retrieve a keytab of this host.
+    description: Host groups allowed to retrieve a keytab of this host.
     required: false
     type: list
     aliases: ["ipaallowedtoperform_read_keys_hostgroup"]

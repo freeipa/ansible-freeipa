@@ -80,20 +80,20 @@ options:
         required: false
         aliases: ["principalname", "krbprincipalname"]
       principalexpiration:
-        description:
-        - The kerberos principal expiration date
-        - (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
-        - YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
-        - YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
+        description: |
+          The kerberos principal expiration date
+          (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
+          YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
+          YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
         required: false
         aliases: ["krbprincipalexpiration"]
       passwordexpiration:
-        description:
-        - The kerberos password expiration date (FreeIPA-4.7+)
-        - (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
-        - YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
-        - YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
-        - Only usable with IPA versions 4.7 and up.
+        description: |
+          The kerberos password expiration date (FreeIPA-4.7+)
+          (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
+          YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
+          YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
+          Only usable with IPA versions 4.7 and up.
         required: false
         aliases: ["krbpasswordexpiration"]
       password:
@@ -156,7 +156,7 @@ options:
         description:
           List of supported user authentication types
           Use empty string to reset userauthtype to the initial value.
-        choices=['password', 'radius', 'otp', '']
+        choices: ['password', 'radius', 'otp', '']
         required: false
         aliases: ["ipauserauthtype"]
       userclass:
@@ -245,20 +245,20 @@ options:
     required: false
     aliases: ["principalname", "krbprincipalname"]
   principalexpiration:
-    description:
-    - The kerberos principal expiration date
-    - (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
-    - YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
-    - YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
+    description: |
+      The kerberos principal expiration date
+      (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
+      YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
+      YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
     required: false
     aliases: ["krbprincipalexpiration"]
   passwordexpiration:
-    description:
-    - The kerberos password expiration date (FreeIPA-4.7+)
-    - (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
-    - YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
-    - YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
-    - Only usable with IPA versions 4.7 and up.
+    description: |
+      The kerberos password expiration date (FreeIPA-4.7+)
+      (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
+      YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
+      YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
+      Only usable with IPA versions 4.7 and up.
     required: false
     aliases: ["krbpasswordexpiration"]
   password:
@@ -321,7 +321,7 @@ options:
     description:
       List of supported user authentication types
       Use empty string to reset userauthtype to the initial value.
-    choices=['password', 'radius', 'otp', '']
+    choices: ['password', 'radius', 'otp', '']
     required: false
     aliases: ["ipauserauthtype"]
   userclass:

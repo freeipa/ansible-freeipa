@@ -30,8 +30,7 @@ DOCUMENTATION = '''
 ---
 module: ipaclient_fix_ca
 short description: Fix IPA ca certificate
-description:
-Repair Fix IPA ca certificate
+description: Repair Fix IPA ca certificate
 options:
   servers:
     description: Fully qualified name of IPA servers to enroll to
@@ -43,7 +42,7 @@ options:
     description: The basedn of the IPA server (of the form dc=example,dc=com)
     required: no
   allow_repair:
-    description:
+    description: |
       Allow repair of already joined hosts. Contrary to ipaclient_force_join
       the host entry will not be changed on the server
     required: no

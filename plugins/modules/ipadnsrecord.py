@@ -49,9 +49,11 @@ options:
         aliases: ["record_name"]
         required: true
       zone_name:
-        description: The DNS zone name to which DNS record needs to be managed.
+        description: |
+          The DNS zone name to which DNS record needs to be managed.
+          Required if not provided globally.
         aliases: ["dnszone"]
-        required: true (if not provided globally)
+        required: false
       record_type:
         description: The type of DNS record.
         choices: ["A", "AAAA", "A6", "AFSDB", "CERT", "CNAME", "DLV", "DNAME",
@@ -159,7 +161,7 @@ options:
         required: false
         type: string
       a_create_reverse:
-        description:
+        description: |
           Create reverse record for A records.
           There is no equivalent to remove reverse records.
         type: bool
@@ -169,13 +171,13 @@ options:
         required: false
         type: string
       aaaa_create_reverse:
-        description:
+        description: |
           Create reverse record for AAAA records.
           There is no equivalent to remove reverse records.
         type: bool
         required: false
       create_reverse:
-        description:
+        description: |
           Create reverse record for A or AAAA record types.
           There is no equivalent to remove reverse records.
         type: bool
@@ -189,11 +191,11 @@ options:
         required: false
         type: int
       afsdb_hostname:
-        discription: AFSDB Hostname
+        description: AFSDB Hostname
         required: false
         type: string
       cert_type:
-        descriptioon: CERT Certificate Type
+        description: CERT Certificate Type
         required: false
         type: int
       cert_key_tag:
@@ -225,7 +227,7 @@ options:
         required: false
         type: int
       dlv_digest:
-        descriptinion: DLV Digest
+        description: DLV Digest
         required: false
         type: string
       dname_target:
@@ -245,11 +247,11 @@ options:
         required: false
         type: int
       ds_digest:
-        descriptinion: DS Digest
+        description: DS Digest
         required: false
         type: string
       kx_preference:
-        description:
+        description: |
           Preference given to this exchanger. Lower values are more preferred.
         required: false
         type: int
@@ -306,7 +308,7 @@ options:
         required: false
         type: float
       mx_preference:
-        description:
+        description: |
           Preference given to this exchanger. Lower values are more preferred.
         required: false
         type: int
@@ -347,7 +349,7 @@ options:
         required: false
         type: string
       srv_priority:
-        description:
+        description: |
           Lower number means higher priority. Clients will attempt to contact
           the server with the lowest-numbered priority they can reach.
         required: false
@@ -361,13 +363,15 @@ options:
         required: false
         type: int
       srv_target:
-        description:
+        description: |
           The domain name of the target host or '.' if the service is decidedly
           not available at this domain.
         required: false
         type: string
       sshfp_algorithm:
         description: SSHFP Algorithm
+        required: False
+        type: int
       sshfp_fp_type:
         description: SSHFP Fingerprint Type
         required: False
@@ -385,15 +389,15 @@ options:
         required: false
         type: int
       tlsa_selector:
-        descrpition: TLSA Selector
+        description: TLSA Selector
         required: false
         type: int
       tlsa_matching_type:
-        descrpition: TLSA Matching Type
+        description: TLSA Matching Type
         required: false
         type: int
       tlsa_cert_association_data:
-        descrpition: TLSA Certificate Association Data
+        description: TLSA Certificate Association Data
         required: false
         type: string
       uri_target:
@@ -401,7 +405,7 @@ options:
         required: false
         type: string
       uri_priority:
-        description:
+        description: |
           Lower number means higher priority. Clients will attempt to contact
           the URI with the lowest-numbered priority they can reach.
         required: false
@@ -411,9 +415,11 @@ options:
         required: false
         type: int
   zone_name:
-    description: The DNS zone name to which DNS record needs to be managed.
+    description: |
+      The DNS zone name to which DNS record needs to be managed.
+      Required if not provided globally.
     aliases: ["dnszone"]
-    required: true (if not provided on each record)
+    required: false
   name:
     description: The DNS record name to manage.
     aliases: ["record_name"]
@@ -523,7 +529,7 @@ options:
     required: false
     type: string
   create_reverse:
-    description:
+    description: |
       Create reverse record for A or AAAA record types.
       There is no equivalent to remove reverse records.
     type: bool
@@ -534,7 +540,7 @@ options:
     required: false
     type: string
   a_create_reverse:
-    description:
+    description: |
       Create reverse record for A records.
       There is no equivalent to remove reverse records.
     type: bool
@@ -544,7 +550,7 @@ options:
     required: false
     type: string
   aaaa_create_reverse:
-    description:
+    description: |
       Create reverse record for AAAA records.
       There is no equivalent to remove reverse records.
     type: bool
@@ -554,11 +560,11 @@ options:
     required: false
     type: int
   afsdb_hostname:
-    discription: AFSDB Hostname
+    description: AFSDB Hostname
     required: false
     type: string
   cert_type:
-    descriptioon: CERT Certificate Type
+    description: CERT Certificate Type
     required: false
     type: int
   cert_key_tag:
@@ -590,7 +596,7 @@ options:
     required: false
     type: int
   dlv_digest:
-    descriptinion: DLV Digest
+    description: DLV Digest
     required: false
     type: string
   dname_target:
@@ -610,11 +616,11 @@ options:
     required: false
     type: int
   ds_digest:
-    descriptinion: DS Digest
+    description: DS Digest
     required: false
     type: string
   kx_preference:
-    description:
+    description: |
       Preference given to this exchanger. Lower values are more preferred.
     required: false
     type: int
@@ -671,7 +677,7 @@ options:
     required: false
     type: float
   mx_preference:
-    description:
+    description: |
       Preference given to this exchanger. Lower values are more preferred.
     required: false
     type: int
@@ -712,7 +718,7 @@ options:
     required: false
     type: string
   srv_priority:
-    description:
+    description: |
       Lower number means higher priority. Clients will attempt to contact the
       server with the lowest-numbered priority they can reach.
     required: false
@@ -726,20 +732,22 @@ options:
     required: false
     type: int
   srv_target:
-    description:
+    description: |
       The domain name of the target host or '.' if the service is decidedly not
       available at this domain.
     required: false
     type: string
   sshfp_algorithm:
     description: SSHFP Algorithm
+    required: false
+    type: int
   sshfp_fp_type:
     description: SSHFP Fingerprint Type
-    required: False
+    required: false
     type: int
   sshfp_fingerprint:
     description: SSHFP Fingerprint
-    required: False
+    required: false
     type: string
   txt_data:
     description: TXT Text Data
@@ -750,15 +758,15 @@ options:
     required: false
     type: int
   tlsa_selector:
-    descrpition: TLSA Selector
+    description: TLSA Selector
     required: false
     type: int
   tlsa_matching_type:
-    descrpition: TLSA Matching Type
+    description: TLSA Matching Type
     required: false
     type: int
   tlsa_cert_association_data:
-    descrpition: TLSA Certificate Association Data
+    description: TLSA Certificate Association Data
     required: false
     type: string
   uri_target:
@@ -766,7 +774,7 @@ options:
     required: false
     type: string
   uri_priority:
-    description:
+    description: |
       Lower number means higher priority. Clients will attempt to contact the
       URI with the lowest-numbered priority they can reach.
     required: false

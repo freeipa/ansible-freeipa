@@ -45,10 +45,10 @@ options:
     required: true
     aliases: ["cn"]
   description:
-    descrpition: A description for the role.
+    description: A description for the role.
     required: false
   rename:
-    descrpition: Rename the role object.
+    description: Rename the role object.
     required: false
   user:
     description: List of users.
