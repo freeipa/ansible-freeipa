@@ -109,7 +109,7 @@ options:
     required: false
     type: int
   sudooption:
-    description:
+    description: List of sudo options.
     required: false
     type: list
     aliases: ["options"]

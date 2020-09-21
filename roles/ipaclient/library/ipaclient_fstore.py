@@ -32,8 +32,7 @@ DOCUMENTATION = '''
 ---
 module: ipaclient_fstore
 short description: Backup files using IPA client sysrestore
-description:
-Backup files using IPA client sysrestore
+description: Backup files using IPA client sysrestore
 options:
   backup:
     description: File to backup

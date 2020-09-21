@@ -59,7 +59,7 @@ options:
   state:
     description: State to ensure
     default: present
-    choices: ["present", "absent", "enabled", "disabled", "reinitialized"
+    choices: ["present", "absent", "enabled", "disabled", "reinitialized",
               "checked" ]
 author:
     - Thomas Woerner

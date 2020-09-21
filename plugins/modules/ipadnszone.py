@@ -27,6 +27,7 @@ ANSIBLE_METADATA = {
 }
 
 DOCUMENTATION = """
+---
 module: ipadnszone
 short description: Manage FreeIPA dnszone
 description: Manage FreeIPA dnszone
@@ -37,7 +38,6 @@ options:
   ipaadmin_password:
     description: The admin password
     required: false
-
   name:
     description: The zone name string.
     required: true
@@ -132,11 +132,14 @@ options:
     required: false
     type: int
   nsec3param_rec:
-    description: NSEC3PARAM record for zone in format: hash_algorithm flags iterations salt.
+    description: |
+      NSEC3PARAM record for zone in format: hash_algorithm flags iterations
+       salt.
     required: false
     type: str
   skip_overlap_check:
-    description: Force DNS zone creation even if it will overlap with an existing zone
+    description: |
+      Force DNS zone creation even if it will overlap with an existing zone
     required: false
     type: bool
   skip_nameserver_check:
