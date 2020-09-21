@@ -1,5 +1,6 @@
-# defaults file for ipaserver
+# defaults file for ipabackup
 # vars/default.yml
+---
 ipaserver_packages: [ "ipa-server" ]
 ipaserver_packages_dns: [ "ipa-server-dns" ]
 ipaserver_packages_adtrust: [ "freeipa-server-trust-ad" ]

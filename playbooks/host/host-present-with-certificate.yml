@@ -1,3 +1,4 @@
+---
 - name: Host present with certificate
   hosts: ipaserver
   become: true

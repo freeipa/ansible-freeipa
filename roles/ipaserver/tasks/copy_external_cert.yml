@@ -1,3 +1,4 @@
+---
 - name: Install - Initialize ipaserver_external_cert_files
   set_fact:
      ipaserver_external_cert_files: []

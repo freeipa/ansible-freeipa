@@ -1,3 +1,4 @@
+---
 - name: Host member certificate absent
   hosts: ipaserver
   become: true

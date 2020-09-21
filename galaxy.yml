@@ -1,3 +1,4 @@
+---
 namespace: "freeipa"
 name: "ansible_freeipa"
 version: "A.B.C"
