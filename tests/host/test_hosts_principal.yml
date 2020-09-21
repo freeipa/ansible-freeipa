@@ -34,11 +34,11 @@
       hosts:
       - name: "{{ host1_fqdn }}"
         principal:
-        - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}" 
+        - "{{ 'host/testhost1.' + ipaserver_domain + '@' + ipaserver_realm }}"
         force: yes
       - name: "{{ host2_fqdn }}"
         principal:
-        - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}" 
+        - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
         force: yes
     register: result
     failed_when: not result.changed or result.failed
