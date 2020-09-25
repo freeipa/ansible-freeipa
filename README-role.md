@@ -248,7 +248,7 @@ Variable | Description | Required
 `name` \| `cn` | The list of role name strings. | yes
 `description` | A description for the role. | no
 `rename` | Rename the role object. | no
-`privileges` | Privileges associated to this role. | no
+`privilege` | Privileges associated to this role. | no
 `user` | List of users to be assigned or not assigned to the role. | no
 `group` | List of groups to be assigned or not assigned to the role. | no
 `host` | List of hosts to be assigned or not assigned to the role. | no
