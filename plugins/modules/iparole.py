@@ -135,7 +135,7 @@ def gen_args(module):
     for param, arg in arg_map.items():
         value = module_params_get(module, param)
         if value is not None:
-            args[arg] = value
+            args[arg] = value.strip()
 
     return args
 
