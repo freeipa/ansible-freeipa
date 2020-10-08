@@ -1,0 +1,159 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Authors:
+#   Thomas Woerner <twoerner@redhat.com>
+#
+# Copyright (C) 2020 Red Hat
+# see file 'COPYING' for use and warranty information
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
+import os.path
+import sys
+import argparse
+import subprocess
+
+
+def run_ansible_doc(role, module, verbose=False):
+    playbook_dir, module_path = get_playbook_dir(role, module)
+
+    command = ["ansible-doc",
+               "--playbook-dir=%s" % playbook_dir,
+               "--type=module",
+               "-vvv",
+               module]
+    process = subprocess.run(command,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+    stdout = process.stdout.decode("utf8")
+    stderr = process.stderr.decode("utf8")
+    if process.returncode != 0 or "WARNING" in stderr:
+        print("%s\n%s" % (module_path, stderr))
+        print("%s\n%s" % (module_path, stdout))
+        return 1
+    elif verbose == 1:
+        print(module_path)
+    elif verbose > 1:
+        print("%s\n%s" % (module_path, stdout))
+    return 0
+
+
+def get_playbook_dir(role, module):
+    if module is None:
+        raise IOError("module is not set")
+
+    if role is not None:
+        playbook_dir = "roles/%s" % role
+        module_path = "%s/library/%s" % (playbook_dir, module)
+        if not os.path.isfile(module_path):
+            raise IOError("No module '%s' in role '%s'" % (module, role))
+    else:
+        playbook_dir = "."
+        module_path = "plugins/modules/%s" % module
+        if not os.path.isfile(module_path):
+            raise IOError("No module '%s'" % module)
+
+    return playbook_dir, module_path
+
+
+def ansible_doc_test(path, verbose):
+    role = None
+    module = None
+    only_roles = False
+    only_modules = False
+
+    if path is not None:
+        if path.startswith("roles/") and len(path) > 6:
+            _path = path[6:].split("/")
+            role = _path[0]
+            if len(_path) == 2 and _path[1] == "":
+                pass
+            elif len(_path) == 3 and _path[1] == "library":
+                module = _path[2]
+                if module == "":
+                    module = None
+            elif len(_path) > 1:
+                print("The given path '%s' is not valid." % path)
+                sys.exit(1)
+
+        elif path in ["roles", "roles/"]:
+            # roles only
+            only_roles = True
+        elif path.startswith("plugins/modules/") and len(path) > 16:
+            _path = path[16:].split("/")
+            if len(_path) == 1:
+                module = _path[0]
+            else:
+                print("The given path '%s' is not valid." % path)
+                sys.exit(1)
+        elif path in ["plugins", "plugins/",
+                      "plugins/modules", "plugins/modules/"]:
+            only_modules = True
+        else:
+            print("The given path '%s' is not valid." % path)
+            sys.exit(1)
+
+    errors = 0
+    try:
+        if role and not os.path.isdir("roles/%s" % role):
+            raise IOError("No role '%s'" % role)
+
+        if module:
+            errors += run_ansible_doc(role, module, verbose)
+        elif role:
+            # All modules in role
+            modules = os.listdir("roles/%s/library" % role)
+            for _module in modules:
+                if _module.endswith(".py"):
+                    errors += run_ansible_doc(role, _module, verbose)
+        else:
+            if not only_modules:
+                # All roles and plugins
+                roles = os.listdir("roles/")
+                for _role in roles:
+                    if not os.path.isdir("roles/%s" % _role):
+                        continue
+                    modules = os.listdir("roles/%s/library" % _role)
+                    for _module in modules:
+                        if _module.endswith(".py"):
+                            errors += run_ansible_doc(_role, _module, verbose)
+            if not only_roles:
+                modules = os.listdir("plugins/modules")
+                for _module in modules:
+                    if _module.endswith(".py"):
+                        errors += run_ansible_doc(None, _module, verbose)
+    except IOError as e:
+        print(str(e))
+        errors += 1
+
+    return errors
+
+
+usage = "Usage: ansible-doc-test [options] [path]"
+parser = argparse.ArgumentParser(usage=usage)
+parser.add_argument("-v", dest="verbose", action="count",
+                    help="increase output verbosity", default=0)
+options, args = parser.parse_known_args()
+
+errors = 0
+
+for arg in args:
+    errors += ansible_doc_test(arg, options.verbose)
+if len(args) == 0:
+    errors += ansible_doc_test(None, options.verbose)
+
+if errors != 0:
+    sys.exit(1)
