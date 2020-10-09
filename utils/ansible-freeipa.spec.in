@@ -62,7 +62,8 @@ cp -rp tests %{buildroot}%{_datadir}/ansible-freeipa/
 %{_datadir}/ansible/roles/ipaclient
 %{_datadir}/ansible/plugins/module_utils
 %{_datadir}/ansible/plugins/modules
-%doc README*.md
+%doc docs/modules/*.md
+%doc README.md
 %doc playbooks
 
 %files tests
