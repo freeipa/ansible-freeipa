@@ -1,0 +1,127 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Authors:
+#   Thomas Woerner <twoerner@redhat.com>
+#
+# Copyright (C) 2020 Red Hat
+# see file 'COPYING' for use and warranty information
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import sys
+import argparse
+import subprocess
+
+
+usage = "Usage: changelog [options] [<new version>]"
+parser = argparse.ArgumentParser(usage=usage)
+parser.add_argument("--tag", dest="tag",
+                    help="git tag")
+options, args = parser.parse_known_args()
+
+if len(args) == 1:
+    new_version = args[0]
+elif len(args) != 0:
+    parser.error("new version is not set")
+else:
+    new_version = None
+
+if options.tag is None:
+    tag = subprocess.check_output(
+        "git describe --tags $(git rev-list --tags --max-count=1)",
+        shell=True)
+    options.tag = tag.decode("utf-8").strip()
+
+version = options.tag[1:]
+
+command = ["git", "log", "%s.." % options.tag]
+process = subprocess.run(command,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+
+if process.returncode != 0:
+    print("git log failed: %s" % process.stderr.decode("utf8").split("\n")[0])
+    sys.exit(1)
+
+if new_version is not None:
+    s = "ansible-freeipa-%s" % new_version
+    print(s)
+    print("=" * len(s))
+    print()
+
+commits = {}
+prs = {}
+authors = {}
+
+lines = process.stdout.decode("utf-8").split("\n")
+
+
+def store(commits, prs, authors, commit, author, msg):
+    if commit is not None:
+        if msg[0].startswith("Merge pull request #"):
+            pr = int(msg[0].split()[3][1:])
+            prs[pr] = msg[1].strip()
+        else:
+            commits[commit] = msg[0].strip()
+            authors.setdefault(author, []).append(commit)
+
+
+commit = None
+author = None
+msg = None
+for line in lines:
+    line = line.rstrip()
+    if line.startswith("commit "):
+        store(commits, prs, authors, commit, author, msg)
+        author = None
+        msg = []
+        commit = line[7:]
+    elif line.startswith("    "):
+        msg.append(line[4:])
+    else:
+        try:
+            key, value = line.split(":", 1)
+            if key == "Author":
+                author = value.split("<")[0].strip()
+            # Ignore Merge, Date, ..
+        except ValueError:
+            pass
+
+# Add final commit
+if commit:
+    store(commits, prs, authors, commit, author, msg)
+
+s = "Changes since %s" % version
+print("%s" % s)
+print("-" * len(s))
+print()
+
+prs_sorted = sorted(prs.keys(), reverse=True)
+for pr in prs_sorted:
+    print("  - %s (#%d)" % (prs[pr], pr))
+print()
+
+s = "Detailed changelog since %s by author" % version
+print("%s" % s)
+print("-" * len(s))
+print("  %d authors, %d commits" % (len(authors), len(commits)))
+print()
+
+authors_sorted = sorted(authors.keys())
+for author in authors_sorted:
+    print("%s (%d)\n" % (author, len(authors[author])))
+    for commit in authors[author]:
+        print("  - %s" % commits[commit])
+    print()
