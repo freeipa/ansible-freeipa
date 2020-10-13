@@ -16,3 +16,4 @@
   set_fact:
     ipa_version: "{{ ipa_cmd_version.stdout_lines[0] }}"
     ipa_api_version: "{{ ipa_cmd_version.stdout_lines[1] }}"
+    trust_test_is_supported: no
