@@ -1,0 +1,13 @@
+---
+- name: Playbook to restore IPA server from controller
+  hosts: ipaserver
+  become: true
+
+  vars:
+    ipabackup_name: ipaserver.el83.local_ipa-full-2020-10-22-11-11-44
+    ipabackup_password: SomeDMpassword
+    ipabackup_from_controller: yes
+
+  roles:
+  - role: ipabackup
+    state: restored

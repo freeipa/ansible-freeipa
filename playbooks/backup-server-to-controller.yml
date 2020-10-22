@@ -1,0 +1,12 @@
+---
+- name: Playbook to backup IPA server to controller
+  hosts: ipaserver
+  become: true
+
+  vars:
+    ipabackup_to_controller: yes
+    # ipabackup_keep_on_server: yes
+
+  roles:
+  - role: ipabackup
+    state: present

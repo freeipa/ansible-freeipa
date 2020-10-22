@@ -1,0 +1,46 @@
+---
+- name: Fail on invalid ipabackup_item
+  fail: msg="ipabackup_item {{ ipabackup_item }} is not valid"
+  when: ipabackup_item is not defined or
+        ipabackup_item | length < 1 or
+        (ipabackup_item.find("ipa-full-") == -1 and
+         ipabackup_item.find("ipa-data-") == -1)
+
+- name: Set controller destination directory
+  set_fact:
+    ipabackup_controller_dir:
+        "{{ ipabackup_controller_path | default(lookup('env','PWD')) }}/{{
+         ipabackup_name_prefix | default(ansible_fqdn) }}_{{
+         ipabackup_item }}/"
+
+- name: Stat backup on server
+  stat:
+    path: "{{ ipabackup_dir }}/{{ ipabackup_item }}"
+  register: result_backup_stat
+
+- name: Fail on missing backup directory
+  fail: msg="Unable to find backup {{ ipabackup_item }}"
+  when: result_backup_stat.stat.isdir is not defined
+
+- name: Get backup files to copy for "{{ ipabackup_item }}"
+  shell:
+    find . -type f | cut -d"/" -f 2
+  args:
+    chdir: "{{ ipabackup_dir }}/{{ ipabackup_item }}"
+  register: result_find_backup_files
+
+- name: Copy server backup files to controller
+  fetch:
+    flat: yes
+    src: "{{ ipabackup_dir }}/{{ ipabackup_item }}/{{ item }}"
+    dest: "{{ ipabackup_controller_dir }}"
+  with_items:
+  - "{{ result_find_backup_files.stdout_lines }}"
+
+- name: Fix file modes for backup on controller
+  file:
+    dest: "{{ ipabackup_controller_dir }}"
+    mode: u=rwX,go=
+    recurse: yes
+  delegate_to: localhost
+  become: no

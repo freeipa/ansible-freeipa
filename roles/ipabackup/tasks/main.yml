@@ -1,0 +1,138 @@
+---
+# tasks file for ipabackup
+
+- name: Check for empty vars
+  fail: msg="Variable {{ item }} is empty"
+  when: "item in vars and not vars[item]"
+  with_items: "{{ ipabackup_empty_var_checks }}"
+  vars:
+    ipabackup_empty_var_checks:
+    - ipabackup_backend
+    - ipabackup_gpg_keyring
+    - ipabackup_instance
+    - ipabackup_log_file
+    - ipabackup_password
+    - ipabackup_name
+    - ipabackup_controller_path
+    - ipabackup_name_prefix
+    - ipabackup_firewalld_zone
+
+- name: Set ipabackup_data if ipabackup_data is not set but ipabackup_online is
+  set_fact:
+    ipabackup_data: yes
+  when: ipabackup_online | bool and not ipabackup_data | bool
+
+- name: Fail if ipabackup_from_controller and ipabackup_to_controller are set
+  fail: msg="ipabackup_from_controller and ipabackup_to_controller are set"
+  when: ipabackup_from_controller | bool and ipabackup_to_controller | bool
+
+- name: Get ipabackup_dir from IPA installation
+  include_tasks: "{{ role_path }}/tasks/get_ipabackup_dir.yml"
+
+- name: Backup IPA server
+  include_tasks: "{{ role_path }}/tasks/backup.yml"
+  when: state|default("present") == "present"
+
+- name: Fail for given ipabackup_name if state is not copied, restored or absent
+  fail: msg="ipabackup_name is given and state is not copied, restored or absent"
+  when: state is not defined or
+        (state != "copied" and state != "restored" and state != "absent") and
+        ipabackup_name is defined
+
+- name: Fail on missing ipabackup_name
+  fail: msg="ipabackup_name is not set"
+  when: (ipabackup_name is not defined or not ipabackup_name) and
+        state is defined and
+        (state == "copied" or state == "restored" or state == "absent")
+
+- block:
+  - name: Get list of all backups on IPA server
+    shell:
+      find . -name "ipa-full-*" -o -name "ipa-data-*" | cut -d"/" -f 2
+    args:
+      chdir: "{{ ipabackup_dir }}/"
+    register: result_backup_find_backup_files
+
+  - name: Set ipabackup_names using backup list
+    set_fact:
+      ipabackup_names: "{{ result_backup_find_backup_files.stdout_lines }}"
+
+  when: state is defined and
+        ((state == "copied" and ipabackup_to_controller) or
+         state == "absent") and
+        ipabackup_name is defined and ipabackup_name == "all"
+
+- block:
+  - name: Fail on ipabackup_name all
+    fail: msg="ipabackup_name can not be all in this case"
+    when: ipabackup_name is defined and ipabackup_name == "all"
+
+  - name: Set ipabackup_names from ipabackup_name string
+    set_fact:
+      ipabackup_names: ["{{ ipabackup_name }}"]
+    when: ipabackup_name | type_debug != "list"
+
+  - name: Set ipabackup_names from ipabackup_name list
+    set_fact:
+      ipabackup_names: "{{ ipabackup_name }}"
+    when: ipabackup_name | type_debug == "list"
+  when: ipabackup_names is not defined and ipabackup_name is defined
+
+- name: Set empty ipabackup_names if ipabackup_name is not defined
+  set_fact:
+    ipabackup_names: []
+  when: ipabackup_names is not defined and ipabackup_name is not defined
+
+- block:
+  - name: Copy backup from IPA server
+    include_tasks: "{{ role_path }}/tasks/copy_backup_from_server.yml"
+    vars:
+      ipabackup_item: "{{ main_item | basename }}"
+    with_items:
+    - "{{ ipabackup_names }}"
+    loop_control:
+      loop_var: main_item
+    when: state is defined and state == "copied"
+
+  - name: Remove backup from IPA server
+    include_tasks: "{{ role_path }}/tasks/remove_backup_from_server.yml"
+    vars:
+      ipabackup_item: "{{ main_item | basename }}"
+    with_items:
+    - "{{ ipabackup_names }}"
+    loop_control:
+      loop_var: main_item
+    when: state is defined and state == "absent"
+
+  when: state is defined and
+        ((state == "copied" and ipabackup_to_controller) or state == "absent")
+
+# Fail with more than one entry in ipabackup_names for copy to sever and
+# restore.
+
+- name: Fail to copy or restore more than one backup on the server
+  fail: msg="Only one backup can be copied to the server or restored"
+  when: state is defined and (state == "copied" or state == "restored") and
+        ipabackup_from_controller | bool and ipabackup_names | length != 1
+
+# Use only first item in ipabackup_names for copy to server and for restore.
+
+- block:
+  - name: Copy backup to server
+    include_tasks: "{{ role_path }}/tasks/copy_backup_to_server.yml"
+
+  - name: Restore IPA server after copy
+    include_tasks: "{{ role_path }}/tasks/restore.yml"
+    when: state|default("present") == "restored"
+
+  vars:
+    ipabackup_name: "{{ ipabackup_names[0] }}"
+  when: ipabackup_from_controller or
+        (state|default("present") == "copied" and not ipabackup_to_controller)
+
+- name: Restore IPA server
+  include_tasks: "{{ role_path }}/tasks/restore.yml"
+  vars:
+    ipabackup_item: "{{ ipabackup_names[0] | basename }}"
+  when: not ipabackup_from_controller and
+        state|default("present") == "restored"

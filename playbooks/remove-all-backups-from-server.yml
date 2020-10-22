@@ -1,0 +1,11 @@
+---
+- name: Playbook to remove all backups from IPA server
+  hosts: ipaserver
+  become: true
+
+  vars:
+    ipabackup_name: all
+
+  roles:
+  - role: ipabackup
+    state: absent

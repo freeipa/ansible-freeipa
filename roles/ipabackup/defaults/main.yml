@@ -1,0 +1,16 @@
+---
+# defaults file for ipabackup
+
+ipabackup_gpg: no
+ipabackup_data: no
+ipabackup_logs: no
+ipabackup_online: no
+ipabackup_disable_role_check: no
+ipabackup_no_logs: no
+
+### special ###
+ipabackup_keep_on_server: no
+ipabackup_to_controller: no
+ipabackup_from_controller: no
+ipabackup_install_packages: yes
+ipabackup_setup_firewalld: yes
