@@ -1,0 +1,73 @@
+---
+# tasks file for ipabackup
+
+- name: Fail on empty ipabackup_log_file
+  fail: msg="ipabackup_log_file is empty"
+  when: ipabackup_log_file is defined and not ipabackup_log_file
+
+- name: Fail on missing ipabackup_data if ipabackup_online is set
+  fail: msg="ipabackup_online is used without ipabackup_data"
+  when: ipabackup_online | bool and not ipabackup_data | bool
+
+- name: Get ipabackup_dir from IPA installation
+  include_tasks: "{{ role_path }}/tasks/get_ipabackup_dir.yml"
+
+- name: Backup IPA server
+  include_tasks: "{{ role_path }}/tasks/backup.yml"
+  when: state|default("present") == "present"
+
+- name: Fail for given ipabackup_name if stat is not copied or absent
+  fail: msg="ipabackup_name is given and state is not copied or absent"
+  when: state is not defined or (state != "copied" and state != "absent") and
+        ipabackup_name is defined
+
+- name: Fail on missing ipabackup_name
+  fail: msg="ipabackup_name is not set"
+  when: (ipabackup_name is not defined or not ipabackup_name) and
+        state is defined and (state == "copied" or state == "absent")
+
+- block:
+  - name: Get list of all backups on IPA server
+    shell:
+      find . -type d | tail -n +2 | cut -d"/" -f 2
+    args:
+      chdir: "{{ ipabackup_dir }}/"
+    register: result_backup_find_backup_files
+
+  - name: Set ipabackup_names using backup list
+    set_fact:
+      ipabackup_names: "{{ result_backup_find_backup_files.stdout_lines }}"
+
+  when: ipabackup_name is defined and ipabackup_name == "all"
+
+- block:
+  - name: Set ipabackup_names from ipabackup_name string
+    set_fact:
+      ipabackup_names: ["{{ ipabackup_name }}"]
+    when: ipabackup_name | type_debug != "list"
+
+  - name: Set ipabackup_names from ipabackup_name list
+    set_fact:
+      ipabackup_names: "{{ ipabackup_name }}"
+    when: ipabackup_name | type_debug == "list"
+  when: ipabackup_name is defined and ipabackup_name != "all"
+
+- name: Copy backup from IPA server
+  include_tasks: "{{ role_path }}/tasks/copy_backup_from_server.yml"
+  vars:
+    ipabackup_item: "{{ main_item | basename }}"
+  with_items:
+  - "{{ ipabackup_names }}"
+  loop_control:
+    loop_var: main_item
+  when: state is defined and state == "copied"
+
+- name: Remove backup from IPA server
+  include_tasks: "{{ role_path }}/tasks/remove_backup_from_server.yml"
+  vars:
+    ipabackup_item: "{{ main_item | basename }}"
+  with_items:
+  - "{{ ipabackup_names }}"
+  loop_control:
+    loop_var: main_item
+  when: state is defined and state == "absent"

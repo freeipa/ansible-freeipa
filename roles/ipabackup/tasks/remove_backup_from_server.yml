@@ -1,0 +1,5 @@
+---
+- name: Remove backup "{{ ipabackup_item }}"
+  file:
+    path: "{{ ipabackup_dir }}/{{ ipabackup_item }}"
+    state: absent
