@@ -1,0 +1,15 @@
+---
+- name: Permission Allow Read Employee Number Example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure permission TestPerm2 is present with Read rights to employeenumber
+    ipapermission:
+      name: TestPerm2
+      object_type: user
+      perm_rights: 
+        - read
+        - search
+        - compare
+      attrs: employeenumber

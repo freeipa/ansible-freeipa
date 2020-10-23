@@ -1,0 +1,114 @@
+---
+- name: Test permission
+  hosts: ipaserver
+  become: true
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure permission perm-test-1 is absent
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      state: absent
+   
+  # TESTS
+
+  - name: Ensure permission perm-test-1 is present
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      object_type: host
+      right: all
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 is present again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      object_type: host
+      right: all
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 member User Administrators privilege is present
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      privilege: "User Administrators"
+      action: member      
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 member User Administrators privilege is present again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      privilege: "User Administrators"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 member User Administrators privilege is absent
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      privilege: "User Administrators"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # NOTE: We use the "User Administrators" Privilege here since we don't have a module
+  # to make one. A test privilege should be used in the future.
+  - name: Ensure permission perm-test-1 member User Administrators privilege is absent again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      privilege: "User Administrators"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Rename permission perm-test-1 to perm-test-renamed
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      rename: perm-test-renamed
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 is absent
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+    
+  - name: Ensure permission perm-test-renamed is present
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-renamed
+      object_type: host
+      right: all
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure permission perm-test-1 is absent
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      state: absent
+
+  - name: Ensure permission perm-test-renamed is absent
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-renamed
+      state: absent

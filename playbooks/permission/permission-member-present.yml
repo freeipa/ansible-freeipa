@@ -1,0 +1,11 @@
+---
+- name: Permission member present example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure permission TestPerm1 is present with the User Administrators privilege present
+    ipapermission:
+      name: TestPerm1
+      privilege: "User Administrators"
+      action: member

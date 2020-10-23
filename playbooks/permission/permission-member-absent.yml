@@ -1,0 +1,12 @@
+---
+- name: Permission absent example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure privilege User Administrators privilege is absent on Permission TestPerm1
+    ipapermission:
+      name: TestPerm1
+      privilege: "User Administrators"
+      action: member
+      state: absent
