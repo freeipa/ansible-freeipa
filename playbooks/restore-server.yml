@@ -1,0 +1,12 @@
+---
+- name: Playbook to restore an IPA server
+  hosts: ipaserver
+  become: true
+
+  vars:
+    iparestore_name: ipa-full-2020-10-22-11-11-44
+    iparestore_password: SomeDMpassword
+
+  roles:
+  - role: iparestore
+    state: present

@@ -1,0 +1,6 @@
+# defaults file for ipaserver
+# vars/default.yml
+ipaserver_packages: [ "ipa-server" ]
+ipaserver_packages_dns: [ "ipa-server-dns" ]
+ipaserver_packages_adtrust: [ "freeipa-server-trust-ad" ]
+ipaserver_packages_firewalld: [ "firewalld" ]

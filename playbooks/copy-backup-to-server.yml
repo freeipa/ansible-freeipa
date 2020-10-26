@@ -1,0 +1,11 @@
+---
+- name: Playbook to copy a backup from controller to the IPA server
+  hosts: ipaserver
+  become: true
+
+  vars:
+    iparestore_name: ipaserver.test.local_ipa-full-2020-10-22-11-11-44
+
+  roles:
+  - role: iparestore
+    state: copied

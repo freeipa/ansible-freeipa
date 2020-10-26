@@ -1,0 +1,35 @@
+---
+# tasks file for iparestore
+
+- name: Fail on empty iparestore_log_file
+  fail: msg="iparestore_log_file is empty"
+  when: iparestore_log_file is defined and not iparestore_log_file
+
+- name: Fail on missing iparestore_name
+  fail: msg="iparestore_name is not set"
+  when: iparestore_name is not defined
+
+- name: Fail on missing iparestore_password
+  fail: msg="iparestore_password is not set"
+  when: iparestore_password is not defined and
+        state|default("present") == "present"
+
+- name: Get iparestore_dir from IPA installation
+  include_tasks: "{{ role_path }}/tasks/get_iparestore_dir.yml"
+
+- block:
+  - name: Copy backup to server
+    include_tasks: "{{ role_path }}/tasks/copy_backup_to_server.yml"
+
+  - name: Restore IPA server after copy
+    include_tasks: "{{ role_path }}/tasks/restore.yml"
+    when: state|default("present") == "present"
+
+  when: iparestore_from_controller or state|default("present") == "copied"
+
+- name: Restore IPA server
+  include_tasks: "{{ role_path }}/tasks/restore.yml"
+  vars:
+    iparestore_item: "{{ iparestore_name | basename }}"
+  when: not iparestore_from_controller and
+        state|default("present") == "present"

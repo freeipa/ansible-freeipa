@@ -1,0 +1,32 @@
+---
+- name: Fail on invalid iparestore_name
+  fail: msg="iparestore_name {{ iparestore_name }} is not valid"
+  when: iparestore_name is not defined or
+        iparestore_name | length < 1 or
+        (iparestore_name.find("ipa-full-") == -1 and
+         iparestore_name.find("ipa-data-") == -1)
+
+- name: Set controller source directory
+  set_fact:
+    iparestore_controller_dir:
+      "{{ iparestore_controller_path | default(lookup('env','PWD')) }}"
+
+- name: Set iparestore_item
+  set_fact:
+    iparestore_item:
+      "{{ iparestore_name | regex_search('.*_(ipa-.+)','\\1') | first }}"
+  when: "'_ipa-' in iparestore_name"
+
+- name: Set iparestore_item
+  set_fact:
+    iparestore_item: "{{ iparestore_name }}"
+  when: "'_ipa-' not in iparestore_name"
+
+- name: Copy backup files to server for "{{ iparestore_item }}"
+  copy:
+    src: "{{ iparestore_controller_dir }}/{{ iparestore_name }}/"
+    dest: "{{ iparestore_dir }}/{{ iparestore_item }}"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    directory_mode: u=rwx,go=

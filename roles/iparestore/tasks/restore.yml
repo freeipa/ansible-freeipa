@@ -1,0 +1,147 @@
+---
+# tasks file for iparestore
+
+### VARIABLES
+
+- name: Import variables specific to distribution
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+    - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ role_path }}/vars/{{ ansible_distribution }}.yml"
+    - "{{ role_path }}/vars/default.yml"
+
+### GET SERVICES FROM BACKUP
+
+- name: Stat backup on server
+  stat:
+    path: "{{ iparestore_dir }}/{{ iparestore_item }}"
+  register: result_backup_stat
+
+- name: Fail on missing backup directory
+  fail: msg="Unable to find backup {{ iparestore_item }}"
+  when: result_backup_stat.stat.isdir is not defined
+
+- name: Stat header file in backup "{{ iparestore_item }}"
+  stat:
+    path: "{{ iparestore_dir }}/{{ iparestore_item }}/header"
+  register: result_backup_header_stat
+
+- name: Fail on missing header file in backup
+  fail: msg="Unable to find backup {{ iparestore_item }} header file"
+  when: result_backup_header_stat.stat.isreg is not defined
+
+- name: Get services from backup
+  shell: >
+    grep "^services = " "{{ iparestore_dir }}/{{ iparestore_item }}/header" | cut -d"=" -f2 | tr -d '[:space:]'
+  register: result_services_grep
+
+- name: Set iparestore_services
+  set_fact:
+    iparestore_services: "{{ result_services_grep.stdout.split(',') }}"
+    iparestore_service_dns: DNS
+    iparestore_service_adtrust: ADTRUST
+    iparestore_service_ntp: NTP
+
+### INSTALL PACKAGES
+
+- block:
+  - name: Ensure that IPA server packages are installed
+    package:
+      name: "{{ ipaserver_packages }}"
+      state: present
+
+  - name: Ensure that IPA server packages for dns are installed
+    package:
+      name: "{{ ipaserver_packages_dns }}"
+      state: present
+    when: iparestore_service_dns in iparestore_services
+
+  - name: Ensure that IPA server packages for adtrust are installed
+    package:
+      name: "{{ ipaserver_packages_adtrust }}"
+      state: present
+    when: iparestore_service_adtrust in iparestore_services
+
+  - name: Ensure that firewall packages are installed
+    package:
+      name: "{{ ipaserver_packages_firewalld }}"
+      state: present
+    when: iparestore_setup_firewalld | bool
+
+  when: iparestore_install_packages | bool
+
+### START FIREWALLD
+
+- block:
+  - name: Ensure that firewalld is running
+    systemd:
+      name: firewalld
+      enabled: yes
+      state: started
+
+  - name: Firewalld - Verify runtime zone "{{ iparestore_firewalld_zone }}"
+    shell: >
+      firewall-cmd
+      --info-zone="{{ iparestore_firewalld_zone }}"
+      >/dev/null
+    when: iparestore_firewalld_zone is defined
+
+  - name: Firewalld - Verify permanent zone "{{ iparestore_firewalld_zone }}"
+    shell: >
+      firewall-cmd
+      --permanent
+      --info-zone="{{ iparestore_firewalld_zone }}"
+      >/dev/null
+    when: iparestore_firewalld_zone is defined
+
+  when: iparestore_setup_firewalld | bool
+
+### RESTORE
+
+- name: Restore backup
+  no_log: True
+  shell: >
+    ipa-restore
+    {{ iparestore_item }}
+    --unattended
+    {{ "--password="+iparestore_password if iparestore_password is defined }}
+    {{ "--data" if iparestore_data | bool }}
+    {{ "--online" if iparestore_online | bool }}
+    {{ "--instance="+iparestore_instance if iparestore_instance is defined }}
+    {{ "--backend="+iparestore_backend if iparestore_backend is defined }}
+    {{ "--no-logs" if iparestore_no_logs | bool }}
+    {{ "--log-file="+iparestore_log_file if iparestore_log_file is defined }}
+  register: result_iparestore
+  ignore_errors: yes
+
+- name: Report error for restore operation
+  debug:
+    msg: "{{ result_iparestore.stderr }}"
+  when: result_iparestore is failed
+  failed_when: yes
+
+### CONFIGURE FIREWALLD
+
+- name: Configure firewalld
+  command: >
+    firewall-cmd
+    --permanent
+    --zone="{{ iparestore_firewalld_zone if iparestore_firewalld_zone is defined }}"
+    --add-service=freeipa-ldap
+    --add-service=freeipa-ldaps
+    {{ "--add-service=freeipa-trust" if iparestore_service_adtrust in iparestore_services }}
+    {{ "--add-service=dns" if iparestore_service_dns in iparestore_services }}
+    {{ "--add-service=ntp" if iparestore_service_ntp in iparestore_services }}
+  when: iparestore_setup_firewalld | bool
+
+- name: Configure firewalld runtime
+  command: >
+    firewall-cmd
+    --zone="{{ iparestore_firewalld_zone if iparestore_firewalld_zone is defined }}"
+    --add-service=freeipa-ldap
+    --add-service=freeipa-ldaps
+    {{ "--add-service=freeipa-trust" if iparestore_service_adtrust in iparestore_services }}
+    {{ "--add-service=dns" if iparestore_service_dns in iparestore_services }}
+    {{ "--add-service=ntp" if iparestore_service_ntp in iparestore_services }}
+  when: iparestore_setup_firewalld | bool

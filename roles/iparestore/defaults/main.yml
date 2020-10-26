@@ -1,0 +1,11 @@
+---
+# defaults file for iparestore
+
+iparestore_data: no
+iparestore_online: no
+iparestore_no_logs: no
+
+### special ###
+iparestore_from_controller: no
+iparestore_install_packages: yes
+iparestore_setup_firewalld: yes
