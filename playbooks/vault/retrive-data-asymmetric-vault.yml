@@ -13,5 +13,6 @@
         private_key_file: private.pem
         state: retrieved
       register: result
+      no_log: true
     - debug:
        msg: "Data: {{ result.vault.data }}"
