@@ -66,7 +66,7 @@ options:
     required: false
     type: list
     aliases: ["extratargetfilter"]
-  rawfilter
+  rawfilter:
     description: All target filters
     required: false
     type: list
