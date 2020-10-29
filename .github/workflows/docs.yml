@@ -1,0 +1,16 @@
+---
+name: Verify Ansible documentation.
+on:
+  - push
+  - pull_request
+jobs:
+  check_docs:
+    name: Check Ansible Documentation.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Run ansible-doc-test
+        run: ANSIBLE_LIBRARY="." python utils/ansible-doc-test roles plugins
