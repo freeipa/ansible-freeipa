@@ -1,0 +1,43 @@
+---
+- name: Fail on invalid ipabackup_name
+  fail: msg="ipabackup_name {{ ipabackup_name }} is not valid"
+  when: ipabackup_name is not defined or
+        ipabackup_name | length < 1 or
+        (ipabackup_name.find("ipa-full-") == -1 and
+         ipabackup_name.find("ipa-data-") == -1)
+
+- name: Set controller source directory
+  set_fact:
+    ipabackup_controller_dir:
+      "{{ ipabackup_controller_path | default(lookup('env','PWD')) }}"
+
+- name: Set ipabackup_item
+  set_fact:
+    ipabackup_item:
+      "{{ ipabackup_name | regex_search('.*_(ipa-.+)','\\1') | first }}"
+  when: "'_ipa-' in ipabackup_name"
+
+- name: Set ipabackup_item
+  set_fact:
+    ipabackup_item: "{{ ipabackup_name }}"
+  when: "'_ipa-' not in ipabackup_name"
+
+- name: Stat backup to copy
+  stat:
+    path: "{{ ipabackup_controller_dir }}/{{ ipabackup_name }}"
+  register: result_backup_stat
+  delegate_to: localhost
+  become: no
+
+- name: Fail on missing backup to copy
+  fail: msg="Unable to find backup {{ ipabackup_name }}"
+  when: result_backup_stat.stat.isdir is not defined
+
+- name: Copy backup files to server for "{{ ipabackup_item }}"
+  copy:
+    src: "{{ ipabackup_controller_dir }}/{{ ipabackup_name }}/"
+    dest: "{{ ipabackup_dir }}/{{ ipabackup_item }}"
+    owner: root
+    group: root
+    mode: u=rw,go=r
+    directory_mode: u=rwx,go=

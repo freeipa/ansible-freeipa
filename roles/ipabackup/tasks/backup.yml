@@ -1,0 +1,39 @@
+---
+# tasks file for ipabackup
+
+- name: Create backup
+  shell: >
+    ipa-backup
+    {{ "--gpg" if ipabackup_gpg | bool }}
+    {{ "--gpg-keyring="+ipabackup_gpg_keyring if ipabackup_gpg_keyring is defined }}
+    {{ "--data" if ipabackup_data | bool }}
+    {{ "--logs" if ipabackup_logs | bool }}
+    {{ "--online" if ipabackup_online | bool }}
+    {{ "--disable-role-check" if ipabackup_disable_role_check | bool }}
+    {{ "--log-file="+ipabackup_log_file if ipabackup_log_file is defined }}
+  register: result_ipabackup
+
+- block:
+  - name: Get ipabackup_item from stderr or stdout output
+    set_fact:
+      ipabackup_item: "{{ item | regex_search('\n.*/([^\n]+)','\\1') | first }}"
+    when: item.find("Backed up to "+ipabackup_dir+"/") > 0
+    with_items:
+    - "{{ result_ipabackup.stderr }}"
+    - "{{ result_ipabackup.stdout }}"
+    loop_control:
+      label: ""
+
+  - name: Fail on missing ipabackup_item
+    fail: msg="Failed to get ipabackup_item"
+    when: ipabackup_item is not defined
+
+  - name: Copy backup to controller
+    include_tasks: "{{ role_path }}/tasks/copy_backup_from_server.yml"
+    when: state|default("present") == "present"
+
+  - name: Remove backup on server
+    include_tasks: "{{ role_path }}/tasks/remove_backup_from_server.yml"
+    when: not ipabackup_keep_on_server
+
+  when: ipabackup_to_controller
