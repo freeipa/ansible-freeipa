@@ -482,7 +482,7 @@
       # digest is sha1sum of 'host04."{{ testzone }}"'
       dlv_digest: 08ff468cb25ccd21642989294cc33570da5eb2ba
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure that 'host04' DLV record is present, again.
     ipadnsrecord:
@@ -494,27 +494,40 @@
       dlv_digest_type: 1
       dlv_digest: 08ff468cb25ccd21642989294cc33570da5eb2ba
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or result.changed
 
   - name: Ensure that 'host04' DLV record is present, with a different key tag.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      dlv_key_tag: 54321
+      dlv_key_tag: 4321
       dlv_record: 12345 3 1 08ff468cb25ccd21642989294cc33570da5eb2ba
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
-  - name: Ensure that 'host04' DLV record is present, with a different key tag, again.
+  - name: Ensure that 'host04' DLV second record is present.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ testzone }}"
+      name: host04
+      dlv_key_tag: 4321
+      dlv_algorithm: 2
+      dlv_digest_type: 2
+      # digest is sha1sum of 'second record'
+      dlv_digest: da39a3ee5e6b4b0d3255bfef95601890afd80709
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure that 'host04' DLV record is changed, in presence of multiple records.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
       dlv_key_tag: 54321
-      dlv_record: 12345 3 1 08ff468cb25ccd21642989294cc33570da5eb2ba
+      dlv_record: 4321 3 1 08ff468cb25ccd21642989294cc33570da5eb2ba
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure that 'host04' DLV record is absent.
     ipadnsrecord:
@@ -524,7 +537,7 @@
       dlv_record: 54321 3 1 08ff468cb25ccd21642989294cc33570da5eb2ba
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure that 'host04' DLV record is absent, again.
     ipadnsrecord:
@@ -534,7 +547,17 @@
       dlv_record: 54321 3 1 08ff468cb25ccd21642989294cc33570da5eb2ba
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or result.changed
+
+  - name: Ensure that 'host04' DLV record is absent.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ testzone }}"
+      name: host04
+      dlv_record: 4321 2 2 da39a3ee5e6b4b0d3255bfef95601890afd80709
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
 
   - name: Ensure that dns record 'iron01' is present
     ipadnsrecord:
@@ -843,17 +866,6 @@
     register: result
     failed_when: result.changed
 
-  - name: Ensure that '_sip._udp' service has NAPTR record is absent, again.
-    ipadnsrecord:
-      ipaadmin_password: SomeADMINpassword
-      zone_name: "{{ testzone }}"
-      name: _sip._udp
-      record_type: NAPTR
-      record_value: '100 10 U SIP+D2U !^.*$!sip:customer-service@example.com! .'
-      state: absent
-    register: result
-    failed_when: result.changed
-
   - name: Ensure that 'host04' LOC record is present.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
@@ -933,10 +945,10 @@
       naptr_preference: 10
       naptr_flags: "U"
       naptr_service: "SIP+D2U"
-      naptr_regexp: "!^.*$!sip:customer-service@example.com!"
+      naptr_regexp: "!^.*$!sip:info@example.com!"
       naptr_replacement: "."
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure that '_sip._udp' service has NAPTR record, again.
     ipadnsrecord:
@@ -947,10 +959,10 @@
       naptr_preference: 10
       naptr_flags: "U"
       naptr_service: "SIP+D2U"
-      naptr_regexp: "!^.*$!sip:customer-service@example.com!"
+      naptr_regexp: "!^.*$!sip:info@example.com!"
       naptr_replacement: "."
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or result.changed
 
   - name: Change '_sip._udp' service NAPTR record `preference` to 20.
     ipadnsrecord:
@@ -958,9 +970,43 @@
       zone_name: "{{ testzone }}"
       name: _sip._udp
       naptr_preference: 20
-      naptr_rec: '100 10 U SIP+D2U !^.*$!sip:customer-service@example.com! .'
+      naptr_rec: '100 10 U SIP+D2U !^.*$!sip:info@example.com! .'
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure that '_sip._udp' service has NAPTR record.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ testzone }}"
+      name: _sip._udp
+      naptr_order: 101
+      naptr_preference: 11
+      naptr_flags: "U"
+      naptr_service: "SIP+D2U"
+      naptr_regexp: "!^.*$!sip:debug@example.com!"
+      naptr_replacement: "."
+
+  - name: Ensure that '_sip._udp' service has NAPTR record.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ testzone }}"
+      name: _sip._udp
+      naptr_order: 102
+      naptr_preference: 12
+      naptr_flags: "U"
+      naptr_service: "SIP+D2U"
+      naptr_regexp: "!^.*$!sip:prio@example.com!"
+      naptr_replacement: "."
+
+  - name: Change '_sip._udp' service NAPTR record `preference` to 50, when multiple records are present. (BZ 1881436)
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ testzone }}"
+      name: _sip._udp
+      naptr_preference: 50
+      naptr_rec: '100 20 U SIP+D2U !^.*$!sip:info@example.com! .'
+    register: result
+    failed_when: result.failed or not result.changed
 
   - name: Ensure that '_sip._udp' service has NAPTR record is absent.
     ipadnsrecord:
@@ -968,10 +1014,10 @@
       zone_name: "{{ testzone }}"
       name: _sip._udp
       record_type: NAPTR
-      record_value: '100 20 U SIP+D2U !^.*$!sip:customer-service@example.com! .'
+      record_value: '100 50 U SIP+D2U !^.*$!sip:info@example.com! .'
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure that '_sip._udp' service has NAPTR record is absent, again.
     ipadnsrecord:
@@ -979,10 +1025,19 @@
       zone_name: "{{ testzone }}"
       name: _sip._udp
       record_type: NAPTR
-      record_value: '100 20 U SIP+D2U !^.*$!sip:customer-service@example.com! .'
+      record_value: '100 50 U SIP+D2U !^.*$!sip:info@example.com! .'
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or result.changed
+
+  - name: Clear NAPTR records.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ testzone }}"
+      name: _sip._udp
+      del_all: yes
+      state: absent
+
 
   - name: Ensure that '_sip._udp' service has SRV record.
     ipadnsrecord:
