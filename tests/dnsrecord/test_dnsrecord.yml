@@ -683,7 +683,7 @@
       cert_algorithm: 3
       cert_certificate_or_crl: MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure that 'host04' CERT record is present, again.
     ipadnsrecord:
@@ -695,27 +695,37 @@
       cert_algorithm: 3
       cert_certificate_or_crl: MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or result.changed
+
+  - name: Ensure that 'host04' CERT record is modified.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ testzone }}"
+      name: host04
+      cert_key_tag: 4321
+      cert_rec: 1 1234 3 MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
+    register: result
+    failed_when: result.failed or not result.changed
 
   - name: Ensure that 'host04' CERT record is absent.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      cert_rec: 1 1234 3 MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
+      cert_rec: 1 4321 3 MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure that 'host04' CERT record is absent, again.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      cert_rec: 1 1234 3 MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
+      cert_rec: 1 4321 3 MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or result.changed
 
   - name: Ensure that 'host04' KX record is present.
     ipadnsrecord:
