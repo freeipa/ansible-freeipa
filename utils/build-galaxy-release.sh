@@ -29,11 +29,27 @@ cd plugins/action_plugins && {
     cd ../..
 }
 
+for x in $(find plugins/modules -name "*.py" -print); do
+    python utils/galaxyfy-module-EXAMPLES.py "$x" "ipa" "$collection_prefix"
+done
+
+for x in $(find roles/*/library -name "*.py" -print); do
+    python utils/galaxyfy-module-EXAMPLES.py "$x" "ipa" "$collection_prefix"
+done
+
 for x in roles/*/tasks/*.yml; do
     python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
 done
 
 for x in $(find playbooks -name "*.yml" -print); do
+    python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
+done
+
+for x in $(find . -name "README*.md" -print); do
+    python utils/galaxyfy-README.py "$x" "ipa" "$collection_prefix"
+done
+
+for x in $(find tests -name "*.yml" -print); do
     python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
 done
 
