@@ -67,24 +67,40 @@ authors = {}
 
 lines = process.stdout.decode("utf-8").split("\n")
 
+class Ref:
+    def __init__(self, commit):
+        self.commit = commit
 
-def store(commits, prs, authors, commit, author, msg):
+
+def store(commits, prs, authors, commit, author, merge, msg):
     if commit is not None:
         if msg[0].startswith("Merge pull request #"):
             pr = int(msg[0].split()[3][1:])
-            prs[pr] = msg[1].strip()
+            if len(msg) > 1:
+                prs[pr] = msg[1].strip()
+            else:
+                prs[pr] = Ref(merge)
         else:
             commits[commit] = msg[0].strip()
             authors.setdefault(author, []).append(commit)
 
 
+def get_commit(commits, commit):
+    _commits = [value for key, value in commits.items()
+                if key.startswith(merge)]
+    if len(_commits) == 1:
+        return _commits[0]
+    return commit
+
+
 commit = None
 author = None
+merge = None
 msg = None
 for line in lines:
     line = line.rstrip()
     if line.startswith("commit "):
-        store(commits, prs, authors, commit, author, msg)
+        store(commits, prs, authors, commit, author, merge, msg)
         author = None
         msg = []
         commit = line[7:]
@@ -95,13 +111,15 @@ for line in lines:
             key, value = line.split(":", 1)
             if key == "Author":
                 author = value.split("<")[0].strip()
-            # Ignore Merge, Date, ..
+            elif key == "Merge":
+                merge = value.split()[1].strip()
+            # Ignore Date, ..
         except ValueError:
             pass
 
 # Add final commit
 if commit:
-    store(commits, prs, authors, commit, author, msg)
+    store(commits, prs, authors, commit, author, merge, msg)
 
 s = "Changes since %s" % version
 print("%s" % s)
@@ -110,7 +128,11 @@ print()
 
 prs_sorted = sorted(prs.keys(), reverse=True)
 for pr in prs_sorted:
-    print("  - %s (#%d)" % (prs[pr], pr))
+    if isinstance(prs[pr], Ref):
+        msg = get_commit(commits, prs[pr].commit)
+    else:
+        msg = prs[pr]
+    print("  - %s (#%d)" % (msg, pr))
 print()
 
 s = "Detailed changelog since %s by author" % version
