@@ -624,7 +624,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       afsdb_subtype: 1
-      afsdb_hostname: host04."{{ testzone }}"
+      afsdb_hostname: "host04.{{ testzone }}"
     register: result
     failed_when: not result.changed
 
@@ -634,7 +634,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       afsdb_subtype: 1
-      afsdb_hostname: host04."{{ testzone }}"
+      afsdb_hostname: "host04.{{ testzone }}"
     register: result
     failed_when: result.changed
 
@@ -644,7 +644,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       afsdb_subtype: 2
-      afsdb_rec: 1 host04."{{ testzone }}"
+      afsdb_rec: "1 host04.{{ testzone }}"
     register: result
     failed_when: not result.changed
 
@@ -654,7 +654,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       afsdb_subtype: 2
-      afsdb_rec: 1 host04."{{ testzone }}"
+      afsdb_rec: "1 host04.{{ testzone }}"
     register: result
     failed_when: result.changed
 
@@ -663,7 +663,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      afsdb_rec: 2 host04."{{ testzone }}"
+      afsdb_rec: "2 host04.{{ testzone }}"
       state: absent
     register: result
     failed_when: not result.changed
@@ -673,7 +673,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      afsdb_rec: 2 host04."{{ testzone }}"
+      afsdb_rec: "2 host04.{{ testzone }}"
       state: absent
     register: result
     failed_when: result.changed
@@ -728,7 +728,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       kx_preference: 10
-      kx_exchanger: keyex."{{ testzone }}"
+      kx_exchanger: "keyex.{{ testzone }}"
     register: result
     failed_when: not result.changed
 
@@ -738,7 +738,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       kx_preference: 10
-      kx_exchanger: keyex."{{ testzone }}"
+      kx_exchanger: "keyex.{{ testzone }}"
     register: result
     failed_when: result.changed
 
@@ -748,7 +748,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       kx_preference: 20
-      kx_rec: 10 keyex."{{ testzone }}"
+      kx_rec: "10 keyex.{{ testzone }}"
     register: result
     failed_when: not result.changed
 
@@ -758,7 +758,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       kx_preference: 20
-      kx_rec: 10 keyex."{{ testzone }}"
+      kx_rec: "10 keyex.{{ testzone }}"
     register: result
     failed_when: result.changed
 
@@ -768,7 +768,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       kx_preference: 20
-      kx_rec: 20 keyex."{{ testzone }}"
+      kx_rec: "20 keyex.{{ testzone }}"
     register: result
     failed_when: result.changed
 
@@ -777,7 +777,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      kx_rec: 20 keyex."{{ testzone }}"
+      kx_rec: "20 keyex.{{ testzone }}"
       state: absent
     register: result
     failed_when: not result.changed
@@ -787,7 +787,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      kx_rec: 20 keyex."{{ testzone }}"
+      kx_rec: "20 keyex.{{ testzone }}"
       state: absent
     register: result
     failed_when: result.changed
@@ -798,7 +798,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       mx_preference: 10
-      mx_exchanger: mail."{{ testzone }}"
+      mx_exchanger: "mail.{{ testzone }}"
     register: result
     failed_when: not result.changed
 
@@ -808,7 +808,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       mx_preference: 10
-      mx_exchanger: mail."{{ testzone }}"
+      mx_exchanger: "mail.{{ testzone }}"
     register: result
     failed_when: result.changed
 
@@ -818,7 +818,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       mx_preference: 20
-      mx_rec: 10 mail."{{ testzone }}"
+      mx_rec: "10 mail.{{ testzone }}"
     register: result
     failed_when: not result.changed
 
@@ -827,7 +827,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      mx_rec: 20 mail."{{ testzone }}"
+      mx_rec: "20 mail.{{ testzone }}"
       state: absent
     register: result
     failed_when: not result.changed
@@ -837,7 +837,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      mx_rec: 20 mail."{{ testzone }}"
+      mx_rec: "20 mail.{{ testzone }}"
       state: absent
     register: result
     failed_when: result.changed
@@ -899,7 +899,7 @@
       zone_name: "{{ testzone }}"
       name: host04
       loc_size: 1.00
-      loc_rec: 52 22 23 N 4 53 32 E -2 0 10000 10
+      loc_rec: 52 22 23.000 N 4 53 32.000 E -2.00 0.00 10000.00 10.00
     register: result
     failed_when: not result.changed
 
@@ -908,7 +908,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      loc_rec: 52 22 23.000 N 4 53 32.000 E -2.00 1.00 10000 10
+      loc_rec: 52 22 23.000 N 4 53 32.000 E -2.00 1.00 10000.00 10.00
       state: absent
     register: result
     failed_when: not result.changed
@@ -918,7 +918,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      loc_rec: 52 22 23.000 N 4 53 32.000 E -2.00 1.00 10000 10
+      loc_rec: 52 22 23.000 N 4 53 32.000 E -2.00 1.00 10000.00 10.00
       state: absent
     register: result
     failed_when: result.changed
@@ -991,7 +991,7 @@
       srv_priority: 10
       srv_weight: 10
       srv_port: 5060
-      srv_target: sip-server."{{ testzone }}"
+      srv_target: "sip-server.{{ testzone }}"
     register: result
     failed_when: not result.changed
 
@@ -1003,7 +1003,7 @@
       srv_priority: 10
       srv_weight: 10
       srv_port: 5060
-      srv_target: sip-server."{{ testzone }}"
+      srv_target: "sip-server.{{ testzone }}"
     register: result
     failed_when: result.changed
 
@@ -1015,8 +1015,8 @@
       srv_priority: 4
       srv_weight: 10
       srv_port: 5060
-      srv_target: sip-server."{{ testzone }}"
-      srv_rec: 10 10 5060 sip-server."{{ testzone }}"
+      srv_target: "sip-server.{{ testzone }}"
+      srv_rec: "10 10 5060 sip-server.{{ testzone }}"
     register: result
     failed_when: not result.changed
 
@@ -1029,7 +1029,7 @@
       srv_weight: 10
       srv_port: 5060
       srv_target: sip-server."{{ testzone }}"
-      srv_rec: 10 10 5060 sip-server."{{ testzone }}"
+      srv_rec: "10 10 5060 sip-server.{{ testzone }}"
     register: result
     failed_when: result.changed
 
@@ -1041,7 +1041,7 @@
       srv_priority: 2
       srv_weight: 20
       srv_port: 5060
-      srv_target: sip-server."{{ testzone }}"
+      srv_target: "sip-server.{{ testzone }}"
     register: result
     failed_when: not result.changed
 
@@ -1053,7 +1053,7 @@
       srv_priority: 2
       srv_weight: 20
       srv_port: 5060
-      srv_target: sip-server."{{ testzone }}"
+      srv_target: "sip-server.{{ testzone }}"
     register: result
     failed_when: result.changed
 
@@ -1062,7 +1062,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: _sip._udp
-      srv_record: 2 20 5060 sip-server."{{ testzone }}"
+      srv_record: "2 20 5060 sip-server.{{ testzone }}"
       state: absent
     register: result
     failed_when: not result.changed
@@ -1072,7 +1072,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: _sip._udp
-      srv_record: 2 20 5060 sip-server."{{ testzone }}"
+      srv_record: "2 20 5060 sip-server.{{ testzone }}"
       state: absent
     register: result
     failed_when: result.changed
@@ -1283,7 +1283,7 @@
       name: _ftp._tcp
       uri_priority: 10
       uri_weight: 1
-      uri_target: ftp://ftp.host04."{{ testzone }}"/public
+      uri_target: ftp://ftp.host04.{{ testzone }}/public
     register: result
     failed_when: not result.changed
 
@@ -1294,7 +1294,7 @@
       name: _ftp._tcp
       uri_priority: 10
       uri_weight: 1
-      uri_target: ftp://ftp.host04."{{ testzone }}"/public
+      uri_target: ftp://ftp.host04.{{ testzone }}/public
     register: result
     failed_when: result.changed
 
@@ -1305,13 +1305,13 @@
       name: _ftp._tcp
       uri_priority: 5
       uri_weight: 3
-      uri_rec: 10 1 ftp://ftp.host04."{{ testzone }}"/public
+      uri_rec: 10 1 "ftp://ftp.host04.{{ testzone }}/public"
     register: result
     failed_when: not result.changed
 
   - name: Verify if modification worked.
     ipadnsrecord:
-      uri_rec: 10 1 ftp://ftp.host04."{{ testzone }}"/public
+      uri_rec: 10 1 ftp://ftp.host04.{{ testzone }}/public
       state: absent
     register: result
     failed_when: result.changed
@@ -1324,7 +1324,7 @@
       name: _ftp._tcp
       uri_priority: 5
       uri_weight: 3
-      uri_rec: 5 3 ftp://ftp.host04."{{ testzone }}"/public
+      uri_rec: 5 3 "ftp://ftp.host04.{{ testzone }}/public"
     register: result
     failed_when: result.changed
 
@@ -1333,7 +1333,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: _ftp._tcp
-      uri_rec: 5 3 ftp://ftp.host04."{{ testzone }}"/public
+      uri_rec: 5 3 "ftp://ftp.host04.{{ testzone }}/public"
       state: absent
     register: result
     failed_when: not result.changed
@@ -1343,7 +1343,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: _ftp._tcp
-      uri_rec: 5 3 ftp://ftp.host04."{{ testzone }}"/public
+      uri_rec: 5 3 "ftp://ftp.host04.{{ testzone }}/public"
       state: absent
     register: result
     failed_when: result.changed

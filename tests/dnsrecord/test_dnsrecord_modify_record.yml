@@ -1,0 +1,180 @@
+---
+- name: Playbook to ensure
+  hosts: ipaserver
+  become: no
+  gather_facts: yes
+
+  tasks:
+  - name: Setup testing environment.
+    include_tasks: env_setup.yml
+
+  - name: Add test host.
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "iron01.{{ safezone }}"
+      ip_address: 192.168.1.253
+      force: yes
+
+  - name: Cleanup test records.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: iron01
+          ns_rec: iron01
+          ds_record:
+          - 1234 3 3 84763786e4213cca9a6938dba5dacd64f87ec216
+          - 1234 3 3 84763786e4213cca9a6938dba5dacd64f87ec222
+          - 5555 5 5 84763786e4213cca9a6938dba5dacd64f87ec222
+          cert_record:
+          - 1 1234 3 AwIBAgIUb14+Oug2nPMIIBdTCCAR+g
+          - 2 567 4 AwIBAgIUb14+Oug2nPMIIBdTCCAR+g
+      state: absent
+
+  - name: Add NS records to test.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: iron01
+          ns_rec: iron01
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Add DS records to test.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: iron01
+          ds_record:
+          - 1234 3 3 84763786e4213cca9a6938dba5dacd64f87ec216
+          - 1234 3 3 84763786e4213cca9a6938dba5dacd64f87ec222
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Add CERT records to test.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: host01
+          cert_record:
+          - 1 1234 3 AwIBAgIUb14+Oug2nPMIIBdTCCAR+g
+          - 5 555 4 AwIBAgIUb14+Oug2nPMIIBdTCCAAS+g
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Modify CERT record.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      name: host01
+      cert_type: 2
+      cert_key_tag: 567
+      cert_algorithm: 4
+      cert_rec: 1 1234 3 AwIBAgIUb14+Oug2nPMIIBdTCCAR+g
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Verify modified CERT records exists.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: host01
+          cert_record: 2 567 4 AwIBAgIUb14+Oug2nPMIIBdTCCAR+g
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Verify if old CERT record does not exist.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: host01
+          cert_record: 1 1234 3 AwIBAgIUb14+Oug2nPMIIBdTCCAR+g
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Verify if unmodified CERT record does exist.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: host01
+          cert_record: 5 555 4 AwIBAgIUb14+Oug2nPMIIBdTCCAAS+g
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Try to modify the same DS record twice.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: iron01
+          ds_key_tag: 5555
+          ds_algorithm: 5
+          ds_digest_type: 5
+          ds_digest: 84763786e4213cca9a6938dba5dacd64f87ec222
+          ds_record: 1234 3 3 84763786e4213cca9a6938dba5dacd64f87ec216
+
+        - name: iron01
+          ds_key_tag: 5555
+          ds_algorithm: 5
+          ds_digest_type: 5
+          ds_digest: 84763786e4213cca9a6938dba5dacd64f87ec222
+          ds_record: 1234 3 3 84763786e4213cca9a6938dba5dacd64f87ec216
+    register: result
+    failed_when: not result.failed or "DS record does not contain" not in result.msg
+
+  - name: Verify if unmodified DS record still exists.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: iron01
+          ds_record: 1234 3 3 84763786e4213cca9a6938dba5dacd64f87ec222
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Verify DS record was modified
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: iron01
+          ds_record: 5555 5 5 84763786e4213cca9a6938dba5dacd64f87ec222
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Verify if modified DS record was not created.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: iron01
+          ds_record: 1234 3 3 84763786e4213cca9a6938dba5dacd64f87ec216
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Cleanup test records.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: safezone.test
+      records:
+        - name: iron01
+          ds_record:
+          - 1234 3 3 84763786e4213cca9a6938dba5dacd64f87ec216
+          - 1234 3 3 84763786e4213cca9a6938dba5dacd64f87ec222
+          - 5555 5 5 84763786e4213cca9a6938dba5dacd64f87ec222
+        - name: host01
+          cert_record:
+          - 1 1234 3 AwIBAgIUb14+Oug2nPMIIBdTCCAR+g
+          - 2 567 4 AwIBAgIUb14+Oug2nPMIIBdTCCAR+g
+      state: absent
+  # cleanup
+  - name: Cleanup test environment.
+    include_tasks: env_cleanup.yml
