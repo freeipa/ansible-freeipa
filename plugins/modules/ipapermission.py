@@ -152,7 +152,8 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import \
     temp_kinit, temp_kdestroy, valid_creds, api_connect, api_command, \
-    compare_args_ipa, module_params_get, gen_add_del_lists
+    compare_args_ipa, module_params_get, gen_add_del_lists, \
+    api_check_ipa_version
 import six
 
 if six.PY3:
@@ -335,6 +336,10 @@ def main():
             ansible_module.fail_json(
                 msg="Argument '%s' can not be used with action "
                 "'%s' and state '%s'" % (x, action, state))
+
+    if bindtype == "self" and api_check_ipa_version("<", "4.8.7"):
+        ansible_module.fail_json(
+            msg="Bindtype 'self' is not supported by your IPA version.")
 
     # Init
 

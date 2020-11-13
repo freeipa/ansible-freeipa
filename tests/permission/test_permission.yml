@@ -4,15 +4,19 @@
   become: true
 
   tasks:
+  - include_tasks: ../env_freeipa_facts.yml
 
   # CLEANUP TEST ITEMS
 
   - name: Ensure permission perm-test-1 is absent
     ipapermission:
       ipaadmin_password: SomeADMINpassword
-      name: perm-test-1
+      name:
+      - perm-test-1
+      - perm-test-bindtype-test
+      - perm-test-renamed
       state: absent
-   
+
   # TESTS
 
   - name: Ensure permission perm-test-1 is present
@@ -38,7 +42,7 @@
       ipaadmin_password: SomeADMINpassword
       name: perm-test-1
       privilege: "User Administrators"
-      action: member      
+      action: member
     register: result
     failed_when: not result.changed or result.failed
 
@@ -89,7 +93,7 @@
       state: absent
     register: result
     failed_when: result.changed or result.failed
-    
+
   - name: Ensure permission perm-test-renamed is present
     ipapermission:
       ipaadmin_password: SomeADMINpassword
@@ -99,16 +103,35 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure permission with bindtype 'self' is present, if IPA version >= 4.8.7
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-bindtype-test
+      bindtype: self
+      object_type: host
+      right: all
+    when: ipa_version is version('4.8.7', '>=')
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Fail to set permission perm-test-renamed bindtype to 'self', if IPA version < 4.8.7
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-bindtype-test
+      bindtype: self
+      object_type: host
+      right: all
+    when: ipa_version is version('4.8.7', '<')
+    register: result
+    failed_when: not result.failed or "Bindtype 'self' is not supported by your IPA version." not in result.msg
+
   # CLEANUP TEST ITEMS
 
   - name: Ensure permission perm-test-1 is absent
     ipapermission:
       ipaadmin_password: SomeADMINpassword
-      name: perm-test-1
-      state: absent
-
-  - name: Ensure permission perm-test-renamed is absent
-    ipapermission:
-      ipaadmin_password: SomeADMINpassword
-      name: perm-test-renamed
+      name:
+      - perm-test-1
+      - perm-test-bindtype-test
+      - perm-test-renamed
       state: absent
