@@ -27,6 +27,24 @@
     register: result
     failed_when: result.changed
 
+  - name: Archive data to symmetric vault, matching `no_log` field.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      vault_data: SomeADMINpassword
+      password: SomeVAULTpassword
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from symmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: symvault
+      password: SomeVAULTpassword
+      state: retrieved
+    register: result
+    failed_when: result.vault.data != 'SomeADMINpassword' or result.changed
+
   - name: Archive data to symmetric vault
     ipavault:
       ipaadmin_password: SomeADMINpassword

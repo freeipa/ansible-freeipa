@@ -27,6 +27,23 @@
     register: result
     failed_when: result.changed
 
+  - name: Archive data to asymmetric vault, matching `no_log` field.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      vault_data: SomeADMINpassword
+    register: result
+    failed_when: not result.changed
+
+  - name: Retrieve data from asymmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+      state: retrieved
+    register: result
+    failed_when: result.vault.data != 'SomeADMINpassword' or result.changed
+
   - name: Archive data to asymmetric vault
     ipavault:
       ipaadmin_password: SomeADMINpassword
