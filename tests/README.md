@@ -9,7 +9,8 @@ You will also need to have a remote host with freeipa server installed and confi
 Some other requirements:
 
  * The `controller` must be able to connect to `ipaserver` through ssh using keys.
- * `ipaserver` must be configured with DNS support. See [ipaserver role](../roles/ipaserver/README.md).
+ * `ipaserver` must be configured with DNS and KRA support.
+   See [ipaserver role](../roles/ipaserver/README.md).
  * IPA admin password must be `SomeADMINpassword`.
  * Directory Server admin password must be `SomeDMpassword`.
 
