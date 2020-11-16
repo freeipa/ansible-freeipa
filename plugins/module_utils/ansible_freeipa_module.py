@@ -23,6 +23,7 @@
 
 
 import sys
+import operator
 import os
 import uuid
 import tempfile
@@ -30,6 +31,25 @@ import shutil
 import gssapi
 from datetime import datetime
 from pprint import pformat
+
+try:
+    from packaging import version
+except ImportError:
+    # If `packaging` not found, split version string for creating version
+    # object. Although it is not PEP 440 compliant, it will work for stable
+    # FreeIPA releases.
+    import re
+
+    class version:
+        @staticmethod
+        def parse(version_str):
+            """
+            Split a version string A.B.C, into a tuple.
+
+            This will not work for `rc`, `dev` or similar version string.
+            """
+            return tuple(re.split("[-_\.]", version_str))  # noqa: W605
+
 from ipalib import api
 from ipalib import errors as ipalib_errors  # noqa
 from ipalib.config import Env
@@ -41,6 +61,7 @@ except ImportError:
     from ipapython.ipautil import kinit_password, kinit_keytab
 from ipapython.ipautil import run
 from ipapython.dn import DN
+from ipapython.version import VERSION
 from ipaplatform.paths import paths
 from ipalib.krb_utils import get_credentials_if_valid
 from ansible.module_utils.basic import AnsibleModule
@@ -185,6 +206,26 @@ def api_check_command(command):
 def api_check_param(command, name):
     """Check if param exists in command param list."""
     return name in api.Command[command].params
+
+
+def api_check_ipa_version(oper, requested_version):
+    """
+    Compare the installed IPA version against a requested version.
+
+    The valid operators are: <, <=, >, >=, ==, !=
+    """
+    oper_map = {
+        "<": operator.lt,
+        "<=": operator.le,
+        ">": operator.gt,
+        ">=": operator.ge,
+        "==": operator.eq,
+        "!=": operator.ne,
+    }
+    operation = oper_map.get(oper)
+    if not(operation):
+        raise NotImplementedError("Invalid operator: %s" % oper)
+    return operation(version.parse(VERSION), version.parse(requested_version))
 
 
 def execute_api_command(module, principal, password, command, name, args):

@@ -141,7 +141,7 @@ Variable | Description | Required
 `name` \| `cn` | The permission name string. | yes
 `right` \| `ipapermright` | Rights to grant. It can be a list of one or more of `read`, `search`, `compare`, `write`, `add`, `delete`, and `all` default: `all` | no
 `attrs` | All attributes to which the permission applies | no
-`bindtype` \| `ipapermbindruletype` | Bind rule type. It can be one of `permission`, `all`, `self`, or `anonymous` defaults to `permission` for new permissions.| no
+`bindtype` \| `ipapermbindruletype` | Bind rule type. It can be one of `permission`, `all`, `self`, or `anonymous` defaults to `permission` for new permissions. Bind rule type `self` can only be used on IPA versions 4.8.7 or up.| no
 `subtree` \| `ipapermlocation` | Subtree to apply permissions to | no
 `filter` \| `extratargetfilter` | Extra target filter | no
 `rawfilter` \| `ipapermtargetfilter` | All target filters | no
