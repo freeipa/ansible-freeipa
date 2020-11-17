@@ -1,12 +1,14 @@
 #!/bin/bash
 
-namespace="freeipa"
-collection="ansible_freeipa"
+namespace="${1:freeipa}"
+collection="${2:ansible_freeipa}"
 collection_prefix="${namespace}.${collection}"
 
 galaxy_version=$(git describe --tags | sed -e "s/^v//")
 echo $galaxy_version | grep "-" -q || galaxy_version="${galaxy_version}"
 sed -i -e "s/version: .*/version: \"$galaxy_version\"/" galaxy.yml
+sed -i -e "s/namespace: .*/namespace: \"$namespace\"/" galaxy.yml
+sed -i -e "s/name: .*/name: \"$collection\"/" galaxy.yml
 
 find . -name "*~" -exec rm {} \;
 
