@@ -124,7 +124,10 @@ def ansible_doc_test(path, verbose):
                 # All roles and plugins
                 roles = os.listdir("roles/")
                 for _role in roles:
-                    if not os.path.isdir("roles/%s" % _role):
+                    if (
+                        not os.path.isdir("roles/%s" % _role)
+                        or not os.path.isdir("roles/%s/library" % _role)
+                    ):
                         continue
                     modules = os.listdir("roles/%s/library" % _role)
                     for _module in modules:
