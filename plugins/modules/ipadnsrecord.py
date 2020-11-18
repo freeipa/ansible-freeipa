@@ -968,7 +968,7 @@ _RECORD_PARTS = {
     ],
     "a6record": ["a6_part_data"],
     "afsdbrecord": ['afsdb_part_subtype', 'afsdb_part_hostname'],
-    "cert_rec": [
+    "certrecord": [
         'cert_part_type', 'cert_part_key_tag', 'cert_part_algorithm',
         'cert_part_certificate_or_crl'
     ],
