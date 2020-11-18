@@ -525,7 +525,6 @@ options:
     aliases: ["uri_record"]
   ip_address:
     description: IP adresses for A ar AAAA.
-    aliases: ["a_ip_address", "aaaa_ip_address"]
     required: false
     type: string
   create_reverse:
