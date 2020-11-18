@@ -62,3 +62,11 @@
     file:
       path: "{{ ansible_env.HOME }}/in.txt"
       state: absent
+
+  - name: Remove private/public key files.
+    shell:
+      cmd: rm -f private.pem public.pem
+    delegate_to: localhost
+    become: no
+    args:
+      warn: no  # suppres warning for not using the `file` module.

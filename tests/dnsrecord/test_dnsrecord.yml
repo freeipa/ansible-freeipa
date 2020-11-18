@@ -9,6 +9,15 @@
   - name: Setup testing environment.
     include_tasks: env_setup.yml
 
+  - name: Generate self-signed certificates.
+    shell:
+      cmd: |
+        openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout "private{{ item }}.key" -out "cert{{ item }}.pem" -subj '/CN=test'
+        openssl x509 -outform der -in "cert{{ item }}.pem" -out "cert{{ item }}.der"
+    with_items: [1]
+    become: no
+    delegate_to: localhost
+
   # tests
   - name: Ensure that dns record 'host01' is present
     ipadnsrecord:
@@ -669,10 +678,6 @@
     register: result
     failed_when: result.changed
 
-  # Certificate created with:
-  # - openssl req -x509 -newkey rsa:512 -days 3650 -nodes -keyout private1.key -out cert1.pem -subj '/CN=test'
-  # - openssl x509 -outform der -in cert1.pem -out cert1.der
-  # - base64 cert1.der -w5000
   - name: Ensure that 'host04' CERT record is present.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
@@ -681,7 +686,7 @@
       cert_type: 1
       cert_key_tag: 1234
       cert_algorithm: 3
-      cert_certificate_or_crl: MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
+      cert_certificate_or_crl: "{{ lookup('file', 'cert1.der') | b64encode }}"
     register: result
     failed_when: not result.changed
 
@@ -693,7 +698,7 @@
       cert_type: 1
       cert_key_tag: 1234
       cert_algorithm: 3
-      cert_certificate_or_crl: MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
+      cert_certificate_or_crl: "{{ lookup('file', 'cert1.der') | b64encode }}"
     register: result
     failed_when: result.changed
 
@@ -702,7 +707,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      cert_rec: 1 1234 3 MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
+      cert_rec: "1 1234 3 {{ lookup('file', 'cert1.der') | b64encode }}"
       state: absent
     register: result
     failed_when: not result.changed
@@ -712,7 +717,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      cert_rec: 1 1234 3 MIIBdTCCAR+gAwIBAgIUb14+Oug2nPy1fOFF5US+uiJ1LfIwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAzMjMxODMzNDNaFw0zMDAzMjExODMzNDNaMA8xDTALBgNVBAMMBHRlc3QwXDANBgkqhkiG9w0BAQEFAANLADBIAkEAv/yGOgQbtUZbiQMjVly7bWuUX1oBGZAkCvumYpvsep3o1eJJ6HlREbLUlJmgibuNsjqE0FyrXueMjsD8D4juWQIDAQABo1MwUTAdBgNVHQ4EFgQUNtEmJqasXgN7Sh/huB5tx0ONblYwHwYDVR0jBBgwFoAUNtEmJqasXgN7Sh/huB5tx0ONblYwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAANBAKhPWPK5+pkT9NLLSZm3ASQJcDkU9asrSoc7MsiHIqSUju/YQgjdHgX0ljS8hnlo1scCITW09UXcNRUYFxwEuoQ=
+      cert_rec: 1 1234 3 "{{ lookup('file', 'cert1.der') | b64encode }}"
       state: absent
     register: result
     failed_when: result.changed
@@ -1346,3 +1351,12 @@
   # cleanup
   - name: Cleanup test environment.
     include_tasks: env_cleanup.yml
+
+  - name: Remove certificate files.
+    shell:
+      cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der"
+    with_items: [1]
+    become: no
+    delegate_to: localhost
+    args:
+      warn: no  # suppres warning for not using the `file` module.

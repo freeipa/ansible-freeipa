@@ -1,4 +1,7 @@
-# Tasks executed to ensure a sane environment to test IPA Vault module.
+---
+  # Tasks executed to ensure a sane environment to test IPA Vault module.
+  - name: Ensure environment is clean.
+    import_tasks: env_cleanup.yml
 
   - name: Create private key file.
     shell:
@@ -11,9 +14,6 @@
       cmd: openssl rsa -in private.pem -outform PEM -pubout -out public.pem
     delegate_to: localhost
     become: no
-
-  - name: Ensure environment is clean.
-    import_tasks: env_cleanup.yml
 
   - name: Copy password file to target host.
     copy:
