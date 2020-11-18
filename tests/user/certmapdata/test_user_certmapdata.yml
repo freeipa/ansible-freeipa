@@ -10,6 +10,7 @@
       cmd: |
         openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout "private{{ item }}.key" -out "cert{{ item }}.pem" -subj '/CN=test'
         openssl x509 -outform der -in "cert{{ item }}.pem" -out "cert{{ item }}.der"
+        base64 "cert{{ item }}.der" -w5000 > "cert{{ item }}.b64"
     with_items: [1, 2, 3]
     become: no
     delegate_to: localhost
@@ -34,9 +35,9 @@
       ipaadmin_password: SomeADMINpassword
       name: test
       certmapdata:
-        - certificate: "{{ lookup('file', 'cert1.der') | b64encode }}"
-        - certificate: "{{ lookup('file', 'cert2.der') | b64encode }}"
-        - certificate: "{{ lookup('file', 'cert3.der') | b64encode }}"
+        - certificate: "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+        - certificate: "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
+        - certificate: "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
     register: result
     failed_when: not result.changed
@@ -46,9 +47,9 @@
       ipaadmin_password: SomeADMINpassword
       name: test
       certmapdata:
-        - certificate: "{{ lookup('file', 'cert1.der') | b64encode }}"
-        - certificate: "{{ lookup('file', 'cert2.der') | b64encode }}"
-        - certificate: "{{ lookup('file', 'cert3.der') | b64encode }}"
+        - certificate: "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+        - certificate: "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
+        - certificate: "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
     register: result
     failed_when: result.changed
@@ -58,9 +59,9 @@
       ipaadmin_password: SomeADMINpassword
       name: test
       certmapdata:
-        - certificate: "{{ lookup('file', 'cert1.der') | b64encode }}"
-        - certificate: "{{ lookup('file', 'cert2.der') | b64encode }}"
-        - certificate: "{{ lookup('file', 'cert3.der') | b64encode }}"
+        - certificate: "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+        - certificate: "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
+        - certificate: "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
       state: absent
     register: result
@@ -71,9 +72,9 @@
       ipaadmin_password: SomeADMINpassword
       name: test
       certmapdata:
-        - certificate: "{{ lookup('file', 'cert1.der') | b64encode }}"
-        - certificate: "{{ lookup('file', 'cert2.der') | b64encode }}"
-        - certificate: "{{ lookup('file', 'cert3.der') | b64encode }}"
+        - certificate: "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+        - certificate: "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
+        - certificate: "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
       state: absent
     register: result
@@ -226,7 +227,7 @@
 
   - name: Remove certificate files.
     shell:
-      cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der"
+      cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
     with_items: [1, 2, 3]
     become: no
     delegate_to: localhost
