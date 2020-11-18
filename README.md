@@ -11,6 +11,10 @@ Features
 * Cluster deployments: Server, replicas and clients in one playbook
 * One-time-password (OTP) support for client installation
 * Repair mode for clients
+* Backup and restore, also to and from controller
+* Modules for config management
+* Modules for delegation management
+* Modules for dns config management
 * Modules for dns forwarder management
 * Modules for dns record management
 * Modules for dns zone management
@@ -20,8 +24,12 @@ Features
 * Modules for hbacsvcgroup management
 * Modules for host management
 * Modules for hostgroup management
+* Modules for location management
+* Modules for permission management
+* Modules for privilege management
 * Modules for pwpolicy management
 * Modules for role management
+* Modules for self service management
 * Modules for service management
 * Modules for sudocmd management
 * Modules for sudocmdgroup management
@@ -408,10 +416,13 @@ Roles
 * [Server](roles/ipaserver/README.md)
 * [Replica](roles/ipareplica/README.md)
 * [Client](roles/ipaclient/README.md)
+* [Backup](roles/ipabackup/README.md)
 
 Modules in plugin/modules
 =========================
 
+* [ipaconfig](README-config.md)
+* [ipadelegation](README-delegation.md)
 * [ipadnsconfig](README-dnsconfig.md)
 * [ipadnsforwardzone](README-dnsforwardzone.md)
 * [ipadnsrecord](README-dnsrecord.md)
@@ -422,8 +433,12 @@ Modules in plugin/modules
 * [ipahbacsvcgroup](README-hbacsvc.md)
 * [ipahost](README-host.md)
 * [ipahostgroup](README-hostgroup.md)
+* [ipalocation](README-ipalocation.md)
+* [ipapermission](README-ipapermission.md)
+* [ipaprivilege](README-ipaprivilege.md)
 * [ipapwpolicy](README-pwpolicy.md)
 * [iparole](README-role.md)
+* [ipaselfservice](README-ipaselfservice.md)
 * [ipaservice](README-service.md)
 * [ipasudocmd](README-sudocmd.md)
 * [ipasudocmdgroup](README-sudocmdgroup.md)
