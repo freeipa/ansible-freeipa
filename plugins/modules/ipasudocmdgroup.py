@@ -50,10 +50,6 @@ options:
     description: Suppress processing of membership attributes
     required: false
     type: bool
-  sudocmdgroup:
-    description: List of sudocmdgroup names assigned to this sudocmdgroup.
-    required: false
-    type: list
   sudocmd:
     description: List of sudocmds assigned to this sudocmdgroup.
     required: false
@@ -157,7 +153,6 @@ def main():
             # present
             description=dict(type="str", default=None),
             nomembers=dict(required=False, type='bool', default=None),
-            sudocmdgroup=dict(required=False, type='list', default=None),
             sudocmd=dict(required=False, type='list', default=None),
             action=dict(type="str", default="sudocmdgroup",
                         choices=["member", "sudocmdgroup"]),
@@ -180,7 +175,6 @@ def main():
     # present
     description = ansible_module.params.get("description")
     nomembers = ansible_module.params.get("nomembers")
-    sudocmdgroup = ansible_module.params.get("sudocmdgroup")
     sudocmd = ansible_module.params.get("sudocmd")
     action = ansible_module.params.get("action")
     # state

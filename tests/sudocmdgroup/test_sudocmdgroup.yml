@@ -75,17 +75,12 @@
     failed_when: result.changed
 
   - name: Verify sudocmdgroup creation with sudocmds
-    block:
-    - name: Get Kerberos ticket for `admin`.
-      shell: echo SomeADMINpassword | kinit -c test_sudocmdgroup_krb5ccname admin
-
-    - name: Check sudocmdgroup-show output.
-      shell: ipa sudocmdgroup-show network --all
-      register: result
-      failed_when: result.failed or not("/usr/sbin/ifconfig" in result.stdout and "/usr/sbin/iwlist" in result.stdout)
-
-    - name: Destroy Kerberos tickets.
-      shell: kdestroy -A -q -c test_sudocmdgroup_krb5ccname
+    shell: |
+      echo SomeADMINpassword | kinit -c verify_sudocmdgroup admin
+      KRB5CCNAME="verify_sudocmdgroup" ipa sudocmdgroup-show network --all
+      kdestroy -A -q -c verify_sudocmdgroup
+    register: result
+    failed_when: result.failed or not("/usr/sbin/ifconfig" in result.stdout and "/usr/sbin/iwlist" in result.stdout)
 
   - name: Ensure sudocmdgroup, with sudocmds, is absent
     ipasudocmdgroup:
