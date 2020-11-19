@@ -47,13 +47,13 @@ Example playbook to ensure presence of a forwardzone to ipa DNS:
   become: true
 
   tasks:
-  - name: ensure presence of forwardzone for DNS requests for example.com to 8.8.8.8
+  - name: ensure presence of forwardzone with a single forwarder DNS server
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
-        - 8.8.8.8
+        - ip_address: 8.8.8.8
       forwardpolicy: first
       skip_overlap_check: true
 
@@ -63,14 +63,14 @@ Example playbook to ensure presence of a forwardzone to ipa DNS:
       name: example.com
       state: disabled
 
-  - name: ensure presence of multiple upstream DNS servers for example.com
+  - name: ensure presence of forwardzone with multiple forwarder DNS server
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       state: present
       name: example.com
       forwarders:
-        - 8.8.8.8
-        - 4.4.4.4
+        - ip_address: 8.8.8.8
+        - ip_address: 4.4.4.4
 
   - name: ensure presence of another forwarder to any existing ones for example.com
     ipadnsforwardzone:
@@ -78,10 +78,19 @@ Example playbook to ensure presence of a forwardzone to ipa DNS:
       state: present
       name: example.com
       forwarders:
-        - 1.1.1.1
+        - ip_address: 1.1.1.1
       action: member
 
-  - name: ensure the forwarder for example.com does not exists (delete it if needed)
+  - name: ensure presence of forwardzone with single forwarder DNS server on non-stardard port
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      state: present
+      name: example.com
+      forwarders:
+        - ip_address: 4.4.4.4
+          port: 8053
+
+  - name: ensure the forward zone is absent
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       name: example.com
