@@ -14,6 +14,7 @@
       cmd: |
         openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout "private{{ item }}.key" -out "cert{{ item }}.pem" -subj '/CN=test'
         openssl x509 -outform der -in "cert{{ item }}.pem" -out "cert{{ item }}.der"
+        base64 "cert{{ item }}.der" -w5000 > "cert{{ item }}.b64"
     with_items: [1]
     become: no
     delegate_to: localhost
@@ -686,7 +687,7 @@
       cert_type: 1
       cert_key_tag: 1234
       cert_algorithm: 3
-      cert_certificate_or_crl: "{{ lookup('file', 'cert1.der') | b64encode }}"
+      cert_certificate_or_crl: "{{ lookup('file', 'cert1.b64') }}"
     register: result
     failed_when: not result.changed
 
@@ -698,7 +699,7 @@
       cert_type: 1
       cert_key_tag: 1234
       cert_algorithm: 3
-      cert_certificate_or_crl: "{{ lookup('file', 'cert1.der') | b64encode }}"
+      cert_certificate_or_crl: "{{ lookup('file', 'cert1.b64') }}"
     register: result
     failed_when: result.changed
 
@@ -707,7 +708,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      cert_rec: "1 1234 3 {{ lookup('file', 'cert1.der') | b64encode }}"
+      cert_rec: "1 1234 3 {{ lookup('file', 'cert1.b64') }}"
       state: absent
     register: result
     failed_when: not result.changed
@@ -717,7 +718,7 @@
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
-      cert_rec: 1 1234 3 "{{ lookup('file', 'cert1.der') | b64encode }}"
+      cert_rec: 1 1234 3 "{{ lookup('file', 'cert1.b64') }}"
       state: absent
     register: result
     failed_when: result.changed
@@ -1354,7 +1355,7 @@
 
   - name: Remove certificate files.
     shell:
-      cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der"
+      cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
     with_items: [1]
     become: no
     delegate_to: localhost

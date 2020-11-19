@@ -14,7 +14,7 @@
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       vault_type: asymmetric
-      public_key: "{{ lookup('file', 'public.pem') | b64encode }}"
+      public_key: "{{ lookup('file', 'public.pem', rstrip=False) | b64encode }}"
     register: result
     failed_when: not result.changed
 
@@ -23,7 +23,7 @@
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       vault_type: asymmetric
-      public_key: "{{ lookup('file', 'public.pem') | b64encode }}"
+      public_key: "{{ lookup('file', 'public.pem', rstrip=False) | b64encode }}"
     register: result
     failed_when: result.changed
 
@@ -39,7 +39,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'SomeADMINpassword' or result.changed
@@ -56,7 +56,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'Hello World.' or result.changed
@@ -66,7 +66,7 @@
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       out: "{{ ansible_env.HOME }}/data.txt"
-      private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.changed or result.failed or (result.vault.data | default(false))
@@ -89,7 +89,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'The world of π is half rounded.' or result.changed
@@ -107,7 +107,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'Another World.' or result.changed
@@ -124,7 +124,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'c' or result.changed
@@ -175,7 +175,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'Hello World.' or result.changed

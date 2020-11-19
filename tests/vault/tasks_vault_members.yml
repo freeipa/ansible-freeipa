@@ -27,7 +27,7 @@
       ipaadmin_password: SomeADMINpassword
       name: "{{vault.name}}"
       vault_type: "{{vault.vault_type}}"
-      public_key: "{{lookup('file', 'private.pem') | b64encode}}"
+      public_key: "{{lookup('file', 'private.pem', rstrip=False) | b64encode}}"
     register: result
     failed_when: not result.changed
     when: vault.vault_type == 'asymmetric'
