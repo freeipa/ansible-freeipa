@@ -525,7 +525,6 @@ options:
     aliases: ["uri_record"]
   ip_address:
     description: IP adresses for A ar AAAA.
-    aliases: ["a_ip_address", "aaaa_ip_address"]
     required: false
     type: string
   create_reverse:
@@ -890,6 +889,10 @@ _RECORD_FIELDS = [
     "tlsa_rec", "txt_rec", "uri_rec"
 ]
 
+# The _PART_MAP structure maps ansible-freeipa attributes to their
+# FreeIPA API counterparts. The keys are also used to obtain a list
+# of all supported DNS record attributes.
+
 _PART_MAP = {
     'a_ip_address': 'a_part_ip_address',
     'a_create_reverse': 'a_extra_create_reverse',
@@ -953,6 +956,10 @@ _PART_MAP = {
     "uri_weight": "uri_part_weight"
 }
 
+# _RECORD_PARTS is a structure that maps the attributes that store
+# the DNS record in FreeIPA API to the parts and options available
+# for these records in the API.
+
 _RECORD_PARTS = {
     "arecord": ["a_part_ip_address", "a_extra_create_reverse"],
     "aaaarecord": [
@@ -960,7 +967,7 @@ _RECORD_PARTS = {
     ],
     "a6record": ["a6_part_data"],
     "afsdbrecord": ['afsdb_part_subtype', 'afsdb_part_hostname'],
-    "cert_rec": [
+    "certrecord": [
         'cert_part_type', 'cert_part_key_tag', 'cert_part_algorithm',
         'cert_part_certificate_or_crl'
     ],
@@ -1133,33 +1140,20 @@ def configure_module():
     return ansible_module
 
 
-def find_dnsrecord(module, dnszone, name, **records):
+def find_dnsrecord(module, dnszone, name):
     """Find a DNS record based on its name (idnsname)."""
-    _args = {record: value for record, value in records.items()}
-    _args["all"] = True
-    if name != '@':
-        _args['idnsname'] = to_text(name)
+    _args = {
+        "all": True,
+        "idnsname": to_text(name),
+    }
 
     try:
         _result = api_command(
-            module, "dnsrecord_find", to_text(dnszone), _args)
+            module, "dnsrecord_show", to_text(dnszone), _args)
     except ipalib.errors.NotFound:
         return None
 
-    if len(_result["result"]) > 1 and name != '@':
-        module.fail_json(
-            msg="There is more than one dnsrecord for '%s',"
-                " zone '%s'" % (name, dnszone))
-    else:
-        if len(_result["result"]) == 1:
-            return _result["result"][0]
-        else:
-            for _res in _result["result"]:
-                if 'idnsname' in _res:
-                    for x in _res['idnsname']:
-                        if '@' == to_text(x):
-                            return _res
-    return None
+    return _result["result"]
 
 
 def check_parameters(module, state, zone_name, record):
@@ -1174,10 +1168,21 @@ def check_parameters(module, state, zone_name, record):
             module.fail_json(
                 msg="Record Type '%s' is not supported." % record_type)
 
-    has_record = any(record.get(rec, None) for rec in _RECORD_FIELDS)
+    # has_record is "True" if the playbook has set any of the full record
+    # attributes (*record or *_rec).
+    has_record = any(
+        (rec in record) or (("%sord" % rec) in record)
+        for rec in _RECORD_FIELDS
+    )
 
+    # has_part_record is "True" if the playbook has set any of the
+    # record field attributes.
     has_part_record = any(record.get(rec, None) for rec in _PART_MAP)
 
+    # some attributes in the playbook may have a special meaning,
+    # like "ip_address", which is used for either arecord or aaaarecord,
+    # and has_special is true if any of these attributes is set on
+    # on the playbook.
     special_list = ['ip_address']
     has_special = any(record.get(rec, None) for rec in special_list)
 
@@ -1286,7 +1291,7 @@ def gen_args(entry):
 
     else:
         for field in _RECORD_FIELDS:
-            record_value = entry.get(field, None)
+            record_value = entry.get(field) or entry.get("%sord" % field)
             if record_value is not None:
                 record_type = field.split('_')[0]
                 rec = "{}record".format(record_type.lower())
@@ -1324,7 +1329,15 @@ def define_commands_for_present_state(module, zone_name, entry, res_find):
     name = to_text(entry['name'])
     args = gen_args(entry)
 
-    if res_find is None:
+    for record, fields in _RECORD_PARTS.items():
+        part_fields = [f for f in fields if f in args]
+        if part_fields and record in args:
+            record_change_request = True
+            break
+    else:
+        record_change_request = False
+
+    if res_find is None and not record_change_request:
         _commands.append([zone_name, 'dnsrecord_add', args])
     else:
         # Create reverse records for existing records
@@ -1346,15 +1359,19 @@ def define_commands_for_present_state(module, zone_name, entry, res_find):
                         module.fail_json(msg="Cannot modify multiple records "
                                              "of the same type at once.")
 
-                    existing = find_dnsrecord(module, zone_name, name,
-                                              **{record: args[record][0]})
-                    if existing is None:
-                        module.fail_json(msg="``%s` not found." % record)
+                    if res_find is None or record not in res_find:
+                        module.fail_json(msg="`%s` not found." % record)
                     else:
+                        search_record = args[record][0]
                         # update DNS record
                         _args = {k: args[k] for k in part_fields if k in args}
                         _args["idnsname"] = to_text(args["idnsname"])
-                        _args[record] = res_find[record]
+                        for dnsrecord in res_find[record]:
+                            if dnsrecord == search_record:
+                                _args[record] = search_record
+                                break
+                        else:
+                            module.fail_json(msg="`%s` not found." % record)
                         if 'dns_ttl' in args:
                             _args['dns_ttl'] = args['dns_ttl']
                         _commands.append([zone_name, 'dnsrecord_mod', _args])
@@ -1373,9 +1390,11 @@ def define_commands_for_present_state(module, zone_name, entry, res_find):
                 if record in args:
                     add_list = []
                     for value in args[record]:
-                        existing = find_dnsrecord(module, zone_name, name,
-                                                  **{record: value})
-                        if existing is None:
+                        if (
+                            res_find is None
+                            or record not in res_find
+                            or value not in res_find[record]
+                        ):
                             add_list.append(value)
                     if add_list:
                         args[record] = add_list
@@ -1390,7 +1409,6 @@ def define_commands_for_absent_state(module, zone_name, entry, res_find):
     if res_find is None:
         return []
 
-    name = entry['name']
     args = gen_args(entry)
 
     del_all = args.get('del_all', False)
@@ -1404,11 +1422,11 @@ def define_commands_for_absent_state(module, zone_name, entry, res_find):
         delete_records = False
         for record, values in records_to_delete.items():
             del_list = []
-            for value in values:
-                existing = find_dnsrecord(
-                    module, zone_name, name, **{record: value})
-                if existing:
-                    del_list.append(value)
+            if record in res_find:
+                for value in values:
+                    for rec_found in res_find[record]:
+                        if rec_found == value:
+                            del_list.append(value)
             if del_list:
                 args[record] = del_list
                 delete_records = True
