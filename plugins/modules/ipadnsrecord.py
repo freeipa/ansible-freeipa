@@ -1329,6 +1329,8 @@ def define_commands_for_present_state(module, zone_name, entry, res_find):
     name = to_text(entry['name'])
     args = gen_args(entry)
 
+    existing = find_dnsrecord(module, zone_name, name)
+
     for record, fields in _RECORD_PARTS.items():
         part_fields = [f for f in fields if f in args]
         if part_fields and record in args:
@@ -1359,19 +1361,14 @@ def define_commands_for_present_state(module, zone_name, entry, res_find):
                         module.fail_json(msg="Cannot modify multiple records "
                                              "of the same type at once.")
 
-                    if res_find is None or record not in res_find:
+                    mod_record = args[record][0]
+                    if existing is None:
                         module.fail_json(msg="`%s` not found." % record)
                     else:
-                        search_record = args[record][0]
                         # update DNS record
                         _args = {k: args[k] for k in part_fields if k in args}
                         _args["idnsname"] = to_text(args["idnsname"])
-                        for dnsrecord in res_find[record]:
-                            if dnsrecord == search_record:
-                                _args[record] = search_record
-                                break
-                        else:
-                            module.fail_json(msg="`%s` not found." % record)
+                        _args[record] = mod_record
                         if 'dns_ttl' in args:
                             _args['dns_ttl'] = args['dns_ttl']
                         _commands.append([zone_name, 'dnsrecord_mod', _args])
