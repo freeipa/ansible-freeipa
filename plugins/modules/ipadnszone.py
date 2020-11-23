@@ -214,6 +214,7 @@ from ansible.module_utils.ansible_freeipa_module import (
     is_ipv6_addr,
     is_valid_port,
 )  # noqa: E402
+import ipalib.errors
 import netaddr
 import six
 
@@ -404,13 +405,14 @@ class DNSZoneModule(FreeIPABaseModule):
 
     def get_zone(self, zone_name):
         get_zone_args = {"idnsname": zone_name, "all": True}
-        response = self.api_command("dnszone_find", args=get_zone_args)
 
-        zone = None
-        is_zone_active = False
-
-        if response["count"] == 1:
-            zone = response["result"][0]
+        try:
+            response = self.api_command("dnszone_show", args=get_zone_args)
+        except ipalib.errors.NotFound:
+            zone = None
+            is_zone_active = False
+        else:
+            zone = response["result"]
             is_zone_active = zone.get("idnszoneactive") == ["TRUE"]
 
         return zone, is_zone_active
@@ -448,7 +450,10 @@ class DNSZoneModule(FreeIPABaseModule):
             # Look for existing zone in IPA
             zone, is_zone_active = self.get_zone(zone_name)
             args = self.get_ipa_command_args(zone=zone)
-            just_added = False
+            set_serial = self.ipa_params.serial is not None
+
+            if set_serial:
+                del args["idnssoaserial"]
 
             if self.ipa_params.state in ["present", "enabled", "disabled"]:
                 if not zone:
@@ -456,7 +461,7 @@ class DNSZoneModule(FreeIPABaseModule):
                     #   with given args
                     self.add_ipa_command("dnszone_add", zone_name, args)
                     is_zone_active = True
-                    just_added = True
+                    # just_added = True
 
                 else:
                     # Zone already exist so we need to verify if given args
@@ -464,22 +469,24 @@ class DNSZoneModule(FreeIPABaseModule):
                     if self.require_ipa_attrs_change(args, zone):
                         self.add_ipa_command("dnszone_mod", zone_name, args)
 
-                if self.ipa_params.state == "enabled" and not is_zone_active:
-                    self.add_ipa_command("dnszone_enable", zone_name)
+            if self.ipa_params.state == "enabled" and not is_zone_active:
+                self.add_ipa_command("dnszone_enable", zone_name)
 
-                if self.ipa_params.state == "disabled" and is_zone_active:
-                    self.add_ipa_command("dnszone_disable", zone_name)
+            if self.ipa_params.state == "disabled" and is_zone_active:
+                self.add_ipa_command("dnszone_disable", zone_name)
 
-            if self.ipa_params.state == "absent":
-                if zone:
-                    self.add_ipa_command("dnszone_del", zone_name)
+            if self.ipa_params.state == "absent" and zone is not None:
+                self.add_ipa_command("dnszone_del", zone_name)
 
             # Due to a bug in FreeIPA dnszone-add won't set
-            #   SOA Serial. The good news is that dnszone-mod does the job.
-            # See: https://pagure.io/freeipa/issue/8227
-            # Because of that, if the zone was just added with a given serial
-            #   we run mod just after to workaround the bug
-            if just_added and self.ipa_params.serial is not None:
+            # SOA Serial in the creation of a zone, or if
+            # another field is modified along with it.
+            # As a workaround, we set only the SOA serial,
+            # with dnszone-mod, after other changes.
+            # See:
+            #   - https://pagure.io/freeipa/issue/8227
+            #   - https://pagure.io/freeipa/issue/8489
+            if set_serial:
                 args = {
                     "idnssoaserial": self.ipa_params.serial,
                 }
