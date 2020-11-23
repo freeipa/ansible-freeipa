@@ -89,8 +89,19 @@ EXAMPLES = '''
     state: present
     name: example.com
     forwarders:
-    - 8.8.8.8
-    - 4.4.4.4
+    - ip_address: 8.8.8.8
+    - ip_address: 4.4.4.4
+    forwardpolicy: first
+    skip_overlap_check: true
+
+# Ensure dns zone is present, with forwarder on non-default port
+- ipadnsforwardzone:
+    ipaadmin_password: MyPassword123
+    state: present
+    name: example.com
+    forwarders:
+    - ip_address: 8.8.8.8
+      port: 8053
     forwardpolicy: first
     skip_overlap_check: true
 
