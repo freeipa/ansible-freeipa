@@ -1,5 +1,4 @@
 ---
-
 - name: Test sudocmdgroup
   hosts: ipaserver
   become: true
@@ -46,6 +45,52 @@
     failed_when: not result.changed
 
   - name: Ensure sudocmdgroup is absent again
+    ipasudocmdgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: network
+      state: absent
+    register: result
+    failed_when: result.changed
+
+  - name: Ensure sudocmdgroup is present, with sudocmds.
+    ipasudocmdgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: network
+      sudocmd:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: present
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudocmdgroup is present, with sudocmds, again.
+    ipasudocmdgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: network
+      sudocmd:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: present
+    register: result
+    failed_when: result.changed
+
+  - name: Verify sudocmdgroup creation with sudocmds
+    shell: |
+      echo SomeADMINpassword | kinit -c verify_sudocmdgroup admin
+      KRB5CCNAME="verify_sudocmdgroup" ipa sudocmdgroup-show network --all
+      kdestroy -A -q -c verify_sudocmdgroup
+    register: result
+    failed_when: result.failed or not("/usr/sbin/ifconfig" in result.stdout and "/usr/sbin/iwlist" in result.stdout)
+
+  - name: Ensure sudocmdgroup, with sudocmds, is absent
+    ipasudocmdgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: network
+      state: absent
+    register: result
+    failed_when: not result.changed
+
+  - name: Ensure sudocmdgroup, with sudocmds, is absent again
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
       name: network

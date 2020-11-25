@@ -50,10 +50,6 @@ options:
     description: Suppress processing of membership attributes
     required: false
     type: bool
-  sudocmdgroup:
-    description: List of sudocmdgroup names assigned to this sudocmdgroup.
-    required: false
-    type: list
   sudocmd:
     description: List of sudocmds assigned to this sudocmdgroup.
     required: false
@@ -113,22 +109,18 @@ from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
     gen_add_del_lists
 
+import ipalib
+
 
 def find_sudocmdgroup(module, name):
-    _args = {
-        "all": True,
-        "cn": to_text(name),
-    }
+    args = {"all": True}
 
-    _result = api_command(module, "sudocmdgroup_find", to_text(name), _args)
-
-    if len(_result["result"]) > 1:
-        module.fail_json(
-            msg="There is more than one sudocmdgroup '%s'" % (name))
-    elif len(_result["result"]) == 1:
-        return _result["result"][0]
-    else:
+    try:
+        _result = api_command(module, "sudocmdgroup_show", to_text(name), args)
+    except ipalib.errors.NotFound:
         return None
+    else:
+        return _result["result"]
 
 
 def gen_args(description, nomembers):
@@ -141,10 +133,10 @@ def gen_args(description, nomembers):
     return _args
 
 
-def gen_member_args(sudocmdgroup):
+def gen_member_args(sudocmd):
     _args = {}
-    if sudocmdgroup is not None:
-        _args["member_sudocmdgroup"] = sudocmdgroup
+    if sudocmd is not None:
+        _args["member_sudocmd"] = sudocmd
 
     return _args
 
@@ -161,7 +153,6 @@ def main():
             # present
             description=dict(type="str", default=None),
             nomembers=dict(required=False, type='bool', default=None),
-            sudocmdgroup=dict(required=False, type='list', default=None),
             sudocmd=dict(required=False, type='list', default=None),
             action=dict(type="str", default="sudocmdgroup",
                         choices=["member", "sudocmdgroup"]),
@@ -184,7 +175,6 @@ def main():
     # present
     description = ansible_module.params.get("description")
     nomembers = ansible_module.params.get("nomembers")
-    sudocmdgroup = ansible_module.params.get("sudocmdgroup")
     sudocmd = ansible_module.params.get("sudocmd")
     action = ansible_module.params.get("action")
     # state
@@ -258,28 +248,28 @@ def main():
                     if not compare_args_ipa(ansible_module, member_args,
                                             res_find):
                         # Generate addition and removal lists
-                        sudocmdgroup_add, sudocmdgroup_del = \
+                        sudocmd_add, sudocmd_del = \
                             gen_add_del_lists(
-                                sudocmdgroup,
-                                res_find.get("member_sudocmdgroup"))
+                                sudocmd,
+                                res_find.get("member_sudocmd"))
 
                         # Add members
-                        if len(sudocmdgroup_add) > 0:
+                        if len(sudocmd_add) > 0:
                             commands.append([name, "sudocmdgroup_add_member",
                                              {
                                                  "sudocmd": [to_text(c)
                                                              for c in
-                                                             sudocmdgroup_add]
+                                                             sudocmd_add]
                                              }
                                              ])
                         # Remove members
-                        if len(sudocmdgroup_del) > 0:
+                        if len(sudocmd_del) > 0:
                             commands.append([name,
                                              "sudocmdgroup_remove_member",
                                              {
                                                  "sudocmd": [to_text(c)
                                                              for c in
-                                                             sudocmdgroup_del]
+                                                             sudocmd_del]
                                              }
                                              ])
                 elif action == "member":
