@@ -37,7 +37,8 @@ __all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
            "validate_dm_password", "read_cache", "write_cache",
            "adtrustinstance", "IPAAPI_USER", "sync_time", "PKIIniLoader",
            "default_subject_base", "default_ca_subject_dn",
-           "check_ldap_conf", "encode_certificate", "decode_certificate"]
+           "check_ldap_conf", "encode_certificate", "decode_certificate",
+           "check_available_memory"]
 
 import sys
 import logging
@@ -139,6 +140,10 @@ if NUM_VERSION >= 40500:
     except ImportError:
         def default_ca_subject_dn(subject_base):
             return DN(('CN', 'Certificate Authority'), subject_base)
+    try:
+        from ipaserver.install.installutils import check_available_memory
+    except ImportError:
+        check_available_memory = None
 
     try:
         from ipaserver.install import adtrustinstance

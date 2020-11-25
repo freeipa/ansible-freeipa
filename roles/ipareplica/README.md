@@ -153,6 +153,7 @@ Variable | Description | Required
 `ipareplica_no_host_dns` | Do not use DNS for hostname lookup during installation. (bool, default: false) | no
 `ipareplica_skip_conncheck` | Skip connection check to remote master. (bool, default: false) | no
 `ipareplica_pki_config_override` | Path to ini file with config overrides. This is only usable with recent FreeIPA versions. (string) | no
+`ipareplica_mem_check` | Checking for minimum required memory for the deployment.  This is only usable with recent FreeIPA versions (4.8.10+) else ignored. (bool, default: yes) | no
 
 Server Vaiables
 ---------------

@@ -66,6 +66,9 @@ options:
   pki_config_override:
     description: Path to ini file with config overrides
     required: yes
+  skip_mem_check:
+    description: Skip checking for minimum required memory
+    required: yes
   setup_adtrust:
     description: Configure AD trust capability
     required: yes
@@ -221,7 +224,7 @@ from ansible.module_utils.ansible_ipa_server import (
     read_cache, ca, tasks, check_ldap_conf, timeconf, httpinstance,
     check_dirsrv, ScriptError, get_fqdn, verify_fqdn, BadHostError,
     validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION,
-    encode_certificate
+    encode_certificate, check_available_memory
 )
 
 if six.PY3:
@@ -242,6 +245,7 @@ def main():
             ca_cert_files=dict(required=False, type='list', default=[]),
             no_host_dns=dict(required=False, type='bool', default=False),
             pki_config_override=dict(required=False),
+            skip_mem_check=dict(required=False, type='bool', default=False),
             # server
             setup_adtrust=dict(required=False, type='bool', default=False),
             setup_kra=dict(required=False, type='bool', default=False),
@@ -322,6 +326,7 @@ def main():
     options.no_host_dns = ansible_module.params.get('no_host_dns')
     options.pki_config_override = ansible_module.params.get(
         'pki_config_override')
+    options.skip_mem_check = ansible_module.params.get('skip_mem_check')
     # server
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     options.setup_dns = ansible_module.params.get('setup_dns')
@@ -855,8 +860,12 @@ def main():
     if options.ca_subject:
         ca.subject_validator(ca.VALID_SUBJECT_ATTRS, options.ca_subject)
 
-    # IPv6 and SELinux check
+    # Memory check
+    if not options.skip_mem_check and check_available_memory is not None:
+        check_available_memory(ca=options.dirsrv_cert_files and
+                               len(options.dirsrv_cert_files) > 0)
 
+    # IPv6 and SELinux check
     tasks.check_ipv6_stack_enabled()
     tasks.check_selinux_status()
     if check_ldap_conf is not None:
