@@ -439,6 +439,12 @@ def find_host(module, name):
 
 
 def find_dnsrecord(module, name):
+    """
+    Search for a DNS record.
+
+    This function may raise ipalib_errors.NotFound in some cases,
+    and it should be handled by the caller.
+    """
     domain_name = name[name.find(".")+1:]
     host_name = name[:name.find(".")]
 
@@ -447,14 +453,8 @@ def find_dnsrecord(module, name):
         "idnsname": to_text(host_name)
     }
 
-    try:
-        _result = api_command(module, "dnsrecord_show", to_text(domain_name),
-                              _args)
-    except ipalib_errors.NotFound as e:
-        msg = str(e)
-        if "record not found" in msg or "zone not found" in msg:
-            return None
-        module.fail_json(msg="dnsrecord_show failed: %s" % msg)
+    _result = api_command(module, "dnsrecord_show", to_text(domain_name),
+                          _args)
 
     return _result["result"]
 
@@ -876,8 +876,11 @@ def main():
                 msg = str(e)
                 dns_not_configured = "DNS is not configured" in msg
                 dns_zone_not_found = "DNS zone not found" in msg
-                if ip_address is None and (
-                    dns_not_configured or dns_zone_not_found
+                dns_res_not_found = "DNS resource record not found" in msg
+                if (
+                    dns_res_not_found
+                    or ip_address is None
+                    and (dns_not_configured or dns_zone_not_found)
                 ):
                     # IP address(es) not given and no DNS support in IPA
                     # -> Ignore failure

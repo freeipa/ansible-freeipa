@@ -9,11 +9,10 @@ You will also need to have a remote host with freeipa server installed and confi
 Some other requirements:
 
  * The `controller` must be able to connect to `ipaserver` through ssh using keys.
- * `ipaserver` must be configured with DNS and KRA support.
-   See [ipaserver role](../roles/ipaserver/README.md).
  * IPA admin password must be `SomeADMINpassword`.
  * Directory Server admin password must be `SomeDMpassword`.
 
+To provide broader test coverage, `ipaserver` should be configured with DNS and KRA support, and playbook tests are written based on this configuration. Without such support, some tests are expected to fail. Use a different configuration to evaluate those scenarios. See also [ipaserver role](../roles/ipaserver/README.md).
 
 ## Running the tests
 
