@@ -86,8 +86,8 @@ def ansible_doc_test(path, verbose):
                 if module == "":
                     module = None
             elif len(_path) > 1:
-                print("The given path '%s' is not valid." % path)
-                sys.exit(1)
+                # Ignore other paths
+                return 0
 
         elif path in ["roles", "roles/"]:
             # roles only
@@ -97,14 +97,14 @@ def ansible_doc_test(path, verbose):
             if len(_path) == 1:
                 module = _path[0]
             else:
-                print("The given path '%s' is not valid." % path)
-                sys.exit(1)
+                # Ignore other paths
+                return 0
         elif path in ["plugins", "plugins/",
                       "plugins/modules", "plugins/modules/"]:
             only_modules = True
         else:
-            print("The given path '%s' is not valid." % path)
-            sys.exit(1)
+            # Ignore other paths
+            return 0
 
     errors = 0
     try:
