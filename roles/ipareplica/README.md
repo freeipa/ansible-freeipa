@@ -154,12 +154,13 @@ Variable | Description | Required
 `ipareplica_skip_conncheck` | Skip connection check to remote master. (bool, default: false) | no
 `ipareplica_pki_config_override` | Path to ini file with config overrides. This is only usable with recent FreeIPA versions. (string) | no
 
-Server Vaiables
----------------
+Server Variables
+----------------
 
 Variable | Description | Required
 -------- | ----------- | --------
 `ipadm_password` | The password for the Directory Manager. (string) | mostly
+`ipareplica_hidden_replica` | Install a hidden replica. (bool, default: false) | no
 `ipareplica_setup_adtrust` | Configure AD trust capability. (bool, default: false) | no
 `ipareplica_setup_ca` | Configure a dogtag CA. (bool, default: false) | no
 `ipareplica_setup_kra` | Configure a dogtag KRA. (bool, default: false) | no
