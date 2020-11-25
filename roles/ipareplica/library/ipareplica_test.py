@@ -57,8 +57,14 @@ options:
   hidden_replica:
     description: Install a hidden replica
     required: yes
+  skip_mem_check:
+    description: Skip checking for minimum required memory
+    required: yes
   setup_adtrust:
     description: Configure AD trust capability
+    required: yes
+  setup_ca:
+    description: Configure a dogtag CA
     required: yes
   setup_kra:
     description: Configure a dogtag KRA
@@ -152,8 +158,10 @@ def main():
             hostname=dict(required=False),
             ca_cert_files=dict(required=False, type='list', default=[]),
             hidden_replica=dict(required=False, type='bool', default=False),
+            skip_mem_check=dict(required=False, type='bool', default=False),
             # server
             setup_adtrust=dict(required=False, type='bool', default=False),
+            setup_ca=dict(required=False, type='bool'),
             setup_kra=dict(required=False, type='bool', default=False),
             setup_dns=dict(required=False, type='bool', default=False),
             no_pkinit=dict(required=False, type='bool', default=False),
@@ -196,8 +204,10 @@ def main():
     options.host_name = ansible_module.params.get('hostname')
     options.ca_cert_files = ansible_module.params.get('ca_cert_files')
     options.hidden_replica = ansible_module.params.get('hidden_replica')
+    options.skip_mem_check = ansible_module.params.get('skip_mem_check')
     # server
     options.setup_adtrust = ansible_module.params.get('setup_adtrust')
+    options.setup_ca = ansible_module.params.get('setup_ca')
     options.setup_kra = ansible_module.params.get('setup_kra')
     options.setup_dns = ansible_module.params.get('setup_dns')
     options.no_pkinit = ansible_module.params.get('no_pkinit')
@@ -404,7 +414,12 @@ def main():
     # check selinux status, http and DS ports, NTP conflicting services
     try:
         with redirect_stdout(ansible_log):
-            common_check(options.no_ntp)
+            argspec = inspect.getargspec(common_check)
+            if "skip_mem_check" in argspec.args:
+                common_check(options.no_ntp, options.skip_mem_check,
+                             options.setup_ca)
+            else:
+                common_check(options.no_ntp)
     except Exception as msg:  # ScriptError as msg:
         _msg = str(msg)
         if "server is already configured" in _msg:

@@ -69,6 +69,7 @@
     ca_cert_files: "{{ ipaserver_ca_cert_files | default(omit) }}"
     no_host_dns: "{{ ipaserver_no_host_dns }}"
     pki_config_override: "{{ ipaserver_pki_config_override | default(omit) }}"
+    skip_mem_check: "{{ not ipaserver_mem_check }}"
     ### server ###
     setup_adtrust: "{{ ipaserver_setup_adtrust }}"
     setup_kra: "{{ ipaserver_setup_kra }}"

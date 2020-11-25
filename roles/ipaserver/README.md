@@ -205,6 +205,7 @@ Variable | Description | Required
 `ipaserver_realm` | The Kerberos realm of an existing IPA deployment. (string) | no
 `ipaserver_hostname` | Fully qualified name of the server. (string) | no
 `ipaserver_no_host_dns` | Do not use DNS for hostname lookup during installation. (bool, default: false) | no
+`ipaserver_mem_check` | Checking for minimum required memory for the deployment. This is only usable with recent FreeIPA versions (4.8.10+) else ignored. (bool, default: yes) | no
 
 Server Variables
 ----------------

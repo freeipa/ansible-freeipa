@@ -75,8 +75,10 @@
     hostname: "{{ ipareplica_hostname | default(ansible_fqdn) }}"
     ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
     hidden_replica: "{{ ipareplica_hidden_replica }}"
+    skip_mem_check: "{{ not ipareplica_mem_check }}"
     ### server ###
     setup_adtrust: "{{ ipareplica_setup_adtrust }}"
+    setup_ca: "{{ ipareplica_setup_ca }}"
     setup_kra: "{{ ipareplica_setup_kra }}"
     setup_dns: "{{ ipareplica_setup_dns }}"
     no_pkinit: "{{ ipareplica_no_pkinit }}"
