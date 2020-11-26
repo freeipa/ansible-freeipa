@@ -5,7 +5,7 @@
   gather_facts: false
 
   tasks:
-  - name: Ensure DNS forward zone is present with forward port
+  - name: Ensure DNS forward zone is present with forwarder address and non-standard port.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       name: example.com

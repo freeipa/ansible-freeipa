@@ -5,7 +5,7 @@
   gather_facts: false
 
   tasks:
-  - name: Ensure that dns record is absent
+  - name: Ensure that dns localhost AAAA record is absent
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       name: host01
