@@ -9,6 +9,7 @@
     ipauser:
       ipaadmin_password: SomeADMINpassword
       name: test
+      action: member
       certificate:
         - >
           MIIC/zCCAeegAwIBAgIUZGHLaSYg1myp6EI4VGWSC27vOrswDQYJKoZ
