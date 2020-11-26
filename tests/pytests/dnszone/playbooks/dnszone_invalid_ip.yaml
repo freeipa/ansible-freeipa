@@ -4,7 +4,8 @@
   become: true
 
   tasks:
-  - ipadnszone:
+  - name: Test adding a DNS zone with an invalid forwarder
+    ipadnszone:
       ipaadmin_password: SomeADMINpassword
       name: invalidzone.test
       forwarders:

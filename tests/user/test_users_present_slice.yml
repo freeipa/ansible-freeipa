@@ -13,7 +13,8 @@
   - name: Include users.json
     include_vars:
       file: users.json
-  - debug:
+  - name: Size of users slice.
+    debug:
       msg: "{{ users | length }}"
   - name: Users present
     ipauser:

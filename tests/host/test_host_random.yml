@@ -33,7 +33,8 @@
     register: ipahost
     failed_when: not ipahost.changed or ipahost.failed
 
-  - assert:
+  - name: Assert ipahost.host.randompassword is defined.
+    assert:
       that:
       - ipahost.host.randompassword is defined
 
@@ -62,7 +63,8 @@
     register: ipahost
     failed_when: not ipahost.changed or ipahost.failed
 
-  - assert:
+  - name: Assert randompassword is defined for host1 and host2.
+    assert:
       that:
       - ipahost.host["{{ host1_fqdn }}"].randompassword is
         defined
@@ -87,7 +89,8 @@
     register: ipahost
     failed_when: ipahost.changed or not ipahost.failed
 
-  - assert:
+  - name: Assert randompassword is not defined for 'ansible_fqdn'.
+    assert:
       that:
       - ipahost.host["{{ ansible_facts['fqdn'] }}"].randompassword is
         not defined

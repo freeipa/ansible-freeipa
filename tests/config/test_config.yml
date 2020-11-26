@@ -15,7 +15,8 @@
           ipaapi_context: "{{ ipa_context | default(omit) }}"
         register: previousconfig
 
-      - debug:
+      - name: Display current configuration.
+        debug:
           var: previousconfig
 
       # setup environment.
@@ -478,7 +479,8 @@
           ca_renewal_master_server: '{{ previousconfig.config.ca_renewal_master_server | default(omit) }}'
         register: result
 
-      - debug:
+      - name: "CA-Renewal server warning."
+        debug:
           msg: "Due to a test failure, IPA CA-Renewal Server might not be correctly be set. Check your configuration."
 
     always:
