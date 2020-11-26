@@ -16,6 +16,7 @@
       owner: dirsrv
       group: dirsrv
       path: "{{ item }}"
+      mode: 0770
     loop:
       - /var/lock/dirsrv/
       - /var/lock/dirsrv/slapd-TEST-LOCAL/
