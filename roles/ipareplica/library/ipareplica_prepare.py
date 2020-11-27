@@ -325,8 +325,6 @@ def main():
         'external_cert_files')
     # options.subject_base = ansible_module.params.get('subject_base')
     # options.ca_subject = ansible_module.params.get('ca_subject')
-    options.no_dnssec_validation = ansible_module.params.get(
-        'no_dnssec_validation')
     # dns
     options.allow_zone_overlap = ansible_module.params.get(
         'allow_zone_overlap')
@@ -338,7 +336,7 @@ def main():
     options.auto_forwarders = ansible_module.params.get('auto_forwarders')
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
-        'no_dnssec_validationdnssec_validation')
+        'no_dnssec_validation')
     # ad trust
     options.enable_compat = ansible_module.params.get('enable_compat')
     options.netbios_name = ansible_module.params.get('netbios_name')
