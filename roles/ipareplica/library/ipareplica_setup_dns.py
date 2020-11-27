@@ -143,7 +143,7 @@ def main():
     options.forwarders = ansible_module.params.get('forwarders')
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
-        'no_dnssec_validationdnssec_validation')
+        'no_dnssec_validation')
     # additional
     dns.ip_addresses = ansible_module_get_parsed_ip_addresses(
         ansible_module, 'dns_ip_addresses')
