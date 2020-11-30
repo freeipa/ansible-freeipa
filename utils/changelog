@@ -87,7 +87,7 @@ def store(commits, prs, authors, commit, author, merge, msg):
 
 def get_commit(commits, commit):
     _commits = [value for key, value in commits.items()
-                if key.startswith(merge)]
+                if key.startswith(commit)]
     if len(_commits) == 1:
         return _commits[0]
     return commit
