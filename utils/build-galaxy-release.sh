@@ -1,7 +1,7 @@
 #!/bin/bash
 
-namespace="${1:freeipa}"
-collection="${2:ansible_freeipa}"
+namespace="${1-freeipa}"
+collection="${2-ansible_freeipa}"
 collection_prefix="${namespace}.${collection}"
 
 galaxy_version=$(git describe --tags | sed -e "s/^v//")
