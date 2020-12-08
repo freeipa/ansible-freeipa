@@ -12,7 +12,7 @@ repos:
   rev: v1.25.0
   hooks:
   - id: yamllint
-    args: ['.']
+    files: \.(yaml|yml)$
 - repo: https://gitlab.com/pycqa/flake8
   rev: 3.8.4
   hooks:
