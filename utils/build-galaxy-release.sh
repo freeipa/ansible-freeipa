@@ -14,46 +14,50 @@ find . -name "*~" -exec rm {} \;
 
 sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.${collection_prefix}.plugins.module_utils.ansible_freeipa_module/" plugins/modules/*.py
 
-cd plugins/module_utils && {
+(cd plugins/module_utils && {
     ln -s ../../roles/*/module_utils/*.py .
-    cd ../..
-}
+})
 
-cd plugins/modules && {
+(cd plugins/modules && {
     sed -i -e "s/ansible.module_utils.ansible_ipa_/ansible_collections.${collection_prefix}.plugins.module_utils.ansible_ipa_/" ../../roles/*/library/*.py
     ln -s ../../roles/*/library/*.py .
-    cd ../..
-}
+})
 
 [ ! -x plugins/action_plugins ] && mkdir plugins/action_plugins
-cd plugins/action_plugins && {
+(cd plugins/action_plugins && {
     ln -s ../../roles/*/action_plugins/*.py .
-    cd ../..
-}
+})
 
-for x in $(find plugins/modules -name "*.py" -print); do
-    python utils/galaxyfy-module-EXAMPLES.py "$x" "ipa" "$collection_prefix"
-done
+find plugins/modules -name "*.py" -print0 |
+    while IFS= read -d -r '' line; do
+        python utils/galaxyfy-module-EXAMPLES.py "$x" \
+               "ipa" "$collection_prefix"
+    done
 
-for x in $(find roles/*/library -name "*.py" -print); do
-    python utils/galaxyfy-module-EXAMPLES.py "$x" "ipa" "$collection_prefix"
-done
+find roles/*/library -name "*.py" -print0 |
+    while IFS= read -d -r '' line; do
+        python utils/galaxyfy-module-EXAMPLES.py "$x" \
+               "ipa" "$collection_prefix"
+    done
 
 for x in roles/*/tasks/*.yml; do
     python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
 done
 
-for x in $(find playbooks -name "*.yml" -print); do
-    python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
-done
+find playbooks -name "*.yml" -print0 |
+    while IFS= read -d -r '' line; do
+        python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
+    done
 
-for x in $(find . -name "README*.md" -print); do
-    python utils/galaxyfy-README.py "$x" "ipa" "$collection_prefix"
-done
+find . -name "README*.md" -print0 |
+    while IFS= read -d -r '' line; do
+        python utils/galaxyfy-README.py "$x" "ipa" "$collection_prefix"
+    done
 
-for x in $(find tests -name "*.yml" -print); do
-    python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
-done
+find tests -name "*.yml" -print0 |
+    while IFS= read -d -r '' line; do
+        python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
+    done
 
 #git diff
 
