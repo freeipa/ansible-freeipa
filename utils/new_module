@@ -73,7 +73,7 @@ author=$2
 email=$3
 year=$(date +"%Y")
 
-if [ -z "$name" -o -z "$author" -o -z "$email" ]; then
+if [ -z "$name" ] || [ -z "$author" ] || [ -z "$email" ]; then
     [ -z "$name" ] && echo "ERROR: name is not valid"
     [ -z "$author" ] && echo "ERROR: author is not valid"
     [ -z "$email" ] && echo "ERROR: email is not valid"
