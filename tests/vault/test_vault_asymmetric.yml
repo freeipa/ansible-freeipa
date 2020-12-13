@@ -14,18 +14,111 @@
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       vault_type: asymmetric
-      public_key: "{{ lookup('file', 'public.pem', rstrip=False) | b64encode }}"
+      public_key: "{{ lookup('file', 'old_public.pem', rstrip=True) | b64encode }}"
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure asymmetric vault is present, again
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       vault_type: asymmetric
-      public_key: "{{ lookup('file', 'public.pem', rstrip=False) | b64encode }}"
+      public_key: "{{ lookup('file', 'old_public.pem', rstrip=True) | b64encode }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or result.changed
+
+  - name: Archive data to asymmetric vault using "old" key.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      vault_data: SomeValue
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Retrieve data from asymmetric vault using "old" key.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      private_key: "{{ lookup('file', 'old_private.pem', rstrip=True) | b64encode }}"
+      state: retrieved
+    register: result
+    failed_when: result.failed or result.changed or result.vault.data != 'SomeValue'
+
+  - name: Change asymmetric vault key to "new" key.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      vault_type: asymmetric
+      public_key: "{{ lookup('file', 'public.pem', rstrip=True) | b64encode }}"
+      private_key: "{{ lookup('file', 'old_private.pem', rstrip=True) | b64encode }}"
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Retrieve data from asymmetric vault using "new" key.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
+      state: retrieved
+    register: result
+    failed_when: result.failed or result.changed or result.vault.data != 'SomeValue'
+
+  - name: Change asymmetric vault key from_file to "old"
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      vault_type: asymmetric
+      public_key_file: old_public.pem
+      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Retrieve data from asymmetric vault using old key file.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      private_key_file: old_private.pem
+      state: retrieved
+    register: result
+    failed_when: result.failed or result.changed or result.vault.data != 'SomeValue'
+
+  - name: Change asymmetric vault key to "new" key, using only files
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      vault_type: asymmetric
+      public_key_file: public.pem
+      private_key_file: old_private.pem
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Retrieve data from asymmetric vault, using new "key".
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
+      state: retrieved
+    register: result
+    failed_when: result.failed or result.changed or result.vault.data != 'SomeValue'
+
+  - name: Change asymmetric vault key to A, without specifying vault_type.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      vault_type: asymmetric
+      public_key: "{{ lookup('file', 'A_public.b64') }}"
+      private_key: "{{ lookup('file', 'B_private.b64') }}"
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Change asymmetric vault key to B, with key files, without specifying vault_type.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: asymvault
+      public_key_file: "{{ ansible_env.HOME }}/B_public.pem"
+      private_key_file: "{{ ansible_env.HOME }}/A_private.pem"
+    register: result
+    failed_when: result.failed or not result.changed
 
   - name: Archive data to asymmetric vault, matching `no_log` field.
     ipavault:
@@ -39,12 +132,12 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'SomeADMINpassword' or result.changed
 
-  - name: Archive data to asymmetric vault
+  - name: Change data in asymmetric vault
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
@@ -52,11 +145,11 @@
     register: result
     failed_when: not result.changed
 
-  - name: Retrieve data from asymmetric vault.
+  - name: Retrieve changed data from asymmetric vault.
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'Hello World.' or result.changed
@@ -66,7 +159,7 @@
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       out: "{{ ansible_env.HOME }}/data.txt"
-      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.changed or result.failed or (result.vault.data | default(false))
@@ -89,7 +182,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'The world of π is half rounded.' or result.changed
@@ -107,7 +200,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'Another World.' or result.changed
@@ -124,7 +217,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'c' or result.changed
@@ -175,7 +268,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key: "{{ lookup('file', 'private.pem', rstrip=False) | b64encode }}"
+      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'Hello World.' or result.changed
@@ -206,4 +299,4 @@
     failed_when: result.changed
 
   - name: Cleanup testing environment.
-    import_tasks: env_setup.yml
+    import_tasks: env_cleanup.yml

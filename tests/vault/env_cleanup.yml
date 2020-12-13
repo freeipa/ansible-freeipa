@@ -38,35 +38,27 @@
       name: vaultgroup
       state: absent
 
-  - name: Remove password file from target host.
+  - name: Remove files from target host.
     file:
-      path: "{{ ansible_env.HOME }}/password.txt"
+      path: "{{ ansible_env.HOME }}/{{ item }}"
       state: absent
+    with_items:
+    - private.pem
+    - public.pem
+    - old_private.pem
+    - old_public.pem
+    - password.txt
+    - data.txt
+    - in.txt
 
-  - name: Remove public key file from target host.
+  - name: Remove files from controller.
     file:
-      path: "{{ ansible_env.HOME }}/public.pem"
+      path: "{{ playbook_dir }}/{{ item }}"
       state: absent
-
-  - name: Remove private key file from target host.
-    file:
-      path: "{{ ansible_env.HOME }}/private.pem"
-      state: absent
-
-  - name: Remove output data file from target host.
-    file:
-      path: "{{ ansible_env.HOME }}/data.txt"
-      state: absent
-
-  - name: Remove input data file from target host.
-    file:
-      path: "{{ ansible_env.HOME }}/in.txt"
-      state: absent
-
-  - name: Remove private/public key files.
-    shell:
-      cmd: rm -f private.pem public.pem
     delegate_to: localhost
     become: no
-    args:
-      warn: no  # suppres warning for not using the `file` module.
+    with_items:
+    - private.pem
+    - public.pem
+    - old_private.pem
+    - old_public.pem
