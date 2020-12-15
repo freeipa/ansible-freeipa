@@ -169,7 +169,7 @@ def list_test_yaml(dir_path):
     `test_` and the extension is `.yml`.
     """
     yamls = []
-    for root, dirs, files in os.walk(dir_path):
+    for root, _dirs, files in os.walk(dir_path):
         for yaml_name in files:
             if yaml_name.startswith("test_") and yaml_name.endswith(".yml"):
                 test_yaml_path = os.path.join(root, yaml_name)
