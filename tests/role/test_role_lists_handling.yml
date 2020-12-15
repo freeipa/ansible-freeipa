@@ -1,0 +1,259 @@
+---
+- name: Test service member in role module.
+  hosts: ipaserver
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - name: Set environment facts.
+    import_tasks: env_facts.yml
+
+  - name: Setup environment.
+    import_tasks: env_setup.yml
+
+  - name: Add role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user: user01
+      group: group01
+      hostgroup: hostgroup01
+      host: "{{ host1_fqdn }}"
+      service: "service01/{{ host1_fqdn }}"
+      privilege:
+        - Automember Readers
+        - ADTrust Agents
+    register: result
+    failed_when: result.failed or not result.changed
+
+  # Test fix for https://github.com/freeipa/ansible-freeipa/issues/409
+  - name: Add new privileges to role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      privilege:
+        - DNS Servers
+        - Host Administrators
+        - DNS Administrators
+        - Group Administrators
+      action: member
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Verify role privileges.
+    shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
+        kdestroy -A -q -c {{ KRB5CCNAME }}
+    register: result
+    failed_when: |
+      result.failed or not (
+        "Automember Readers" in result.stdout
+        and "ADTrust Agents" in result.stdout
+        and "DNS Servers" in result.stdout
+        and "Host Administrators" in result.stdout
+        and "DNS Administrators" in result.stdout
+        and "Group Administrators" in result.stdout
+      )
+    vars:
+      KRB5CCNAME: verify_issue_409
+  # End of test fix for https://github.com/freeipa/ansible-freeipa/issues/409
+
+  # Test fix for https://github.com/freeipa/ansible-freeipa/issues/412
+  - name: Add new user to role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user: user02
+      action: member
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Verify role users.
+    shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
+        kdestroy -A -q -c {{ KRB5CCNAME }}
+    register: result
+    failed_when: |
+      result.failed or not (
+        "user01" in result.stdout
+        and "user02" in result.stdout
+      )
+    vars:
+      KRB5CCNAME: verify_issue_412
+
+  - name: Add new group to role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      group: group02
+      action: member
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Verify role group.
+    shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
+        kdestroy -A -q -c {{ KRB5CCNAME }}
+    register: result
+    failed_when: |
+      result.failed or not (
+        "group01" in result.stdout
+        and "group02" in result.stdout
+      )
+    vars:
+      KRB5CCNAME: verify_issue_412
+
+  - name: Add new host to role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      host: "{{ host2_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Verify role hosts.
+    shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
+        kdestroy -A -q -c {{ KRB5CCNAME }}
+    register: result
+    failed_when: |
+      result.failed or not (
+        host1 in result.stdout
+        and host2 in result.stdout
+      )
+    vars:
+      KRB5CCNAME: verify_issue_412
+      host1: " {{ host1_fqdn }}"
+      host2: " {{ host2_fqdn }}"
+
+  - name: Add new hostgroup to role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      hostgroup: hostgroup02
+      action: member
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Verify role hostgroups.
+    shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
+        kdestroy -A -q -c {{ KRB5CCNAME }}
+    register: result
+    failed_when: |
+      result.failed or not (
+        " hostgroup01" in result.stdout
+        and " hostgroup02" in result.stdout
+      )
+    vars:
+      KRB5CCNAME: verify_issue_412
+
+  - name: Add new service to role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      service: "service02/{{ host2_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Verify role services.
+    shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
+        kdestroy -A -q -c {{ KRB5CCNAME }}
+    register: result
+    failed_when: |
+      result.failed or not (
+        service1 in result.stdout
+        and service1 in result.stdout
+      )
+    vars:
+      KRB5CCNAME: verify_issue_412
+      service1: "service01/{{ host1_fqdn }}"
+      service2: "service02/{{ host2_fqdn }}"
+  # End of test fix for https://github.com/freeipa/ansible-freeipa/issues/412
+
+  # Test fix for https://github.com/freeipa/ansible-freeipa/issues/413
+  - name: Add new user to role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user: user03
+      action: member
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Verify role services.
+    shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
+        kdestroy -A -q -c {{ KRB5CCNAME }}
+    register: result
+    failed_when: |
+      result.failed or not (
+        service1 in result.stdout
+        and service1 in result.stdout
+        and "user03" in result.stdout
+      )
+    vars:
+      KRB5CCNAME: verify_issue_413
+      service1: "service01/{{ host1_fqdn }}"
+      service2: "service02/{{ host2_fqdn }}"
+
+  - name: Remove user from role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user: user03
+      action: member
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Verify role services.
+    shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
+        kdestroy -A -q -c {{ KRB5CCNAME }}
+    register: result
+    failed_when: |
+      result.failed or not (
+        service1 in result.stdout
+        and service1 in result.stdout
+        and "user03" not in result.stdout
+      )
+    vars:
+      KRB5CCNAME: verify_issue_413
+      service1: "service01/{{ host1_fqdn }}"
+      service2: "service02/{{ host2_fqdn }}"
+  # End of test fix for https://github.com/freeipa/ansible-freeipa/issues/413
+
+  # Test fix for https://github.com/freeipa/ansible-freeipa/issues/411
+  - name: Add non-existing user to role.
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      name: testrole
+      user: nonexisiting_user
+      action: member
+    register: result
+    failed_when: not result.failed
+  # End of test fix for https://github.com/freeipa/ansible-freeipa/issues/411
+
+  # cleanup
+  - name: Cleanup environment.
+    include_tasks: env_cleanup.yml

@@ -2,31 +2,42 @@
 - name: Ensure test user is absent.
   ipauser:
     ipaadmin_password: SomeADMINpassword
-    name: user01
+    name:
+    - user01
+    - user02
+    - user03
     state: absent
 
 - name: Ensure test group is absent.
   ipagroup:
     ipaadmin_password: SomeADMINpassword
-    name: group01
+    name:
+    - group01
+    - group02
     state: absent
 
 - name: Ensure test hostgroup is absent.
   ipahostgroup:
     ipaadmin_password: SomeADMINpassword
-    name: hostgroup01
+    name:
+    - hostgroup01
+    - hostgroup02
     state: absent
 
 - name: Ensure test host is absent.
   ipahost:
     ipaadmin_password: SomeADMINpassword
-    name: "{{ host1_fqdn }}"
+    name:
+    - "{{ host1_fqdn }}"
+    - "{{ host2_fqdn }}"
     state: absent
 
 - name: Ensure test service is absent.
   ipaservice:
     ipaadmin_password: SomeADMINpassword
-    name: "service01/{{ host1_fqdn }}"
+    name:
+    - "service01/{{ host1_fqdn }}"
+    - "service02/{{ host2_fqdn }}"
     state: absent
 
 - name: Ensure test roles are absent.

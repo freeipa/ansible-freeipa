@@ -257,7 +257,7 @@ def filter_service(module, res_find, predicate):
     return _services
 
 
-def ensure_role_with_members_is_present(module, name, res_find):
+def ensure_role_with_members_is_present(module, name, res_find, action):
     """Define commands to ensure member are present for action `role`."""
     commands = []
     privilege_add, privilege_del = gen_add_del_lists(
@@ -267,7 +267,7 @@ def ensure_role_with_members_is_present(module, name, res_find):
     if privilege_add:
         commands.append([name, "role_add_privilege",
                          {"privilege": privilege_add}])
-    if privilege_del:
+    if action == "role" and privilege_del:
         commands.append([name, "role_remove_privilege",
                          {"privilege": privilege_del}])
 
@@ -297,7 +297,8 @@ def ensure_role_with_members_is_present(module, name, res_find):
 
     if add_members:
         commands.append([name, "role_add_member", add_members])
-    if del_members:
+    # Only remove members if ensuring role, not acting on members.
+    if action == "role" and del_members:
         commands.append([name, "role_remove_member", del_members])
 
     return commands
@@ -400,7 +401,9 @@ def role_commands_for_name(module, state, action, name):
             if res_find is None:
                 module.fail_json(msg="No role '%s'" % name)
 
-        cmds = ensure_role_with_members_is_present(module, name, res_find)
+        cmds = ensure_role_with_members_is_present(
+            module, name, res_find, action
+        )
         commands.extend(cmds)
 
     if state == "absent" and res_find is not None:
