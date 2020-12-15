@@ -1375,10 +1375,9 @@ def define_commands_for_present_state(module, zone_name, entry, res_find):
                     # remove record from args, as it will not be used again.
                     del args[record]
                 else:
-                    for f in part_fields:
-                        _args = {k: args[k] for k in part_fields}
-                        _args['idnsname'] = name
-                        _commands.append([zone_name, 'dnsrecord_add', _args])
+                    _args = {k: args[k] for k in part_fields if k in args}
+                    _args['idnsname'] = name
+                    _commands.append([zone_name, 'dnsrecord_add', _args])
                 # clean used fields from args
                 for f in part_fields:
                     if f in args:
