@@ -1,3 +1,4 @@
 -r requirements-tests.txt
 ipdb
 pre-commit
+flake8-bugbear
