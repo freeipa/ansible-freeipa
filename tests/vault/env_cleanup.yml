@@ -43,13 +43,17 @@
       path: "{{ ansible_env.HOME }}/{{ item }}"
       state: absent
     with_items:
-    - private.pem
-    - public.pem
-    - old_private.pem
-    - old_public.pem
+    - A_private.pem
+    - A_public.pem
+    - B_private.pem
+    - B_public.pem
+    - A_private.b64
+    - A_public.b64
+    - B_private.b64
+    - B_public.b64
     - password.txt
-    - data.txt
     - in.txt
+    - out.txt
 
   - name: Remove files from controller.
     file:
@@ -58,7 +62,11 @@
     delegate_to: localhost
     become: no
     with_items:
-    - private.pem
-    - public.pem
-    - old_private.pem
-    - old_public.pem
+    - A_private.pem
+    - A_public.pem
+    - B_private.pem
+    - B_public.pem
+    - A_private.b64
+    - A_public.b64
+    - B_private.b64
+    - B_public.b64

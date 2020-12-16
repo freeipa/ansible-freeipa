@@ -26,7 +26,7 @@
       ipaadmin_password: SomeADMINpassword
       name: test_vault
       vault_type: asymmetric
-      public_key: "{{ lookup('file', 'public.pem', rstrip=True) | b64encode }}"
+      public_key: "{{ lookup('file', 'A_public.b64') }}"
     register: result
     failed_when: result.failed or not result.changed
 
@@ -36,7 +36,7 @@
         ipaadmin_password: SomeADMINpassword
         name: test_vault
         vault_type: symmetric
-        private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+        private_key: "{{ lookup('file', 'A_private.b64') }}"
         password: SomeVAULTpassword
       register: result
       failed_when: result.failed or not result.changed
@@ -89,7 +89,7 @@
         name: test_vault
         vault_type: asymmetric
         password: SomeVAULTpassword
-        public_key: "{{ lookup('file', 'public.pem') | b64encode }}"
+        public_key: "{{ lookup('file', 'A_public.b64') }}"
       register: result
       failed_when: result.failed or not result.changed
 
@@ -110,7 +110,7 @@
         ipaadmin_password: SomeADMINpassword
         name: test_vault
         vault_type: standard
-        private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+        private_key: "{{ lookup('file', 'A_private.b64') }}"
       register: result
       failed_when: result.failed or not result.changed
 
@@ -143,7 +143,7 @@
       ipaadmin_password: SomeADMINpassword
       name: test_vault
       vault_type: asymmetric
-      public_key: "{{ lookup('file', 'public.pem', rstrip=True) | b64encode }}"
+      public_key: "{{ lookup('file', 'A_public.b64') }}"
     register: result
     failed_when: result.failed or not result.changed
 
@@ -151,7 +151,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: test_vault
-      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
+      private_key: "{{ lookup('file', 'A_private.b64') }}"
       state: retrieved
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'hello'
@@ -162,7 +162,7 @@
         ipaadmin_password: SomeADMINpassword
         name: test_vault
         vault_type: symmetric
-        private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+        private_key: "{{ lookup('file', 'A_private.b64') }}"
         password: SomeVAULTpassword
       register: result
       failed_when: result.failed or not result.changed
@@ -241,7 +241,7 @@
         name: test_vault
         vault_type: asymmetric
         password: SomeVAULTpassword
-        public_key: "{{ lookup('file', 'public.pem') | b64encode }}"
+        public_key: "{{ lookup('file', 'A_public.b64') }}"
       register: result
       failed_when: result.failed or not result.changed
 
@@ -261,7 +261,7 @@
       ipaadmin_password: SomeADMINpassword
       name: test_vault
       state: retrieved
-      private_key: "{{ lookup('file', 'private.pem', rstrip=True) | b64encode }}"
+      private_key: "{{ lookup('file', 'A_private.b64') }}"
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'hello'
 
@@ -271,7 +271,7 @@
         ipaadmin_password: SomeADMINpassword
         name: test_vault
         vault_type: standard
-        private_key: "{{ lookup('file', 'private.pem') | b64encode }}"
+        private_key: "{{ lookup('file', 'A_private.b64') }}"
       register: result
       failed_when: result.failed or not result.changed or result.failed
 

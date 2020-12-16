@@ -8,21 +8,27 @@
       cmd: |
         openssl genrsa -out "{{ item }}private.pem" 2048
         openssl rsa -in "{{ item }}private.pem" -outform PEM -pubout -out "{{ item }}public.pem"
+        base64 "{{ item }}public.pem" -w5000 > "{{ item }}public.b64"
+        base64 "{{ item }}private.pem" -w5000 > "{{ item }}private.b64"
     delegate_to: localhost
     become: no
     with_items:
-    - ""
-    - old_
+    - A_
+    - B_
 
   - name: Copy files to target host.
     copy:
       src: "{{ playbook_dir }}/{{ item }}"
       dest: "{{ ansible_env.HOME }}/{{ item }}"
     with_items:
-    - private.pem
-    - public.pem
-    - old_private.pem
-    - old_public.pem
+    - A_private.pem
+    - A_public.pem
+    - B_private.pem
+    - B_public.pem
+    - A_private.b64
+    - A_public.b64
+    - B_private.b64
+    - B_public.b64
     - password.txt
     - in.txt
 
