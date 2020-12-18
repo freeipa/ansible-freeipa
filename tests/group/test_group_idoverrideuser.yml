@@ -1,0 +1,104 @@
+---
+- name: Test group
+  hosts: ipaserver
+  become: yes
+  gather_facts: yes
+
+  vars:
+      ad_user: "{{ test_ad_user | default('AD\\aduser') }}"
+      ad_domain: "{{ test_ad_domain | default('ad.ipa.test') }}"
+
+  tasks:
+    - include_tasks: ../env_freeipa_facts.yml
+
+    - block:
+      - name: Create idoverrideuser.
+        shell: |
+          kinit -c idoverride_cache admin <<< SomeADMINpassword
+          ipa idoverrideuser-add "Default Trust View" {{ ad_user }}
+          kdestroy -A -q -c idoverride_cache
+
+      - name: Remove testing groups.
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name:
+          - idovergroup
+          state: absent
+
+      - name: Add group with idoverrideuser.
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: idovergroup
+          idoverrideuser: "{{ ad_user }}"
+        register: result
+        failed_when: result.failed or not result.changed
+
+      - name: Add group with idoverrideuser, again.
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: idovergroup
+          idoverrideuser: "{{ ad_user }}"
+        register: result
+        failed_when: result.failed or result.changed
+
+      - name: Remove idoverrideuser member.
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: idovergroup
+          idoverrideuser: "{{ ad_user }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.failed or not result.changed
+
+      - name: Remove idoverrideuser member, again.
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: idovergroup
+          idoverrideuser: "{{ ad_user }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.failed or result.changed
+
+      - name: Add idoverrideuser member.
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: idovergroup
+          idoverrideuser: "{{ ad_user }}"
+          action: member
+        register: result
+        failed_when: result.failed or not result.changed
+
+      - name: Add idoverrideuser member, again.
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: idovergroup
+          idoverrideuser: "{{ ad_user }}"
+          action: member
+        register: result
+        failed_when: result.failed or result.changed
+
+      - name: Cleanup idoverrideuser member.
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: idovergroup
+          idoverrideuser: "{{ ad_user }}"
+          state: absent
+
+      - name: Remove testing groups.
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name:
+          - idovergroup
+          state: absent
+
+      always:
+      - name: Remove idoverrideuser.
+        shell: |
+          kinit -c idoverride_cache admin <<< SomeADMINpassword
+          ipa idoverrideuser-del "Default Trust View" {{ ad_user }}
+          kdestroy -A -q -c idoverride_cache
+        when:
+
+      when: ipa_version is version("4.8.7", ">=")  and trust_test_is_supported | default(false)
