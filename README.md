@@ -154,7 +154,7 @@ ipaserver_domain=test.local
 ipaserver_realm=TEST.LOCAL
 ```
 
-The admin principle is ```admin``` by default. Please set ```ipaadmin_principal``` if you need to change it.
+The admin principal is ```admin``` by default. Please set ```ipaadmin_principal``` if you need to change it.
 
 You can also add more setting here, like for example to enable the DNS server or to set auto-forwarders:
 ```yaml
