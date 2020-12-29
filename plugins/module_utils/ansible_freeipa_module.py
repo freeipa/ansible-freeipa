@@ -28,6 +28,7 @@ import os
 import uuid
 import tempfile
 import shutil
+import netaddr
 import gssapi
 from datetime import datetime
 from pprint import pformat
@@ -411,6 +412,24 @@ def is_valid_port(port):
         return True
 
     return False
+
+
+def is_ip_address(ipaddr):
+    """Test if given IP address is a valid IPv4 or IPv6 address."""
+    try:
+        netaddr.IPAddress(str(ipaddr))
+    except (netaddr.AddrFormatError, ValueError):
+        return False
+    return True
+
+
+def is_ip_network_address(ipaddr):
+    """Test if given IP address is a valid IPv4 or IPv6 address."""
+    try:
+        netaddr.IPNetwork(str(ipaddr))
+    except (netaddr.AddrFormatError, ValueError):
+        return False
+    return True
 
 
 def is_ipv4_addr(ipaddr):
