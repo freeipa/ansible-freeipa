@@ -342,9 +342,6 @@ def process_command_failures(command, result):
             failed_item = result["failed"][item]
             for member_type in failed_item:
                 for member, failure in failed_item[member_type]:
-                    if "already a member" in failure \
-                       or "not a member" in failure:
-                        continue
                     errors.append("%s: %s %s: %s" % (
                         command, member_type, member, failure))
     return errors

@@ -483,9 +483,6 @@ def main():
                 failed = result["failed"][failed_item]
                 for member_type in failed:
                     for member, failure in failed[member_type]:
-                        if "already a member" in failure \
-                           or "not a member" in failure:
-                            continue
                         errors.append("%s: %s %s: %s" % (
                             command, member_type, member, failure))
             if len(errors) > 0:
