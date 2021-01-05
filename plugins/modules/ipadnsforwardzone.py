@@ -380,6 +380,12 @@ def main():
                         [name, 'dnsforwardzone_remove_permission', {}]
                     )
 
+            # Check mode exit
+            if ansible_module.check_mode:
+                ansible_module.exit_json(changed=len(commands) > 0,
+                                         **exit_args)
+
+            # Execute commands
             for name, command, args in commands:
                 api_command(ansible_module, command, name, args)
                 changed = True

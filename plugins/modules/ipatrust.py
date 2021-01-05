@@ -244,7 +244,8 @@ def main():
 
         if state == "absent":
             if res_find is not None:
-                del_trust(ansible_module, realm)
+                if not ansible_module.check_mode:
+                    del_trust(ansible_module, realm)
                 changed = True
         elif res_find is None:
             if admin is None and trust_secret is None:
@@ -256,7 +257,8 @@ def main():
                                 trust_secret, base_id, range_size, range_type,
                                 two_way, external)
 
-                add_trust(ansible_module, realm, args)
+                if not ansible_module.check_mode:
+                    add_trust(ansible_module, realm, args)
                 changed = True
 
     except Exception as e:

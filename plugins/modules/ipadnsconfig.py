@@ -233,7 +233,8 @@ def main():
         # Execute command only if configuration changes.
         if not compare_args_ipa(ansible_module, args, res_find):
             try:
-                api_command_no_name(ansible_module, 'dnsconfig_mod', args)
+                if not ansible_module.check_mode:
+                    api_command_no_name(ansible_module, 'dnsconfig_mod', args)
                 # If command did not fail, something changed.
                 changed = True
 

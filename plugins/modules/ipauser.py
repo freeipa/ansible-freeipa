@@ -1377,6 +1377,10 @@ def main():
 
         del user_set
 
+        # Check mode exit
+        if ansible_module.check_mode:
+            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
+
         # Execute commands
 
         errors = []
