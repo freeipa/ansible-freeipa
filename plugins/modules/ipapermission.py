@@ -102,10 +102,6 @@ options:
   rename:
     description: Rename the permission object
     required: false
-  privilege:
-    description: Member Privilege of Permission
-    required: false
-    type: list
   action:
     description: Work on permission or member privilege level.
     choices: ["permission", "member"]
@@ -126,19 +122,6 @@ EXAMPLES = """
     bindtype: permission
     object_type: host
 
-# Ensure permission "NAME" member privilege VALUE is present
-- ipapermission:
-    name: "Add Automember Rebuild Membership Task"
-    privilege: "Automember Task Administrator"
-    action: member
-
-# Ensure permission "NAME" member privilege VALUE is absent
-- ipapermission:
-    name: "Add Automember Rebuild Membership Task"
-    privilege: "IPA Masters Readers"
-    action: member
-    state: absent
-
 # Ensure permission NAME is absent
 - ipapermission:
     name: "Removed Permission Name"
@@ -152,8 +135,7 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import \
     temp_kinit, temp_kdestroy, valid_creds, api_connect, api_command, \
-    compare_args_ipa, module_params_get, gen_add_del_lists, \
-    api_check_ipa_version
+    compare_args_ipa, module_params_get, api_check_ipa_version
 import six
 
 if six.PY3:
@@ -207,13 +189,6 @@ def gen_args(right, attrs, bindtype, subtree,
     return _args
 
 
-def gen_member_args(privilege):
-    _args = {}
-    if privilege is not None:
-        _args["privilege"] = privilege
-    return _args
-
-
 def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
@@ -252,7 +227,6 @@ def main():
                              required=False),
             no_members=dict(type=bool, default=None, require=False),
             rename=dict(type="str", default=None, required=False),
-            privilege=dict(type="list", default=None, required=False),
 
             action=dict(type="str", default="permission",
                         choices=["member", "permission"]),
@@ -289,7 +263,6 @@ def main():
     object_type = module_params_get(ansible_module, "object_type")
     no_members = module_params_get(ansible_module, "no_members")
     rename = module_params_get(ansible_module, "rename")
-    privilege = module_params_get(ansible_module, "privilege")
     action = module_params_get(ansible_module, "action")
 
     # state
@@ -304,10 +277,12 @@ def main():
             ansible_module.fail_json(
                 msg="Only one permission can be added at a time.")
         if action == "member":
-            invalid = ["right", "attrs", "bindtype", "subtree",
+            invalid = ["right", "bindtype", "subtree",
                        "extra_target_filter", "rawfilter", "target",
                        "targetto", "targetfrom", "memberof", "targetgroup",
                        "object_type", "rename"]
+        else:
+            invalid = ["rename"]
 
     if state == "renamed":
         if len(names) != 1:
@@ -315,7 +290,7 @@ def main():
                 msg="Only one permission can be renamed at a time.")
         if action == "member":
             ansible_module.fail_json(
-                msg="Member Privileges cannot be renamed")
+                msg="Member action can not be used with state 'renamed'")
         invalid = ["right", "attrs", "bindtype", "subtree",
                    "extra_target_filter", "rawfilter", "target", "targetto",
                    "targetfrom", "memberof", "targetgroup", "object_type",
@@ -324,12 +299,13 @@ def main():
     if state == "absent":
         if len(names) < 1:
             ansible_module.fail_json(msg="No name given.")
-        invalid = ["right", "attrs", "bindtype", "subtree",
+        invalid = ["right",
+                   "bindtype", "subtree",
                    "extra_target_filter", "rawfilter", "target", "targetto",
                    "targetfrom", "memberof", "targetgroup", "object_type",
                    "no_members", "rename"]
-        if action == "permission":
-            invalid.append("privilege")
+        if action != "member":
+            invalid += ["attrs"]
 
     for x in invalid:
         if vars()[x] is not None:
@@ -366,11 +342,6 @@ def main():
                                 targetto, targetfrom, memberof, targetgroup,
                                 object_type, no_members, rename)
 
-                no_members_value = False
-
-                if no_members is not None:
-                    no_members_value = no_members
-
                 if action == "permission":
                     # Found the permission
                     if res_find is not None:
@@ -383,41 +354,18 @@ def main():
                     else:
                         commands.append([name, "permission_add", args])
 
-                    member_args = gen_member_args(privilege)
-                    if not compare_args_ipa(ansible_module, member_args,
-                                            res_find):
-
-                        # Generate addition and removal lists
-                        privilege_add, privilege_del = gen_add_del_lists(
-                                privilege, res_find.get("member_privilege"))
-
-                        # Add members
-                        if len(privilege_add) > 0:
-                            commands.append([name, "permission_add_member",
-                                             {
-                                                 "privilege": privilege_add,
-                                                 "no_members": no_members_value
-                                             }])
-                        # Remove members
-                        if len(privilege_del) > 0:
-                            commands.append([name, "permission_remove_member",
-                                             {
-                                                 "privilege": privilege_del,
-                                                 "no_members": no_members_value
-                                             }])
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
                             msg="No permission '%s'" % name)
 
-                    if privilege is None:
-                        ansible_module.fail_json(msg="No privilege given")
+                    # attrs
+                    if attrs is not None:
+                        _attrs = list(set(list(res_find["attrs"]) + attrs))
+                        if len(_attrs) > len(res_find["attrs"]):
+                            commands.append([name, "permission_mod",
+                                             {"attrs": _attrs}])
 
-                    commands.append([name, "permission_add_member",
-                                     {
-                                         "privilege": privilege,
-                                         "no_members": no_members_value
-                                     }])
                 else:
                     ansible_module.fail_json(
                         msg="Unknown action '%s'" % action)
@@ -455,13 +403,20 @@ def main():
                         ansible_module.fail_json(
                             msg="No permission '%s'" % name)
 
-                    if privilege is None:
-                        ansible_module.fail_json(msg="No privilege given")
+                    # attrs
+                    if attrs is not None:
+                        # New attribute list (remove given ones from find
+                        # result)
+                        # Make list with unique entries
+                        _attrs = list(set(res_find["attrs"]) - set(attrs))
+                        if len(_attrs) < 1:
+                            ansible_module.fail_json(
+                                msg="At minimum one attribute is needed.")
 
-                    commands.append([name, "permission_remove_member",
-                                     {
-                                         "privilege": privilege,
-                                     }])
+                        # Entries New number of attributes is smaller
+                        if len(_attrs) < len(res_find["attrs"]):
+                            commands.append([name, "permission_mod",
+                                             {"attrs": _attrs}])
 
             else:
                 ansible_module.fail_json(msg="Unknown state '%s'" % state)

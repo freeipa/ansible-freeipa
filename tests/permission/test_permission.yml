@@ -37,41 +37,127 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure permission perm-test-1 member User Administrators privilege is present
+  - name: Ensure permission perm-test-1 is present with attr carlicense
     ipapermission:
       ipaadmin_password: SomeADMINpassword
       name: perm-test-1
-      privilege: "User Administrators"
+      attrs:
+      - carlicense
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 is present with attr carlicense again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      attrs:
+      - carlicense
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 is present with attr carlicense and displayname
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      attrs:
+      - carlicense
+      - displayname
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 is present with attr carlicense and displayname again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      attrs:
+      - carlicense
+      - displayname
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure attr gecos is present in permission perm-test-1
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: perm-test-1
+      attrs:
+      - gecos
       action: member
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure permission perm-test-1 member User Administrators privilege is present again
+  - name: Ensure attr gecos is present in permission perm-test-1 again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
       name: perm-test-1
-      privilege: "User Administrators"
+      attrs:
+      - gecos
       action: member
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure permission perm-test-1 member User Administrators privilege is absent
+  - name: Ensure attr gecos is absent in permission perm-test-1
     ipapermission:
       ipaadmin_password: SomeADMINpassword
       name: perm-test-1
-      privilege: "User Administrators"
+      attrs:
+      - gecos
       action: member
       state: absent
     register: result
     failed_when: not result.changed or result.failed
 
-  # NOTE: We use the "User Administrators" Privilege here since we don't have a module
-  # to make one. A test privilege should be used in the future.
-  - name: Ensure permission perm-test-1 member User Administrators privilege is absent again
+  - name: Ensure attr gecos is absent in permission perm-test-1 again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
       name: perm-test-1
-      privilege: "User Administrators"
+      attrs:
+      - gecos
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries"
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: "System: Update DNS Entries"
+      attrs:
+      - carlicense
+      - displayname
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries" again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: "System: Update DNS Entries"
+      attrs:
+      - carlicense
+      - displayname
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries"
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: "System: Update DNS Entries"
+      attrs:
+      - carlicense
+      - displayname
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries" again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: "System: Update DNS Entries"
+      attrs:
+      - carlicense
+      - displayname
       action: member
       state: absent
     register: result
