@@ -5,30 +5,49 @@
 - name: Ensure test user is present.
   ipauser:
     ipaadmin_password: SomeADMINpassword
-    name: user01
-    first: First
-    last: Last
+    users:
+    - name: user01
+      first: First
+      last: Last
+    - name: user02
+      first: First
+      last: Last
+    - name: user03
+      first: First
+      last: Last
 
 - name: Ensure test group is present.
   ipagroup:
     ipaadmin_password: SomeADMINpassword
-    name: group01
+    name: "{{ item }}"
+  with_items:
+  - group01
+  - group02
 
 - name: Ensure test host is present.
   ipahost:
     ipaadmin_password: SomeADMINpassword
-    name: "{{ host1_fqdn }}"
+    name: "{{ item }}"
     force: yes
+  with_items:
+  - "{{ host1_fqdn }}"
+  - "{{ host2_fqdn }}"
 
 - name: Ensure test hostgroup is present.
   ipahostgroup:
     ipaadmin_password: SomeADMINpassword
-    name: hostgroup01
+    name: "{{ item[0] }}"
     host:
-    - "{{ host1_fqdn }}"
+      - "{{ item[1] }}"
+  with_nested:
+  - [hostgroup01, hostgroup02]
+  - ["{{ host1_fqdn }}", "{{ host2_fqdn }}"]
 
 - name: Ensure test service is present.
   ipaservice:
     ipaadmin_password: SomeADMINpassword
-    name: "service01/{{ host1_fqdn }}"
+    name: "{{ item }}"
     force: yes
+  with_items:
+  - "service01/{{ host1_fqdn }}"
+  - "service02/{{ host2_fqdn }}"
