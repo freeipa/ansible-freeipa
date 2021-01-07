@@ -428,7 +428,8 @@ def main():
             if params \
                and not compare_args_ipa(ansible_module, params, res_show):
                 changed = True
-                api_command_no_name(ansible_module, "config_mod", params)
+                if not ansible_module.check_mode:
+                    api_command_no_name(ansible_module, "config_mod", params)
 
         else:
             rawresult = api_command_no_name(ansible_module, "config_show", {})

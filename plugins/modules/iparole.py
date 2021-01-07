@@ -355,6 +355,11 @@ def process_commands(module, commands):
     errors = []
     exit_args = {}
     changed = False
+
+    # Check mode exit
+    if module.check_mode:
+        return len(commands) > 0, exit_args
+
     for name, command, args in commands:
         try:
             result = api_command(module, command, name, args)

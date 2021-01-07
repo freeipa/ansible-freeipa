@@ -824,6 +824,10 @@ def main():
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
+        # Check mode exit
+        if ansible_module.check_mode:
+            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
+
         # Execute commands
         errors = []
         for name, command, args in commands:

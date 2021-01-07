@@ -1496,6 +1496,10 @@ def main():
             if cmds:
                 commands.extend(cmds)
 
+        # Check mode exit
+        if ansible_module.check_mode:
+            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
+
         # Execute commands
         for name, command, args in commands:
             try:
