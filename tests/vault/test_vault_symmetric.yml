@@ -43,7 +43,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'SomeADMINpassword' or result.changed
+    failed_when: result.changed or result.failed or result.vault.data != 'SomeADMINpassword'
 
   - name: Archive data to symmetric vault
     ipavault:
@@ -61,7 +61,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Hello World.' or result.changed
+    failed_when: result.changed or result.failed or result.vault.data != 'Hello World.'
 
   - name: Retrieve data from symmetric vault into file {{ ansible_env.HOME }}/data.txt.
     ipavault:
@@ -86,7 +86,7 @@
       password: SomeVAULTpassword
       vault_data: The world of π is half rounded.
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Retrieve data from symmetric vault.
     ipavault:
@@ -95,7 +95,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'The world of π is half rounded.' or result.changed
+    failed_when: result.failed or result.changed or result.vault.data != 'The world of π is half rounded.'
 
   - name: Archive data in symmetric vault, from file.
     ipavault:
@@ -104,7 +104,7 @@
       in: "{{ ansible_env.HOME }}/in.txt"
       password: SomeVAULTpassword
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Retrieve data from symmetric vault.
     ipavault:
@@ -113,7 +113,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Another World.' or result.changed
+    failed_when: result.failed or result.changed or result.vault.data != 'Another World.'
 
   - name: Archive data with single character to symmetric vault
     ipavault:
@@ -122,7 +122,7 @@
       password: SomeVAULTpassword
       vault_data: c
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Retrieve data from symmetric vault.
     ipavault:
@@ -131,7 +131,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'c' or result.changed
+    failed_when: result.failed or result.changed or result.vault.data != 'c'
 
   - name: Ensure symmetric vault is absent
     ipavault:
@@ -139,7 +139,7 @@
       name: symvault
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure symmetric vault is absent, again
     ipavault:
@@ -147,7 +147,7 @@
       name: symvault
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or result.changed
 
   - name: Ensure symmetric vault is present, with password from file.
     ipavault:
@@ -157,7 +157,7 @@
       password_file: "{{ ansible_env.HOME }}/password.txt"
       vault_type: symmetric
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure symmetric vault is present, with password from file, again.
     ipavault:
@@ -167,7 +167,7 @@
       password_file: "{{ ansible_env.HOME }}/password.txt"
       vault_type: symmetric
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or result.changed
 
   - name: Archive data to symmetric vault
     ipavault:
@@ -176,7 +176,7 @@
       vault_data: Hello World.
       password: SomeVAULTpassword
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from symmetric vault.
     ipavault:
@@ -185,7 +185,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Hello World.' or result.changed
+    failed_when: result.failed or result.changed or result.vault.data != 'Hello World.'
 
   - name: Retrieve data from symmetric vault, with password file.
     ipavault:
@@ -194,7 +194,7 @@
       password_file: "{{ ansible_env.HOME }}/password.txt"
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Hello World.' or result.changed
+    failed_when: result.failed or result.changed or result.vault.data != 'Hello World.'
 
   - name: Retrieve data from symmetric vault, with wrong password.
     ipavault:
@@ -203,7 +203,7 @@
       password: SomeWRONGpassword
       state: retrieved
     register: result
-    failed_when: not result.failed or "Invalid credentials" not in result.msg
+    failed_when: result.changed or not result.failed or "Invalid credentials" not in result.msg
 
   - name: Change vault password.
     ipavault:
@@ -212,7 +212,7 @@
       password: SomeVAULTpassword
       new_password: SomeNEWpassword
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from symmetric vault, with new password.
     ipavault:
@@ -221,7 +221,7 @@
       password: SomeNEWpassword
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Hello World.' or result.changed
+    failed_when: result.failed or result.changed or result.vault.data != 'Hello World.'
 
   - name: Retrieve data from symmetric vault, with old password.
     ipavault:
@@ -240,7 +240,7 @@
       new_password: SomeVAULTpassword
       salt: AAAAAAAAAAAAAAAAAAAAAAA=
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Change symmetric vault salt, without changing password
     ipavault:
@@ -250,7 +250,7 @@
       new_password: SomeVAULTpassword
       salt: MTIzNDU2Nzg5MDEyMzQ1Ngo=
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Try to change symmetric vault salt, without providing any password
     ipavault:
@@ -258,7 +258,7 @@
       name: symvault
       salt: MTIzNDU2Nzg5MDEyMzQ1Ngo=
     register: result
-    failed_when: not result.failed and  "Vault `salt` can only change when changing the password." not in result.msg
+    failed_when: not result.failed and "Vault `salt` can only change when changing the password." not in result.msg
 
   - name: Try to change symmetric vault salt, without providing `password`
     ipavault:
@@ -294,7 +294,7 @@
       name: symvault
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Ensure symmetric vault is absent, again
     ipavault:
@@ -302,7 +302,7 @@
       name: symvault
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.failed or result.changed
 
   - name: Try to change password of inexistent vault.
     ipavault:
@@ -340,7 +340,7 @@
       password: SomeVAULTpassword
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Hello World.' or result.changed
+    failed_when: result.failed or result.changed or result.vault.data != 'Hello World.'
 
   - name: Ensure symmetric vault is absent
     ipavault:
@@ -348,7 +348,7 @@
       name: symvault
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: result.failed or not result.changed
 
   - name: Cleanup testing environment.
     import_tasks: env_cleanup.yml

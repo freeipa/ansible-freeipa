@@ -317,10 +317,11 @@ vault:
 import os
 from base64 import b64decode
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, \
     gen_add_del_lists, compare_args_ipa, module_params_get, exit_raw_json
-from ipalib.errors import EmptyModlist
+from ipalib.errors import EmptyModlist, NotFound
 
 
 def find_vault(module, name, username, service, shared):
@@ -351,7 +352,9 @@ def gen_args(description, username, service, shared, vault_type, salt,
              password, password_file, public_key, public_key_file, vault_data,
              datafile_in, datafile_out):
     _args = {}
+    vault_type = vault_type or to_text("symmetric")
 
+    _args['ipavaulttype'] = vault_type
     if description is not None:
         _args['description'] = description
     if username is not None:
@@ -360,27 +363,32 @@ def gen_args(description, username, service, shared, vault_type, salt,
         _args['service'] = service
     if shared is not None:
         _args['shared'] = shared
-    if vault_type is not None:
-        _args['ipavaulttype'] = vault_type
-    if salt is not None:
-        _args['ipavaultsalt'] = salt
-    if public_key is not None:
-        _args['ipavaultpublickey'] = b64decode(public_key.encode('utf-8'))
-    if public_key_file is not None:
-        with open(public_key_file, 'r') as keyfile:
-            keydata = keyfile.read()
-            _args['ipavaultpublickey'] = keydata.strip().encode('utf-8')
+
+    if vault_type == "symmetric":
+        if salt is not None:
+            _args['ipavaultsalt'] = salt
+        _args['ipavaultpublickey'] = None
+
+    elif vault_type == "asymmetric":
+        if public_key is not None:
+            _args['ipavaultpublickey'] = b64decode(public_key.encode('utf-8'))
+        if public_key_file is not None:
+            with open(public_key_file, 'r') as keyfile:
+                keydata = keyfile.read()
+                _args['ipavaultpublickey'] = keydata.strip().encode('utf-8')
+        _args['ipavaultsalt'] = None
+
+    elif vault_type == "standard":
+        _args['ipavaultsalt'] = None
+        _args['ipavaultpublickey'] = None
 
     return _args
 
 
 def gen_member_args(args, users, groups, services):
-    _args = args.copy()
-
-    for arg in ['ipavaulttype', 'description', 'ipavaultpublickey',
-                'ipavaultsalt']:
-        if arg in _args:
-            del _args[arg]
+    remove = ['ipavaulttype', 'description', 'ipavaultpublickey',
+              'ipavaultsalt']
+    _args = {k: v for k, v in args.items() if k not in remove}
 
     if any([users, groups, services]):
         if users is not None:
@@ -395,9 +403,12 @@ def gen_member_args(args, users, groups, services):
     return None
 
 
-def data_storage_args(args, data, password, password_file, private_key,
-                      private_key_file, datafile_in, datafile_out):
-    _args = {}
+def data_storage_args(vault_type, args, data, password, password_file,
+                      private_key, private_key_file, datafile_in,
+                      datafile_out):
+    remove = ['ipavaulttype', 'description', 'ipavaultpublickey',
+              'ipavaultsalt']
+    _args = {k: v for k, v in args.items() if k not in remove}
 
     if 'username' in args:
         _args['username'] = args['username']
@@ -406,15 +417,17 @@ def data_storage_args(args, data, password, password_file, private_key,
     if 'shared' in args:
         _args['shared'] = args['shared']
 
-    if password is not None:
-        _args['password'] = password
-    if password_file is not None:
-        _args['password_file'] = password_file
+    if vault_type is None or vault_type == "symmetric":
+        if password is not None:
+            _args['password'] = password
+        if password_file is not None:
+            _args['password_file'] = password_file
 
-    if private_key is not None:
-        _args['private_key'] = private_key
-    if private_key_file is not None:
-        _args['private_key_file'] = private_key_file
+    if vault_type == "asymmetric":
+        if private_key is not None:
+            _args['private_key'] = private_key
+        if private_key_file is not None:
+            _args['private_key_file'] = private_key_file
 
     if datafile_in is not None:
         _args['in'] = datafile_in
@@ -427,9 +440,6 @@ def data_storage_args(args, data, password, password_file, private_key,
     if datafile_out is not None:
         _args['out'] = datafile_out
 
-    if private_key_file is not None:
-        _args['private_key_file'] = private_key_file
-
     return _args
 
 
@@ -441,7 +451,7 @@ def check_parameters(module, state, action, description, username, service,
                      new_password, new_password_file):
     invalid = []
     if state == "present":
-        invalid = ['private_key', 'private_key_file', 'datafile_out']
+        invalid = ['datafile_out']
 
         if all([password, password_file]) \
            or all([new_password, new_password_file]):
@@ -454,7 +464,7 @@ def check_parameters(module, state, action, description, username, service,
                     "change symmetric vault password.")
 
         if action == "member":
-            invalid.extend(['description'])
+            invalid.extend(['description', 'vault_type'])
 
     elif state == "absent":
         invalid = ['description', 'salt', 'vault_type', 'private_key',
@@ -480,12 +490,6 @@ def check_parameters(module, state, action, description, username, service,
                 msg="Argument '%s' can not be used with state '%s', "
                     "action '%s'" % (arg, state, action))
 
-    for arg in invalid:
-        if vars()[arg] is not None:
-            module.fail_json(
-                msg="Argument '%s' can not be used with state '%s', "
-                    "action '%s'" % (arg, state, action))
-
 
 def check_encryption_params(module, state, action, vault_type, salt,
                             password, password_file, public_key,
@@ -493,6 +497,10 @@ def check_encryption_params(module, state, action, vault_type, salt,
                             vault_data, datafile_in, datafile_out,
                             new_password, new_password_file, res_find):
     vault_type_invalid = []
+
+    existing_type = None
+    if res_find:
+        existing_type = res_find["ipavaulttype"][0]
 
     if vault_type is None and res_find is not None:
         vault_type = res_find['ipavaulttype']
@@ -536,47 +544,45 @@ def check_encryption_params(module, state, action, vault_type, salt,
                 msg="Assymmetric vault requires public_key "
                     "or public_key_file to store data.")
 
-    for param in vault_type_invalid:
+    valid_fields = []
+    if existing_type == "symmetric":
+        valid_fields = [
+            'password', 'password_file', 'new_password', 'new_password_file',
+            'salt'
+        ]
+    if existing_type == "asymmetric":
+        valid_fields = [
+            'public_key', 'public_key_file', 'private_key', 'private_key_file'
+        ]
+
+    check_fields = [f for f in vault_type_invalid if f not in valid_fields]
+
+    for param in check_fields:
         if vars()[param] is not None:
             module.fail_json(
                 msg="Argument '%s' cannot be used with vault type '%s'" %
                 (param, vault_type or 'symmetric'))
 
 
-def change_password(module, res_find, password, password_file, new_password,
-                    new_password_file):
-    """
-    Change the password of a symmetric vault.
-
-    To change the password of a vault, it is needed to retrieve the stored
-    data with the current password, and store the data again, with the new
-    password, forcing it to override the old one.
-    """
-    # verify parameters.
-    if not any([new_password, new_password_file]):
-        return []
-    if res_find["ipavaulttype"][0] != "symmetric":
-        module.fail_json(msg="Cannot change password of `%s` vault."
-                             % res_find["ipavaulttype"])
-
+def get_stored_data(module, res_find, args):
+    """Retrieve data stored in the vault."""
     # prepare arguments to retrieve data.
     name = res_find["cn"][0]
-    args = {}
-    if password:
-        args["password"] = password
-    if password_file:
-        args["password_file"] = password_file
-    # retrieve current stored data
-    result = api_command(module, 'vault_retrieve', name, args)
+    copy_args = []
+    if res_find['ipavaulttype'][0] == "symmetric":
+        copy_args = ["password", "password_file"]
+    if res_find['ipavaulttype'][0] == "asymmetric":
+        copy_args = ["private_key", "private_key_file"]
 
-    # modify arguments to store data with new password.
-    args = {"override_password": True, "data": result['result']['data']}
-    if new_password:
-        args["password"] = new_password
-    if new_password_file:
-        args["password_file"] = new_password_file
-    # return the command to store data with the new password.
-    return [(name, "vault_archive", args)]
+    pwdargs = {arg: args[arg] for arg in copy_args if arg in args}
+
+    # retrieve vault stored data
+    try:
+        result = api_command(module, 'vault_retrieve', name, pwdargs)
+    except NotFound:
+        return None
+
+    return result['result'].get('data')
 
 
 def main():
@@ -594,10 +600,12 @@ def main():
                             default=None, required=False,
                             choices=["standard", "symmetric", "asymmetric"]),
             vault_public_key=dict(type="str", required=False, default=None,
-                                  aliases=['ipavaultpublickey', 'public_key']),
+                                  aliases=['ipavaultpublickey', 'public_key',
+                                           'new_public_key']),
             vault_public_key_file=dict(type="str", required=False,
                                        default=None,
-                                       aliases=['public_key_file']),
+                                       aliases=['public_key_file',
+                                                'new_public_key_file']),
             vault_private_key=dict(
                 type="str", required=False, default=None, no_log=True,
                 aliases=['ipavaultprivatekey', 'private_key']),
@@ -742,20 +750,17 @@ def main():
             res_find = find_vault(
                 ansible_module, name, username, service, shared)
 
+            # Set default vault_type if needed.
+            res_type = res_find.get('ipavaulttype')[0] if res_find else None
+            if vault_type is None:
+                vault_type = res_type if res_find is not None else u"symmetric"
+
             # Generate args
             args = gen_args(description, username, service, shared, vault_type,
                             salt, password, password_file, public_key,
                             public_key_file, vault_data, datafile_in,
                             datafile_out)
             pwdargs = None
-
-            # Set default vault_type if needed.
-            if vault_type is None and vault_data is not None:
-                if res_find is not None:
-                    res_vault_type = res_find.get('ipavaulttype')[0]
-                    args['ipavaulttype'] = vault_type = res_vault_type
-                else:
-                    args['ipavaulttype'] = vault_type = u"symmetric"
 
             # Create command
             if state == "present":
@@ -766,16 +771,52 @@ def main():
                     private_key_file, vault_data, datafile_in, datafile_out,
                     new_password, new_password_file, res_find)
 
-                # Found the vault
+                change_passwd = any([
+                    new_password, new_password_file,
+                    (private_key or private_key_file) and
+                    (public_key or public_key_file)
+                ])
                 if action == "vault":
+                    # Found the vault
                     if res_find is not None:
-                        # For all settings is args, check if there are
-                        # different settings in the find result.
-                        # If yes: modify
-                        if not compare_args_ipa(ansible_module, args,
-                                                res_find):
-                            commands.append([name, "vault_mod_internal", args])
+                        arg_type = args.get("ipavaulttype")
 
+                        modified = not compare_args_ipa(ansible_module,
+                                                        args, res_find)
+
+                        if arg_type != res_type or change_passwd:
+                            stargs = data_storage_args(
+                                res_type, args, vault_data, password,
+                                password_file, private_key,
+                                private_key_file, datafile_in,
+                                datafile_out)
+                            stored = get_stored_data(
+                                ansible_module, res_find, stargs
+                            )
+                            if stored:
+                                vault_data = \
+                                    (stored or b"").decode("utf-8")
+
+                            remove_attrs = {
+                                "symmetric": ["private_key", "public_key"],
+                                "asymmetric": ["password", "ipavaultsalt"],
+                                "standard": [
+                                    "private_key", "public_key",
+                                    "password", "ipavaultsalt"
+                                ],
+                            }
+                            for attr in remove_attrs.get(arg_type, []):
+                                if attr in args:
+                                    del args[attr]
+
+                            if vault_type == 'symmetric':
+                                if 'ipavaultsalt' not in args:
+                                    args['ipavaultsalt'] = os.urandom(32)
+                            else:
+                                args['ipavaultsalt'] = b''
+
+                        if modified:
+                            commands.append([name, "vault_mod_internal", args])
                     else:
                         if vault_type == 'symmetric' \
                            and 'ipavaultsalt' not in args:
@@ -851,16 +892,22 @@ def main():
                                                      ownerservices)
                         commands.append([name, 'vault_add_owner', owner_args])
 
-                pwdargs = data_storage_args(
-                    args, vault_data, password, password_file, private_key,
-                    private_key_file, datafile_in, datafile_out)
                 if any([vault_data, datafile_in]):
-                    commands.append([name, "vault_archive", pwdargs])
+                    if change_passwd:
+                        pwdargs = data_storage_args(
+                            vault_type, args, vault_data, new_password,
+                            new_password_file, private_key, private_key_file,
+                            datafile_in, datafile_out)
+                    else:
+                        pwdargs = data_storage_args(
+                            vault_type, args, vault_data, password,
+                            password_file, private_key, private_key_file,
+                            datafile_in, datafile_out)
 
-                cmds = change_password(
-                    ansible_module, res_find, password, password_file,
-                    new_password, new_password_file)
-                commands.extend(cmds)
+                    pwdargs['override_password'] = True
+                    pwdargs.pop("private_key", None)
+                    pwdargs.pop("private_key_file", None)
+                    commands.append([name, "vault_archive", pwdargs])
 
             elif state == "retrieved":
                 if res_find is None:
@@ -875,8 +922,9 @@ def main():
                     new_password, new_password_file, res_find)
 
                 pwdargs = data_storage_args(
-                    args, vault_data, password, password_file, private_key,
-                    private_key_file, datafile_in, datafile_out)
+                    res_find["ipavaulttype"][0], args, vault_data, password,
+                    password_file, private_key, private_key_file, datafile_in,
+                    datafile_out)
                 if 'data' in pwdargs:
                     del pwdargs['data']
 
@@ -888,6 +936,10 @@ def main():
 
                 if action == "vault":
                     if res_find is not None:
+                        remove = ['ipavaultsalt', 'ipavaultpublickey']
+                        args = {
+                            k: v for k, v in args.items() if k not in remove
+                        }
                         commands.append([name, "vault_del", args])
 
                 elif action == "member":

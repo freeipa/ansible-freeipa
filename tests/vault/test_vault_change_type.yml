@@ -1,0 +1,304 @@
+---
+- name: Test vault
+  hosts: ipaserver
+  become: true
+  # Need to gather facts for ansible_env.
+  gather_facts: true
+
+  tasks:
+  - name: Setup testing environment.
+    import_tasks: env_setup.yml
+
+  - name: Ensure test_vault is absent.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      state: absent
+
+  - name: Create standard vault with no data archived.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      vault_type: standard
+
+  - name: Change from standard to asymmetric
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      vault_type: asymmetric
+      public_key: "{{ lookup('file', 'A_public.b64') }}"
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - block:
+    - name: Change from asymmetric to symmetric
+      ipavault:
+        ipaadmin_password: SomeADMINpassword
+        name: test_vault
+        vault_type: symmetric
+        private_key: "{{ lookup('file', 'A_private.b64') }}"
+        password: SomeVAULTpassword
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Verify assymetric-only fields are not present.
+      shell: |
+         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ KRB5CCNAME }}
+      register: result
+      failed_when: result.failed or "Public Key:" in result.stdout
+
+    vars:
+      KRB5CCNAME: verify_change_from_asymmetric
+
+  - block:
+    - name: Change from symmetric to standard
+      ipavault:
+        ipaadmin_password: SomeADMINpassword
+        name: test_vault
+        vault_type: standard
+        password: SomeVAULTpassword
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Verify salt is not present.
+      shell: |
+         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ KRB5CCNAME }}
+      register: result
+      failed_when: result.failed or "Salt:" in result.stdout
+
+    vars:
+      KRB5CCNAME: verify_change_from_symmetric
+
+  - name: Change from standard to symmetric
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      vault_type: symmetric
+      password: SomeVAULTpassword
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - block:
+    - name: Change from symmetric to asymmetric
+      ipavault:
+        ipaadmin_password: SomeADMINpassword
+        name: test_vault
+        vault_type: asymmetric
+        password: SomeVAULTpassword
+        public_key: "{{ lookup('file', 'A_public.b64') }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Verify salt is not present.
+      shell: |
+         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ KRB5CCNAME }}
+      register: result
+      failed_when: result.failed or "Salt:" in result.stdout
+
+    vars:
+      KRB5CCNAME: verify_change_from_symmetric
+
+  - block:
+    - name: Change from asymmetric to standard
+      ipavault:
+        ipaadmin_password: SomeADMINpassword
+        name: test_vault
+        vault_type: standard
+        private_key: "{{ lookup('file', 'A_private.b64') }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Verify assymetric-only fields are not present.
+      shell: |
+         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ KRB5CCNAME }}
+      register: result
+      failed_when: result.failed or "Public Key:" in result.stdout
+
+    vars:
+      KRB5CCNAME: verify_change_from_asymmetric
+
+  - name: Ensure test_vault is absent.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      state: absent
+
+  - name: Create standard vault with data archived.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      vault_type: standard
+      data: hello
+
+  - name: Change from standard to asymmetric, with data
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      vault_type: asymmetric
+      public_key: "{{ lookup('file', 'A_public.b64') }}"
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Retrieve data from asymmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      private_key: "{{ lookup('file', 'A_private.b64') }}"
+      state: retrieved
+    register: result
+    failed_when: result.failed or result.changed or result.vault.data != 'hello'
+
+  - block:
+    - name: Change from asymmetric to symmetric, with data
+      ipavault:
+        ipaadmin_password: SomeADMINpassword
+        name: test_vault
+        vault_type: symmetric
+        private_key: "{{ lookup('file', 'A_private.b64') }}"
+        password: SomeVAULTpassword
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Verify assymetric-only fields are not present.
+      shell: |
+         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ KRB5CCNAME }}
+      register: result
+      failed_when: result.failed or "Public Key:" in result.stdout
+
+    vars:
+      KRB5CCNAME: verify_change_from_asymmetric
+
+  - name: Retrieve data from symmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      password: SomeVAULTpassword
+      state: retrieved
+    register: result
+    failed_when: result.failed or result.changed or result.vault.data != 'hello'
+
+  - block:
+    - name: Change from symmetric to standard, with data
+      ipavault:
+        ipaadmin_password: SomeADMINpassword
+        name: test_vault
+        vault_type: standard
+        password: SomeVAULTpassword
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Verify salt is not present.
+      shell: |
+         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ KRB5CCNAME }}
+      register: result
+      failed_when: result.failed or "Salt:" in result.stdout
+
+    vars:
+      KRB5CCNAME: verify_change_from_symmetric
+
+  - name: Retrieve data from standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      state: retrieved
+    register: result
+    failed_when: result.failed or result.changed or result.vault.data != 'hello'
+
+  - name: Change from standard to symmetric, with data
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      vault_type: symmetric
+      password: SomeVAULTpassword
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Retrieve data from symmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      state: retrieved
+      password: SomeVAULTpassword
+    register: result
+    failed_when: result.failed or result.changed or result.vault.data != 'hello'
+
+  - block:
+    - name: Change from symmetric to asymmetric, with data
+      ipavault:
+        ipaadmin_password: SomeADMINpassword
+        name: test_vault
+        vault_type: asymmetric
+        password: SomeVAULTpassword
+        public_key: "{{ lookup('file', 'A_public.b64') }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Verify salt is not present.
+      shell: |
+         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ KRB5CCNAME }}
+      register: result
+      failed_when: result.failed or "Salt:" in result.stdout
+
+    vars:
+      KRB5CCNAME: verify_change_from_symmetric
+
+  - name: Retrieve data from asymmetric vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      state: retrieved
+      private_key: "{{ lookup('file', 'A_private.b64') }}"
+    register: result
+    failed_when: result.failed or result.changed or result.vault.data != 'hello'
+
+  - block:
+    - name: Change from asymmetric to standard, with data
+      ipavault:
+        ipaadmin_password: SomeADMINpassword
+        name: test_vault
+        vault_type: standard
+        private_key: "{{ lookup('file', 'A_private.b64') }}"
+      register: result
+      failed_when: result.failed or not result.changed or result.failed
+
+    - name: Verify assymetric-only fields are not present.
+      shell: |
+         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ KRB5CCNAME }}
+      register: result
+      failed_when: result.failed or "Public Key:" in result.stdout
+
+    vars:
+      KRB5CCNAME: verify_change_from_asymmetric
+
+  - name: Retrieve data from standard vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      state: retrieved
+    register: result
+    failed_when: result.failed or result.changed or result.vault.data != 'hello'
+
+  - name: Remove test_vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: test_vault
+      state: absent
+
+  - name: Cleanup testing environment.
+    import_tasks: env_cleanup.yml

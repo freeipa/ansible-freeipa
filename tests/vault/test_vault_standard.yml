@@ -138,4 +138,4 @@
     failed_when: result.changed
 
   - name: Cleanup testing environment.
-    import_tasks: env_setup.yml
+    import_tasks: env_cleanup.yml
