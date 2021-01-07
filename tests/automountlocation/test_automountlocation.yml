@@ -1,0 +1,41 @@
+---
+- name: Test automountlocation
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: ensure location TestLocation is absent
+    ipaautomountlocation:
+      ipaadmin_password: password01
+      name: TestLocation
+      state: absent
+
+  - name: ensure location TestLocation is created
+    ipaautomountlocation:
+      ipaadmin_password: password01
+      name: TestLocation
+      state: present
+
+  - name: ensure location TestLocation has been created
+    ipaautomountlocation:
+      ipaadmin_password: password01
+      name: TestLocation
+      state: present
+    register: result
+    failed_when: result.changed
+
+  - name: ensure location TestLocation is absent
+    ipaautomountlocation:
+      ipaadmin_password: password01
+      name: TestLocation
+      state: absent
+
+  - name: ensure location TestLocation is absent
+    ipaautomountlocation:
+      ipaadmin_password: password01
+      name: TestLocation
+      state: absent
+    register: result
+    failed_when: result.changed
+

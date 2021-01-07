@@ -1,0 +1,92 @@
+---
+- name: Test automountmap
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: ensure location TestLocation is absent
+    ipaautomountlocation:
+      ipaadmin_password: password01
+      name: TestLocation
+      state: absent
+
+  - name: ensure map TestMap is absent
+    ipaautomountmap:
+      ipaadmin_password: password01
+      name: TestMap
+      location: TestLocation
+      state: absent
+
+  - name: ensure location TestLocation is created
+    ipaautomountlocation:
+      ipaadmin_password: password01
+      name: TestLocation
+      state: present
+
+  - name: ensure location TestLocation has been created
+    ipaautomountlocation:
+      ipaadmin_password: password01
+      name: TestLocation
+      state: present
+    register: result
+    failed_when: result.changed
+
+
+  - name: ensure map TestMap is created
+    ipaautomountmap:
+      ipaadmin_password: password01
+      name: TestMap
+      location: TestLocation
+      desc: "this is a test map that should be deleted by the test"
+
+  - name: ensure map TestMap has been created
+    ipaautomountmap:
+      ipaadmin_password: password01
+      name: TestMap
+      location: TestLocation
+    register: result
+    failed_when: result.changed
+
+  - name: ensure map TestMap has been created
+    ipaautomountmap:
+      ipaadmin_password: password01
+      name: TestMap
+      location: TestLocation
+      desc: "this is a changed description that should be deleted by the test"
+    register: result
+    failed_when: not result.changed
+
+
+  - name: ensure map TestMap is removed
+    ipaautomountmap:
+      ipaadmin_password: password01
+      name: TestMap
+      location: TestLocation
+      state: absent
+
+  - name: ensure map TestMap has been removed
+    ipaautomountmap:
+      ipaadmin_password: password01
+      name: TestMap
+      location: TestLocation
+      state: absent
+    register: result
+    failed_when: result.changed
+
+
+
+  - name: ensure location TestLocation is removed
+    ipaautomountlocation:
+      ipaadmin_password: password01
+      name: TestLocation
+      state: absent
+
+  - name: ensure location TestLocation is absent
+    ipaautomountlocation:
+      ipaadmin_password: password01
+      name: TestLocation
+      state: absent
+    register: result
+    failed_when: result.changed
+
