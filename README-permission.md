@@ -43,7 +43,7 @@ Example playbook to make sure permission "MyPermission" is present:
 
 ```yaml
 ---
-- name: Playbook to create an IPA permission.
+- name: Playbook to handle IPA permissions
   hosts: ipaserver
   become: yes
 
@@ -56,39 +56,61 @@ Example playbook to make sure permission "MyPermission" is present:
       right: all
 ```
 
-Example playbook to make sure permission "MyPermission" member "privilege" with value "User Administrators" is present:
+
+Example playbook to ensure permission "MyPermission" is present with attr carlicense:
 
 ```yaml
 ---
-- name: Permission add privilege to a permission
+- name: Playbook to handle IPA permissions
   hosts: ipaserver
-  become: true
+  become: yes
 
   tasks:
-  - name: Ensure permission MyPermission is present with the User Administrators privilege present
+  - name: Ensure permission "MyPermission" is present with attr carlicense
     ipapermission:
       ipaadmin_password: SomeADMINpassword
       name: MyPermission
-      privilege: "User Administrators"
+      object_type: host
+      right: all
+      attrs:
+      - carlicense
+```
+
+
+Example playbook to ensure attr gecos is present in permission "MyPermission":
+
+```yaml
+---
+- name: Playbook to handle IPA permissions
+  hosts: ipaserver
+  become: yes
+
+  tasks:
+  - name: Ensure attr gecos is present in permission "MyPermission"
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      name: MyPermission
+      attrs:
+      - gecos
       action: member
 ```
 
 
-Example playbook to make sure permission "MyPermission" member "privilege" with value "User Administrators" is absent:
-
+Example playbook to ensure attr gecos is absent in permission "MyPermission":
 
 ```yaml
 ---
-- name: Permission remove privilege from a permission
+- name: Playbook to handle IPA permissions
   hosts: ipaserver
-  become: true
+  become: yes
 
   tasks:
-  - name: Ensure permission MyPermission is present without the User Administrators privilege
+  - name: Ensure attr gecos is present in permission "MyPermission"
     ipapermission:
       ipaadmin_password: SomeADMINpassword
       name: MyPermission
-      privilege: "User Administrators"
+      attrs:
+      - gecos
       action: member
       state: absent
 ```
@@ -98,34 +120,35 @@ Example playbook to make sure permission "MyPermission" is absent:
 
 ```yaml
 ---
-- name: Playbook to manage IPA permission.
+- name: Playbook to handle IPA permissions
   hosts: ipaserver
   become: yes
 
   tasks:
-  - ipapermission:
+  - name: Ensure permission "MyPermission" is absent
+    ipapermission:
       ipaadmin_password: SomeADMINpassword
       name: MyPermission
       state: absent
 ```
 
+
 Example playbook to make sure permission "MyPermission" is renamed to "MyNewPermission":
 
 ```yaml
 ---
-- name: Playbook to manage IPA permission.
+- name: Playbook to handle IPA permissions
   hosts: ipaserver
   become: yes
 
   tasks:
-  - ipapermission:
+  - name: Eure permission "MyPermission" is renamed to "MyNewPermission
+    ipapermission:
       ipaadmin_password: SomeADMINpassword
       name: MyPermission
       rename: MyNewPermission
       state: renamed
 ```
-
-
 
 
 Variables
@@ -140,7 +163,7 @@ Variable | Description | Required
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `name` \| `cn` | The permission name string. | yes
 `right` \| `ipapermright` | Rights to grant. It can be a list of one or more of `read`, `search`, `compare`, `write`, `add`, `delete`, and `all` default: `all` | no
-`attrs` | All attributes to which the permission applies | no
+`attrs` | All attributes to which the permission applies. | no
 `bindtype` \| `ipapermbindruletype` | Bind rule type. It can be one of `permission`, `all`, `self`, or `anonymous` defaults to `permission` for new permissions. Bind rule type `self` can only be used on IPA versions 4.8.7 or up.| no
 `subtree` \| `ipapermlocation` | Subtree to apply permissions to | no
 `filter` \| `extratargetfilter` | Extra target filter | no
@@ -153,9 +176,11 @@ Variable | Description | Required
 `object_type` | Type of IPA object (sets subtree and objectClass targetfilter) | no
 `no_members` | Suppress processing of membership | no
 `rename` | Rename the permission object | no
-`privilege` | Member Privilege of Permission | no
 `action` | Work on permission or member level. It can be on of `member` or `permission` and defaults to `permission`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, or `renamed` default: `present`. | no
+
+The `includedattrs` and `excludedattrs` variables are only usable for managed permisions and are not exposed by the module. Using `attrs` for managed permissions will result in the automatic generation of `includedattrs` and `excludedattrs` in the IPA server.
+
 
 Authors
 =======
