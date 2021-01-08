@@ -210,9 +210,9 @@ dnszone:
 from ipapython.dnsutil import DNSName  # noqa: E402
 from ansible.module_utils.ansible_freeipa_module import (
     FreeIPABaseModule,
-    is_ipv4_addr,
-    is_ipv6_addr,
-    is_valid_port,
+    is_ip_address,
+    is_ip_network_address,
+    is_valid_port
 )  # noqa: E402
 import ipalib.errors
 import netaddr
@@ -252,7 +252,13 @@ class DNSZoneModule(FreeIPABaseModule):
 
     def validate_ips(self, ips, error_msg):
         invalid_ips = [
-            ip for ip in ips if not is_ipv4_addr(ip) or is_ipv6_addr(ip)
+            ip for ip in ips
+            if not any([
+                is_ip_address(ip),
+                is_ip_network_address(ip),
+                ip == "any",
+                ip == "none"
+            ])
         ]
         if any(invalid_ips):
             self.fail_json(msg=error_msg % invalid_ips)
@@ -309,7 +315,7 @@ class DNSZoneModule(FreeIPABaseModule):
             forwarders = []
             for forwarder in self.ipa_params.forwarders:
                 ip_address = forwarder.get("ip_address")
-                if not (is_ipv4_addr(ip_address) or is_ipv6_addr(ip_address)):
+                if not (is_ip_address(ip_address)):
                     self.fail_json(
                         msg="Invalid IP for DNS forwarder: %s" % ip_address
                     )
