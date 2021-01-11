@@ -277,10 +277,8 @@ def main():
             ansible_module.fail_json(
                 msg="Only one permission can be added at a time.")
         if action == "member":
-            invalid = ["right", "bindtype", "subtree",
-                       "extra_target_filter", "rawfilter", "target",
-                       "targetto", "targetfrom", "memberof", "targetgroup",
-                       "object_type", "rename"]
+            invalid = ["bindtype", "target", "targetto", "targetfrom",
+                       "subtree", "targetgroup", "object_type", "rename"]
         else:
             invalid = ["rename"]
 
@@ -299,13 +297,12 @@ def main():
     if state == "absent":
         if len(names) < 1:
             ansible_module.fail_json(msg="No name given.")
-        invalid = ["right",
-                   "bindtype", "subtree",
-                   "extra_target_filter", "rawfilter", "target", "targetto",
-                   "targetfrom", "memberof", "targetgroup", "object_type",
+        invalid = ["bindtype", "subtree", "target", "targetto",
+                   "targetfrom", "targetgroup", "object_type",
                    "no_members", "rename"]
         if action != "member":
-            invalid += ["attrs"]
+            invalid += ["right", "attrs", "memberof",
+                        "extra_target_filter", "rawfilter"]
 
     for x in invalid:
         if vars()[x] is not None:
@@ -316,6 +313,11 @@ def main():
     if bindtype == "self" and api_check_ipa_version("<", "4.8.7"):
         ansible_module.fail_json(
             msg="Bindtype 'self' is not supported by your IPA version.")
+
+    if all([extra_target_filter, rawfilter]):
+        ansible_module.fail_json(
+            msg="Cannot specify target filter and extra target filter "
+                "simultaneously.")
 
     # Init
 
@@ -359,16 +361,31 @@ def main():
                         ansible_module.fail_json(
                             msg="No permission '%s'" % name)
 
-                    # attrs
-                    if attrs is not None:
-                        _attrs = list(set(list(res_find["attrs"]) + attrs))
-                        if len(_attrs) > len(res_find["attrs"]):
-                            commands.append([name, "permission_mod",
-                                             {"attrs": _attrs}])
+                    member_attrs = {}
+                    check_members = {
+                        "attrs": attrs,
+                        "memberof": memberof,
+                        "ipapermright": right,
+                        "ipapermtargetfilter": rawfilter,
+                        "extratargetfilter": extra_target_filter,
+                        # subtree member management is currently disabled.
+                        # "ipapermlocation": subtree,
+                    }
+
+                    for _member, _member_change in check_members.items():
+                        if _member_change is not None:
+                            _res_list = res_find[_member]
+                            _new_set = set(_res_list + _member_change)
+                            if _new_set != set(_res_list):
+                                member_attrs[_member] = list(_new_set)
+
+                    if member_attrs:
+                        commands.append([name, "permission_mod", member_attrs])
 
                 else:
                     ansible_module.fail_json(
                         msg="Unknown action '%s'" % action)
+
             elif state == "renamed":
                 if action == "permission":
                     # Generate args
@@ -393,6 +410,7 @@ def main():
                 else:
                     ansible_module.fail_json(
                         msg="Unknown action '%s'" % action)
+
             elif state == "absent":
                 if action == "permission":
                     if res_find is not None:
@@ -403,20 +421,26 @@ def main():
                         ansible_module.fail_json(
                             msg="No permission '%s'" % name)
 
-                    # attrs
-                    if attrs is not None:
-                        # New attribute list (remove given ones from find
-                        # result)
-                        # Make list with unique entries
-                        _attrs = list(set(res_find["attrs"]) - set(attrs))
-                        if len(_attrs) < 1:
-                            ansible_module.fail_json(
-                                msg="At minimum one attribute is needed.")
+                    member_attrs = {}
+                    check_members = {
+                        "attrs": attrs,
+                        "memberof": memberof,
+                        "ipapermright": right,
+                        "ipapermtargetfilter": rawfilter,
+                        "extratargetfilter": extra_target_filter,
+                        # subtree member management is currently disabled.
+                        # "ipapermlocation": subtree,
+                    }
 
-                        # Entries New number of attributes is smaller
-                        if len(_attrs) < len(res_find["attrs"]):
-                            commands.append([name, "permission_mod",
-                                             {"attrs": _attrs}])
+                    for _member, _member_change in check_members.items():
+                        if _member_change is not None:
+                            _res_set = set(res_find[_member])
+                            _new_set = _res_set - set(_member_change)
+                            if _new_set != _res_set:
+                                member_attrs[_member] = list(_new_set)
+
+                    if member_attrs:
+                        commands.append([name, "permission_mod", member_attrs])
 
             else:
                 ansible_module.fail_json(msg="Unknown state '%s'" % state)
