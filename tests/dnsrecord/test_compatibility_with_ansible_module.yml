@@ -29,26 +29,32 @@
       ipaadmin_password: SomeADMINpassword
       name: host01
       zone_name: testzone.local
-      record_type: 'AAAA'
-      record_value: '::1'
+      del_all: yes
       state: absent
 
-  - name: Ensure that dns record 'vm-001' is absent
+  - name: Ensure that dns records for 'vm-001' are absent
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       name: vm-001
       zone_name: testzone.local
-      record_type: 'AAAA'
-      record_value: '::1'
+      del_all: yes
+      state: absent
+
+  - name: Ensure a PTR record is absent for 'vm-001'
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      name: '1'
+      record_type: 'PTR'
+      record_value: 'vm-001'
+      zone_name: 2.168.192.in-addr.arpa
       state: absent
 
   - name: Ensure a PTR record is absent
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
-      name: 5
-      record_type: 'PTR'
-      record_value: 'internal.ipa.testzone.local'
       zone_name: 2.168.192.in-addr.arpa
+      name: "5"
+      del_all: yes
       state: absent
 
   - name: Ensure a TXT record is absent
@@ -79,7 +85,7 @@
       state: absent
 
   # tests
-  - name: Ensure dns record is present
+  - name: Ensure AAAA  dns record is present
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       name: vm-001
@@ -88,9 +94,9 @@
       zone_name: testzone.local
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
-  - name: Ensure that dns record exists with a TTL
+  - name: Ensure that AAAA dns record exists with a TTL
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       name: host01
@@ -100,18 +106,52 @@
       zone_name: testzone.local
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure a PTR record is present
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
-      name: 5
+      name: '5'
       record_type: 'PTR'
       record_value: 'internal.ipa.testzone.local'
       zone_name: 2.168.192.in-addr.arpa
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure A record is present, with reverse
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      name: vm-001
+      record_type: 'A'
+      record_value: '192.168.2.1'
+      create_reverse: yes
+      zone_name: testzone.local
+      state: present
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure A record is present
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      name: vm-001
+      record_type: 'A'
+      record_value: '192.168.2.1'
+      zone_name: testzone.local
+      state: present
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure PTR record is present
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      name: '1'
+      record_type: 'PTR'
+      record_value: vm-001.testzone.local
+      zone_name: 2.168.192.in-addr.arpa
+      state: present
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: Ensure a TXT record is present
     ipadnsrecord:
@@ -122,7 +162,7 @@
       zone_name: testzone.local
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure a SRV record is present
     ipadnsrecord:
@@ -133,7 +173,7 @@
       zone_name: testzone.local
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure an MX record is present
     ipadnsrecord:
@@ -144,7 +184,7 @@
       zone_name: testzone.local
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that dns record is removed
     ipadnsrecord:
@@ -155,7 +195,7 @@
       record_value: '::1'
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
    # cleanup
   - name: Ensure that dns record 'host01' is absent
@@ -167,7 +207,7 @@
       record_value: '::1'
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that dns record 'vm-001' is absent
     ipadnsrecord:
@@ -178,7 +218,7 @@
       record_value: '::1'
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure a PTR record is absent
     ipadnsrecord:
@@ -189,7 +229,7 @@
       zone_name: 2.168.192.in-addr.arpa
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure a TXT record is absent
     ipadnsrecord:
@@ -200,7 +240,7 @@
       zone_name: testzone.local
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure a SRV record is absent
     ipadnsrecord:
@@ -211,7 +251,7 @@
       zone_name: testzone.local
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure an MX record is absent
     ipadnsrecord:
@@ -222,7 +262,7 @@
       zone_name: testzone.local
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure DNS zones to be used are absent.
     ipadnszone:
