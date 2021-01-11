@@ -142,7 +142,7 @@ Example playbook to make sure permission "MyPermission" is renamed to "MyNewPerm
   become: yes
 
   tasks:
-  - name: Eure permission "MyPermission" is renamed to "MyNewPermission
+  - name: Ensure permission "MyPermission" is renamed to "MyNewPermission
     ipapermission:
       ipaadmin_password: SomeADMINpassword
       name: MyPermission
