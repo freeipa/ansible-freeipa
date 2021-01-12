@@ -1,0 +1,135 @@
+---
+- name: Test automountmap
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: ensure location TestLocation is absent
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation
+      state: absent
+
+  - name: ensure map TestMap is absent
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap
+      location: TestLocation
+      state: absent
+
+  - name: ensure location TestLocation is present
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation
+      state: present
+
+  - name: ensure map TestMap is present
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap
+      location: TestLocation
+      desc: "this is a test map that should be deleted by the test"
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure map TestMap is present again
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap
+      location: TestLocation
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: ensure map TestMap has a different description
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap
+      location: TestLocation
+      desc: "this is a changed description that should be deleted by the test"
+    register: result
+    failed_when: result.failed or  not result.changed
+
+  - name: ensure map TestMap has a different description
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap
+      location: TestLocation
+      desc: "this is a changed description that should be deleted by the test"
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: ensure map TestMap is removed
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap
+      location: TestLocation
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure map TestMap has been removed
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap
+      location: TestLocation
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: ensure map TestMap01 is present
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap01
+      location: TestLocation
+      desc: "this is a changed description that should be deleted by the test"
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure map TestMap02 is present
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap02
+      location: TestLocation
+      desc: "this is a changed description that should be deleted by the test"
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure TestMap01 and TestMap02 are both absent
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name:
+        - TestMap01
+        - TestMap02
+      location: TestLocation
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure TestMap01 and TestMap02 are both absent again
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name:
+        - TestMap01
+        - TestMap02
+      location: TestLocation
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: ensure location TestLocation is absent
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure location TestLocation is absent again
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed
+
