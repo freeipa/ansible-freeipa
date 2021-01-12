@@ -1,0 +1,13 @@
+---
+- name: Automount location present example
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure automount locations DMZ and internal are present
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name:
+        - DMZ
+        - internal
+      state: present
+

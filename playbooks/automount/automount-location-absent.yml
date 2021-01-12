@@ -1,0 +1,13 @@
+---
+- name: Automount locations absnet example
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure automount locations DMZ and internal are absent
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name:
+        - DMZ
+        - internal
+      state: absent
+

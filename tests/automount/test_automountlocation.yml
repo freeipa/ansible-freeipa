@@ -1,0 +1,104 @@
+---
+- name: Test automountlocation
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: ensure automountlocation TestLocations are absent before testing
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - TestLocation_01
+      - TestLocation_02
+      state: absent
+
+  - name: ensure empty automountlocation does nothing
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: []
+      state: present
+    register: result
+    failed_when: not result.failed or "At least one location must be provided" not in result.msg
+
+  - name: ensure empty automountlocation does nothing on absent
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: []
+      state: absent
+    register: result
+    failed_when: not result.failed or "At least one location must be provided" not in result.msg
+
+  - name: ensure automountlocation TestLocation is present
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation_01
+      state: present
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: ensure automountlocation TestLocation is present again
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation_01
+      state: present
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: ensure automountlocation TestLocation is absent
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation_01
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: ensure automountlocation TestLocation is absent again
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation_01
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: ensure a list of automountlocations are present
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - TestLocation_01
+      - TestLocation_02
+      state: present
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure a list of automountlocations exist
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - TestLocation_01
+      - TestLocation_02
+      state: present
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: ensure a list of automountlocations are absent
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - TestLocation_01
+      - TestLocation_02
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure multiple automountlocations are absent
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - TestLocation_01
+      - TestLocation_02
+      - TestLocation_03
+      - TestLocation_04
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
