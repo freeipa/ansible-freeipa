@@ -1,0 +1,180 @@
+---
+- name: Test automountmap
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: ensure location TestLocation is absent
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation
+      state: absent
+
+#  - name: ensure map TestMap is absent
+ #   ipaautomountmap:
+ #     ipaadmin_password: SomeADMINpassword
+ #     name: TestMap
+ #     location: TestLocation
+ #     state: absent
+#
+#  - name: ensure key TestKey is absent
+#    ipaautomountkey:
+#      ipaadmin_password: SomeADMINpassword
+#      automountlocationcn: TestLocation
+#      automountmapname: TestMap
+#      automountkey: TestKey
+#      state: absent
+
+  - name: create location TestLocation
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation
+      state: present
+
+  - name: create map TestMap 
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap
+      location: TestLocation
+      desc: "this is a test map that should be deleted by the test"
+
+### test the key creation, and modification
+  - name: ensure key TestKey is present
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: TestKey
+      automountinformation: 192.168.122.1:/exports
+      state: present
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure key TestKey is present again
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: TestKey
+      automountinformation: 192.168.122.1:/exports
+      state: present
+    register: result
+    failed_when: result.failed or result.changed
+
+## modify the key
+  - name: ensure key TestKey information has been updated
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: TestKey
+      automountinformation: 192.168.122.1:/nfsshare
+      state: present
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure key TestKey information has been updated again
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: TestKey
+      automountinformation: 192.168.122.1:/nfsshare
+      state: present
+    register: result
+    failed_when: result.failed or result.changed
+
+## modify the name
+  - name: ensure key TestKey has been renamed to NewKeyName
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: TestKey
+      automountinformation: 192.168.122.1:/nfsshare
+      newname: NewKeyName
+      state: rename
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure key TestKey does not exist
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: NewKeyName
+      automountinformation: 192.168.122.1:/nfsshare
+      state: present
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: ensure key NewKeyName does exist
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: NewKeyName
+      automountinformation: 192.168.122.1:/nfsshare
+      state: present
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: ensure key TestKey has been renamed to NewKeyName again
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: TestKey
+      automountinformation: 192.168.122.1:/nfsshare
+      newname: NewKeyName
+      state: rename
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: ensure failure when state=present and newname is not set
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: TestKey
+      automountinformation: 192.168.122.1:/nfsshare
+      state: rename
+    register: result
+    failed_when: not result.failed
+
+
+### cleanup after the tests
+  - name: ensure key NewKeyName is absent
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: NewKeyName
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: ensure key TestKey is absent again
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: NewKeyName
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: ensure map TestMap is removed
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap
+      location: TestLocation
+      state: absent
+
+  - name: ensure location TestLocation is removed
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation
+      state: absent
+
