@@ -30,33 +30,33 @@ sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.${c
 
 find plugins/modules -name "*.py" -print0 |
     while IFS= read -d -r '' line; do
-        python utils/galaxyfy-module-EXAMPLES.py "$x" \
+        python utils/galaxyfy-module-EXAMPLES.py "$line" \
                "ipa" "$collection_prefix"
     done
 
 find roles/*/library -name "*.py" -print0 |
     while IFS= read -d -r '' line; do
-        python utils/galaxyfy-module-EXAMPLES.py "$x" \
+        python utils/galaxyfy-module-EXAMPLES.py "$line" \
                "ipa" "$collection_prefix"
     done
 
 for x in roles/*/tasks/*.yml; do
-    python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
+    python utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
 done
 
 find playbooks -name "*.yml" -print0 |
     while IFS= read -d -r '' line; do
-        python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
+        python utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
     done
 
 find . -name "README*.md" -print0 |
     while IFS= read -d -r '' line; do
-        python utils/galaxyfy-README.py "$x" "ipa" "$collection_prefix"
+        python utils/galaxyfy-README.py "$line" "ipa" "$collection_prefix"
     done
 
 find tests -name "*.yml" -print0 |
     while IFS= read -d -r '' line; do
-        python utils/galaxyfy-playbook.py "$x" "ipa" "$collection_prefix"
+        python utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
     done
 
 #git diff
