@@ -1350,8 +1350,6 @@ def define_commands_for_present_state(module, zone_name, entry, res_find):
                     module, zone_name, name, args[record])
                 _commands.extend(cmds)
                 del args['%s_extra_create_reverse' % ipv]
-                if '%s_ip_address' not in args:
-                    del args[record]
         for record, fields in _RECORD_PARTS.items():
             part_fields = [f for f in fields if f in args]
             if part_fields:
