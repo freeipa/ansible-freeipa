@@ -429,16 +429,16 @@ def main():
 
                     # Generate addition and removal lists
                     host_add, host_del = gen_add_del_lists(
-                        host, res_find.get('member_host', []))
+                        host, res_find.get('memberhost_host', []))
 
                     hostgroup_add, hostgroup_del = gen_add_del_lists(
-                        hostgroup, res_find.get('member_hostgroup', []))
+                        hostgroup, res_find.get('memberhost_hostgroup', []))
 
                     user_add, user_del = gen_add_del_lists(
-                        user, res_find.get('member_user', []))
+                        user, res_find.get('memberuser_user', []))
 
                     group_add, group_del = gen_add_del_lists(
-                        group, res_find.get('member_group', []))
+                        group, res_find.get('memberuser_group', []))
 
                     allow_cmd_add, allow_cmd_del = gen_add_del_lists(
                         allow_sudocmd,
