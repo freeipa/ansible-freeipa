@@ -3,7 +3,7 @@ driver:
   name: docker
 platforms:
   - name: fedora-latest-build
-    image: fedora-latest
+    image: "fedora:latest"
     dockerfile: Dockerfile
     hostname: ipaserver.test.local
     dns_servers:

@@ -3,7 +3,7 @@ driver:
   name: docker
 platforms:
   - name: centos-8-build
-    image: centos:8
+    image: "centos:centos8"
     pre_build_image: true
     hostname: ipaserver.test.local
     dns_servers:
