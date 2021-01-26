@@ -15,7 +15,7 @@ jobs:
     inputs:
       versionSpec: '3.6'
 
-  - script: python -m pip install --upgrade pip setuptools wheel
+  - script: python -m pip install --upgrade pip setuptools wheel ansible
     displayName: Install tools
 
   - script: pip install molecule[docker]
