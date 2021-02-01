@@ -8,7 +8,7 @@
     ipapermission:
       name: TestPerm2
       object_type: user
-      perm_rights: 
+      right:
         - read
         - search
         - compare

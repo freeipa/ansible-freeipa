@@ -8,4 +8,4 @@
     ipapermission:
       name: TestPerm1
       object_type: host
-      perm_rights: all
+      right: all
