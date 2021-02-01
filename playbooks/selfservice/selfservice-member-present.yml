@@ -1,11 +1,11 @@
 ---
-- name: Delegation member present
+- name: Selfservice member present
   hosts: ipaserver
   become: true
 
   tasks:
-  - name: Ensure delegation "basic manager attributes" member attribute departmentnumber is present
-    ipadelegation:
+  - name: Ensure selfservice "basic manager attributes" member attribute departmentnumber is present
+    ipaselfservice:
       ipaadmin_password: SomeADMINpassword
       name: "basic manager attributes"
       attribute:
