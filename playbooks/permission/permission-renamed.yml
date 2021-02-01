@@ -4,7 +4,7 @@
   become: true
 
   tasks:
-  - name: Ensure permission TestPerm1 is present
+  - name: Ensure permission TestPerm1 is renamed to TestPermRenamed
     ipapermission:
       ipaadmin_password: SomeADMINpassword
       name: TestPerm1
