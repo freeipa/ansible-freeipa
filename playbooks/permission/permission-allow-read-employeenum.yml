@@ -6,8 +6,8 @@
   tasks:
   - name: Ensure permission is present with set of rights to attribute employeenumber
     ipapermission:
-      name: TestPerm2
       ipaadmin_password: SomeADMINpassword
+      name: TestPerm1
       object_type: user
       right:
         - read
