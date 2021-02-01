@@ -6,6 +6,7 @@
   tasks:
   - name: Ensure permission TestPerm1 is absent
     ipapermission:
+      ipaadmin_password: SomeADMINpassword
       name: TestPerm1
       state: absent
 

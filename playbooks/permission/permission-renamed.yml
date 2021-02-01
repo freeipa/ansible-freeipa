@@ -6,6 +6,7 @@
   tasks:
   - name: Ensure permission TestPerm1 is present
     ipapermission:
+      ipaadmin_password: SomeADMINpassword
       name: TestPerm1
       rename: TestPermRenamed
       state: renamed

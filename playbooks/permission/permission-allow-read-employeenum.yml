@@ -7,6 +7,7 @@
   - name: Ensure permission TestPerm2 is present with Read rights to employeenumber
     ipapermission:
       name: TestPerm2
+      ipaadmin_password: SomeADMINpassword
       object_type: user
       right:
         - read

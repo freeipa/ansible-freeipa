@@ -6,6 +6,7 @@
   tasks:
   - name: Ensure permission TestPerm1 is present with the User Administrators privilege present
     ipapermission:
+      ipaadmin_password: SomeADMINpassword
       name: TestPerm1
       privilege: "User Administrators"
       action: member
