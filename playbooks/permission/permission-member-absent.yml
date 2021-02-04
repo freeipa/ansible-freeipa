@@ -4,8 +4,9 @@
   become: true
 
   tasks:
-  - name: Ensure privilege User Administrators privilege is absent on Permission TestPerm1
+  - name: Ensure permission privilege, "User Administrators", is absent
     ipapermission:
+      ipaadmin_password: SomeADMINpassword
       name: TestPerm1
       privilege: "User Administrators"
       action: member

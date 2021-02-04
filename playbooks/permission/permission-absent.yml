@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  - name: Ensure permission TestPerm1 is absent
+  - name: Ensure permission is absent
     ipapermission:
+      ipaadmin_password: SomeADMINpassword
       name: TestPerm1
       state: absent
-
