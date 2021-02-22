@@ -181,8 +181,12 @@
     # Do not fail on error codes 3 and 5:
     #   3 - Unable to open keytab
     #   5 - Principal name or realm not found in keytab
+    #   7 - Failed to set cursor, typically when errcode
+    #       would be issued in past
     failed_when: result_ipa_rmkeytab.rc != 0 and
-                 result_ipa_rmkeytab.rc != 3 and result_ipa_rmkeytab.rc != 5
+                 result_ipa_rmkeytab.rc != 3 and
+                 result_ipa_rmkeytab.rc != 5 and
+                 result_ipa_rmkeytab.rc != 7
     when: (ipaclient_use_otp | bool or ipaclient_force_join | bool) and not ipaclient_on_master | bool
 
   - name: Install - Backup and set hostname
