@@ -1,6 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+DOCUMENTATION = """
+---
+module: ipaclient_get_facts
+short description: Get facts about IPA client and server configuration.
+description: Get facts about IPA client and server configuration.
+author:
+    - Thomas Woerner
+"""
+
 import os
 import re
 import six
