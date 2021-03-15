@@ -10,7 +10,7 @@
   set_fact:
     ipabackup_controller_dir:
         "{{ ipabackup_controller_path | default(lookup('env','PWD')) }}/{{
-         ipabackup_name_prefix | default(ansible_fqdn) }}_{{
+         ipabackup_name_prefix | default(ansible_facts['fqdn']) }}_{{
          ipabackup_item }}/"
 
 - name: Stat backup on server

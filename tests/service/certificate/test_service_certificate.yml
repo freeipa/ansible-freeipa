@@ -29,12 +29,12 @@
   # setup
   - name: Get Domain from server name
     set_fact:
-      ipaserver_domain: "{{ ansible_fqdn.split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Get IPv4 address prefix from server node
     set_fact:
-      ipv4_prefix: "{{ ansible_default_ipv4.address.split('.')[:-1] |
+      ipv4_prefix: "{{ ansible_facts['default_ipv4'].address.split('.')[:-1] |
                        join('.') }}"
 
   - name: Set test host FQDN

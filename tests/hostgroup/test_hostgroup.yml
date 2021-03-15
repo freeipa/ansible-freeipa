@@ -7,7 +7,7 @@
   tasks:
   - name: Get Domain from server name
     set_fact:
-      ipaserver_domain: "{{ ansible_fqdn.split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Ensure host-group databases, mysql-server and oracle-server are absent

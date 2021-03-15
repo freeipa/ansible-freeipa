@@ -12,7 +12,7 @@
   tasks:
   - copy:
       src: "{{ playbook_dir }}/public.pem"
-      dest: "{{ ansible_env.HOME }}/public.pem"
+      dest: "{{ ansible_facts['env'].HOME }}/public.pem"
       owner: "{{ ansible_user }}"
       group: "{{ ansible_user }}"
       mode: 0600
@@ -21,7 +21,7 @@
       name: asymvault
       username: admin
       vault_type: asymmetric
-      vault_public_key_file: "{{ ansible_env.HOME }}/public.pem"
+      vault_public_key_file: "{{ ansible_facts['env'].HOME }}/public.pem"
   - file:
-      path: "{{ ansible_env.HOME }}/public.pem"
+      path: "{{ ansible_facts['env'].HOME }}/public.pem"
       state: absent

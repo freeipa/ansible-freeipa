@@ -151,7 +151,7 @@
       ipaadmin_password: SomeADMINpassword
       name: "{{vault.name}}"
       action: member
-      services: "HTTP/{{ ansible_fqdn }}"
+      services: "HTTP/{{ ansible_facts['fqdn'] }}"
     register: result
     failed_when: not result.changed
 
@@ -160,7 +160,7 @@
       ipaadmin_password: SomeADMINpassword
       name: "{{vault.name}}"
       action: member
-      services: "HTTP/{{ ansible_fqdn }}"
+      services: "HTTP/{{ ansible_facts['fqdn'] }}"
     register: result
     failed_when: result.changed
 
@@ -169,7 +169,7 @@
       ipaadmin_password: SomeADMINpassword
       name: "{{vault.name}}"
       action: member
-      services: "HTTP/{{ ansible_fqdn }}"
+      services: "HTTP/{{ ansible_facts['fqdn'] }}"
       state: absent
     register: result
     failed_when: not result.changed
@@ -179,7 +179,7 @@
       ipaadmin_password: SomeADMINpassword
       name: "{{vault.name}}"
       action: member
-      services: "HTTP/{{ ansible_fqdn }}"
+      services: "HTTP/{{ ansible_facts['fqdn'] }}"
       state: absent
     register: result
     failed_when: result.changed
@@ -264,7 +264,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: "{{vault.name}}"
-      ownerservices: "HTTP/{{ ansible_fqdn }}"
+      ownerservices: "HTTP/{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
     failed_when: not result.changed
@@ -273,7 +273,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: "{{vault.name}}"
-      ownerservices: "HTTP/{{ ansible_fqdn }}"
+      ownerservices: "HTTP/{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
     failed_when: result.changed
@@ -282,7 +282,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: "{{vault.name}}"
-      ownerservices: "HTTP/{{ ansible_fqdn }}"
+      ownerservices: "HTTP/{{ ansible_facts['fqdn'] }}"
       state: absent
       action: member
     register: result
@@ -292,7 +292,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: "{{vault.name}}"
-      ownerservices: "HTTP/{{ ansible_fqdn }}"
+      ownerservices: "HTTP/{{ ansible_facts['fqdn'] }}"
       state: absent
       action: member
     register: result

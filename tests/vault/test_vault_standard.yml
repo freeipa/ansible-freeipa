@@ -57,18 +57,18 @@
     register: result
     failed_when: result.vault.data != 'Hello World.' or result.changed
 
-  - name: Retrieve data from standard vault into file {{ ansible_env.HOME }}/data.txt.
+  - name: Retrieve data from standard vault into file {{ ansible_facts['env'].HOME }}/data.txt.
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: stdvault
-      out: "{{ ansible_env.HOME }}/data.txt"
+      out: "{{ ansible_facts['env'].HOME }}/data.txt"
       state: retrieved
     register: result
     failed_when: result.changed or result.failed or (result.vault.data | default(false))
 
   - name: Verify retrieved data.
     slurp:
-      src: "{{ ansible_env.HOME }}/data.txt"
+      src: "{{ ansible_facts['env'].HOME }}/data.txt"
     register: slurpfile
     failed_when: slurpfile['content'] | b64decode != 'Hello World.'
 
@@ -93,7 +93,7 @@
       ipaadmin_password: SomeADMINpassword
       name: stdvault
       vault_type: standard
-      in: "{{ ansible_env.HOME }}/in.txt"
+      in: "{{ ansible_facts['env'].HOME }}/in.txt"
     register: result
     failed_when: not result.changed
 

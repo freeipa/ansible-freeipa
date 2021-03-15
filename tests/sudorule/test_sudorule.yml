@@ -43,7 +43,7 @@
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
       name: cluster
-      host: "{{ ansible_fqdn }}"
+      host: "{{ ansible_facts['fqdn'] }}"
 
   - name: Ensure some sudocmds are available
     ipasudocmd:
@@ -500,20 +500,20 @@
     register: result
     failed_when: result.changed
 
-  - name: Ensure host "{{ ansible_fqdn }}" is present in sudorule.
+  - name: Ensure host "{{ ansible_facts['fqdn'] }}" is present in sudorule.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
-      host: "{{ ansible_fqdn }}"
+      host: "{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
     failed_when: not result.changed
 
-  - name: Ensure host "{{ ansible_fqdn }}" is present in sudorule, again.
+  - name: Ensure host "{{ ansible_facts['fqdn'] }}" is present in sudorule, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
-      host: "{{ ansible_fqdn }}"
+      host: "{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
     failed_when: result.changed

@@ -33,7 +33,7 @@
     domain: "{{ ipaserver_domain | default(ipaclient_domain) | default(omit) }}"
     servers: "{{ ipaclient_servers | default(omit) }}"
     realm: "{{ ipaserver_realm | default(ipaclient_realm) | default(omit) }}"
-    hostname: "{{ ipaclient_hostname | default(ansible_fqdn) }}"
+    hostname: "{{ ipaclient_hostname | default(ansible_facts['fqdn']) }}"
     ntp_servers: "{{ ipaclient_ntp_servers | default(omit) }}"
     ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
     no_ntp: "{{ ipaclient_no_ntp }}"
