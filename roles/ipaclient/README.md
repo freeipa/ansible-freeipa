@@ -199,6 +199,7 @@ Variable | Description | Required
 `ipaclient_allow_repair` | The bool value defines if an already joined or partly set-up client can be repaired. `ipaclient_allow_repair` defaults to `no`. Contrary to `ipaclient_force_join=yes` the host entry will not be changed on the server. | no
 `ipaclient_install_packages` | The bool value defines if the needed packages are installed on the node. `ipaclient_install_packages` defaults to `yes`. | no
 `ipaclient_on_master` | The bool value is only used in the server and replica installation process to install the client part. It should not be set otherwise. `ipaclient_on_master` defaults to `no`. | no
+`ipaclient_user_vars` | The absolute path to a file containing distro specific variables, superseding distro detection. (string) | no
 
 
 Authors

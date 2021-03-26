@@ -303,6 +303,8 @@ Variable | Description | Required
 `ipaserver_firewalld_zone` | The value defines the firewall zone that will be used. This needs to be an existing runtime and permanent zone. (string) | no
 `ipaserver_external_cert_files_from_controller` | Files containing the IPA CA certificates and the external CA certificate chains on the controller that will be copied to the ipaserver host to `/root` folder. (list of string) | no
 `ipaserver_copy_csr_to_controller` | Copy the generated CSR from the ipaserver to the controller as `"{{ inventory_hostname }}-ipa.csr"`. (bool) | no
+`ipaserver_user_vars` | The absolute path to a file containing distro specific variables, superseding distro detection. (string) | no
+
 
 Authors
 =======

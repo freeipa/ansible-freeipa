@@ -4,6 +4,7 @@
 - name: Import variables specific to distribution
   include_vars: "{{ item }}"
   with_first_found:
+    - "{{ ipaclient_user_vars | default(omit) }}"
     - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
     - "{{ role_path }}/vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
     - "{{ role_path }}/vars/{{ ansible_distribution }}.yml"

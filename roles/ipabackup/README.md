@@ -328,6 +328,7 @@ ipabackup_from_controller | Copy backup from controller to server, restore if `s
 ipabackup_install_packages | Install needed packages to be able to apply the backup with `state: restored`, bool (default: `yes`) | no
 ipabackup_firewalld_zone | The value defines the firewall zone that will be used with `state: restored`. This needs to be an existing runtime and permanent zone, bool (default: `no`) | no
 ipabackup_setup_firewalld | The value defines if the needed services will automatically be opened in the firewall managed by firewalld with `state: restored`, bool (default: `yes`) | no
+`ipaclient_user_vars` | The absolute path to a file containing distro specific variables, superseding distro detection, used only with `state: restored`, string | no
 
 
 Authors
