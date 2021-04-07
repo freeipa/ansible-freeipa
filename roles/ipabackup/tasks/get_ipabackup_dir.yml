@@ -1,6 +1,6 @@
 ---
 - name: Get IPA_BACKUP_DIR dir from ipaplatform
-  command: "{{ ansible_playbook_python }}"
+  command: "{{ ansible_python_interpreter | default('/usr/bin/python') }}"
   args:
     stdin: |
       from ipaplatform.paths import paths
