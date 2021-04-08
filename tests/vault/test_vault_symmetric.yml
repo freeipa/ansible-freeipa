@@ -63,19 +63,19 @@
     register: result
     failed_when: result.changed or result.failed or result.vault.data != 'Hello World.'
 
-  - name: Retrieve data from symmetric vault into file {{ ansible_env.HOME }}/data.txt.
+  - name: Retrieve data from symmetric vault into file {{ ansible_facts['env'].HOME }}/data.txt.
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
       password: SomeVAULTpassword
-      out: "{{ ansible_env.HOME }}/data.txt"
+      out: "{{ ansible_facts['env'].HOME }}/data.txt"
       state: retrieved
     register: result
     failed_when: result.changed or result.failed or (result.vault.data | default(false))
 
   - name: Verify retrieved data.
     slurp:
-      src: "{{ ansible_env.HOME }}/data.txt"
+      src: "{{ ansible_facts['env'].HOME }}/data.txt"
     register: slurpfile
     failed_when: slurpfile['content'] | b64decode != 'Hello World.'
 
@@ -101,7 +101,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
-      in: "{{ ansible_env.HOME }}/in.txt"
+      in: "{{ ansible_facts['env'].HOME }}/in.txt"
       password: SomeVAULTpassword
     register: result
     failed_when: result.failed or not result.changed
@@ -154,7 +154,7 @@
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
-      password_file: "{{ ansible_env.HOME }}/password.txt"
+      password_file: "{{ ansible_facts['env'].HOME }}/password.txt"
       vault_type: symmetric
     register: result
     failed_when: result.failed or not result.changed
@@ -164,7 +164,7 @@
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: user01
-      password_file: "{{ ansible_env.HOME }}/password.txt"
+      password_file: "{{ ansible_facts['env'].HOME }}/password.txt"
       vault_type: symmetric
     register: result
     failed_when: result.failed or result.changed
@@ -191,7 +191,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
-      password_file: "{{ ansible_env.HOME }}/password.txt"
+      password_file: "{{ ansible_facts['env'].HOME }}/password.txt"
       state: retrieved
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'Hello World.'
@@ -328,7 +328,7 @@
       ipaadmin_password: SomeADMINpassword
       name: symvault
       password: APasswordToChange
-      new_password_file: "{{ ansible_env.HOME }}/password.txt"
+      new_password_file: "{{ ansible_facts['env'].HOME }}/password.txt"
       vault_type: symmetric
     register: result
     failed_when: not result.changed or result.failed

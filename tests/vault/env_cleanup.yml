@@ -40,7 +40,7 @@
 
   - name: Remove files from target host.
     file:
-      path: "{{ ansible_env.HOME }}/{{ item }}"
+      path: "{{ ansible_facts['env'].HOME }}/{{ item }}"
       state: absent
     with_items:
     - A_private.pem

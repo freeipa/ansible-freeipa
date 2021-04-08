@@ -6,7 +6,7 @@
   tasks:
   - name: Get Domain from server name
     set_fact:
-      ipaserver_domain: "{{ ansible_fqdn.split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Set host1_fqdn .. host2_fqdn
@@ -55,39 +55,39 @@
     register: result
     failed_when: result.changed
 
-  - name: Host "{{ host1_fqdn }}" managed by "{{ ansible_fqdn }}"
+  - name: Host "{{ host1_fqdn }}" managed by "{{ ansible_facts['fqdn'] }}"
     ipahost:
       ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
-      managedby_host: "{{ ansible_fqdn }}"
+      managedby_host: "{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
     failed_when: not result.changed
 
-  - name: Host "{{ host1_fqdn }}" managed by "{{ ansible_fqdn }}" again
+  - name: Host "{{ host1_fqdn }}" managed by "{{ ansible_facts['fqdn'] }}" again
     ipahost:
       ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
-      managedby_host: "{{ ansible_fqdn }}"
+      managedby_host: "{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
     failed_when: result.changed
 
-  - name: Host "{{ host1_fqdn }}" not managed by "{{ ansible_fqdn }}"
+  - name: Host "{{ host1_fqdn }}" not managed by "{{ ansible_facts['fqdn'] }}"
     ipahost:
       ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
-      managedby_host: "{{ ansible_fqdn }}"
+      managedby_host: "{{ ansible_facts['fqdn'] }}"
       action: member
       state: absent
     register: result
     failed_when: not result.changed
 
-  - name: Host "{{ host1_fqdn }}" not managed by "{{ ansible_fqdn }}" again
+  - name: Host "{{ host1_fqdn }}" not managed by "{{ ansible_facts['fqdn'] }}" again
     ipahost:
       ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
-      managedby_host: "{{ ansible_fqdn }}"
+      managedby_host: "{{ ansible_facts['fqdn'] }}"
       action: member
       state: absent
     register: result

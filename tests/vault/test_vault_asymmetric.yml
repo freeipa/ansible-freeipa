@@ -68,7 +68,7 @@
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       vault_type: asymmetric
-      public_key_file: "{{ ansible_env.HOME }}/A_public.pem"
+      public_key_file: "{{ ansible_facts['env'].HOME }}/A_public.pem"
       private_key: "{{ lookup('file', 'B_private.b64') }}"
     register: result
     failed_when: result.failed or not result.changed
@@ -77,7 +77,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key_file: "{{ ansible_env.HOME }}/A_private.pem"
+      private_key_file: "{{ ansible_facts['env'].HOME }}/A_private.pem"
       state: retrieved
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'SomeValue'
@@ -87,8 +87,8 @@
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       vault_type: asymmetric
-      public_key_file: "{{ ansible_env.HOME }}/B_public.pem"
-      private_key_file: "{{ ansible_env.HOME }}/A_private.pem"
+      public_key_file: "{{ ansible_facts['env'].HOME }}/B_public.pem"
+      private_key_file: "{{ ansible_facts['env'].HOME }}/A_private.pem"
     register: result
     failed_when: result.failed or not result.changed
 
@@ -115,8 +115,8 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      public_key_file: "{{ ansible_env.HOME }}/B_public.pem"
-      private_key_file: "{{ ansible_env.HOME }}/A_private.pem"
+      public_key_file: "{{ ansible_facts['env'].HOME }}/B_public.pem"
+      private_key_file: "{{ ansible_facts['env'].HOME }}/A_private.pem"
     register: result
     failed_when: result.failed or not result.changed
 
@@ -154,11 +154,11 @@
     register: result
     failed_when: result.vault.data != 'Hello World.' or result.changed
 
-  - name: Retrieve data from asymmetric vault into file {{ ansible_env.HOME }}/data.txt.
+  - name: Retrieve data from asymmetric vault into file {{ ansible_facts['env'].HOME }}/data.txt.
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      out: "{{ ansible_env.HOME }}/data.txt"
+      out: "{{ ansible_facts['env'].HOME }}/data.txt"
       private_key: "{{ lookup('file', 'B_private.b64') }}"
       state: retrieved
     register: result
@@ -166,7 +166,7 @@
 
   - name: Verify retrieved data.
     slurp:
-      src: "{{ ansible_env.HOME }}/data.txt"
+      src: "{{ ansible_facts['env'].HOME }}/data.txt"
     register: slurpfile
     failed_when: slurpfile['content'] | b64decode != 'Hello World.'
 
@@ -192,7 +192,7 @@
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       vault_type: asymmetric
-      in: "{{ ansible_env.HOME }}/in.txt"
+      in: "{{ ansible_facts['env'].HOME }}/in.txt"
     register: result
     failed_when: not result.changed
 
@@ -242,7 +242,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      public_key_file: "{{ ansible_env.HOME }}/B_public.pem"
+      public_key_file: "{{ ansible_facts['env'].HOME }}/B_public.pem"
       vault_type: asymmetric
     register: result
     failed_when: not result.changed
@@ -251,7 +251,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      public_key_file: "{{ ansible_env.HOME }}/B_public.pem"
+      public_key_file: "{{ ansible_facts['env'].HOME }}/B_public.pem"
       vault_type: asymmetric
     register: result
     failed_when: result.changed
@@ -277,7 +277,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
-      private_key_file: "{{ ansible_env.HOME }}/B_private.pem"
+      private_key_file: "{{ ansible_facts['env'].HOME }}/B_private.pem"
       state: retrieved
     register: result
     failed_when: result.vault.data != 'Hello World.' or result.changed
