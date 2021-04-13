@@ -285,6 +285,23 @@ def compare_args_ipa(module, args, ipa):  # noqa
     """
     base_debug_msg = "Ansible arguments and IPA commands differed. "
 
+    # If both args and ipa are None, return there's no difference.
+    # If only one is None, return there is a difference.
+    # This tests avoid unecessary invalid access to attributes.
+    if args is None and ipa is None:
+        return True
+    if args is None or ipa is None:
+        module.debug(
+            base_debug_msg + "args is%s None an ipa is%s None" % (
+                "" if args is None else " not", "" if ipa is None else " not",
+            )
+        )
+        return False
+
+    # Fail if args or ipa are not dicts.
+    if not (isinstance(args, dict) and isinstance(ipa, dict)):
+        raise TypeError("Expected 'dicts' to compare.")
+
     for key in args.keys():
         if key not in ipa:
             module.debug(
