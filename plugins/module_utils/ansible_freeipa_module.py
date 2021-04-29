@@ -622,6 +622,7 @@ else:
         ipa_param_mapping = None
 
         def __init__(self, *args, **kwargs):
+            # pylint: disable=super-with-arguments
             super(FreeIPABaseModule, self).__init__(*args, **kwargs)
 
             # Attributes to store kerberos credentials (if needed)

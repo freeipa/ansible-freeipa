@@ -504,6 +504,7 @@ class DNSZoneModule(FreeIPABaseModule):
                 self.add_ipa_command("dnszone_mod", zone_name, args)
 
     def process_command_result(self, name, command, args, result):
+        # pylint: disable=super-with-arguments
         super(DNSZoneModule, self).process_command_result(
             name, command, args, result
         )
