@@ -271,9 +271,9 @@ else:
             '%Y-%m-%d %H:%MZ',     # non-ISO 8601, minute precision
         ]
 
-        for date_format in accepted_date_formats:
+        for _date_format in accepted_date_formats:
             try:
-                return datetime.strptime(value, date_format)
+                return datetime.strptime(value, _date_format)
             except ValueError:
                 pass
         raise ValueError("Invalid date '%s'" % value)

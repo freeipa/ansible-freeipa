@@ -399,11 +399,11 @@ def main():
         ("ipasearchrecordslimit", -1, 2147483647),
         ("ipapwdexpadvnotify", 0, 2147483647),
     ]
-    for arg, min, max in args_with_limits:
-        if arg in params and (params[arg] > max or params[arg] < min):
+    for arg, minimum, maximum in args_with_limits:
+        if arg in params and (params[arg] > maximum or params[arg] < minimum):
             ansible_module.fail_json(
                 msg="Argument '%s' must be between %d and %d."
-                    % (arg, min, max))
+                    % (arg, minimum, maximum))
 
     changed = False
     exit_args = {}

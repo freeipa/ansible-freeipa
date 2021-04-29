@@ -386,8 +386,8 @@ def main():
                                          **exit_args)
 
             # Execute commands
-            for name, command, args in commands:
-                api_command(ansible_module, command, name, args)
+            for _name, command, args in commands:
+                api_command(ansible_module, command, _name, args)
                 changed = True
 
     except Exception as e:
