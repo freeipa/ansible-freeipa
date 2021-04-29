@@ -263,7 +263,7 @@ class DNSZoneModule(FreeIPABaseModule):
         if any(invalid_ips):
             self.fail_json(msg=error_msg % invalid_ips)
 
-    def is_valid_nsec3param_rec(self, nsec3param_rec):
+    def is_valid_nsec3param_rec(self, nsec3param_rec):  # pylint: disable=R0201
         try:
             part1, part2, part3, part4 = nsec3param_rec.split(" ")
         except ValueError:
