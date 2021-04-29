@@ -599,17 +599,14 @@ def gen_args(first, last, fullname, displayname, initials, homedir, shell,
     return _args
 
 
-def check_parameters(module, state, action,
-                     first, last, fullname, displayname, initials, homedir,
-                     shell, email, principal, principalexpiration,
-                     passwordexpiration, password, random, uid, gid, city,
-                     phone, mobile, pager, fax, orgunit, title, manager,
-                     carlicense, sshpubkey, userauthtype, userclass, radius,
-                     radiususer, departmentnumber, employeenumber,
-                     employeetype, preferredlanguage, certificate,
-                     certmapdata, noprivate, nomembers, preserve,
-                     update_password):
-
+def check_parameters(  # pylint: disable=unused-argument
+        module, state, action, first, last, fullname, displayname, initials,
+        homedir, shell, email, principal, principalexpiration,
+        passwordexpiration, password, random, uid, gid, city, phone, mobile,
+        pager, fax, orgunit, title, manager, carlicense, sshpubkey,
+        userauthtype, userclass, radius, radiususer, departmentnumber,
+        employeenumber, employeetype, preferredlanguage, certificate,
+        certmapdata, noprivate, nomembers, preserve, update_password):
     if state == "present":
         if action == "member":
             invalid = ["first", "last", "fullname", "displayname", "initials",

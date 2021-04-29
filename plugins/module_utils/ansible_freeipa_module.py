@@ -202,11 +202,11 @@ else:
         if not backend.isconnected():
             backend.connect(ccache=os.environ.get('KRB5CCNAME', None))
 
-    def api_command(module, command, name, args):
+    def api_command(_module, command, name, args):
         """Call ipa.Command."""
         return api.Command[command](name, **args)
 
-    def api_command_no_name(module, command, args):
+    def api_command_no_name(_module, command, args):
         """Call ipa.Command without a name."""
         return api.Command[command](**args)
 
@@ -805,7 +805,7 @@ else:
                     self.process_command_result(name, command, args, result)
                 self.get_command_errors(command, result)
 
-        def process_command_result(self, name, command, args, result):
+        def process_command_result(self, _name, _command, _args, result):
             """
             Process an API command result.
 

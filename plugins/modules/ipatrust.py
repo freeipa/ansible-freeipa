@@ -153,7 +153,7 @@ def add_trust(module, realm, args):
 
 
 def gen_args(trust_type, admin, password, server, trust_secret, base_id,
-             range_size, range_type, two_way, external):
+             range_size, _range_type, two_way, external):
     _args = {}
     if trust_type is not None:
         _args["trust_type"] = trust_type
