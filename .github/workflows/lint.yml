@@ -31,3 +31,8 @@ jobs:
 
       - name: Run Python linters
         uses: rjeffman/python-lint-action@v2
+
+      - name: Run pylint
+        run: |
+            pip install pylint==2.8.2
+            pylint plugins --disable=import-error
