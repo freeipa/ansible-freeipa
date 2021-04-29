@@ -114,8 +114,8 @@ def find_dnsconfig(module):
         if _result["result"].get('idnsforwarders', None) is None:
             _result["result"]['idnsforwarders'] = ['']
         return _result["result"]
-    else:
-        module.fail_json(msg="Could not retrieve current DNS configuration.")
+
+    module.fail_json(msg="Could not retrieve current DNS configuration.")
     return None
 
 

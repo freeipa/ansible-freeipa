@@ -250,8 +250,8 @@ def find_service(module, name):
             _res["usercertificate"] = [encode_certificate(cert) for
                                        cert in certs]
         return _res
-    else:
-        return None
+
+    return None
 
 
 def gen_args(pac_type, auth_ind, skip_host_check, force, requires_pre_auth,

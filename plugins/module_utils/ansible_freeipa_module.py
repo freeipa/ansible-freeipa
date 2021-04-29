@@ -315,7 +315,7 @@ else:
         filtered_args = [key for key in args if key not in ignore]
 
         for key in filtered_args:
-            if key not in ipa:
+            if key not in ipa:  # pylint: disable=no-else-return
                 module.debug(
                     base_debug_msg + "Command key not present in IPA: %s" % key
                 )
@@ -367,15 +367,13 @@ else:
         if value is not None:
             if isinstance(value, list):
                 return [_afm_convert(x) for x in value]
-            elif isinstance(value, dict):
+            if isinstance(value, dict):
                 return {_afm_convert(k): _afm_convert(v)
                         for k, v in value.items()}
-            elif isinstance(value, str):
+            if isinstance(value, str):
                 return to_text(value)
-            else:
-                return value
-        else:
-            return value
+
+        return value
 
     def module_params_get(module, name):
         return _afm_convert(module.params.get(name))
@@ -465,11 +463,10 @@ else:
     def DN_x500_text(text):  # pylint: disable=invalid-name
         if hasattr(DN, "x500_text"):
             return DN(text).x500_text()
-        else:
-            # Emulate x500_text
-            dn = DN(text)
-            dn.rdns = reversed(dn.rdns)
-            return str(dn)
+        # Emulate x500_text
+        dn = DN(text)
+        dn.rdns = reversed(dn.rdns)
+        return str(dn)
 
     def is_valid_port(port):
         if not isinstance(port, int):

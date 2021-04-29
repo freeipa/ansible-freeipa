@@ -404,10 +404,9 @@ class DNSZoneModule(FreeIPABaseModule):
             ip_version = ip.version
         if ip_version == 4:
             return u'.'.join(items[4 - prefixlen // 8:])
-        elif ip_version == 6:
+        if ip_version == 6:
             return u'.'.join(items[32 - prefixlen // 4:])
-        else:
-            self.fail_json(msg="Invalid IP version for reverse zone.")
+        self.fail_json(msg="Invalid IP version for reverse zone.")
 
     def get_zone(self, zone_name):
         get_zone_args = {"idnsname": zone_name, "all": True}

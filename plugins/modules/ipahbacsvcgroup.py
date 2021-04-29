@@ -121,7 +121,7 @@ def find_hbacsvcgroup(module, name):
             msg="There is more than one hbacsvcgroup '%s'" % (name))
     elif len(_result["result"]) == 1:
         return _result["result"][0]
-    
+
     return None
 
 
