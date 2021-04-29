@@ -233,7 +233,7 @@ else:
             "!=": operator.ne,
         }
         operation = oper_map.get(oper)
-        if not(operation):
+        if not operation:
             raise NotImplementedError("Invalid operator: %s" % oper)
         return operation(version.parse(VERSION),
                          version.parse(requested_version))

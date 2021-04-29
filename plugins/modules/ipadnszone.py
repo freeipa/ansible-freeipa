@@ -315,7 +315,7 @@ class DNSZoneModule(FreeIPABaseModule):
             forwarders = []
             for forwarder in self.ipa_params.forwarders:
                 ip_address = forwarder.get("ip_address")
-                if not (is_ip_address(ip_address)):
+                if not is_ip_address(ip_address):
                     self.fail_json(
                         msg="Invalid IP for DNS forwarder: %s" % ip_address
                     )
