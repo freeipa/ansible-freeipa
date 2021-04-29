@@ -365,7 +365,7 @@ def main():
     reverse_field_map = {v: k for k, v in field_map.items()}
 
     params = {}
-    for x in field_map.keys():
+    for x in field_map:
         val = module_params_get(ansible_module, x)
 
         if val is not None:
