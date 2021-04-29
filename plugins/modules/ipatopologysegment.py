@@ -132,8 +132,8 @@ def find_left_right(module, suffix, left, right):
             "not unique for suffix '%s'" % (left, right, suffix))
     elif len(_result["result"]) == 1:
         return _result["result"][0]
-    else:
-        return None
+
+    return None
 
 
 def find_cn(module, suffix, name):
@@ -147,8 +147,8 @@ def find_cn(module, suffix, name):
             msg="CN '%s' is not unique for suffix '%s'" % (name, suffix))
     elif len(_result["result"]) == 1:
         return _result["result"][0]
-    else:
-        return None
+
+    return None
 
 
 def find_left_right_cn(module, suffix, left, right, name):

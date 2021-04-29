@@ -89,8 +89,8 @@ def find_hbacsvc(module, name):
             msg="There is more than one hbacsvc '%s'" % (name))
     elif len(_result["result"]) == 1:
         return _result["result"][0]
-    else:
-        return None
+
+    return None
 
 
 def gen_args(description):

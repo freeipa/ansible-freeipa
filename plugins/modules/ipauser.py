@@ -512,10 +512,9 @@ def find_user(module, name, preserved=False):
         if certs is not None:
             _result["usercertificate"] = [encode_certificate(x)
                                           for x in certs]
-
         return _result
-    else:
-        return None
+
+    return None
 
 
 def gen_args(first, last, fullname, displayname, initials, homedir, shell,

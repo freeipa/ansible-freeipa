@@ -298,7 +298,7 @@ class DNSZoneModule(FreeIPABaseModule):
 
         return True
 
-    def get_ipa_nsec3paramrecord(self, **_kwargs):
+    def get_ipa_nsec3paramrecord(self, **_kwargs):  # pylint: disable=R1710
         nsec3param_rec = self.ipa_params.nsec3param_rec
         if nsec3param_rec is not None:
             error_msg = (
@@ -310,7 +310,7 @@ class DNSZoneModule(FreeIPABaseModule):
                 self.fail_json(msg=error_msg)
             return nsec3param_rec
 
-    def get_ipa_idnsforwarders(self, **_kwargs):
+    def get_ipa_idnsforwarders(self, **_kwargs):  # pylint: disable=R1710
         if self.ipa_params.forwarders is not None:
             forwarders = []
             for forwarder in self.ipa_params.forwarders:
@@ -334,14 +334,14 @@ class DNSZoneModule(FreeIPABaseModule):
 
             return forwarders
 
-    def get_ipa_idnsallowtransfer(self, **_kwargs):
+    def get_ipa_idnsallowtransfer(self, **_kwargs):  # pylint: disable=R1710
         if self.ipa_params.allow_transfer is not None:
             error_msg = "Invalid ip_address for DNS allow_transfer: %s"
             self.validate_ips(self.ipa_params.allow_transfer, error_msg)
 
             return (";".join(self.ipa_params.allow_transfer) or "none") + ";"
 
-    def get_ipa_idnsallowquery(self, **_kwargs):
+    def get_ipa_idnsallowquery(self, **_kwargs):  # pylint: disable=R1710
         if self.ipa_params.allow_query is not None:
             error_msg = "Invalid ip_address for DNS allow_query: %s"
             self.validate_ips(self.ipa_params.allow_query, error_msg)
@@ -364,27 +364,27 @@ class DNSZoneModule(FreeIPABaseModule):
 
         return ".".join((name, domain))
 
-    def get_ipa_idnssoarname(self, **_kwargs):
+    def get_ipa_idnssoarname(self, **_kwargs):  # pylint: disable=R1710
         if self.ipa_params.admin_email is not None:
             return DNSName(
                 self._replace_at_symbol_in_rname(self.ipa_params.admin_email)
             )
 
-    def get_ipa_idnssoamname(self, **_kwargs):
+    def get_ipa_idnssoamname(self, **_kwargs):  # pylint: disable=R1710
         if self.ipa_params.name_server is not None:
             return DNSName(self.ipa_params.name_server)
 
-    def get_ipa_skip_overlap_check(self, **kwargs):
+    def get_ipa_skip_overlap_check(self, **kwargs):  # pylint: disable=R1710
         zone = kwargs.get('zone')
         if not zone and self.ipa_params.skip_overlap_check is not None:
             return self.ipa_params.skip_overlap_check
 
-    def get_ipa_skip_nameserver_check(self, **kwargs):
+    def get_ipa_skip_nameserver_check(self, **kwargs):  # pylint: disable=R1710
         zone = kwargs.get('zone')
         if not zone and self.ipa_params.skip_nameserver_check is not None:
             return self.ipa_params.skip_nameserver_check
 
-    def __reverse_zone_name(self, ipaddress):
+    def __reverse_zone_name(self, ipaddress):  # pylint: disable=R1710
         """
         Infer reverse zone name from an ip address.
 

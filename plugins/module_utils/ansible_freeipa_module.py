@@ -258,6 +258,8 @@ else:
 
         finally:
             temp_kdestroy(ccache_dir, ccache_name)
+        # fix pylint inconsistent return
+        return None
 
     def date_format(value):
         accepted_date_formats = [
@@ -536,8 +538,9 @@ else:
 
         def __getitem__(self, key):
             param = self.mapping[key]
-            if param is not None:
-                return _afm_convert(param)
+            if param is None:
+                return None
+            return _afm_convert(param)
 
         def __iter__(self):
             return iter(self.mapping)

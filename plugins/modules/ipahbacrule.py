@@ -175,8 +175,8 @@ def find_hbacrule(module, name):
             msg="There is more than one hbacrule '%s'" % (name))
     elif len(_result["result"]) == 1:
         return _result["result"][0]
-    else:
-        return None
+
+    return None
 
 
 def gen_args(description, usercategory, hostcategory, servicecategory,

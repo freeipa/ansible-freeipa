@@ -125,8 +125,8 @@ def find_trust(module, realm):
         module.fail_json(msg="There is more than one realm '%s'" % (realm))
     elif len(_result["result"]) == 1:
         return _result["result"][0]
-    else:
-        return None
+
+    return None
 
 
 def del_trust(module, realm):
@@ -136,8 +136,6 @@ def del_trust(module, realm):
     if len(_result["result"]["failed"]) > 0:
         module.fail_json(
             msg="Trust deletion has failed for '%s'" % (realm))
-    else:
-        return None
 
 
 def add_trust(module, realm, args):
@@ -148,8 +146,6 @@ def add_trust(module, realm, args):
     if "cn" not in _result["result"]:
         module.fail_json(
             msg="Trust add has failed for '%s'" % (realm))
-    else:
-        return None
 
 
 def gen_args(trust_type, admin, password, server, trust_secret, base_id,
