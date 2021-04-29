@@ -269,16 +269,12 @@ class DNSZoneModule(FreeIPABaseModule):
         except ValueError:
             return False
 
-        if not all([part1.isdigit(), part2.isdigit(), part3.isdigit()]):
-            return False
-
-        if not 0 <= int(part1) <= 255:
-            return False
-
-        if not 0 <= int(part2) <= 255:
-            return False
-
-        if not 0 <= int(part3) <= 65535:
+        if (
+            not all([part1.isdigit(), part2.isdigit(), part3.isdigit()])
+            or not 0 <= int(part1) <= 255
+            or not 0 <= int(part2) <= 255
+            or not 0 <= int(part3) <= 65535
+        ):
             return False
 
         try:
