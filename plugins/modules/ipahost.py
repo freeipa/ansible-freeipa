@@ -862,7 +862,7 @@ def main():
                     ok_to_auth_as_delegate, force, reverse, ip_address,
                     update_dns, update_password)
 
-            elif isinstance(host, str) or isinstance(host, unicode):
+            elif isinstance(host, (str, unicode)):
                 name = host
             else:
                 ansible_module.fail_json(msg="Host '%s' is not valid" %

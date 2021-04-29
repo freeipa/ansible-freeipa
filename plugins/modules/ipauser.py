@@ -1029,7 +1029,7 @@ def main():
 
                 email = extend_emails(email, default_email_domain)
 
-            elif isinstance(user, str) or isinstance(user, unicode):
+            elif isinstance(user, (str, unicode)):
                 name = user
             else:
                 ansible_module.fail_json(msg="User '%s' is not valid" %
