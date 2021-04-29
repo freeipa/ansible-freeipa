@@ -1377,7 +1377,7 @@ def define_commands_for_present_state(module, zone_name, entry, res_find):
                     _args['idnsname'] = name
                     _commands.append([zone_name, 'dnsrecord_add', _args])
                 # clean used fields from args
-                for f in part_fields:
+                for f in part_fields:   # pylint: disable=invalid-name
                     if f in args:
                         del args[f]
             else:

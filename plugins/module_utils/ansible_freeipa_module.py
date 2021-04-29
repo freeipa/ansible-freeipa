@@ -57,7 +57,7 @@ else:
         # FreeIPA releases.
         import re
 
-        class version:
+        class version:  # pylint: disable=invalid-name
             @staticmethod
             def parse(version_str):
                 """
@@ -460,7 +460,7 @@ else:
             cert = load_certificate(cert.encode('utf-8'))
         return cert
 
-    def DN_x500_text(text):
+    def DN_x500_text(text):  # pylint: disable=invalid-name
         if hasattr(DN, "x500_text"):
             return DN(text).x500_text()
         else:

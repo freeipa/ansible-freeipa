@@ -712,7 +712,7 @@ def check_certmapdata(data):
         return False
 
     i = data.find("<I>", 4)
-    s = data.find("<S>", i)
+    s = data.find("<S>", i)   # pylint: disable=invalid-name
     issuer = data[i+3:s]
     subject = data[s+3:]
 
