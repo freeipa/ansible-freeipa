@@ -21,6 +21,13 @@ repos:
   rev: 5.1.1
   hooks:
   - id: pydocstyle
+- repo: https://github.com/pycqa/pylint
+  rev: v2.8.2
+  hooks:
+  - id: pylint
+    args:
+    - --disable=import-error
+    files: \.py$
 - repo: local
   hooks:
   - id: ansible-doc-test
