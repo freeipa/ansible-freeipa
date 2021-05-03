@@ -4,8 +4,8 @@ on:
   - push
   - pull_request
 jobs:
-  check_docs:
-    name: Check Ansible Documentation.
+  check_docs_29:
+    name: Check Ansible Documentation with Ansible 2.9.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -13,4 +13,20 @@ jobs:
         with:
           python-version: '3.x'
       - name: Run ansible-doc-test
-        run: ANSIBLE_LIBRARY="." python utils/ansible-doc-test roles plugins
+        run: |
+          python -m pip install "ansible < 2.10"
+          ANSIBLE_LIBRARY="." python utils/ansible-doc-test roles plugins
+  
+  check_docs_latest:
+    name: Check Ansible Documentation with latest Ansible.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Run ansible-doc-test
+        run: |
+          python -m pip install ansible
+          ANSIBLE_LIBRARY="." python utils/ansible-doc-test roles plugins
+
