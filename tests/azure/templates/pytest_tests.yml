@@ -36,6 +36,8 @@ jobs:
       cp -a plugins/module_utils/* ~/.ansible/module_utils
       molecule create -s ${{ parameters.scenario }}
     displayName: Setup test container
+    env:
+      ANSIBLE_LIBRARY: ./molecule
 
   - script: |
       pytest \
