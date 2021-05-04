@@ -1,0 +1,32 @@
+---
+- name: Test language variations
+  hosts: ipaserver
+
+  tasks:
+  - name: Ensure a host is not present, with language set to "de_DE".
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: nonexistent
+      state: absent
+    environment:
+      LANGUAGE: "de_DE"
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure a host is not present, with language set to "C".
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: nonexistent
+      state: absent
+    environment:
+      LANGUAGE: "C"
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure a host is not present, using controller language.
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: nonexistent
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed

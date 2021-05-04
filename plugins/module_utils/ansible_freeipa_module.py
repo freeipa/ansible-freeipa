@@ -93,6 +93,9 @@ except ImportError:
 if six.PY3:
     unicode = str
 
+# ansible-freeipa requires locale to be C, IPA requires utf-8.
+os.environ["LANGUAGE"] = "C"
+
 
 def valid_creds(module, principal):  # noqa
     """Get valid credentials matching the princial, try GSSAPI first."""
