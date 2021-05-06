@@ -234,14 +234,22 @@ def main():
                 if action == "privilege":
                     # Found the privilege
                     if res_find is not None:
+                        res_cmp = {
+                            k: v for k, v in res_find.items()
+                            if k not in [
+                                "objectclass", "cn", "dn",
+                                "memberof_permisssion"
+                            ]
+                        }
                         # For all settings is args, check if there are
                         # different settings in the find result.
                         # If yes: modify
-                        if not compare_args_ipa(ansible_module, args,
-                                                res_find):
+                        if args and not compare_args_ipa(ansible_module, args,
+                                                         res_cmp):
                             commands.append([name, "privilege_mod", args])
                     else:
                         commands.append([name, "privilege_add", args])
+                        res_find = {}
 
                     member_args = {}
                     if permission:
