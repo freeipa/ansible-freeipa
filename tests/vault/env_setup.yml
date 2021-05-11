@@ -19,7 +19,7 @@
   - name: Copy files to target host.
     copy:
       src: "{{ playbook_dir }}/{{ item }}"
-      dest: "{{ ansible_env.HOME }}/{{ item }}"
+      dest: "{{ ansible_facts['env'].HOME }}/{{ item }}"
     with_items:
     - A_private.pem
     - A_public.pem

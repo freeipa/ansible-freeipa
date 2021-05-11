@@ -4,9 +4,9 @@
 - name: Import variables specific to distribution
   include_vars: "{{ item }}"
   with_first_found:
-    - "vars/{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
-    - "vars/{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
-    - "vars/{{ ansible_distribution }}.yml"
+    - "vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_version'] }}.yml"
+    - "vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
+    - "vars/{{ ansible_facts['distribution'] }}.yml"
     - "vars/default.yml"
 
 - name: Install IPA server

@@ -23,6 +23,8 @@ jobs:
 
   - script: molecule create -s ${{ parameters.build_scenario_name }}
     displayName: Create test container
+    env:
+      ANSIBLE_LIBRARY: ./molecule
 
   - script: |
       docker stop ${{ parameters.build_scenario_name }}

@@ -25,7 +25,7 @@
 #  command: >
 #    /usr/sbin/ipa-replica-manage
 #    del
-#    {{ ipareplica_hostname | default(ansible_fqdn) }}
+#    {{ ipareplica_hostname | default(ansible_facts['fqdn']) }}
 #    --force
 #    --password={{ ipadm_password }}
 #  failed_when: False

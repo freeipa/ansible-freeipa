@@ -72,7 +72,7 @@
             default(omit) }}"
     servers: "{{ ipareplica_servers | default(omit) }}"
     realm: "{{ ipareplica_realm | default(ipaserver_realm) |default(omit) }}"
-    hostname: "{{ ipareplica_hostname | default(ansible_fqdn) }}"
+    hostname: "{{ ipareplica_hostname | default(ansible_facts['fqdn']) }}"
     ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
     hidden_replica: "{{ ipareplica_hidden_replica }}"
     skip_mem_check: "{{ not ipareplica_mem_check }}"

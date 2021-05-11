@@ -25,3 +25,4 @@
       ipadm_password: SomeDMpassword
       ipaserver_domain: test.local
       ipaserver_realm: TEST.LOCAL
+      ipaclient_no_ntp: yes

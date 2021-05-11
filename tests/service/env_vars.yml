@@ -1,7 +1,7 @@
 ---
     - name: Get Domain from server name
       set_fact:
-        test_domain: "{{ ansible_fqdn.split('.')[1:] | join('.') }}"
+        test_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
 
     - name: Set host1, host2 and svc hosts fqdn
       set_fact:
@@ -12,4 +12,4 @@
 
     - name: Get IPv4 address prefix from server node
       set_fact:
-        ipv4_prefix: "{{ ansible_default_ipv4.address.split('.')[:-1] | join('.') }}"
+        ipv4_prefix: "{{ ansible_facts['default_ipv4'].address.split('.')[:-1] | join('.') }}"

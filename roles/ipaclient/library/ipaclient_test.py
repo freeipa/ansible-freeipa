@@ -180,9 +180,9 @@ ntp_servers:
   type: list
   sample: ["ntp.example.com"]
 ipa_python_version:
-  description:
-  - The IPA python version as a number:
-  - <major version>*10000+<minor version>*100+<release>
+  description: >
+    The IPA python version as a number:
+    <major version>*10000+<minor version>*100+<release>
   returned: always
   type: int
   sample: 040400

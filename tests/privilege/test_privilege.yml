@@ -140,6 +140,30 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure "Broad Privilege" is absent.
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      state: absent
+
+  - name: Ensure privilege Broad Privilege is created with permission. (issue 529)
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      permission:
+      - "Write IPA Configuration"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure privilege Broad Privilege is created with permission, again. (issue 529)
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      name: Broad Privilege
+      permission:
+      - "Write IPA Configuration"
+    register: result
+    failed_when: result.changed or result.failed
+
   # CLEANUP TEST ITEMS
 
   - name: Ensure privilege testing privileges are absent

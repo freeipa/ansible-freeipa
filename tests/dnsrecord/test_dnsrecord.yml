@@ -564,7 +564,7 @@
       ipaadmin_password: SomeADMINpassword
       name: iron01
       zone_name: "{{ safezone }}"
-      ip_address: "{{ ansible_default_ipv4.address }}"
+      ip_address: "{{ ansible_facts['default_ipv4'].address }}"
     register: result
     failed_when: not result.changed
 

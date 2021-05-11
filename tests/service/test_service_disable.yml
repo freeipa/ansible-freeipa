@@ -16,68 +16,78 @@
   - name: Get Kerberos ticket for `admin`.
     shell: echo SomeADMINpassword | kinit -c ${KRB5CCNAME} admin
 
+  - name: Generate self-signed certificates.
+    shell:
+      cmd: |
+        openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout "private{{ item }}.key" -out "cert{{ item }}.pem" -subj '/CN=test'
+        openssl x509 -outform der -in "cert{{ item }}.pem" -out "cert{{ item }}.der"
+        base64 "cert{{ item }}.der" -w5000 > "cert{{ item }}.b64"
+    with_items: [1]
+    become: no
+    delegate_to: localhost
+
   - name: Ensure service is absent
     ipaservice:
       ipaadmin_password: SomeADMINpassword
-      name: "mysvc1/{{ ansible_fqdn }}"
+      name: "mysvc1/{{ ansible_facts['fqdn'] }}"
       state: absent
 
   - name: Ensure service is present
     ipaservice:
       ipaadmin_password: SomeADMINpassword
-      name: "mysvc1/{{ ansible_fqdn }}"
+      name: "mysvc1/{{ ansible_facts['fqdn'] }}"
       certificate:
-        - MIIC/zCCAeegAwIBAgIUMNHIbn+hhrOVew/2WbkteisV29QwDQYJKoZIhvcNAQELBQAwDzENMAsGA1UEAwwEdGVzdDAeFw0yMDAyMDQxNDQxMDhaFw0zMDAyMDExNDQxMDhaMA8xDTALBgNVBAMMBHRlc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC+XVVGFYpHVkcDfVnNInE1Y/pFciegdzqTjMwUWlRL4Zt3u96GhaMLRbtk+OfEkzLUAhWBOwEraELJzMLJOMvjYF3C+TiGO7dStFLikZmccuSsSIXjnzIPwBXa8KvgRVRyGLoVvGbLJvmjfMXp0nIToTx/i74KF9S++WEes9H5ErJ99CDhLKFgq0amnvsgparYXhypHaRLnikn0vQINt55YoEd1s4KrvEcD2VdZkIMPbLRu2zFvMprF3cjQQG4LT9ggfEXNIPZ1nQWAnAsu7OJEkNF+E4Mkmpcxj9aGUVt5bsq1D+Tzj3GsidSX0nSNcZ2JltXRnL/5v63g5cZyE+nAgMBAAGjUzBRMB0GA1UdDgQWBBRV0j7JYukuH/r/t9+QeNlRLXDlEDAfBgNVHSMEGDAWgBRV0j7JYukuH/r/t9+QeNlRLXDlEDAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQCgVy1+1kNwHs5y1Zp0WjMWGCJC6/zw7FDG4OW5r2GJiCXZYdJ0UonY9ZtoVLJPrp2/DAv1m5DtnDhBYqicuPgLzEkOS1KdTi20Otm/J4yxLLrZC5W4x0XOeSVPXOJuQWfwQ5pPvKkn6WxYUYkGwIt1OH2nSMngkbami3CbSmKZOCpgQIiSlQeDJ8oGjWFMLDymYSHoVOIXHwNoooyEiaio3693l6noobyGv49zyCVLVR1DC7i6RJ186ql0av+D4vPoiF5mX7+sKC2E8xEj9uKQ5GTWRh59VnRBVC/SiMJ/H78tJnBAvoBwXxSEvj8Z3Kjm/BQqZfv4IBsA5yqV7MVq
+      - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
       force: no
     register: result
     failed_when: not result.changed
 
   - name: Obtain keytab
-    shell: ipa-getkeytab -s "{{ ansible_fqdn }}" -p "mysvc1/{{ ansible_fqdn }}" -k mysvc1.keytab
+    shell: ipa-getkeytab -s "{{ ansible_facts['fqdn'] }}" -p "mysvc1/{{ ansible_facts['fqdn'] }}" -k mysvc1.keytab
 
   - name: Verify keytab
-    shell: ipa service-find "mysvc1/{{ ansible_fqdn }}"
+    shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
     failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
 
   - name: Ensure service is disabled
     ipaservice:
       ipaadmin_password: SomeADMINpassword
-      name: "mysvc1/{{ ansible_fqdn }}"
+      name: "mysvc1/{{ ansible_facts['fqdn'] }}"
       state: disabled
     register: result
     failed_when: not result.changed
 
   - name: Verify keytab
-    shell: ipa service-find "mysvc1/{{ ansible_fqdn }}"
+    shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
     failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
 
   - name: Obtain keytab
-    shell: ipa-getkeytab -s "{{ ansible_fqdn }}" -p "mysvc1/{{ ansible_fqdn }}" -k mysvc1.keytab
+    shell: ipa-getkeytab -s "{{ ansible_facts['fqdn'] }}" -p "mysvc1/{{ ansible_facts['fqdn'] }}" -k mysvc1.keytab
 
   - name: Verify keytab
-    shell: ipa service-find "mysvc1/{{ ansible_fqdn }}"
+    shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
     failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
 
   - name: Ensure service is disabled
     ipaservice:
       ipaadmin_password: SomeADMINpassword
-      name: "mysvc1/{{ ansible_fqdn }}"
+      name: "mysvc1/{{ ansible_facts['fqdn'] }}"
       state: disabled
     register: result
     failed_when: not result.changed
 
   - name: Verify keytab
-    shell: ipa service-find "mysvc1/{{ ansible_fqdn }}"
+    shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
     failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
 
   - name: Ensure service is disabled, with no keytab.
     ipaservice:
       ipaadmin_password: SomeADMINpassword
-      name: "mysvc1/{{ ansible_fqdn }}"
+      name: "mysvc1/{{ ansible_facts['fqdn'] }}"
       state: disabled
     register: result
     failed_when: result.changed
@@ -85,7 +95,16 @@
   - name: Ensure service is absent
     ipaservice:
       ipaadmin_password: SomeADMINpassword
-      name: "mysvc1/{{ ansible_fqdn }}"
+      name: "mysvc1/{{ ansible_facts['fqdn'] }}"
 
   - name: Destroy Kerberos tickets.
     shell: kdestroy -A -q -c ${KRB5CCNAME}
+
+  - name: Remove certificate files.
+    shell:
+      cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
+    with_items: [1]
+    become: no
+    delegate_to: localhost
+    args:
+      warn: no  # suppres warning for not using the `file` module.
