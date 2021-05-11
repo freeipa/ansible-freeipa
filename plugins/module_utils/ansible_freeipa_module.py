@@ -25,12 +25,13 @@
 __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "DEFAULT_CONFIG", "LDAP_GENERALIZED_TIME_FORMAT",
            "kinit_password", "kinit_keytab", "run", "DN", "VERSION",
-           "paths", "get_credentials_if_valid", "Encoding", 
+           "paths", "get_credentials_if_valid", "Encoding",
            "load_pem_x509_certificate"]
 
 import sys
 
-# HACK: workaround for Ansible 2.9 https://github.com/ansible/ansible/issues/68361
+# HACK: workaround for Ansible 2.9
+# https://github.com/ansible/ansible/issues/68361
 if 'ansible.executor' in sys.modules:
     for attr in __all__:
         setattr(sys.modules[__name__], attr, None)
@@ -104,10 +105,8 @@ else:
     except ImportError:
         from collections import Mapping  # noqa
 
-
     if six.PY3:
         unicode = str
-
 
     def valid_creds(module, principal):  # noqa
         """Get valid credentials matching the princial, try GSSAPI first."""
@@ -146,7 +145,6 @@ else:
             return True
         return False
 
-
     def temp_kinit(principal, password):
         """Kinit with password using a temporary ccache."""
         if not password:
@@ -165,7 +163,6 @@ else:
         os.environ["KRB5CCNAME"] = ccache_name
         return ccache_dir, ccache_name
 
-
     def temp_kdestroy(ccache_dir, ccache_name):
         """Destroy temporary ticket and remove temporary ccache."""
         if ccache_name is not None:
@@ -173,7 +170,6 @@ else:
             del os.environ['KRB5CCNAME']
         if ccache_dir is not None:
             shutil.rmtree(ccache_dir, ignore_errors=True)
-
 
     def api_connect(context=None):
         """
@@ -188,7 +184,9 @@ else:
         env._bootstrap()
         env._finalize_core(**dict(DEFAULT_CONFIG))
 
-        # available contexts are 'server', 'ansible-freeipa' and 'cli_installer'
+        # available contexts are 'server', 'ansible-freeipa' and
+        # 'cli_installer'
+
         if context is None:
             context = 'server'
 
@@ -203,26 +201,21 @@ else:
         if not backend.isconnected():
             backend.connect(ccache=os.environ.get('KRB5CCNAME', None))
 
-
     def api_command(module, command, name, args):
         """Call ipa.Command."""
         return api.Command[command](name, **args)
-
 
     def api_command_no_name(module, command, args):
         """Call ipa.Command without a name."""
         return api.Command[command](**args)
 
-
     def api_check_command(command):
         """Return if command exists in command list."""
         return command in api.Command
 
-
     def api_check_param(command, name):
         """Check if param exists in command param list."""
         return name in api.Command[command].params
-
 
     def api_check_ipa_version(oper, requested_version):
         """
@@ -241,8 +234,8 @@ else:
         operation = oper_map.get(oper)
         if not(operation):
             raise NotImplementedError("Invalid operator: %s" % oper)
-        return operation(version.parse(VERSION), version.parse(requested_version))
-
+        return operation(version.parse(VERSION),
+                         version.parse(requested_version))
 
     def execute_api_command(module, principal, password, command, name, args):
         """
@@ -265,7 +258,6 @@ else:
         finally:
             temp_kdestroy(ccache_dir, ccache_name)
 
-
     def date_format(value):
         accepted_date_formats = [
             LDAP_GENERALIZED_TIME_FORMAT,  # generalized time
@@ -282,7 +274,6 @@ else:
             except ValueError:
                 pass
         raise ValueError("Invalid date '%s'" % value)
-
 
     def compare_args_ipa(module, args, ipa):  # noqa
         """Compare IPA obj attrs with the command args.
@@ -305,7 +296,8 @@ else:
         if args is None or ipa is None:
             module.debug(
                 base_debug_msg + "args is%s None an ipa is%s None" % (
-                   "" if args is None else " not", "" if ipa is None else " not",
+                    "" if args is None else " not",
+                    "" if ipa is None else " not",
                 )
             )
             return False
@@ -340,7 +332,8 @@ else:
                         return False
                     if isinstance(ipa_arg[0], str) and isinstance(arg[0], int):
                         arg = [to_text(_arg) for _arg in arg]
-                    if isinstance(ipa_arg[0], unicode) and isinstance(arg[0], int):
+                    if isinstance(ipa_arg[0], unicode) \
+                       and isinstance(arg[0], int):
                         arg = [to_text(_arg) for _arg in arg]
                 try:
                     arg_set = set(arg)
@@ -362,13 +355,13 @@ else:
                         return False
         return True
 
-
     def _afm_convert(value):
         if value is not None:
             if isinstance(value, list):
                 return [_afm_convert(x) for x in value]
             elif isinstance(value, dict):
-                return {_afm_convert(k): _afm_convert(v) for k, v in value.items()}
+                return {_afm_convert(k): _afm_convert(v)
+                        for k, v in value.items()}
             elif isinstance(value, str):
                 return to_text(value)
             else:
@@ -376,14 +369,11 @@ else:
         else:
             return value
 
-
     def module_params_get(module, name):
         return _afm_convert(module.params.get(name))
 
-
     def api_get_realm():
         return api.env.realm
-
 
     def gen_add_del_lists(user_list, res_list):
         """Generate the lists for the addition and removal of members."""
@@ -395,7 +385,6 @@ else:
         del_list = list(set(res_list or []) - set(user_list or []))
 
         return add_list, del_list
-
 
     def encode_certificate(cert):
         """
@@ -411,7 +400,6 @@ else:
             encoded = encoded.decode('ascii')
         return encoded
 
-
     def load_cert_from_str(cert):
         cert = cert.strip()
         if not cert.startswith("-----BEGIN CERTIFICATE-----"):
@@ -425,7 +413,6 @@ else:
             cert = load_certificate(cert.encode('utf-8'))
         return cert
 
-
     def DN_x500_text(text):
         if hasattr(DN, "x500_text"):
             return DN(text).x500_text()
@@ -434,7 +421,6 @@ else:
             dn = DN(text)
             dn.rdns = reversed(dn.rdns)
             return str(dn)
-
 
     def is_valid_port(port):
         if not isinstance(port, int):
@@ -445,7 +431,6 @@ else:
 
         return False
 
-
     def is_ip_address(ipaddr):
         """Test if given IP address is a valid IPv4 or IPv6 address."""
         try:
@@ -453,7 +438,6 @@ else:
         except (netaddr.AddrFormatError, ValueError):
             return False
         return True
-
 
     def is_ip_network_address(ipaddr):
         """Test if given IP address is a valid IPv4 or IPv6 address."""
@@ -463,7 +447,6 @@ else:
             return False
         return True
 
-
     def is_ipv4_addr(ipaddr):
         """Test if given IP address is a valid IPv4 address."""
         try:
@@ -472,7 +455,6 @@ else:
             return False
         return True
 
-
     def is_ipv6_addr(ipaddr):
         """Test if given IP address is a valid IPv6 address."""
         try:
@@ -480,7 +462,6 @@ else:
         except socket.error:
             return False
         return True
-
 
     def exit_raw_json(module, **kwargs):
         """
@@ -500,7 +481,6 @@ else:
         module.do_cleanup_files()
         print(jsonify(kwargs))
         sys.exit(0)
-
 
     class AnsibleFreeIPAParams(Mapping):
         def __init__(self, ansible_module):
@@ -525,7 +505,6 @@ else:
         def __getattr__(self, name):
             return self.get(name)
 
-
     class FreeIPABaseModule(AnsibleModule):
         """
         Base class for FreeIPA Ansible modules.
@@ -540,7 +519,8 @@ else:
         2. Implement the method ``define_ipa_commands()``
         3. Implement the method ``check_ipa_params()`` (optional)
 
-        After instantiating the class the method ``ipa_run()`` should be called.
+        After instantiating the class the method ``ipa_run()`` should be
+        called.
 
         Example (ansible-freeipa/plugins/modules/ipasomemodule.py):
 
@@ -560,7 +540,8 @@ else:
                 # Validate your params here
                 # Example:
                 if not self.ipa_params.module_param in VALID_OPTIONS:
-                    self.fail_json(msg="Invalid value for argument module_param")
+                    self.fail_json(
+                        msg="Invalid value for argument module_param")
 
             def define_ipa_commands(self):
                 args = self.get_ipa_command_args()
@@ -624,7 +605,8 @@ else:
             """
             Return a dict to be passed to an IPA command.
 
-            The keys of ``ipa_param_mapping`` are also the keys of the return dict.
+            The keys of ``ipa_param_mapping`` are also the keys of the return
+            dict.
 
             The values of ``ipa_param_mapping`` needs to be either:
                 * A str with the name of a defined method; or
@@ -658,8 +640,8 @@ else:
                 else:
                     self.fail_json(
                         msg=(
-                            "Couldn't get a value for '%s'. Option '%s' is not "
-                            "a module argument neither a defined method."
+                            "Couldn't get a value for '%s'. Option '%s' is "
+                            "not a module argument neither a defined method."
                         )
                         % (ipa_param_name, param_name)
                     )
@@ -770,7 +752,8 @@ else:
                 try:
                     result = self.api_command(command, name, args)
                 except Exception as excpt:
-                    self.fail_json(msg="%s: %s: %s" % (command, name, str(excpt)))
+                    self.fail_json(msg="%s: %s: %s" % (command, name,
+                                                       str(excpt)))
                 else:
                     self.process_command_result(name, command, args, result)
                 self.get_command_errors(command, result)
@@ -779,7 +762,8 @@ else:
             """
             Process an API command result.
 
-            This method can be overriden in subclasses, and change self.exit_values
+            This method can be overriden in subclasses, and
+            change self.exit_values
             to return data in the result for the controller.
             """
             if "completed" in result:

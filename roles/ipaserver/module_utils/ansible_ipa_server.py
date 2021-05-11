@@ -42,7 +42,8 @@ __all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
 
 import sys
 
-# HACK: workaround for Ansible 2.9 https://github.com/ansible/ansible/issues/68361
+# HACK: workaround for Ansible 2.9
+# https://github.com/ansible/ansible/issues/68361
 if 'ansible.executor' in sys.modules:
     for attr in __all__:
         setattr(sys.modules[__name__], attr, None)
@@ -54,16 +55,15 @@ else:
     import six
     import base64
 
-
     from ipapython.version import NUM_VERSION, VERSION
 
     if NUM_VERSION < 30201:
         # See ipapython/version.py
-        IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in VERSION.split(".", 2)]
+        IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in
+                                             VERSION.split(".", 2)]
         IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
     else:
         IPA_PYTHON_VERSION = NUM_VERSION
-
 
     if NUM_VERSION >= 40500:
         # IPA version >= 4.5
@@ -180,16 +180,13 @@ else:
 
         raise Exception("freeipa version '%s' is too old" % VERSION)
 
-
     logger = logging.getLogger("ipa-server-install")
-
 
     def setup_logging():
         # logger.setLevel(logging.DEBUG)
         standard_logging_setup(
             paths.IPASERVER_INSTALL_LOG, verbose=False, debug=False,
             filemode='a', console_format='%(message)s')
-
 
     @contextlib_contextmanager
     def redirect_stdout(f):
@@ -198,7 +195,6 @@ else:
             yield f
         finally:
             sys.stdout = sys.__stdout__
-
 
     class AnsibleModuleLog():
         def __init__(self, module):
@@ -233,7 +229,6 @@ else:
             self.module.debug(msg)
             # self.module.warn(msg)
 
-
     class options_obj(object):
         def __init__(self):
             self._replica_install = False
@@ -257,14 +252,12 @@ else:
             for name in self.__dict__:
                 yield self, name
 
-
     options = options_obj()
     installer = options
 
     # ServerMasterInstall
     options.add_sids = True
     options.add_agents = False
-
 
     # Installable
     options.uninstalling = False
@@ -303,7 +296,6 @@ else:
     options.ignore_topology_disconnect = False
     options.ignore_last_of_role = False
 
-
     def api_Backend_ldap2(host_name, setup_ca, connect=False):
         # we are sure we have the configuration file ready.
         cfg = dict(context='installer', confdir=paths.ETC_IPA, in_server=True,
@@ -316,7 +308,6 @@ else:
         api.finalize()
         if connect:
             api.Backend.ldap2.connect()
-
 
     def ds_init_info(ansible_log, fstore, domainlevel, dirsrv_config_file,
                      realm_name, host_name, domain_name, dm_password,
@@ -349,7 +340,6 @@ else:
 
         return ds
 
-
     def ansible_module_get_parsed_ip_addresses(ansible_module,
                                                param='ip_addresses'):
         ip_addrs = []
@@ -357,10 +347,10 @@ else:
             try:
                 ip_parsed = ipautil.CheckedIPAddress(ip)
             except Exception as e:
-                ansible_module.fail_json(msg="Invalid IP Address %s: %s" % (ip, e))
+                ansible_module.fail_json(
+                    msg="Invalid IP Address %s: %s" % (ip, e))
             ip_addrs.append(ip_parsed)
         return ip_addrs
-
 
     def encode_certificate(cert):
         """
@@ -376,13 +366,12 @@ else:
             encoded = encoded.decode('ascii')
         return encoded
 
-
     def decode_certificate(cert):
         """
         Decode a certificate using base64.
 
-        It also takes FreeIPA versions into account and returns a IPACertificate
-        for newer IPA versions.
+        It also takes FreeIPA versions into account and returns a
+        IPACertificate for newer IPA versions.
         """
         if hasattr(x509, "IPACertificate"):
             cert = cert.strip()

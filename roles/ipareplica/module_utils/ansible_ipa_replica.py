@@ -47,7 +47,8 @@ __all__ = ["contextlib", "dnsexception", "dnsresolver", "dnsreversename",
 
 import sys
 
-# HACK: workaround for Ansible 2.9 https://github.com/ansible/ansible/issues/68361
+# HACK: workaround for Ansible 2.9
+# https://github.com/ansible/ansible/issues/68361
 if 'ansible.executor' in sys.modules:
     for attr in __all__:
         setattr(sys.modules[__name__], attr, None)
@@ -55,16 +56,15 @@ else:
     import logging
     from contextlib import contextmanager as contextlib_contextmanager
 
-
     from ipapython.version import NUM_VERSION, VERSION
 
     if NUM_VERSION < 30201:
         # See ipapython/version.py
-        IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in VERSION.split(".", 2)]
+        IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in
+                                             VERSION.split(".", 2)]
         IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
     else:
         IPA_PYTHON_VERSION = NUM_VERSION
-
 
     if NUM_VERSION >= 40600:
         # IPA version >= 4.6
@@ -83,7 +83,8 @@ else:
         from ipapython.ipautil import ipa_generate_password
         from ipalib.install.kinit import kinit_keytab
         from ipapython import ipaldap, ipautil, kernel_keyring
-        from ipapython.certdb import IPA_CA_TRUST_FLAGS, EXTERNAL_CA_TRUST_FLAGS
+        from ipapython.certdb import IPA_CA_TRUST_FLAGS, \
+            EXTERNAL_CA_TRUST_FLAGS
         from ipapython.dn import DN
         from ipapython.admintool import ScriptError
         from ipapython.ipa_log_manager import standard_logging_setup
@@ -95,7 +96,8 @@ else:
         from ipalib.util import (
             validate_domain_name,
             no_matching_interface_for_ip_address_warning)
-        from ipaclient.install.client import configure_krb5_conf, purge_host_keytab
+        from ipaclient.install.client import configure_krb5_conf, \
+            purge_host_keytab
         from ipaserver.install import (
             adtrust, bindinstance, ca, certs, dns, dsinstance, httpinstance,
             installutils, kra, krbinstance,
@@ -117,7 +119,8 @@ else:
         from ipaserver.install.server.replicainstall import (
             make_pkcs12_info, install_replica_ds, install_krb, install_ca_cert,
             install_http, install_dns_records, create_ipa_conf, check_dirsrv,
-            check_dns_resolution, configure_certmonger, remove_replica_info_dir,
+            check_dns_resolution, configure_certmonger,
+            remove_replica_info_dir,
             # common_cleanup,
             preserve_enrollment_state, uninstall_client,
             promote_sssd, promote_openldap_conf, rpc_client,
@@ -142,22 +145,18 @@ else:
             from ipaserver.install import ntpinstance
             time_service = "ntpd"
 
-
     else:
         # IPA version < 4.6
 
         raise Exception("freeipa version '%s' is too old" % VERSION)
 
-
     logger = logging.getLogger("ipa-server-install")
-
 
     def setup_logging():
         # logger.setLevel(logging.DEBUG)
         standard_logging_setup(
             paths.IPAREPLICA_INSTALL_LOG, verbose=False, debug=False,
             filemode='a', console_format='%(message)s')
-
 
     @contextlib_contextmanager
     def redirect_stdout(f):
@@ -166,7 +165,6 @@ else:
             yield f
         finally:
             sys.stdout = sys.__stdout__
-
 
     class AnsibleModuleLog():
         def __init__(self, module):
@@ -200,7 +198,6 @@ else:
         def write(self, msg):
             self.module.debug(msg)
             # self.module.warn(msg)
-
 
     class installer_obj(object):
         def __init__(self):
@@ -240,7 +237,8 @@ else:
         #     value = super(installer_obj, self).__getattribute__(attr)
         #     if not attr.startswith("--") and not attr.endswith("--"):
         #         logger.debug(
-        #             "  <-- Accessing installer.%s (%s)" % (attr, repr(value)))
+        #             "  <-- Accessing installer.%s (%s)" %
+        #             (attr, repr(value)))
         #     return value
 
         def __getattr__(self, attr):
@@ -249,13 +247,13 @@ else:
             return getattr(self, attr)
 
         # def __setattr__(self, attr, value):
-        #    logger.debug("  --> Setting installer.%s to %s" % (attr, repr(value)))
+        #    logger.debug("  --> Setting installer.%s to %s" %
+        #                 (attr, repr(value)))
         #    return super(installer_obj, self).__setattr__(attr, value)
 
         def knobs(self):
             for name in self.__dict__:
                 yield self, name
-
 
     installer = installer_obj()
     options = installer
@@ -274,7 +272,6 @@ else:
     options.subject_base = None
     options.ca_subject = None
 
-
     def gen_env_boostrap_finalize_core(etc_ipa, default_config):
         env = Env()
         # env._bootstrap(context='installer', confdir=paths.ETC_IPA, log=None)
@@ -283,10 +280,10 @@ else:
         env._finalize_core(**dict(default_config))
         return env
 
-
     def api_bootstrap_finalize(env):
         # pylint: disable=no-member
-        xmlrpc_uri = 'https://{}/ipa/xml'.format(ipautil.format_netloc(env.host))
+        xmlrpc_uri = \
+            'https://{}/ipa/xml'.format(ipautil.format_netloc(env.host))
         api.bootstrap(in_server=True,
                       context='installer',
                       confdir=paths.ETC_IPA,
@@ -295,14 +292,14 @@ else:
         # pylint: enable=no-member
         api.finalize()
 
-
     def gen_ReplicaConfig():
         class ExtendedReplicaConfig(ReplicaConfig):
             def __init__(self, top_dir=None):
                 super(ExtendedReplicaConfig, self).__init__(top_dir)
 
             # def __getattribute__(self, attr):
-            #    value = super(ExtendedReplicaConfig, self).__getattribute__(attr)
+            #     value = super(ExtendedReplicaConfig, self).__getattribute__(
+            #         attr)
             #    if attr not in ["__dict__", "knobs"]:
             #        logger.debug("  <== Accessing config.%s (%s)" %
             #                     (attr, repr(value)))
@@ -314,8 +311,10 @@ else:
                 return getattr(self, attr)
 
             # def __setattr__(self, attr, value):
-            #   logger.debug("  ==> Setting config.%s to %s" % (attr, repr(value)))
-            #   return super(ExtendedReplicaConfig, self).__setattr__(attr, value)
+            #   logger.debug("  ==> Setting config.%s to %s" %
+            #                (attr, repr(value)))
+            #   return super(ExtendedReplicaConfig, self).__setattr__(attr,
+            #                                                         value)
 
             def knobs(self):
                 for name in self.__dict__:
@@ -338,7 +337,6 @@ else:
 
         return config
 
-
     def replica_ds_init_info(ansible_log,
                              config, options, ca_is_configured, remote_api,
                              ds_ca_subject, ca_file,
@@ -358,7 +356,8 @@ else:
         # if ca_is_configured:
         #     ca_subject = ca.lookup_ca_subject(_api, config.subject_base)
         # else:
-        #     ca_subject = installutils.default_ca_subject_dn(config.subject_base)
+        #     ca_subject = installutils.default_ca_subject_dn(
+        #         config.subject_base)
         ca_subject = ds_ca_subject
 
         ds = dsinstance.DsInstance(
@@ -403,7 +402,6 @@ else:
 
         return ds
 
-
     def ansible_module_get_parsed_ip_addresses(ansible_module,
                                                param='ip_addresses'):
         ip_addrs = []
@@ -411,10 +409,10 @@ else:
             try:
                 ip_parsed = ipautil.CheckedIPAddress(ip)
             except Exception as e:
-                ansible_module.fail_json(msg="Invalid IP Address %s: %s" % (ip, e))
+                ansible_module.fail_json(
+                    msg="Invalid IP Address %s: %s" % (ip, e))
             ip_addrs.append(ip_parsed)
         return ip_addrs
-
 
     def gen_remote_api(master_host_name, etc_ipa):
         ldapuri = 'ldaps://%s' % ipautil.format_netloc(master_host_name)

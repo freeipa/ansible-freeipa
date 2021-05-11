@@ -47,7 +47,8 @@ __all__ = ["gssapi", "version", "ipadiscovery", "api", "errors", "x509",
 
 import sys
 
-# HACK: workaround for Ansible 2.9 https://github.com/ansible/ansible/issues/68361
+# HACK: workaround for Ansible 2.9
+# https://github.com/ansible/ansible/issues/68361
 if 'ansible.executor' in sys.modules:
     for attr in __all__:
         setattr(sys.modules[__name__], attr, None)
@@ -57,11 +58,11 @@ else:
 
     if NUM_VERSION < 30201:
         # See ipapython/version.py
-        IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in VERSION.split(".", 2)]
+        IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in
+                                             VERSION.split(".", 2)]
         IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
     else:
         IPA_PYTHON_VERSION = NUM_VERSION
-
 
     class installer_obj(object):
         def __init__(self):
@@ -84,13 +85,13 @@ else:
         #    return getattr(self, attr)
 
         # def __setattr__(self, attr, value):
-        #    logger.debug("  --> Setting installer.%s to %s" % (attr, repr(value)))
+        #    logger.debug("  --> Setting installer.%s to %s" %
+        #                 (attr, repr(value)))
         #    return super(installer_obj, self).__setattr__(attr, value)
 
         def knobs(self):
             for name in self.__dict__:
                 yield self, name
-
 
     # Initialize installer settings
     installer = installer_obj()
@@ -155,9 +156,11 @@ else:
             from ipaclient.install.client import configure_krb5_conf, \
                 get_ca_certs, SECURE_PATH, get_server_connection_interface, \
                 disable_ra, client_dns, \
-                configure_certmonger, update_ssh_keys, configure_openldap_conf, \
+                configure_certmonger, update_ssh_keys, \
+                configure_openldap_conf, \
                 hardcode_ldap_server, get_certs_from_ldap, save_state, \
-                create_ipa_nssdb, configure_ssh_config, configure_sshd_config, \
+                create_ipa_nssdb, configure_ssh_config, \
+                configure_sshd_config, \
                 configure_automount, configure_firefox, configure_nisdomain, \
                 CLIENT_INSTALL_ERROR, is_ipa_client_installed, \
                 CLIENT_ALREADY_CONFIGURED, nssldap_exists, remove_file, \
@@ -190,7 +193,8 @@ else:
             shutil.rmtree(temp_dir, ignore_errors=True)
             sys.path.remove(temp_dir)
 
-            argspec = inspect.getargspec(ipa_client_install.configure_krb5_conf)
+            argspec = inspect.getargspec(
+                ipa_client_install.configure_krb5_conf)
             if argspec.keywords is None:
                 def configure_krb5_conf(
                         cli_realm, cli_domain, cli_server, cli_kdc, dnsok,
@@ -200,8 +204,8 @@ else:
                     options.force = force
                     options.sssd = configure_sssd
                     return ipa_client_install.configure_krb5_conf(
-                        cli_realm, cli_domain, cli_server, cli_kdc, dnsok, options,
-                        filename, client_domain, client_hostname)
+                        cli_realm, cli_domain, cli_server, cli_kdc, dnsok,
+                        options, filename, client_domain, client_hostname)
             else:
                 configure_krb5_conf = ipa_client_install.configure_krb5_conf
             if NUM_VERSION < 40100:
@@ -219,19 +223,22 @@ else:
             client_dns = ipa_client_install.client_dns
             configure_certmonger = ipa_client_install.configure_certmonger
             update_ssh_keys = ipa_client_install.update_ssh_keys
-            configure_openldap_conf = ipa_client_install.configure_openldap_conf
+            configure_openldap_conf = \
+                ipa_client_install.configure_openldap_conf
             hardcode_ldap_server = ipa_client_install.hardcode_ldap_server
             get_certs_from_ldap = ipa_client_install.get_certs_from_ldap
             save_state = ipa_client_install.save_state
 
             create_ipa_nssdb = certdb.create_ipa_nssdb
 
-            argspec = inspect.getargspec(ipa_client_install.configure_nisdomain)
+            argspec = \
+                inspect.getargspec(ipa_client_install.configure_nisdomain)
             if len(argspec.args) == 3:
                 configure_nisdomain = ipa_client_install.configure_nisdomain
             else:
                 def configure_nisdomain(options, domain, statestore=None):
-                    return ipa_client_install.configure_nisdomain(options, domain)
+                    return ipa_client_install.configure_nisdomain(options,
+                                                                  domain)
 
             configure_ldap_conf = ipa_client_install.configure_ldap_conf
             configure_nslcd_conf = ipa_client_install.configure_nslcd_conf
