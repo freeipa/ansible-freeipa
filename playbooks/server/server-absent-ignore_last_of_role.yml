@@ -1,0 +1,12 @@
+---
+- name: Server absent with last of role skip example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure server "absent.example.com" is absent with last of role skip
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: absent.example.com
+      ignore_last_of_role: yes
+      state: absent

@@ -30,6 +30,7 @@ Features
 * Modules for pwpolicy management
 * Modules for role management
 * Modules for self service management
+* Modules for server management
 * Modules for service management
 * Modules for sudocmd management
 * Modules for sudocmdgroup management
@@ -439,6 +440,7 @@ Modules in plugin/modules
 * [ipapwpolicy](README-pwpolicy.md)
 * [iparole](README-role.md)
 * [ipaselfservice](README-ipaselfservice.md)
+* [ipaserver](README-server.md)
 * [ipaservice](README-service.md)
 * [ipasudocmd](README-sudocmd.md)
 * [ipasudocmdgroup](README-sudocmdgroup.md)

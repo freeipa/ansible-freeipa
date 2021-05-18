@@ -1,0 +1,12 @@
+---
+- name: Server absent with force example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure server "absent.example.com" is absent with force
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: absent.example.com
+      force: yes
+      state: absent

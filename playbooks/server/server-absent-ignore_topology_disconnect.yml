@@ -1,0 +1,12 @@
+---
+- name: Server absent with ignoring topology disconnects example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure server "absent.example.com" is absent with ignoring topology disconnects
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: absent.example.com
+      ignore_topology_disconnect: yes
+      state: absent

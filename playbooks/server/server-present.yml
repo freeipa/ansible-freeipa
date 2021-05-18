@@ -1,0 +1,10 @@
+---
+- name: Server present example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure server "ipareplica1.exmple.com" is present
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: ipareplica1.example.com

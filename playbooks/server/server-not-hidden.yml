@@ -1,0 +1,11 @@
+---
+- name: Server not hidden example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure server "ipareplica1.example.com" is not hidden
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: ipareplica1.example.com
+      hidden: no
