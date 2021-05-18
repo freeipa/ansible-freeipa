@@ -25,7 +25,7 @@ repos:
   hooks:
   - id: ansible-doc-test
     name: Verify Ansible roles and module documentation.
-    language: script
-    entry: utils/ansible-doc-test
+    language: python
+    entry: env ANSIBLE_LIBRARY=./plugins/modules utils/ansible-doc-test
     # args: ['-v', 'roles', 'plugins']
     files: ^.*.py$
