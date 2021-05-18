@@ -61,13 +61,3 @@
   ipahostgroup:
     ipaadmin_password: SomeADMINpassword
     name: hostgroup02
-
-- name: Ensure services are absent.
-  ipaservice:
-    ipaadmin_password: SomeADMINpassword
-    name:
-    - "HTTP/{{ svc_fqdn }}"
-    - "HTTP/{{ nohost_fqdn }}"
-    - HTTP/svc.ihavenodns.info
-    - HTTP/no.idontexist.info
-    state: absent
