@@ -693,7 +693,7 @@ else:
 
         def check_ipa_params(self):
             """Validate ipa_params before command is called."""
-            pass
+            pass  # pylint: disable=unnecessary-pass
 
         def define_ipa_commands(self):
             """Define commands that will be run in IPA server."""
