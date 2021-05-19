@@ -57,7 +57,7 @@ else:
         # FreeIPA releases.
         import re
 
-        class version:  # pylint: disable=invalid-name
+        class version:  # pylint: disable=invalid-name, too-few-public-methods
             @staticmethod
             def parse(version_str):
                 """
