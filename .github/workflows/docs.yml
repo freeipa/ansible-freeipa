@@ -28,5 +28,5 @@ jobs:
       - name: Run ansible-doc-test
         run: |
           python -m pip install ansible
-          ANSIBLE_LIBRARY="." python utils/ansible-doc-test roles plugins
+          ANSIBLE_LIBRARY="." python utils/ansible-doc-test -v roles plugins
 
