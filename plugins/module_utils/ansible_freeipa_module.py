@@ -65,7 +65,7 @@ else:
 
                 This will not work for `rc`, `dev` or similar version string.
                 """
-                return tuple(re.split("[-_\.]", version_str))  # noqa: W605
+                return tuple(re.split("[-_.]", version_str))  # noqa: W605
 
     from ipalib import api
     from ipalib import errors as ipalib_errors  # noqa
