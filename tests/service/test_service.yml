@@ -469,6 +469,7 @@
         ipaservice:
           ipaadmin_password: SomeADMINpassword
           name: "{{ host1_fqdn }}"
+          pac_type: NONE
           smb: yes
           netbiosname: SAMBASVC
         register: result
@@ -478,8 +479,39 @@
         ipaservice:
           ipaadmin_password: SomeADMINpassword
           name: "{{ host1_fqdn }}"
+          pac_type: NONE
           smb: yes
           netbiosname: SAMBASVC
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Modify SMB service.
+        ipaservice:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ host1_fqdn }}"
+          smb: yes
+          netbiosname: SAMBASVC
+          allow_retrieve_keytab_user:
+            - user01
+            - user02
+          allow_retrieve_keytab_group:
+            - group01
+            - group02
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Modify SMB service, again.
+        ipaservice:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ host1_fqdn }}"
+          smb: yes
+          netbiosname: SAMBASVC
+          allow_retrieve_keytab_user:
+            - user01
+            - user02
+          allow_retrieve_keytab_group:
+            - group01
+            - group02
         register: result
         failed_when: result.changed or result.failed
 
