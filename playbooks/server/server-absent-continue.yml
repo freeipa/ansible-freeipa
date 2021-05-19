@@ -1,0 +1,12 @@
+---
+- name: Server absent continuous mode example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure server "absent.example.com" is absent continuous mode
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: absent.example.com
+      continue: yes
+      state: absent

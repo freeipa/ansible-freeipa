@@ -1,0 +1,11 @@
+---
+- name: Server absent example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure server "absent.example.com" is absent
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: absent.example.com
+      state: absent

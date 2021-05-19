@@ -1,0 +1,134 @@
+---
+- name: Test server
+  hosts: ipaserver
+  become: true
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without location
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      location: ""
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without service weight
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      service_weight: -1
+
+  - name: Ensure location "mylocation" is absent
+    ipalocation:
+      ipaadmin_password: SomeADMINpassword
+      name: mylocation
+      state: absent
+
+# CREATE TEST ITEMS
+
+  - name: Ensure location "mylocation" is present
+    ipalocation:
+      ipaadmin_password: SomeADMINpassword
+      name: mylocation
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # TESTS
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" is present
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" with location "mylocation"
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      location: "mylocation"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" with location "mylocation" again
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      location: "mylocation"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without location
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      location: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without location again
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      location: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" with service weight 1
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      service_weight: 1
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" with service weight 1 again
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      service_weight: 1
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without service weight
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      service_weight: -1
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without service weight again
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      service_weight: -1
+    register: result
+    failed_when: result.changed or result.failed
+
+  # hidden requires an additional server, not tested
+
+  # absent requires an additional server, only sanity test with absent server
+
+  - name: Ensure server "{{ 'absent.' + ipaserver_domain }}" is absent
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ 'absent.' + ipaserver_domain }}"
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # ignore_last_of_role requires an additional server, not tested
+
+  # ignore_topology_disconnect requires an additional server, not tested
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure location "mylocation" is absent
+    ipalocation:
+      ipaadmin_password: SomeADMINpassword
+      name: mylocation
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed

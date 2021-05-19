@@ -26,7 +26,7 @@ __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "DEFAULT_CONFIG", "LDAP_GENERALIZED_TIME_FORMAT",
            "kinit_password", "kinit_keytab", "run", "DN", "VERSION",
            "paths", "get_credentials_if_valid", "Encoding",
-           "load_pem_x509_certificate"]
+           "load_pem_x509_certificate", "DNSName"]
 
 import sys
 
@@ -81,6 +81,7 @@ else:
     from ipapython.version import VERSION
     from ipaplatform.paths import paths
     from ipalib.krb_utils import get_credentials_if_valid
+    from ipapython.dnsutil import DNSName
     from ansible.module_utils.basic import AnsibleModule
     from ansible.module_utils._text import to_text
     from ansible.module_utils.common.text.converters import jsonify

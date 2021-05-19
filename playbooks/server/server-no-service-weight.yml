@@ -1,0 +1,11 @@
+---
+- name: Server service weight example
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure server "ipareplica1.example.com" with no service weight
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: ipareplica1.example.com
+      service_weight: -1
