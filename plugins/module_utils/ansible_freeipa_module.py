@@ -778,7 +778,7 @@ else:
                         )
 
             if len(errors) > 0:
-                self.fail_json(", ".join("errors"))
+                self.fail_json(", ".join("errors"))  # pylint: disable=E1121
 
         def add_ipa_command(self, command, name=None, args=None):
             """Add a command to the list of commands to be executed."""
