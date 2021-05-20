@@ -111,7 +111,7 @@
       nsec3param_rec: "1 7 100 abcd"
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set serial to 1234, again.
     ipadnszone:
@@ -119,7 +119,7 @@
       name: testzone.local
       serial: 1234
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set different nsec3param_rec.
     ipadnszone:
@@ -127,7 +127,7 @@
       name: testzone.local
       nsec3param_rec: "2 8 200 abcd"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set same nsec3param_rec.
     ipadnszone:
@@ -135,7 +135,7 @@
       name: testzone.local
       nsec3param_rec: "2 8 200 abcd"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set default_ttl to 1200
     ipadnszone:
@@ -143,7 +143,7 @@
       name: testzone.local
       default_ttl: 1200
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set default_ttl to 1200, again
     ipadnszone:
@@ -151,7 +151,7 @@
       name: testzone.local
       default_ttl: 1200
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set ttl to 900
     ipadnszone:
@@ -159,7 +159,7 @@
       name: testzone.local
       ttl: 900
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set ttl to 900, again
     ipadnszone:
@@ -167,7 +167,7 @@
       name: testzone.local
       ttl: 900
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set minimum to 1000
     ipadnszone:
@@ -175,7 +175,7 @@
       name: testzone.local
       minimum: 1000
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set minimum to 1000, again
     ipadnszone:
@@ -183,7 +183,7 @@
       name: testzone.local
       minimum: 1000
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set expire to 1209601
     ipadnszone:
@@ -191,7 +191,7 @@
       name: testzone.local
       expire: 1209601
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set expire to 1209601, again
     ipadnszone:
@@ -199,7 +199,7 @@
       name: testzone.local
       expire: 1209601
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set retry to 1200.
     ipadnszone:
@@ -207,7 +207,7 @@
       name: testzone.local
       retry: 1200
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set retry to 1200, again.
     ipadnszone:
@@ -215,7 +215,7 @@
       name: testzone.local
       retry: 1200
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set refresh to 4000.
     ipadnszone:
@@ -223,7 +223,7 @@
       name: testzone.local
       refresh: 4000
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set refresh to 4000, again.
     ipadnszone:
@@ -231,7 +231,7 @@
       name: testzone.local
       refresh: 4000
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set serial to 12345.
     ipadnszone:
@@ -239,7 +239,7 @@
       name: testzone.local
       serial: 12345
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set serial to 12345, again.
     ipadnszone:
@@ -247,7 +247,7 @@
       name: testzone.local
       serial: 12345
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set dnssec to false.
     ipadnszone:
@@ -255,7 +255,7 @@
       name: testzone.local
       dnssec: false
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set dnssec to false, again.
     ipadnszone:
@@ -263,7 +263,7 @@
       name: testzone.local
       dnssec: false
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set allow_sync_ptr to false.
     ipadnszone:
@@ -271,7 +271,7 @@
       name: testzone.local
       allow_sync_ptr: false
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set allow_sync_ptr to false, again.
     ipadnszone:
@@ -279,7 +279,7 @@
       name: testzone.local
       allow_sync_ptr: false
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Set dynamic_update to false.
     ipadnszone:
@@ -287,7 +287,7 @@
       name: testzone.local
       dynamic_update: false
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set dynamic_update to false, again.
     ipadnszone:
@@ -295,7 +295,7 @@
       name: testzone.local
       dynamic_update: false
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Update allow_transfer.
     ipadnszone:
@@ -306,7 +306,7 @@
         - 2.2.2.2
         - 3.3.3.3
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Update allow_transfer, again.
     ipadnszone:
@@ -317,7 +317,7 @@
         - 2.2.2.2
         - 3.3.3.3
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Remove allow transfer.
     ipadnszone:
@@ -325,7 +325,7 @@
       name: testzone.local
       allow_transfer: []
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Remove allow transfer, again.
     ipadnszone:
@@ -333,7 +333,7 @@
       name: testzone.local
       allow_transfer: []
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Update allow_query.
     ipadnszone:
@@ -344,7 +344,7 @@
         - 2.2.2.2
         - 3.3.3.3
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Update allow_query, again.
     ipadnszone:
@@ -355,7 +355,7 @@
         - 2.2.2.2
         - 3.3.3.3
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure allow query is empty.
     ipadnszone:
@@ -363,7 +363,7 @@
       name: testzone.local
       allow_query: []
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure allow query is empty, again.
     ipadnszone:
@@ -371,7 +371,7 @@
       name: testzone.local
       allow_query: []
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Update admin email.
     ipadnszone:
@@ -379,7 +379,7 @@
       name: testzone.local
       admin_email: admin2@example.com
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Update admin email, again.
     ipadnszone:
@@ -387,7 +387,7 @@
       name: testzone.local
       admin_email: admin2@example.com
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # Teardown
   - name: Teardown testing environment
