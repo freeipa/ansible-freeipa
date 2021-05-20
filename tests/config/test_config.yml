@@ -110,84 +110,84 @@
       ipaadmin_password: SomeADMINpassword
       emaildomain: somedomain.test
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure the default e-mail domain is somedomain.test, again.
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       emaildomain: somedomain.test
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set default shell to '/bin/someshell'
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       defaultshell: /bin/someshell
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set default shell to '/bin/someshell', again.
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       defaultshell: /bin/someshell
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set default group
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       defaultgroup: somedefaultgroup
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
-  - name: set default group
+  - name: set default group, again
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       defaultgroup: somedefaultgroup
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set default home directory
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       homedirectory: /Users
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
-  - name: set default home directory
+  - name: set default home directory, again
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       homedirectory: /Users
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set pac-type
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       pac_type: "nfs:NONE"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set pac-type, again.
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       pac_type: "nfs:NONE"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set maxusername to 33
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       maxusername: 33
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set maxusername to 33, again.
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       maxusername: 33
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set maxhostname to 77
     block:
@@ -195,13 +195,13 @@
           ipaadmin_password: SomeADMINpassword
           maxhostname: 77
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - ipaconfig:
           ipaadmin_password: SomeADMINpassword
           maxhostname: 77
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
     when: ipa_version is version('4.8.0', '>=')
 
   - name: set pwdexpnotify to 17
@@ -209,126 +209,126 @@
       ipaadmin_password: SomeADMINpassword
       pwdexpnotify: 17
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set pwdexpnotify to 17, again
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       pwdexpnotify: 17
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set searchrecordslimit to -1
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       searchrecordslimit: -1
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set searchrecordslimit to -1, again.
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       searchrecordslimit: -1
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set searchtimelimit to 12345
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       searchtimelimit: 12345
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set searchtimelimit to 12345, again.
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       searchtimelimit: 12345
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: change enable_migration
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       enable_migration: '{{ not previousconfig.config.enable_migration }}'
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: change enable_migration, again
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       enable_migration: '{{ not previousconfig.config.enable_migration }}'
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set configstring to AllowNThash
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       configstring: AllowNThash
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set configstring to AllowNThash, again.
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       configstring: AllowNThash
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set selinuxusermaporder
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       selinuxusermaporder: 'user_u:s0$staff_u:s0-s0:c0.c1023$sysadm_u:s0-s0:c0.c1023$unconfined_u:s0-s0:c0.c1023'
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set selinuxusermaporder, again
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       selinuxusermaporder: 'user_u:s0$staff_u:s0-s0:c0.c1023$sysadm_u:s0-s0:c0.c1023$unconfined_u:s0-s0:c0.c1023'
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set selinuxusermapdefault
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       selinuxusermapdefault: 'user_u:s0'
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set selinuxusermapdefault, again
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       selinuxusermapdefault: 'user_u:s0'
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set groupsearch to `description`
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       groupsearch: description
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set groupsearch to `gidNumber`, again
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       groupsearch: description
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: set usersearch to `uidNumber`
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       usersearch: uidNumber
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: set usersearch to `uidNumber`, again
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       usersearch: uidNumber
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: reset changed fields
     ipaconfig:
@@ -354,7 +354,7 @@
       domain_resolution_order: '{{previousconfig.config.domain_resolution_order | default(omit)}}'
       ca_renewal_master_server: '{{previousconfig.config.ca_renewal_master_server | default(omit)}}'
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: reset maxhostname
     block:
@@ -387,7 +387,7 @@
       domain_resolution_order: '{{previousconfig.config.domain_resolution_order | default(omit)}}'
       ca_renewal_master_server: '{{previousconfig.config.ca_renewal_master_server | default(omit)}}'
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: reset maxhostname
     block:
