@@ -289,6 +289,7 @@
       name: host04
       ip_address: "{{ ipv4_prefix }}.114"
       reverse: yes
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' has an A record with reverse, again.
     ipadnsrecord:
@@ -425,6 +426,8 @@
     register: result
     failed_when: result.changed or result.failed
 
+  # This task only ensures proper records are present,
+  # it is not testing anything, and should not faild.
   - name: Ensure that 'host04' has a A record with reverse, for NS record.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
@@ -433,17 +436,7 @@
       ip_address: "{{ ipv4_prefix }}.114"
       reverse: yes
     register: result
-    failed_when: not result.changed or result.failed
-
-  - name: Ensure that 'host04' has a A record with reverse, for NS record, again.
-    ipadnsrecord:
-      ipaadmin_password: SomeADMINpassword
-      zone_name: "{{ testzone }}"
-      name: host04
-      ip_address: "{{ ipv4_prefix }}.114"
-      reverse: yes
-    register: result
-    failed_when: result.changed or result.failed
+    failed_when: result.failed
 
   - name: Ensure that 'host04' has NS record.
     ipadnsrecord:
@@ -461,7 +454,9 @@
       name: host04
       ns_hostname: host04
     register: result
-    failed_when: result.changed or result.failed
+    # IPA issue 8850 should be fixed before we handle the failed_when
+    # message. For now, we'll just test if it does not fail.
+    failed_when: result.changed or not result.failed
 
   - name: Ensure that 'host04' NS record is absent.
     ipadnsrecord:
@@ -632,7 +627,7 @@
       ds_key_tag: 54321
       ds_rec: 12345 3 1 84763786e4213cca9a6938dba5dacd64f87ec216
     register: result
-    failed_when: result.changed or result.failed
+    failed_when: result.changed or (result.failed and "DS record does not contain" not in result.msg)
 
   - name: Ensure that 'iron01' DS record is absent.
     ipadnsrecord:
@@ -692,7 +687,7 @@
       afsdb_subtype: 2
       afsdb_rec: "1 host04.{{ testzone }}"
     register: result
-    failed_when: result.changed or result.failed
+    failed_when: result.changed or (result.failed and "AFSDB record does not contain" not in result.msg)
 
   - name: Ensure that 'host04' AFSDB record is absent.
     ipadnsrecord:
@@ -796,7 +791,7 @@
       kx_preference: 20
       kx_rec: "10 keyex.{{ testzone }}"
     register: result
-    failed_when: result.changed or result.failed
+    failed_when: result.changed or (result.failed and "KX record does not contain" not in result.msg)
 
   - name: Ensure that 'host04' KX record is present with preference set to 20, one more time.
     ipadnsrecord:
@@ -960,7 +955,7 @@
       naptr_regexp: "!^.*$!sip:info@example.com!"
       naptr_replacement: "."
     register: result
-    failed_when: result.failed or not result.changed
+    failed_when: result.failed or not result.changed or result.failed
 
   - name: Ensure that '_sip._udp' service has NAPTR record, again.
     ipadnsrecord:
@@ -1099,7 +1094,7 @@
       srv_target: sip-server."{{ testzone }}"
       srv_rec: "10 10 5060 sip-server.{{ testzone }}"
     register: result
-    failed_when: result.changed or result.failed
+    failed_when: result.changed or (result.failed and "SRV record does not contain" not in result.msg)
 
   - name: Ensurer '_sip._udp' SRV record has priority 2, weight 20
     ipadnsrecord:
@@ -1232,7 +1227,7 @@
       tlsa_matching_type: 0
       tlsa_rec: 3 1 1 9c0ad776dbeae8d9d55b0ad42899d30235c114d5f918fd69746e4279e47bdaa2
     register: result
-    failed_when: result.changed or result.failed
+    failed_when: result.changed or (result.failed and "TLSA record does not contain" not in result.msg)
 
   - name: Ensure that 'host04' TLSA record is absent.
     ipadnsrecord:
