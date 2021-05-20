@@ -15,7 +15,7 @@
       name: stdvault
       vault_type: standard
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure standard vault is present, again
     ipavault:
@@ -23,7 +23,7 @@
       name: stdvault
       vault_type: standard
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Archive data to standard vault, matching `no_log` field.
     ipavault:
@@ -31,7 +31,7 @@
       name: stdvault
       vault_data: SomeADMINpassword
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from standard vault.
     ipavault:
@@ -39,7 +39,7 @@
       name: stdvault
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'SomeADMINpassword' or result.changed
+    failed_when: result.vault.data != 'SomeADMINpassword' or result.changed or result.failed
 
   - name: Archive data to standard vault
     ipavault:
@@ -47,7 +47,7 @@
       name: stdvault
       vault_data: Hello World.
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from standard vault.
     ipavault:
@@ -55,7 +55,7 @@
       name: stdvault
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Hello World.' or result.changed
+    failed_when: result.vault.data != 'Hello World.' or result.changed or result.failed
 
   - name: Retrieve data from standard vault into file {{ ansible_facts['env'].HOME }}/data.txt.
     ipavault:
@@ -78,7 +78,7 @@
       name: stdvault
       vault_data: The world of π is half rounded.
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from standard vault.
     ipavault:
@@ -86,7 +86,7 @@
       name: stdvault
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'The world of π is half rounded.' or result.changed
+    failed_when: result.vault.data != 'The world of π is half rounded.' or result.changed or result.failed
 
   - name: Archive data in standard vault, from file.
     ipavault:
@@ -95,7 +95,7 @@
       vault_type: standard
       in: "{{ ansible_facts['env'].HOME }}/in.txt"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from standard vault.
     ipavault:
@@ -103,7 +103,7 @@
       name: stdvault
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Another World.' or result.changed
+    failed_when: result.vault.data != 'Another World.' or result.changed or result.failed
 
   - name: Archive data with single character to standard vault
     ipavault:
@@ -111,7 +111,7 @@
       name: stdvault
       vault_data: c
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from standard vault.
     ipavault:
@@ -119,7 +119,7 @@
       name: stdvault
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'c' or result.changed
+    failed_when: result.vault.data != 'c' or result.changed or result.failed
 
   - name: Ensure standard vault is absent
     ipavault:
@@ -127,7 +127,7 @@
       name: stdvault
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure standard vault is absent, again
     ipavault:
@@ -135,7 +135,7 @@
       name: stdvault
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Cleanup testing environment.
     import_tasks: env_cleanup.yml
