@@ -492,7 +492,13 @@ class DNSZoneModule(FreeIPABaseModule):
             # See:
             #   - https://pagure.io/freeipa/issue/8227
             #   - https://pagure.io/freeipa/issue/8489
-            if set_serial:
+            # Only set SOA Serial if it is not set already.
+            if (set_serial and
+                (zone is None
+                 or "idnssoaserial" not in zone
+                 or zone["idnssoaserial"] is None
+                 or zone["idnssoaserial"][0] != str(self.ipa_params.serial)
+                 )):
                 args = {
                     "idnssoaserial": self.ipa_params.serial,
                 }
