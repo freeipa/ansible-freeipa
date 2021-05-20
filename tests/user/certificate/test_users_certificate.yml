@@ -41,7 +41,7 @@
         - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test cert members present again
     ipauser:
@@ -54,7 +54,7 @@
         - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test cert members absent
     ipauser:
@@ -68,7 +68,7 @@
       state: absent
       action: member
     #register: result
-    #failed_when: not result.changed
+    #failed_when: not result.changed or result.failed
 
   - name: User test cert members absent again
     ipauser:
@@ -82,7 +82,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test absent
     ipauser:
@@ -91,7 +91,7 @@
       - name: test
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Remove certificate files.
     shell:
