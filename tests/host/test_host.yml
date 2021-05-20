@@ -44,7 +44,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present again
     ipahost:
@@ -54,7 +54,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host2_fqdn }}" present
     ipahost:
@@ -64,7 +64,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host2_fqdn }}" present again
     ipahost:
@@ -74,7 +74,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host3_fqdn }}" present
     ipahost:
@@ -84,7 +84,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host3_fqdn }}" present again
     ipahost:
@@ -94,7 +94,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host4_fqdn }}" present
     ipahost:
@@ -104,7 +104,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host4_fqdn }}" present again
     ipahost:
@@ -114,7 +114,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host5_fqdn }}" present
     ipahost:
@@ -124,7 +124,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host5_fqdn }}" present again
     ipahost:
@@ -134,7 +134,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host6_fqdn }}" present
     ipahost:
@@ -144,7 +144,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host6_fqdn }}" present again
     ipahost:
@@ -154,7 +154,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # disabled can only be checked with enabled hosts, all hosts above are
   # not enabled.
@@ -170,7 +170,7 @@
   #    - "{{ host6_fqdn }}"
   #    state: disabled
   #  register: result
-  #  failed_when: not result.changed
+  #  failed_when: not result.changed or result.failed
   #
   #- name: Hosts host1..host6 disabled again
   #  ipahost:
@@ -184,7 +184,7 @@
   #    - "{{ host6_fqdn }}"
   #    state: disabled
   #  register: result
-  #  failed_when: result.changed
+  #  failed_when: result.changed or result.failed
 
   - name: Hosts host1..host6 absent
     ipahost:
@@ -199,7 +199,7 @@
       update_dns: yes
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Hosts host1..host6 absent again
     ipahost:
@@ -214,5 +214,5 @@
       update_dns: yes
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
