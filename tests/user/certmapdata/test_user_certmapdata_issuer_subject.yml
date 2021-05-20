@@ -18,7 +18,7 @@
       first: test
       last: test
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata members present
     ipauser:
@@ -33,7 +33,7 @@
         subject: CN=subject3
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata members present again
     ipauser:
@@ -48,7 +48,7 @@
         subject: CN=subject3
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test certmapdata members absent
     ipauser:
@@ -64,7 +64,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata members absent again
     ipauser:
@@ -80,7 +80,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test absent
     ipauser:
@@ -88,4 +88,4 @@
       name: test
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
