@@ -17,7 +17,7 @@
       name: testzone.local
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure zone is present, again.
     ipadnszone:
@@ -25,7 +25,7 @@
       name: testzone.local
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure zone is disabled.
     ipadnszone:
@@ -33,7 +33,7 @@
       name: testzone.local
       state: disabled
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure zone is disabled, again.
     ipadnszone:
@@ -41,7 +41,7 @@
       name: testzone.local
       state: disabled
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure zone is enabled.
     ipadnszone:
@@ -49,7 +49,7 @@
       name: testzone.local
       state: enabled
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure zone is enabled, again.
     ipadnszone:
@@ -57,7 +57,7 @@
       name: testzone.local
       state: enabled
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure forward_policy is none.
     ipadnszone:
@@ -65,7 +65,7 @@
       name: testzone.local
       forward_policy: none
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure forward_policy is none, again.
     ipadnszone:
@@ -73,7 +73,7 @@
       name: testzone.local
       forward_policy: none
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure forward_policy is first.
     ipadnszone:
@@ -81,7 +81,7 @@
       name: testzone.local
       forward_policy: first
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure forward_policy is first, again.
     ipadnszone:
@@ -89,7 +89,7 @@
       name: testzone.local
       forward_policy: first
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure first forwarder is set.
     ipadnszone:
@@ -99,7 +99,7 @@
         - ip_address: 8.8.8.8
           port: 53
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure first and second forwarder are set.
     ipadnszone:
@@ -110,7 +110,7 @@
           port: 53
         - ip_address: 2001:4860:4860::8888
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure first and second forwarder are set, again.
     ipadnszone:
@@ -121,7 +121,7 @@
           port: 53
         - ip_address: 2001:4860:4860::8888
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure only second forwarder is set.
     ipadnszone:
@@ -130,14 +130,14 @@
       forwarders:
         - ip_address: 2001:4860:4860::8888
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Nothing changes.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
       name: testzone.local
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure no forwarders are set.
     ipadnszone:
@@ -145,7 +145,7 @@
       name: testzone.local
       forwarders: []
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Create zones test1
     ipadnszone:
@@ -198,7 +198,7 @@
         - test3.testzone.local
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure multiple zones are absent, again
     ipadnszone:
@@ -209,7 +209,7 @@
         - test3.testzone.local
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # Teardown
   - name: Teardown testing environment
