@@ -21,7 +21,7 @@
       name: /usr/bin/su
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudocmd is present again
     ipasudocmd:
@@ -29,7 +29,7 @@
       name: /usr/bin/su
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudocmd is absent
     ipasudocmd:
@@ -37,7 +37,7 @@
       name: /usr/bin/su
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudocmd is absent again
     ipasudocmd:
@@ -45,7 +45,7 @@
       name: /usr/bin/su
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure multiple sudocmd are present
     ipasudocmd:
@@ -55,7 +55,7 @@
       - /usr/sbin/iwlist
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure multiple sudocmd are present again
     ipasudocmd:
@@ -65,7 +65,7 @@
       - /usr/sbin/iwlist
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure multiple sudocmd are absent
     ipasudocmd:
@@ -75,7 +75,7 @@
       - /usr/sbin/iwlist
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure multiple sudocmd are absent again
     ipasudocmd:
@@ -85,7 +85,8 @@
       - /usr/sbin/iwlist
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
+
   - name: Ensure sudocmds are absent
     ipasudocmd:
       ipaadmin_password: SomeADMINpassword
@@ -117,4 +118,4 @@
       - /usr/sbin/iwlist
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
