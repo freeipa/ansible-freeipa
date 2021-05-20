@@ -24,7 +24,7 @@
           name: databases
           state: present
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Rename host-group from `databases` to `datalake`
         ipahostgroup:
@@ -33,7 +33,7 @@
           rename: datalake
           state: renamed
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure host-group database was already absent
         ipahostgroup:
@@ -41,7 +41,7 @@
           name: database
           state: absent
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Rename host-group from `databases` to `datalake`, again
         ipahostgroup:
@@ -59,7 +59,7 @@
           rename: datalake
           state: renamed
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure testing hostgroups do not exist.
         ipahostgroup:
