@@ -1374,6 +1374,8 @@
 
   - name: Verify if modification worked.
     ipadnsrecord:
+      zone_name: "{{ testzone }}"
+      name: _ftp._tcp
       uri_rec: 10 1 ftp://ftp.host04.{{ testzone }}/public
       state: absent
     register: result
