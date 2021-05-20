@@ -18,7 +18,7 @@
       name: renamerole
       description: A role in IPA.
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role is present, again.
     iparole:
@@ -26,7 +26,7 @@
       name: renamerole
       description: A role in IPA.
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Rename role.
     iparole:
@@ -34,8 +34,10 @@
       name: renamerole
       rename: testrole
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
+  # Do not test result.failed, this task will fail as there is no role to
+  # be renamed.
   - name: Rename role, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
@@ -53,7 +55,7 @@
       - Host Administrators
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member has privileges, again.
     iparole:
@@ -64,7 +66,7 @@
       - Host Administrators
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has less privileges.
     iparole:
@@ -75,7 +77,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has less privileges, again.
     iparole:
@@ -86,7 +88,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has member has privileges restored.
     iparole:
@@ -97,7 +99,7 @@
       - Host Administrators
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member has privileges restored, again.
     iparole:
@@ -108,7 +110,7 @@
       - Host Administrators
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role member privileges are absent.
     iparole:
@@ -120,7 +122,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role member privileges are absent, again.
     iparole:
@@ -132,7 +134,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure invalid privileged is not assigned to role.
     iparole:
@@ -151,7 +153,7 @@
       - user01
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member user present, again.
     iparole:
@@ -161,7 +163,7 @@
       - user01
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has member user absent.
     iparole:
@@ -172,7 +174,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member user absent, again.
     iparole:
@@ -183,7 +185,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has member group present.
     iparole:
@@ -193,7 +195,7 @@
       - group01
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member group present, again.
     iparole:
@@ -203,7 +205,7 @@
       - group01
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has member group absent.
     iparole:
@@ -214,7 +216,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member group absent, again.
     iparole:
@@ -225,7 +227,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has member host present.
     iparole:
@@ -235,7 +237,7 @@
       - "{{ host1_fqdn }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member host present, again.
     iparole:
@@ -245,7 +247,7 @@
       - "{{ host1_fqdn }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has member host absent.
     iparole:
@@ -256,7 +258,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member host absent, again.
     iparole:
@@ -267,7 +269,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has member hostgroup present.
     iparole:
@@ -277,7 +279,7 @@
       - hostgroup01
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member hostgroup present, again.
     iparole:
@@ -287,7 +289,7 @@
       - hostgroup01
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has member hostgroup absent.
     iparole:
@@ -298,7 +300,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member hostgroup absent, again.
     iparole:
@@ -309,7 +311,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role is absent.
     iparole:
@@ -317,7 +319,7 @@
       name: testrole
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role is absent, again.
     iparole:
@@ -325,7 +327,7 @@
       name: testrole
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role with members is present.
     iparole:
@@ -345,7 +347,7 @@
       service:
       - "service01/{{ host1_fqdn }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role with members is present, again.
     iparole:
@@ -365,7 +367,7 @@
       service:
       - "service01/{{ host1_fqdn }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role is absent.
     iparole:
@@ -373,7 +375,7 @@
       name: testrole
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role is absent, again.
     iparole:
@@ -381,7 +383,7 @@
       name: testrole
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # cleanup
   - name: Cleanup environment.
