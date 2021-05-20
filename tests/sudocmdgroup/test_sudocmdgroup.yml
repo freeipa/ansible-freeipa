@@ -26,7 +26,7 @@
       name: network
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudocmdgroup is present again
     ipasudocmdgroup:
@@ -34,7 +34,7 @@
       name: network
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudocmdgroup is absent
     ipasudocmdgroup:
@@ -42,7 +42,7 @@
       name: network
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudocmdgroup is absent again
     ipasudocmdgroup:
@@ -50,7 +50,7 @@
       name: network
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudocmdgroup is present, with sudocmds.
     ipasudocmdgroup:
@@ -61,7 +61,7 @@
       - /usr/sbin/iwlist
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudocmdgroup is present, with sudocmds, again.
     ipasudocmdgroup:
@@ -72,7 +72,7 @@
       - /usr/sbin/iwlist
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Verify sudocmdgroup creation with sudocmds
     shell: |
@@ -88,7 +88,7 @@
       name: network
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudocmdgroup, with sudocmds, is absent again
     ipasudocmdgroup:
@@ -96,7 +96,7 @@
       name: network
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure testing sudocmdgroup is present
     ipasudocmdgroup:
@@ -104,7 +104,7 @@
       name: network
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudo commands are present in existing sudocmdgroup
     ipasudocmdgroup:
@@ -115,7 +115,7 @@
       - /usr/sbin/iwlist
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudo commands are present in existing sudocmdgroup, again
     ipasudocmdgroup:
@@ -126,7 +126,7 @@
       - /usr/sbin/iwlist
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudo commands are absent in existing sudocmdgroup
     ipasudocmdgroup:
@@ -138,7 +138,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudo commands are absent in existing sudocmdgroup, again
     ipasudocmdgroup:
@@ -150,7 +150,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudo commands are present in sudocmdgroup
     ipasudocmdgroup:
@@ -162,7 +162,7 @@
       action: member
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure one sudo command is not present in sudocmdgroup
     ipasudocmdgroup:
@@ -173,7 +173,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure one sudo command is present in sudocmdgroup
     ipasudocmdgroup:
@@ -184,7 +184,7 @@
       action: member
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure the other sudo command is not present in sudocmdgroup
     ipasudocmdgroup:
@@ -195,7 +195,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure the other sudo commandsis not present in sudocmdgroup, again
     ipasudocmdgroup:
@@ -206,4 +206,4 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
