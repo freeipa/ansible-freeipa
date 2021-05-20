@@ -282,7 +282,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure that 'host04' has an A record with reverse, for NS record.
+  - name: Ensure that 'host04' has another A record with reverse.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
@@ -291,7 +291,7 @@
       reverse: yes
     failed_when: result.changed or result.failed
 
-  - name: Ensure that 'host04' has an A record with reverse, again.
+  - name: Ensure that 'host04' has another A record with reverse, again.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
