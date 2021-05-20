@@ -20,7 +20,7 @@
       service:
       - "service01/{{ host1_fqdn }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role with member service is present, again.
     iparole:
@@ -30,7 +30,7 @@
       - "service01/{{ host1_fqdn }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has member service absent.
     iparole:
@@ -41,7 +41,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member service absent, again.
     iparole:
@@ -52,7 +52,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role has member service with principal name.
     iparole:
@@ -62,7 +62,7 @@
       - "service01/{{ host1_fqdn }}@{{ ipaserver_realm }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role has member service with principal name, again.
     iparole:
@@ -72,7 +72,7 @@
       - "service01/{{ host1_fqdn }}@{{ ipaserver_realm }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure role is absent.
     iparole:
@@ -80,7 +80,7 @@
       name: testrole
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure role is absent, again.
     iparole:
@@ -88,7 +88,7 @@
       name: testrole
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # cleanup
   - name: Cleanup environment.
