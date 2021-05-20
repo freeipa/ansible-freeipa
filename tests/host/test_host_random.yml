@@ -31,7 +31,7 @@
       force: yes
       update_password: on_create
     register: ipahost
-    failed_when: not ipahost.changed
+    failed_when: not ipahost.changed or ipahost.failed
 
   - assert:
       that:
@@ -60,7 +60,7 @@
         force: yes
       update_password: on_create
     register: ipahost
-    failed_when: not ipahost.changed
+    failed_when: not ipahost.changed or ipahost.failed
 
   - assert:
       that:
@@ -85,7 +85,7 @@
         random: yes
       update_password: always
     register: ipahost
-    failed_when: ipahost.changed
+    failed_when: ipahost.changed or not ipahost.failed
 
   - assert:
       that:
