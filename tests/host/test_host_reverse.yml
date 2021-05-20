@@ -57,7 +57,7 @@
       update_dns: yes
       reverse: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present, again.
     ipahost:
@@ -67,7 +67,7 @@
       update_dns: yes
       reverse: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Hosts host1 absent
     ipahost:
@@ -77,7 +77,7 @@
       update_dns: yes
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with IPv6
     ipahost:
@@ -87,7 +87,7 @@
       update_dns: yes
       reverse: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with IPv6, again.
     ipahost:
@@ -97,7 +97,7 @@
       update_dns: yes
       reverse: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Hosts host1 absent
     ipahost:
@@ -107,7 +107,7 @@
       update_dns: yes
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Delete zone for reverse address.
     ipadnszone:
