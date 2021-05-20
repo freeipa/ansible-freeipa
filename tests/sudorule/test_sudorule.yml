@@ -279,6 +279,8 @@
       ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: disabled
+    register: result
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is disabled, again
     ipasudorule:
