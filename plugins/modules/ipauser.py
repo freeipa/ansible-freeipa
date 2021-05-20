@@ -1115,8 +1115,13 @@ def main():
                         # For all settings is args, check if there are
                         # different settings in the find result.
                         # If yes: modify
-                        if not compare_args_ipa(ansible_module, args,
-                                                res_find):
+                        # The nomembers parameter is added to args for the
+                        # api command. But no_members is never part of
+                        # res_find from user-show, therefore this parameter
+                        # needs to be ignored in compare_args_ipa.
+                        if not compare_args_ipa(
+                                ansible_module, args, res_find,
+                                ignore=["no_members"]):
                             commands.append([name, "user_mod", args])
 
                     else:
