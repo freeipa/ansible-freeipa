@@ -77,14 +77,14 @@
       ipaadmin_password: SomeADMINpassword
       name: testrule1
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present again
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure user01 is on the list of users sudorule execute as.
     ipasudorule:
@@ -94,7 +94,7 @@
         - user01
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure user01 is on the list of users sudorule execute as, again.
     ipasudorule:
@@ -104,7 +104,7 @@
         - user01
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure user01 is not on the list of users sudorule execute as.
     ipasudorule:
@@ -115,7 +115,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure user01 is not on the list of users sudorule execute as, again.
     ipasudorule:
@@ -126,7 +126,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure group01 is on the list of group sudorule execute as.
     ipasudorule:
@@ -136,7 +136,7 @@
         - group01
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group01 is on the list of group sudorule execute as, again.
     ipasudorule:
@@ -146,7 +146,7 @@
         - group01
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure group01 is not on the list of group sudorule execute as.
     ipasudorule:
@@ -157,7 +157,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group01 is not on the list of groups sudorule execute as, again.
     ipasudorule:
@@ -168,7 +168,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with usercategory 'all'
     ipasudorule:
@@ -176,7 +176,7 @@
       name: allusers
       usercategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with usercategory 'all', again
     ipasudorule:
@@ -184,7 +184,7 @@
       name: allusers
       usercategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is with usercategory 'all' is absent
     ipasudorule:
@@ -192,7 +192,7 @@
       name: allusers
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with runasusercategory 'all'.
     ipasudorule:
@@ -200,7 +200,7 @@
       name: allusers
       runasusercategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with runasusercategory 'all', again.
     ipasudorule:
@@ -208,7 +208,7 @@
       name: allusers
       runasusercategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is with runasusercategory 'all' is absent
     ipasudorule:
@@ -216,7 +216,7 @@
       name: allusers
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with runasgroupcategory 'all'.
     ipasudorule:
@@ -224,7 +224,7 @@
       name: allusers
       runasgroupcategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with runasgroupcategory 'all', again.
     ipasudorule:
@@ -232,7 +232,7 @@
       name: allusers
       runasgroupcategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is with runasgroupcategory 'all' is absent
     ipasudorule:
@@ -240,7 +240,7 @@
       name: allusers
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with usercategory 'all'.
     ipasudorule:
@@ -248,7 +248,7 @@
       name: allusers
       usercategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with usercategory 'all', again.
     ipasudorule:
@@ -256,7 +256,7 @@
       name: allusers
       usercategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with hostategory 'all'
     ipasudorule:
@@ -264,7 +264,7 @@
       name: allhosts
       hostcategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with hostategory 'all', again
     ipasudorule:
@@ -272,7 +272,7 @@
       name: allhosts
       hostcategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is disabled
     ipasudorule:
@@ -288,7 +288,7 @@
       name: testrule1
       state: disabled
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is enabled
     ipasudorule:
@@ -296,7 +296,7 @@
       name: testrule1
       state: enabled
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is enabled, again
     ipasudorule:
@@ -304,7 +304,7 @@
       name: testrule1
       state: enabled
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure user is present in sudorule.
     ipasudorule:
@@ -313,7 +313,7 @@
       user: user01
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure user is present in sudorule, again.
     ipasudorule:
@@ -322,7 +322,7 @@
       user: user01
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure user is absent from sudorule.
     ipasudorule:
@@ -332,7 +332,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure user is absent from sudorule, again.
     ipasudorule:
@@ -342,7 +342,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure group is present in sudorule.
     ipasudorule:
@@ -351,7 +351,7 @@
       group: group01
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group is present in sudorule, again.
     ipasudorule:
@@ -360,7 +360,7 @@
       group: group01
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure group is absent from sudorule.
     ipasudorule:
@@ -370,7 +370,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group is absent from sudorule, again.
     ipasudorule:
@@ -380,7 +380,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule has a sudooption.
     ipasudorule:
@@ -389,7 +389,7 @@
       sudooption: '!authenticate'
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule has a sudooption, again.
     ipasudorule:
@@ -398,7 +398,7 @@
       sudooption: '!authenticate'
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule has an order.
     ipasudorule:
@@ -406,7 +406,7 @@
       name: testrule1
       order: 1
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule has an order, again.
     ipasudorule:
@@ -414,7 +414,7 @@
       name: testrule1
       order: 1
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule has another order.
     ipasudorule:
@@ -422,7 +422,7 @@
       name: testrule1
       order: 10
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present and some sudocmd are allowed.
     ipasudorule:
@@ -432,7 +432,7 @@
       - /sbin/ifconfig
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present and some sudocmd are allowed, again.
     ipasudorule:
@@ -442,7 +442,7 @@
       - /sbin/ifconfig
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present and some sudocmd are denyed.
     ipasudorule:
@@ -452,7 +452,7 @@
       - /usr/bin/vim
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present and some sudocmd are denyed, again.
     ipasudorule:
@@ -462,7 +462,7 @@
       - /usr/bin/vim
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present and, sudocmds are absent.
     ipasudorule:
@@ -473,7 +473,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present and, sudocmds are absent, again.
     ipasudorule:
@@ -484,7 +484,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present with cmdcategory 'all'.
     ipasudorule:
@@ -492,7 +492,7 @@
       name: allcommands
       cmdcategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present with cmdcategory 'all', again.
     ipasudorule:
@@ -500,7 +500,7 @@
       name: allcommands
       cmdcategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure host "{{ ansible_facts['fqdn'] }}" is present in sudorule.
     ipasudorule:
@@ -509,7 +509,7 @@
       host: "{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host "{{ ansible_facts['fqdn'] }}" is present in sudorule, again.
     ipasudorule:
@@ -518,7 +518,7 @@
       host: "{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure hostgroup is present in sudorule.
     ipasudorule:
@@ -527,7 +527,7 @@
       hostgroup: cluster
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure hostgroup is present in sudorule, again.
     ipasudorule:
@@ -536,7 +536,7 @@
       hostgroup: cluster
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with an allow_sudocmdgroup.
     ipasudorule:
@@ -545,7 +545,7 @@
       allow_sudocmdgroup: test_sudorule
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with an allow_sudocmdgroup, again.
     ipasudorule:
@@ -554,7 +554,7 @@
       allow_sudocmdgroup: test_sudorule
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, but allow_sudocmdgroup is absent.
     ipasudorule:
@@ -564,7 +564,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, but allow_sudocmdgroup is absent.
     ipasudorule:
@@ -574,7 +574,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with an deny_sudocmdgroup.
     ipasudorule:
@@ -583,7 +583,7 @@
       deny_sudocmdgroup: test_sudorule
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with an deny_sudocmdgroup, again.
     ipasudorule:
@@ -592,7 +592,7 @@
       deny_sudocmdgroup: test_sudorule
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, but deny_sudocmdgroup is absent.
     ipasudorule:
@@ -602,7 +602,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, but deny_sudocmdgroup is absent, again.
     ipasudorule:
@@ -612,7 +612,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is absent
     ipasudorule:
@@ -620,7 +620,7 @@
       name: testrule1
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is absent, again.
     ipasudorule:
@@ -628,7 +628,7 @@
       name: testrule1
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule allhosts is absent
     ipasudorule:
@@ -636,7 +636,7 @@
       name: allhosts
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule allhosts is absent, again
     ipasudorule:
@@ -644,7 +644,7 @@
       name: allhosts
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule allusers is absent
     ipasudorule:
@@ -652,7 +652,7 @@
       name: allusers
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule allusers is absent, again
     ipasudorule:
@@ -660,7 +660,7 @@
       name: allusers
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule allcommands is absent
     ipasudorule:
@@ -668,7 +668,7 @@
       name: allcommands
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule allcommands is absent, again
     ipasudorule:
@@ -676,7 +676,7 @@
       name: allcommands
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # cleanup
   - name : Ensure sudocmdgroup is absent
