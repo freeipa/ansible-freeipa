@@ -432,6 +432,18 @@
       name: host04
       ip_address: "{{ ipv4_prefix }}.114"
       reverse: yes
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure that 'host04' has a A record with reverse, for NS record, again.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ testzone }}"
+      name: host04
+      ip_address: "{{ ipv4_prefix }}.114"
+      reverse: yes
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' has NS record.
     ipadnsrecord:
