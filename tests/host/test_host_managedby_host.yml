@@ -29,7 +29,7 @@
       name: "{{ host1_fqdn }}"
       force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host2_fqdn }}" present
     ipahost:
@@ -37,7 +37,7 @@
       name: "{{ host2_fqdn }}"
       force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" managed by "{{ 'host2.' + ipaserver_domain }}"
     ipahost:
@@ -45,7 +45,7 @@
       name: "{{ host1_fqdn }}"
       managedby_host: "{{ host2_fqdn }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" managed by "{{ 'host2.' + ipaserver_domain }}" again
     ipahost:
@@ -53,7 +53,7 @@
       name: "{{ host1_fqdn }}"
       managedby_host: "{{ host2_fqdn }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" managed by "{{ ansible_facts['fqdn'] }}"
     ipahost:
@@ -62,7 +62,7 @@
       managedby_host: "{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" managed by "{{ ansible_facts['fqdn'] }}" again
     ipahost:
@@ -71,7 +71,7 @@
       managedby_host: "{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" not managed by "{{ ansible_facts['fqdn'] }}"
     ipahost:
@@ -81,7 +81,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" not managed by "{{ ansible_facts['fqdn'] }}" again
     ipahost:
@@ -91,7 +91,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" not managed by "{{ 'host2.' + ipaserver_domain }}"
     ipahost:
@@ -101,7 +101,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" not managed by "{{ 'host2.' + ipaserver_domain }}" again
     ipahost:
@@ -111,7 +111,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host absent
     ipahost:
@@ -122,4 +122,4 @@
       update_dns: yes
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
