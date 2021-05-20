@@ -28,7 +28,7 @@
       name: ops
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure presence of pwpolicies for group ops
     ipapwpolicy:
@@ -44,7 +44,7 @@
       maxfail: 3
       failinterval: 5
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure presence of pwpolicies for group ops again
     ipapwpolicy:
@@ -60,21 +60,21 @@
       maxfail: 3
       failinterval: 5
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure maxlife of 49 for global_policy
     ipapwpolicy:
       ipaadmin_password: SomeADMINpassword
       maxlife: 49
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure maxlife of 49 for global_policy again
     ipapwpolicy:
       ipaadmin_password: SomeADMINpassword
       maxlife: 49
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure absence of pwpoliciy global_policy will fail
     ipapwpolicy:
@@ -82,7 +82,7 @@
       state: absent
     register: result
     ignore_errors: True
-    failed_when: result is defined and result
+    failed_when: (result is defined and result) or result.failed
 
   - name: Ensure absence of pwpolicies for group ops
     ipapwpolicy:
@@ -90,14 +90,14 @@
       name: ops
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure maxlife of 90 for global_policy
     ipapwpolicy:
       ipaadmin_password: SomeADMINpassword
       maxlife: 90
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure absence of pwpolicies for group ops
     ipapwpolicy:
@@ -105,4 +105,4 @@
       name: ops
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
