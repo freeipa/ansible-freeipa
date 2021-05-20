@@ -1327,6 +1327,23 @@ def main():
 
                     dnsrecord_args = gen_dnsrecord_args(ansible_module,
                                                         ip_address, reverse)
+
+                    # Remove arecord and aaaarecord from dnsrecord_args
+                    # if the record does not exits in res_find_dnsrecord
+                    # to prevent "DNS resource record not found" error
+                    if "arecord" in dnsrecord_args \
+                       and dnsrecord_args["arecord"] is not None \
+                       and len(dnsrecord_args["arecord"]) > 0 \
+                       and (res_find_dnsrecord is None
+                            or "arecord" not in res_find_dnsrecord):
+                        del dnsrecord_args["arecord"]
+                    if "aaaarecord" in dnsrecord_args \
+                       and dnsrecord_args["aaaarecord"] is not None \
+                       and len(dnsrecord_args["aaaarecord"]) > 0 \
+                       and (res_find_dnsrecord is None
+                            or "aaaarecord" not in res_find_dnsrecord):
+                        del dnsrecord_args["aaaarecord"]
+
                     if "arecord" in dnsrecord_args or \
                        "aaaarecord" in dnsrecord_args:
                         domain_name = name[name.find(".")+1:]
