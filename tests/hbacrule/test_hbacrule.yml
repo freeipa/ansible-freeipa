@@ -66,35 +66,35 @@
       - name: "{{ 'testhost04.' + ipaserver_domain }}"
         force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group testhostgroup01 is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
       name: testhostgroup01
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group testhostgroup02 is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
       name: testhostgroup02
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group testhostgroup03 is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
       name: testhostgroup03
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group testhostgroup04 is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
       name: testhostgroup04
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure testusers are present
     ipauser:
@@ -113,91 +113,91 @@
         first: test
         last: user04
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure user group testgroup01 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: testgroup01
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure user group testgroup02 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: testgroup02
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure user group testgroup03 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: testgroup03
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure user group testgroup04 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: testgroup04
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service testhbacsvc01 is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
       name: testhbacsvc01
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service testhbacsvc02 is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
       name: testhbacsvc02
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service testhbacsvc03 is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
       name: testhbacsvc03
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service testhbacsvc04 is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
       name: testhbacsvc04
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service Group testhbacsvcgroup01 is present
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
       name: testhbacsvcgroup01
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service Group testhbacsvcgroup02 is present
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
       name: testhbacsvcgroup02
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service Group testhbacsvcgroup03 is present
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
       name: testhbacsvcgroup03
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service Group testhbacsvcgroup04 is present
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
       name: testhbacsvcgroup04
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 is absent
     ipahbacrule:
@@ -212,14 +212,14 @@
       ipaadmin_password: SomeADMINpassword
       name: hbacrule01
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC rule hbacrule01 is present again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
       name: hbacrule01
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # CHANGE HBACRULE WITH ALL MEMBERS
 
@@ -236,7 +236,7 @@
       hbacsvc: testhbacsvc01,testhbacsvc02
       hbacsvcgroup: testhbacsvcgroup01,testhbacsvcgroup02
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC rule hbacrule01 is present with hosts, hostgroups, users, groups, hbassvcs and hbacsvcgroups again
     ipahbacrule:
@@ -251,7 +251,7 @@
       hbacsvc: testhbacsvc01,testhbacsvc02
       hbacsvcgroup: testhbacsvcgroup01,testhbacsvcgroup02
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # REMOVE MEMBERS ONE BY ONE
 
@@ -265,7 +265,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 host members are absent again
     ipahbacrule:
@@ -277,7 +277,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hostgroup members are absent
     ipahbacrule:
@@ -287,7 +287,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hostgroup members are absent again
     ipahbacrule:
@@ -297,7 +297,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 user members are absent
     ipahbacrule:
@@ -307,7 +307,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 user members are absent again
     ipahbacrule:
@@ -317,7 +317,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 user group members are absent
     ipahbacrule:
@@ -327,7 +327,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 user group members are absent again
     ipahbacrule:
@@ -337,7 +337,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hbacsvc members are absent
     ipahbacrule:
@@ -347,7 +347,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hbacsvc members are absent again
     ipahbacrule:
@@ -357,7 +357,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hbacsvcgroup members are absent
     ipahbacrule:
@@ -367,7 +367,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hbacsvcgroup members are absent again
     ipahbacrule:
@@ -377,7 +377,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # ADD MEMBERS BACK
 
@@ -390,7 +390,7 @@
       - "{{ 'testhost02.' + ipaserver_domain }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 host members are present again
     ipahbacrule:
@@ -401,7 +401,7 @@
       - "{{ 'testhost02.' + ipaserver_domain }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hostgroup members are present
     ipahbacrule:
@@ -410,7 +410,7 @@
       hostgroup: testhostgroup01,testhostgroup02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hostgroup members are present again
     ipahbacrule:
@@ -419,7 +419,7 @@
       hostgroup: testhostgroup01,testhostgroup02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 user members are present
     ipahbacrule:
@@ -428,7 +428,7 @@
       user: testuser01,testuser02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 user members are present again
     ipahbacrule:
@@ -437,7 +437,7 @@
       user: testuser01,testuser02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 user group members are present
     ipahbacrule:
@@ -446,7 +446,7 @@
       group: testgroup01,testgroup02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 user group members are present again
     ipahbacrule:
@@ -455,7 +455,7 @@
       group: testgroup01,testgroup02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hbacsvc members are present
     ipahbacrule:
@@ -464,7 +464,7 @@
       hbacsvc: testhbacsvc01,testhbacsvc02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hbacsvc members are present again
     ipahbacrule:
@@ -473,7 +473,7 @@
       hbacsvc: testhbacsvc01,testhbacsvc02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hbacsvcgroup members are present
     ipahbacrule:
@@ -482,7 +482,7 @@
       hbacsvcgroup: testhbacsvcgroup01,testhbacsvcgroup02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure test HBAC rule hbacrule01 hbacsvcgroup members are present again
     ipahbacrule:
@@ -491,7 +491,7 @@
       hbacsvcgroup: testhbacsvcgroup01,testhbacsvcgroup02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # CHANGE TO DIFFERENT MEMBERS
 
@@ -508,7 +508,7 @@
       hbacsvc: testhbacsvc03,testhbacsvc04
       hbacsvcgroup: testhbacsvcgroup03,testhbacsvcgroup04
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC rule hbacrule01 is present with different hosts, hostgroups, users, groups, hbassvcs and hbacsvcgroups again
     ipahbacrule:
@@ -523,7 +523,7 @@
       hbacsvc: testhbacsvc03,testhbacsvc04
       hbacsvcgroup: testhbacsvcgroup03,testhbacsvcgroup04
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # ENSURE OLD TEST MEMBERS ARE ABSENT
 
@@ -542,7 +542,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # ENSURE NEW TEST MEMBERS ARE ABSENT
 
@@ -561,7 +561,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC rule hbacrule01 members are absent again
     ipahbacrule:
@@ -578,7 +578,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # CLEANUP TEST ITEMS
 
