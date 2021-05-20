@@ -30,7 +30,7 @@
       ok_as_delegate: yes
       ok_to_auth_as_delegate: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth, ok_as_delegate and ok_to_auth_as_delegate again
     ipahost:
@@ -40,7 +40,7 @@
       ok_as_delegate: yes
       ok_to_auth_as_delegate: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth, ok_as_delegate and ok_to_auth_as_delegate set to no
     ipahost:
@@ -50,7 +50,7 @@
       ok_as_delegate: no
       ok_to_auth_as_delegate: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth, ok_as_delegate and ok_to_auth_as_delegate set to no again
     ipahost:
@@ -60,7 +60,7 @@
       ok_as_delegate: no
       ok_to_auth_as_delegate: no
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth
     ipahost:
@@ -68,7 +68,7 @@
       name: "{{ host1_fqdn }}"
       requires_pre_auth: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with requires_pre_auth again
     ipahost:
@@ -76,7 +76,7 @@
       name: "{{ host1_fqdn }}"
       requires_pre_auth: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with ok_as_delegate
     ipahost:
@@ -84,7 +84,7 @@
       name: "{{ host1_fqdn }}"
       ok_as_delegate: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with ok_as_delegate again
     ipahost:
@@ -92,7 +92,7 @@
       name: "{{ host1_fqdn }}"
       ok_as_delegate: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with ok_to_auth_as_delegate
     ipahost:
@@ -100,7 +100,7 @@
       name: "{{ host1_fqdn }}"
       ok_to_auth_as_delegate: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present with ok_to_auth_as_delegate again
     ipahost:
@@ -108,7 +108,7 @@
       name: "{{ host1_fqdn }}"
       ok_to_auth_as_delegate: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host absent
     ipahost:
