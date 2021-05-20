@@ -127,6 +127,16 @@
       ipaadmin_password: SomeADMINpassword
       name: example.com
       state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: ensure forwardzone example.com is absent, again.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: ensure forwardzone example.com is created with minimal args
     ipadnsforwardzone:
@@ -139,6 +149,17 @@
     register: result
     failed_when: not result.changed
 
+  - name: ensure forwardzone example.com is created with minimal args, again
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      state: present
+      name: example.com
+      skip_overlap_check: true
+      forwarders:
+        - ip_address: 8.8.8.8
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: add a forwarder to any existing ones
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
@@ -150,6 +171,18 @@
       action: member
     register: result
     failed_when: not result.changed
+
+  - name: add a forwarder to any existing ones, again
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      state: present
+      name: example.com
+      forwarders:
+        - ip_address: 4.4.4.4
+          port: 8053
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: check the list of forwarders is what we expect
     ipadnsforwardzone:
@@ -174,6 +207,17 @@
       action: member
     register: result
     failed_when: not result.changed
+
+  - name: remove a single forwarder, again
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      state: absent
+      name: example.com
+      forwarders:
+        - ip_address: 8.8.8.8
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: check the list of forwarders is what we expect now
     ipadnsforwardzone:
