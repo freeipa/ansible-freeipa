@@ -28,7 +28,7 @@
       first: test
       last: test
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata members present
     ipauser:
@@ -40,7 +40,7 @@
         - certificate: "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata members present again
     ipauser:
@@ -52,7 +52,7 @@
         - certificate: "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test certmapdata members absent
     ipauser:
@@ -65,7 +65,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata members absent again
     ipauser:
@@ -78,7 +78,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test certmapdata members present
     ipauser:
@@ -93,7 +93,7 @@
         subject: CN=subject3
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata members present again
     ipauser:
@@ -108,7 +108,7 @@
         subject: CN=subject3
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test certmapdata members absent
     ipauser:
@@ -122,7 +122,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata members absent again
     ipauser:
@@ -136,7 +136,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test certmapdata members absent
     ipauser:
@@ -148,7 +148,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata members absent again
     ipauser:
@@ -160,7 +160,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test certmapdata member present
     ipauser:
@@ -171,7 +171,7 @@
         subject: CN=test,dc=example,dc=com
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata member present again
     ipauser:
@@ -182,7 +182,7 @@
         subject: CN=test,dc=example,dc=com
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test certmapdata member (data) present again
     ipauser:
@@ -192,7 +192,7 @@
       - data: X509:<I>dc=com,dc=example,CN=ca<S>dc=com,dc=example,CN=test
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test certmapdata member absent
     ipauser:
@@ -204,7 +204,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User test certmapdata member (data) absent again
     ipauser:
@@ -215,7 +215,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User test absent
     ipauser:
@@ -223,7 +223,7 @@
       name: test
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Remove certificate files.
     shell:
