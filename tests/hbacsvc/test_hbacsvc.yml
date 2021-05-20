@@ -16,14 +16,14 @@
       ipaadmin_password: SomeADMINpassword
       name: http
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service for http is present again
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
       name: http
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure HBAC Service for tftp is present
     ipahbacsvc:
@@ -31,7 +31,7 @@
       name: tftp
       description: TFTP service
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service for tftp is present again
     ipahbacsvc:
@@ -39,7 +39,7 @@
       name: tftp
       description: TFTP service
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure HBAC Services for http and tftp are absent
     ipahbacsvc:
@@ -47,7 +47,7 @@
       name: http,tftp
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Services for http and tftp are absent again
     ipahbacsvc:
@@ -55,4 +55,4 @@
       name: http,tftp
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
