@@ -416,6 +416,32 @@ def main():
                 if action == "sudorule":
                     # Found the sudorule
                     if res_find is not None:
+                        # Remove empty usercategory, hostcategory,
+                        # cmdcaterory, runasusercategory and hostcategory
+                        # from args if "" and if the category is not in the
+                        # sudorule. The empty string is used to reset the
+                        # category.
+                        if "usercategory" in args \
+                           and args["usercategory"] == "" \
+                           and "usercategory" not in res_find:
+                            del args["usercategory"]
+                        if "hostcategory" in args \
+                           and args["hostcategory"] == "" \
+                           and "hostcategory" not in res_find:
+                            del args["hostcategory"]
+                        if "cmdcategory" in args \
+                           and args["cmdcategory"] == "" \
+                           and "cmdcategory" not in res_find:
+                            del args["cmdcategory"]
+                        if "ipasudorunasusercategory" in args \
+                           and args["ipasudorunasusercategory"] == "" \
+                           and "ipasudorunasusercategory" not in res_find:
+                            del args["ipasudorunasusercategory"]
+                        if "ipasudorunasgroupcategory" in args \
+                           and args["ipasudorunasgroupcategory"] == "" \
+                           and "ipasudorunasgroupcategory" not in res_find:
+                            del args["ipasudorunasgroupcategory"]
+
                         # For all settings is args, check if there are
                         # different settings in the find result.
                         # If yes: modify
