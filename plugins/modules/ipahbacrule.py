@@ -159,7 +159,7 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get, gen_add_del_lists
+    module_params_get, gen_add_del_lists, gen_add_list, gen_intersection_list
 
 
 def find_hbacrule(module, name):
@@ -340,6 +340,22 @@ def main():
                 if action == "hbacrule":
                     # Found the hbacrule
                     if res_find is not None:
+                        # Remove usercategory, hostcategory and
+                        # servicecategory from args if "" and category
+                        # not in res_find (needed for idempotency)
+                        if "usercategory" in args and \
+                           args["usercategory"] == "" and \
+                           "usercategory" not in res_find:
+                            del args["usercategory"]
+                        if "hostcategory" in args and \
+                           args["hostcategory"] == "" and \
+                           "hostcategory" not in res_find:
+                            del args["hostcategory"]
+                        if "servicecategory" in args and \
+                           args["servicecategory"] == "" and \
+                           "servicecategory" not in res_find:
+                            del args["servicecategory"]
+
                         # For all settings is args, check if there are
                         # different settings in the find result.
                         # If yes: modify
@@ -420,6 +436,18 @@ def main():
                     if res_find is None:
                         ansible_module.fail_json(msg="No hbacrule '%s'" % name)
 
+                    # Generate add lists for host, hostgroup and
+                    # res_find to only try to add hosts and hostgroups
+                    # that not in hbacrule already
+                    if host is not None and \
+                       "memberhost_host" in res_find:
+                        host = gen_add_list(
+                            host, res_find["memberhost_host"])
+                    if hostgroup is not None and \
+                       "memberhost_hostgroup" in res_find:
+                        hostgroup = gen_add_list(
+                            hostgroup, res_find["memberhost_hostgroup"])
+
                     # Add hosts and hostgroups
                     if host is not None or hostgroup is not None:
                         commands.append([name, "hbacrule_add_host",
@@ -428,6 +456,19 @@ def main():
                                              "hostgroup": hostgroup,
                                          }])
 
+                    # Generate add lists for hbacsvc, hbacsvcgroup and
+                    # res_find to only try to add hbacsvcs and hbacsvcgroups
+                    # that not in hbacrule already
+                    if hbacsvc is not None and \
+                       "memberservice_hbacsvc" in res_find:
+                        hbacsvc = gen_add_list(
+                            hbacsvc, res_find["memberservice_hbacsvc"])
+                    if hbacsvcgroup is not None and \
+                       "memberservice_hbacsvcgroup" in res_find:
+                        hbacsvcgroup = gen_add_list(
+                            hbacsvcgroup,
+                            res_find["memberservice_hbacsvcgroup"])
+
                     # Add hbacsvcs and hbacsvcgroups
                     if hbacsvc is not None or hbacsvcgroup is not None:
                         commands.append([name, "hbacrule_add_service",
@@ -435,6 +476,18 @@ def main():
                                              "hbacsvc": hbacsvc,
                                              "hbacsvcgroup": hbacsvcgroup,
                                          }])
+
+                    # Generate add lists for user, group and
+                    # res_find to only try to add users and groups
+                    # that not in hbacrule already
+                    if user is not None and \
+                       "memberuser_user" in res_find:
+                        user = gen_add_list(
+                            user, res_find["memberuser_user"])
+                    if group is not None and \
+                       "memberuser_group" in res_find:
+                        group = gen_add_list(
+                            group, res_find["memberuser_group"])
 
                     # Add users and groups
                     if user is not None or group is not None:
@@ -453,6 +506,22 @@ def main():
                     if res_find is None:
                         ansible_module.fail_json(msg="No hbacrule '%s'" % name)
 
+                    # Generate intersection lists for host, hostgroup and
+                    # res_find to only try to remove hosts and hostgroups
+                    # that are in hbacrule
+                    if host is not None:
+                        if "memberhost_host" in res_find:
+                            host = gen_intersection_list(
+                                host, res_find["memberhost_host"])
+                        else:
+                            host = None
+                    if hostgroup is not None:
+                        if "memberhost_hostgroup" in res_find:
+                            hostgroup = gen_intersection_list(
+                                hostgroup, res_find["memberhost_hostgroup"])
+                        else:
+                            hostgroup = None
+
                     # Remove hosts and hostgroups
                     if host is not None or hostgroup is not None:
                         commands.append([name, "hbacrule_remove_host",
@@ -461,6 +530,23 @@ def main():
                                              "hostgroup": hostgroup,
                                          }])
 
+                    # Generate intersection lists for hbacsvc, hbacsvcgroup
+                    # and res_find to only try to remove hbacsvcs and
+                    # hbacsvcgroups that are in hbacrule
+                    if hbacsvc is not None:
+                        if "memberservice_hbacsvc" in res_find:
+                            hbacsvc = gen_intersection_list(
+                                hbacsvc, res_find["memberservice_hbacsvc"])
+                        else:
+                            hbacsvc = None
+                    if hbacsvcgroup is not None:
+                        if "memberservice_hbacsvcgroup" in res_find:
+                            hbacsvcgroup = gen_intersection_list(
+                                hbacsvcgroup,
+                                res_find["memberservice_hbacsvcgroup"])
+                        else:
+                            hbacsvcgroup = None
+
                     # Remove hbacsvcs and hbacsvcgroups
                     if hbacsvc is not None or hbacsvcgroup is not None:
                         commands.append([name, "hbacrule_remove_service",
@@ -468,6 +554,22 @@ def main():
                                              "hbacsvc": hbacsvc,
                                              "hbacsvcgroup": hbacsvcgroup,
                                          }])
+
+                    # Generate intersection lists for user, group and
+                    # res_find to only try to remove users and groups
+                    # that are in hbacrule
+                    if user is not None:
+                        if "memberuser_user" in res_find:
+                            user = gen_intersection_list(
+                                user, res_find["memberuser_user"])
+                        else:
+                            user = None
+                    if group is not None:
+                        if "memberuser_group" in res_find:
+                            group = gen_intersection_list(
+                                group, res_find["memberuser_group"])
+                        else:
+                            group = None
 
                     # Remove users and groups
                     if user is not None or group is not None:
@@ -520,16 +622,12 @@ def main():
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(e)))
             # Get all errors
-            # All "already a member" and "not a member" failures in the
             # result are ignored. All others are reported.
             if "failed" in result and len(result["failed"]) > 0:
                 for item in result["failed"]:
                     failed_item = result["failed"][item]
                     for member_type in failed_item:
                         for member, failure in failed_item[member_type]:
-                            if "already a member" in failure \
-                               or "not a member" in failure:
-                                continue
                             errors.append("%s: %s %s: %s" % (
                                 command, member_type, member, failure))
         if len(errors) > 0:
