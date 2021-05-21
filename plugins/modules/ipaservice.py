@@ -561,6 +561,15 @@ def main():
                             if remove in args:
                                 del args[remove]
 
+                        if (
+                            "krbprincipalauthind" in args
+                            and (
+                                args.get("krbprincipalauthind", [""]) ==
+                                res_find.get("krbprincipalauthind", [""])
+                            )
+                          ):
+                            del args["krbprincipalauthind"]
+
                         if not compare_args_ipa(ansible_module, args,
                                                 res_find):
                             commands.append([name, "service_mod", args])
