@@ -4,5 +4,6 @@
 # ignore virtual environments
 /.tox/
 /.venv/
+/.ansible-freeipa-tests/
 
 tests/logs/

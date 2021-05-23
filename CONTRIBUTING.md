@@ -90,6 +90,9 @@ enabled.
 The tests run automatically on every pull request, using Fedora, CentOS 7,
 and CentOS 8 environments.
 
+While developing modules, you can run the tests locally, with [podman].
+See [Testing ansible-freeipa modules with podman].
+
 See the document [Running the tests] and also the section `Preparing the
 development environment`, to prepare your environment.
 
@@ -119,3 +122,5 @@ examples of commonly performed tasks.
 [pre-commit]: https://pre-commit.com
 [Running the tests]: tests/README.md
 [tests]: tests/
+[podman]: https://podman.io
+[Testing ansible-freeipa modules with podman]: tests/README-podman.md
