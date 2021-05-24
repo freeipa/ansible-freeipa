@@ -868,10 +868,10 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, module_params_get, \
-    is_ipv4_addr, is_ipv6_addr
+    is_ipv4_addr, is_ipv6_addr, ipalib_errors
 import dns.reversename
 import dns.resolver
-import ipalib.errors
+
 import six
 
 
@@ -1150,7 +1150,7 @@ def find_dnsrecord(module, dnszone, name):
     try:
         _result = api_command(
             module, "dnsrecord_show", to_text(dnszone), _args)
-    except ipalib.errors.NotFound:
+    except ipalib_errors.NotFound:
         return None
 
     return _result["result"]
@@ -1509,9 +1509,9 @@ def main():
                 else:
                     changed = True
 
-            except ipalib.errors.EmptyModlist:
+            except ipalib_errors.EmptyModlist:
                 continue
-            except ipalib.errors.DuplicateEntry:
+            except ipalib_errors.DuplicateEntry:
                 continue
             except Exception as e:
                 error_message = str(e)
