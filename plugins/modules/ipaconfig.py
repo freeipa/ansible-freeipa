@@ -254,8 +254,7 @@ config:
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command_no_name, \
-    compare_args_ipa, module_params_get
-import ipalib.errors
+    compare_args_ipa, module_params_get, ipalib_errors
 
 
 def config_show(module):
@@ -464,7 +463,7 @@ def main():
                         exit_args[k] = (v[0] == "TRUE")
                     else:
                         exit_args[k] = v
-    except ipalib.errors.EmptyModlist:
+    except ipalib_errors.EmptyModlist:
         changed = False
     except Exception as e:
         ansible_module.fail_json(msg="%s %s" % (params, str(e)))
