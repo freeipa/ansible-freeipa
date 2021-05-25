@@ -212,9 +212,9 @@ from ansible.module_utils.ansible_freeipa_module import (
     FreeIPABaseModule,
     is_ip_address,
     is_ip_network_address,
-    is_valid_port
+    is_valid_port,
+    ipalib_errors
 )  # noqa: E402
-import ipalib.errors
 import netaddr
 import six
 
@@ -414,7 +414,7 @@ class DNSZoneModule(FreeIPABaseModule):
 
         try:
             response = self.api_command("dnszone_show", args=get_zone_args)
-        except ipalib.errors.NotFound:
+        except ipalib_errors.NotFound:
             zone = None
             is_zone_active = False
         else:

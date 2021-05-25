@@ -230,8 +230,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
     encode_certificate, gen_add_del_lists, module_params_get, to_text, \
-    api_check_param
-import ipalib.errors
+    api_check_param, ipalib_errors
 
 
 def find_service(module, name):
@@ -241,7 +240,7 @@ def find_service(module, name):
 
     try:
         _result = api_command(module, "service_show", to_text(name), _args)
-    except ipalib.errors.NotFound:
+    except ipalib_errors.NotFound:
         return None
 
     if "result" in _result:

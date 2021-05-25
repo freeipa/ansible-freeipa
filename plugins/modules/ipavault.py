@@ -320,8 +320,8 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, \
-    gen_add_del_lists, compare_args_ipa, module_params_get, exit_raw_json
-from ipalib.errors import EmptyModlist, NotFound
+    gen_add_del_lists, compare_args_ipa, module_params_get, exit_raw_json, \
+    ipalib_errors
 
 
 def find_vault(module, name, username, service, shared):
@@ -579,7 +579,7 @@ def get_stored_data(module, res_find, args):
     # retrieve vault stored data
     try:
         result = api_command(module, 'vault_retrieve', name, pwdargs)
-    except NotFound:
+    except ipalib_errors.NotFound:
         return None
 
     return result['result'].get('data')
@@ -991,7 +991,7 @@ def main():
                             changed = True
                     else:
                         changed = True
-            except EmptyModlist:
+            except ipalib_errors.EmptyModlist:
                 result = {}
             except Exception as exception:
                 ansible_module.fail_json(

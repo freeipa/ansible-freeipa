@@ -107,9 +107,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    gen_add_del_lists
-
-import ipalib
+    gen_add_del_lists, ipalib_errors
 
 
 def find_sudocmdgroup(module, name):
@@ -117,7 +115,7 @@ def find_sudocmdgroup(module, name):
 
     try:
         _result = api_command(module, "sudocmdgroup_show", to_text(name), args)
-    except ipalib.errors.NotFound:
+    except ipalib_errors.NotFound:
         return None
     else:
         return _result["result"]
