@@ -276,14 +276,14 @@ else:
                 pass
         raise ValueError("Invalid date '%s'" % value)
 
-    def compare_args_ipa(module, args, ipa):  # noqa
+    def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
         """Compare IPA obj attrs with the command args.
 
         This function compares IPA objects attributes with the args the
-        module is intending to use to call a command. This is useful to know
-        if call to IPA server will be needed or not.
-        In other to compare we have to prepare the perform slight changes in
-        data formats.
+        module is intending to use to call a command. ignore can be a list
+        of attributes, that should be ignored in the comparison.
+        This is useful to know if a call to IPA server will be needed or not.
+        In order to compare we have to perform slight changes in data formats.
 
         Returns True if they are the same and False otherwise.
         """
@@ -307,7 +307,12 @@ else:
         if not (isinstance(args, dict) and isinstance(ipa, dict)):
             raise TypeError("Expected 'dicts' to compare.")
 
-        for key in args.keys():
+        # Create filtered_args using ignore
+        if ignore is None:
+            ignore = []
+        filtered_args = [key for key in args if key not in ignore]
+
+        for key in filtered_args:
             if key not in ipa:
                 module.debug(
                     base_debug_msg + "Command key not present in IPA: %s" % key
