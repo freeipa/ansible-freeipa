@@ -39,14 +39,14 @@
           ok_as_delegate: no
           ok_to_auth_as_delegate: no
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure service is present, again
         ipaservice:
           ipaadmin_password: SomeADMINpassword
           name: "HTTP/{{ svc_fqdn }}"
           pac_type:
-            - MS_PAC
+            - MS-PAC
             - PAD
           auth_ind: otp
           skip_host_check: no
@@ -55,7 +55,7 @@
           ok_as_delegate: no
           ok_to_auth_as_delegate: no
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Modify service.
         ipaservice:
@@ -65,7 +65,7 @@
           ok_as_delegate: yes
           ok_to_auth_as_delegate: yes
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Modify service, again.
         ipaservice:
@@ -75,7 +75,7 @@
           ok_as_delegate: yes
           ok_to_auth_as_delegate: yes
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure service is present, without host object.
         ipaservice:
@@ -83,7 +83,7 @@
           name: "HTTP/{{ nohost_fqdn }}"
           skip_host_check: yes
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure service is present, without host object, again.
         ipaservice:
@@ -91,7 +91,7 @@
           name: "HTTP/{{ nohost_fqdn }}"
           skip_host_check: yes
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure service is present, with host not in DNS.
         ipaservice:
@@ -100,7 +100,7 @@
           skip_host_check: no
           force: yes
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure service is present, with host not in DNS, again.
         ipaservice:
@@ -109,7 +109,7 @@
           skip_host_check: no
           force: yes
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure service is present, whithout host object and with host not in DNS.
         ipaservice:
@@ -118,7 +118,7 @@
           skip_host_check: yes
           force: yes
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure service is present, whithout host object and with host not in DNS, again.
         ipaservice:
@@ -127,7 +127,7 @@
           skip_host_check: yes
           force: yes
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Principal host/test.example.com present in service.
         ipaservice:
@@ -137,7 +137,7 @@
             - host/test.example.com
           action: member
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Principal host/test.example.com present in service, again.
         ipaservice:
@@ -147,7 +147,8 @@
             - host/test.example.com
           action: member
         register: result
-        failed_when: result.changed
+        failed_when:
+          result.changed or (result.failed and "already contains one or more values" not in result.msg)
 
       - name: Principal host/test.example.com absent in service.
         ipaservice:
@@ -158,7 +159,7 @@
           action: member
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Principal host/test.example.com absent in service, again.
         ipaservice:
@@ -169,7 +170,8 @@
           action: member
           state: absent
         register: result
-        failed_when: result.changed
+        failed_when:
+          result.changed or (result.failed and "does not contain 'one or more values to remove'" not in result.msg)
 
       - name: Ensure host can manage service.
         ipaservice:
@@ -180,7 +182,7 @@
           - "{{ host2_fqdn }}"
           action: member
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure host can manage service, again.
         ipaservice:
@@ -189,7 +191,7 @@
           host: "{{ host1_fqdn }}"
           action: member
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure host cannot manage service.
         ipaservice:
@@ -201,7 +203,7 @@
           action: member
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure host cannot manage service, again.
         ipaservice:
@@ -213,7 +215,7 @@
           action: member
           state: absent
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for users, groups, hosts and hostgroups.
         ipaservice:
@@ -233,7 +235,7 @@
           - hostgroup02
           action: member
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for users, groups, hosts and hostgroups, again.
         ipaservice:
@@ -253,7 +255,7 @@
           - hostgroup02
           action: member
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for users, groups, hosts and hostgroups.
         ipaservice:
@@ -274,7 +276,7 @@
           action: member
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for users, groups, hosts and hostgroups, again.
         ipaservice:
@@ -295,7 +297,7 @@
           action: member
           state: absent
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for users, groups, hosts and hostgroups
         ipaservice:
@@ -315,7 +317,7 @@
           - hostgroup02
           action: member
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for users, groups, hosts and hostgroups, again.
         ipaservice:
@@ -335,7 +337,7 @@
           - hostgroup02
           action: member
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for users, groups, hosts and hostgroups.
         ipaservice:
@@ -356,7 +358,7 @@
           action: member
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for users, groups, hosts and hostgroups, again.
         ipaservice:
@@ -377,23 +379,25 @@
           action: member
           state: absent
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure service is absent
         ipaservice:
           ipaadmin_password: SomeADMINpassword
           name: "HTTP/{{ svc_fqdn }}"
+          continue: yes
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure service is absent, again
         ipaservice:
           ipaadmin_password: SomeADMINpassword
           name: "HTTP/{{ svc_fqdn }}"
+          continue: yes
           state: absent
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure service is present, with multiple auth_ind values.
         ipaservice:
@@ -403,7 +407,7 @@
           skip_host_check: no
           force: yes
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure service is present, with multiple auth_ind values, again.
         ipaservice:
@@ -413,7 +417,7 @@
           skip_host_check: no
           force: yes
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Clear auth_ind.
         ipaservice:
@@ -423,7 +427,7 @@
           skip_host_check: no
           force: yes
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Clear auth_ind, again.
         ipaservice:
@@ -433,7 +437,7 @@
           skip_host_check: no
           force: yes
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure services are absent.
         ipaservice:
@@ -446,7 +450,7 @@
           continue: yes
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure services are absent.
         ipaservice:
@@ -459,41 +463,75 @@
           continue: yes
           state: absent
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure SMB service is present.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
           name: "{{ host1_fqdn }}"
+          pac_type: NONE
           smb: yes
           netbiosname: SAMBASVC
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure SMB service is again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
           name: "{{ host1_fqdn }}"
+          pac_type: NONE
           smb: yes
           netbiosname: SAMBASVC
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
+
+      - name: Modify SMB service.
+        ipaservice:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ host1_fqdn }}"
+          smb: yes
+          netbiosname: SAMBASVC
+          allow_retrieve_keytab_user:
+            - user01
+            - user02
+          allow_retrieve_keytab_group:
+            - group01
+            - group02
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Modify SMB service, again.
+        ipaservice:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ host1_fqdn }}"
+          smb: yes
+          netbiosname: SAMBASVC
+          allow_retrieve_keytab_user:
+            - user01
+            - user02
+          allow_retrieve_keytab_group:
+            - group01
+            - group02
+        register: result
+        failed_when: result.changed or result.failed
 
       - name: Ensure SMB service is absent.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
           name: "cifs/{{ host1_fqdn }}"
+          continue: yes
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure SMB service is absent, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
           name: "cifs/{{ host1_fqdn }}"
+          continue: yes
           state: absent
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       # cleanup
       - name: Cleanup test environment

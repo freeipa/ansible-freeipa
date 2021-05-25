@@ -91,7 +91,7 @@ options:
     type: list
     aliases: ["krbprincipalname"]
   smb:
-    description: Add a SMB service. Can only be used with new services.
+    description: Add a SMB service.
     required: false
     type: bool
   netbiosname:
@@ -234,20 +234,10 @@ from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
 import ipalib.errors
 
 
-def find_service(module, name, netbiosname):
+def find_service(module, name):
     _args = {
         "all": True,
     }
-
-    # Search for a SMB/cifs service.
-    if netbiosname is not None:
-        _result = api_command(
-            module, "service_find", to_text(netbiosname), _args)
-
-        for _res_find in _result.get('result', []):
-            for uid in _res_find.get('uid', []):
-                if uid.startswith("%s$@" % netbiosname):
-                    return _res_find
 
     try:
         _result = api_command(module, "service_show", to_text(name), _args)
@@ -287,6 +277,19 @@ def gen_args(pac_type, auth_ind, skip_host_check, force, requires_pre_auth,
     return _args
 
 
+def gen_args_smb(netbiosname, ok_as_delegate, ok_to_auth_as_delegate):
+    _args = {}
+
+    if netbiosname is not None:
+        _args['ipantflatname'] = netbiosname
+    if ok_as_delegate is not None:
+        _args['ipakrbokasdelegate'] = (ok_as_delegate)
+    if ok_to_auth_as_delegate is not None:
+        _args['ipakrboktoauthasdelegate'] = (ok_to_auth_as_delegate)
+
+    return _args
+
+
 def check_parameters(module, state, action, names, parameters):
     assert isinstance(parameters, dict)
 
@@ -310,15 +313,13 @@ def check_parameters(module, state, action, names, parameters):
         if action == 'service':
             invalid = ['delete_continue']
 
-            if parameters.get('smb', False):
-                invalid.extend(['force', 'auth_ind', 'skip_host_check',
-                                'requires_pre_auth', 'auth_ind', 'pac_type'])
-
-                for _invalid in invalid:
-                    if parameters.get(_invalid, False):
-                        module.fail_json(
-                            msg="Argument '%s' can not be used with SMB "
-                                "service." % _invalid)
+            if (
+                not parameters.get('smb', False)
+                and parameters.get('netbiosname')
+            ):
+                module.fail_json(
+                    msg="Argument 'netbiosname' can not be used without "
+                        "SMB service.")
         else:
             invalid.append('delete_continue')
 
@@ -494,11 +495,9 @@ def main():
         commands = []
 
         for name in names:
-            res_find = find_service(ansible_module, name, netbiosname)
+            res_find = find_service(ansible_module, name)
 
             if state == "present":
-                # if service exists, 'smb' cannot be used.
-
                 if action == "service":
                     args = gen_args(
                         pac_type, auth_ind, skip_host_check, force,
@@ -507,13 +506,24 @@ def main():
                     if not has_skip_host_check and 'skip_host_check' in args:
                         del args['skip_host_check']
 
+                    if smb:
+                        if res_find is None:
+                            _name = "cifs/" + name
+                            res_find = find_service(ansible_module, _name)
+                            if res_find is None:
+                                _args = gen_args_smb(
+                                    netbiosname, ok_as_delegate,
+                                    ok_to_auth_as_delegate)
+                                commands.append(
+                                    [name, 'service_add_smb', _args])
+                                res_find = {}
+                            # service_add_smb will prefix 'name' with
+                            # "cifs/", so we will need to change it here,
+                            # so that service_mod, if called later, works.
+                            name = _name
+
                     if res_find is None:
-                        if smb:
-                            if netbiosname is not None:
-                                args['ipantflatname'] = netbiosname
-                            commands.append([name, 'service_add_smb', args])
-                        else:
-                            commands.append([name, 'service_add', args])
+                        commands.append([name, 'service_add', args])
 
                         certificate_add = certificate or []
                         certificate_del = []
@@ -550,6 +560,15 @@ def main():
                         for remove in ['skip_host_check', 'force']:
                             if remove in args:
                                 del args[remove]
+
+                        if (
+                            "krbprincipalauthind" in args
+                            and (
+                                args.get("krbprincipalauthind", [""]) ==
+                                res_find.get("krbprincipalauthind", [""])
+                            )
+                          ):
+                            del args["krbprincipalauthind"]
 
                         if not compare_args_ipa(ansible_module, args,
                                                 res_find):

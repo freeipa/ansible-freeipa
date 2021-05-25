@@ -33,7 +33,7 @@
       - user02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for users, again.
     ipaservice:
@@ -44,7 +44,7 @@
       - user02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for users.
     ipaservice:
@@ -56,7 +56,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for users, again.
     ipaservice:
@@ -68,7 +68,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for group.
     ipaservice:
@@ -79,7 +79,7 @@
       - group02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for group, again.
     ipaservice:
@@ -90,7 +90,7 @@
       - group02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for group.
     ipaservice:
@@ -102,7 +102,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for group, again.
     ipaservice:
@@ -114,7 +114,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for host.
     ipaservice:
@@ -125,7 +125,7 @@
       - "{{ host2_fqdn }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for host, again.
     ipaservice:
@@ -136,7 +136,7 @@
       - "{{ host2_fqdn }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for host.
     ipaservice:
@@ -148,7 +148,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for host, again.
     ipaservice:
@@ -160,7 +160,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for hostgroup.
     ipaservice:
@@ -171,7 +171,7 @@
       - hostgroup02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for hostgroup, again.
     ipaservice:
@@ -182,7 +182,7 @@
       - hostgroup02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for hostgroup.
     ipaservice:
@@ -194,7 +194,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for hostgroup, again.
     ipaservice:
@@ -206,7 +206,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for users.
     ipaservice:
@@ -217,7 +217,7 @@
       - user02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for users, again.
     ipaservice:
@@ -228,7 +228,7 @@
       - user02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for users.
     ipaservice:
@@ -240,7 +240,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for users, again.
     ipaservice:
@@ -252,7 +252,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for group.
     ipaservice:
@@ -263,7 +263,7 @@
       - group02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for group, again.
     ipaservice:
@@ -274,7 +274,7 @@
       - group02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for group.
     ipaservice:
@@ -286,7 +286,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for group, again.
     ipaservice:
@@ -298,7 +298,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for host.
     ipaservice:
@@ -309,7 +309,7 @@
       - "{{ host2_fqdn }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for host, again.
     ipaservice:
@@ -320,7 +320,7 @@
       - "{{ host2_fqdn }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for host.
     ipaservice:
@@ -332,7 +332,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for host, again.
     ipaservice:
@@ -344,7 +344,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for hostgroup.
     ipaservice:
@@ -355,7 +355,7 @@
       - hostgroup02
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for hostgroup, again.
     ipaservice:
@@ -366,7 +366,7 @@
       - hostgroup02
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for hostgroup.
     ipaservice:
@@ -378,7 +378,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for hostgroup, again.
     ipaservice:
@@ -390,7 +390,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # cleanup
   - name: Clean-up envirnoment.

@@ -40,7 +40,7 @@
       - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
       force: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Obtain keytab
     shell: ipa-getkeytab -s "{{ ansible_facts['fqdn'] }}" -p "mysvc1/{{ ansible_facts['fqdn'] }}" -k mysvc1.keytab
@@ -56,7 +56,7 @@
       name: "mysvc1/{{ ansible_facts['fqdn'] }}"
       state: disabled
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Verify keytab
     shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
@@ -77,7 +77,7 @@
       name: "mysvc1/{{ ansible_facts['fqdn'] }}"
       state: disabled
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Verify keytab
     shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
@@ -90,7 +90,7 @@
       name: "mysvc1/{{ ansible_facts['fqdn'] }}"
       state: disabled
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure service is absent
     ipaservice:

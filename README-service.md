@@ -311,6 +311,8 @@ Variable | Description | Required
 `allow_retrieve_keytab_host` \| `ipaallowedtoperform_read_keys_host` | Hosts allowed to retrieve a keytab from of host. | no
 `allow_retrieve_keytab_hostgroup` \| `ipaallowedtoperform_read_keys_hostgroup` | Host groups allowed to retrieve a keytab of this host. | no
 `continue` | Continuous mode: don't stop on errors. Valid only if `state` is `absent`. Default: `no` (bool) | no
+`smb` | Service is an SMB service. If set, `cifs/` will be prefixed to the service name if needed. | no
+`netbiosname` | NETBIOS name for the SMB service. Only with `smb: yes`. | no
 `action` | Work on service or member level. It can be on of `member` or `service` and defaults to `service`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, or `disabled`, default: `present`. | no
 

@@ -8,7 +8,9 @@
       - "HTTP/{{ nohost_fqdn }}"
       - HTTP/svc.ihavenodns.info
       - HTTP/no.idontexist.local
+      - HTTP/no.idontexist.info
       - "cifs/{{ host1_fqdn }}"
+    continue: yes
     state: absent
 
 - name: Ensure host "{{ svc_fqdn }}" is absent
