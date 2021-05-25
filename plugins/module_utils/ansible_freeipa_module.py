@@ -377,8 +377,17 @@ else:
         return api.env.realm
 
     def gen_add_del_lists(user_list, res_list):
-        """Generate the lists for the addition and removal of members."""
-        # The user list is None, therefore the parameter should not be touched
+        """
+        Generate the lists for the addition and removal of members.
+
+        This function should be used to apply a new user list as a set
+        operation without action: members.
+
+        For the addition of new and the removal of existing members with
+        action: members gen_add_list and gen_intersection_list should
+        be used.
+        """
+        # The user list is None, no need to do anything, return empty lists
         if user_list is None:
             return [], []
 
@@ -386,6 +395,38 @@ else:
         del_list = list(set(res_list or []) - set(user_list or []))
 
         return add_list, del_list
+
+    def gen_add_list(user_list, res_list):
+        """
+        Generate add list for addition of new members.
+
+        This function should be used to add new members with action: members
+        and state: present.
+
+        It is returning the difference of the user and res list if the user
+        list is not None.
+        """
+        # The user list is None, no need to do anything, return empty list
+        if user_list is None:
+            return []
+
+        return list(set(user_list or []) - set(res_list or []))
+
+    def gen_intersection_list(user_list, res_list):
+        """
+        Generate the intersection list for removal of existing members.
+
+        This function should be used to remove existing members with
+        action: members and state: absent.
+
+        It is returning the intersection of the user and res list if the
+        user list is not None.
+        """
+        # The user list is None, no need to do anything, return empty list
+        if user_list is None:
+            return []
+
+        return list(set(res_list or []).intersection(set(user_list or [])))
 
     def encode_certificate(cert):
         """
