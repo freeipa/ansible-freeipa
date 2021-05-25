@@ -4,6 +4,7 @@ topdir="`dirname $(dirname $0)`"
 
 flake8 .
 pydocstyle .
+pylint plugins
 
 ANSIBLE_LIBRARY=${ANSIBLE_LIBRARY:-"${topdir}/plugins/modules"}
 ANSIBLE_MODULE_UTILS=${ANSIBLE_MODULE_UTILS:-"${topdir}/plugins/module_utils"}
@@ -24,5 +25,5 @@ done
 
 for dir in "${yaml_dirs[@]}"
 do
-    find "${dir}" -type f -name "*.yml" | xargs yamllint 
+    find "${dir}" -type f -name "*.yml" | xargs yamllint
 done
