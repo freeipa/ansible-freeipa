@@ -3,7 +3,7 @@ FreeIPA Ansible collection
 
 This repository contains [Ansible](https://www.ansible.com/) roles and playbooks to install and uninstall [FreeIPA](https://www.freeipa.org/) `servers`, `replicas` and `clients`. Also modules for group, host, topology and user management.
 
-**Note**: The ansible playbooks and roles require a configured ansible environment where the ansible nodes are reachable and are properly set up to have an IP address and a working package manager.
+**Note**: The Ansible playbooks and roles require a configured Ansible environment where the Ansible nodes are reachable and are properly set up to have an IP address and a working package manager.
 
 Features
 --------
@@ -36,7 +36,7 @@ Features
 * Modules for sudocmdgroup management
 * Modules for sudorule management
 * Modules for topology management
-* Modules fot trust management
+* Modules for trust management
 * Modules for user management
 * Modules for vault management
 
@@ -113,7 +113,7 @@ ansible-freeipa/plugins/module_utils to ~/.ansible/plugins/
 
 There are RPM packages available for Fedora 29+. These are installing the roles and modules into the global Ansible directories for `roles`, `plugins/modules` and `plugins/module_utils` in the `/usr/share/ansible` directory. Therefore is it possible to use the roles and modules without adapting the names like it is done in the example playbooks.
 
-**Ansible galaxy**
+**Ansible Galaxy**
 
 This command will get the whole collection from galaxy:
 
@@ -137,7 +137,7 @@ The needed adaptions of collection prefixes for `modules` and `module_utils` wil
 Ansible inventory file
 ----------------------
 
-The most important parts of the inventory file is the definition of the nodes, settings and the management modules. Please remember to use [Ansible vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) for passwords. The examples here are not using vault for better readability.
+The most important parts of the inventory file is the definition of the nodes, settings and the management modules. Please remember to use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) for passwords. The examples here are not using vault for better readability.
 
 **Master server**
 
@@ -281,7 +281,7 @@ ipaserver_domain=test.local
 ipaserver_realm=TEST.LOCAL
 ```
 
-For enhanced security it is possible to use a auto-generated one-time-password (OTP). This will be generated on the controller using the (first) server. It is needed to have the Python gssapi bindings installed on the controller for this.
+For enhanced security it is possible to use a auto-generated one-time-password (OTP). This will be generated on the controller using the (first) server. It is needed to have the python-gssapi bindings installed on the controller for this.
 To enable the generation of the one-time-password:
 ```yaml
 [ipaclients:vars]
@@ -346,7 +346,7 @@ With this playbook it is possible to add a list of topology segments using the `
 Playbooks
 =========
 
-The playbooks needed to deploy or undeploy server, replicas and clients are part of the repository and placed in the playbooks folder. There are also playbooks to deploy and undeploy clusters. With them it is only needed to add an inventory file:
+The playbooks needed to deploy or undeploy servers, replicas and clients are part of the repository and placed in the playbooks folder. There are also playbooks to deploy and undeploy clusters. With them it is only needed to add an inventory file:
 ```
 playbooks\
         install-client.yml
@@ -367,7 +367,7 @@ ansible-playbook -v -i inventory/hosts install-server.yml
 ```
 This will deploy the master server defined in the inventory file.
 
-If Ansible vault is used for passwords, then it is needed to adapt the playbooks in this way:
+If Ansible Vault is used for passwords, then it is needed to adapt the playbooks in this way:
 ```yaml
 ---
 - name: Playbook to configure IPA servers
