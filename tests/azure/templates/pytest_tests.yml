@@ -26,6 +26,9 @@ jobs:
         "ansible${{ parameters.ansible_version }}"
     displayName: Install molecule and Ansible
 
+  - script: |
+      ansible-galaxy collection install community.docker
+
   - script: pip install -r requirements-tests.txt
     displayName: Install dependencies
 
