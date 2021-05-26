@@ -348,9 +348,9 @@ def find_vault(module, name, username, service, shared):
     return None
 
 
-def gen_args(description, username, service, shared, vault_type, salt,
-             password, password_file, public_key, public_key_file, vault_data,
-             datafile_in, datafile_out):
+def gen_args(
+        description, username, service, shared, vault_type, salt,
+        public_key, public_key_file):
     _args = {}
     vault_type = vault_type or to_text("symmetric")
 
@@ -443,12 +443,12 @@ def data_storage_args(vault_type, args, data, password, password_file,
     return _args
 
 
-def check_parameters(module, state, action, description, username, service,
-                     shared, users, groups, services, owners, ownergroups,
-                     ownerservices, vault_type, salt, password, password_file,
-                     public_key, public_key_file, private_key,
-                     private_key_file, vault_data, datafile_in, datafile_out,
-                     new_password, new_password_file):
+def check_parameters(  # pylint: disable=unused-argument
+        module, state, action, description, username, service, shared, users,
+        groups, services, owners, ownergroups, ownerservices, vault_type, salt,
+        password, password_file, public_key, public_key_file, private_key,
+        private_key_file, vault_data, datafile_in, datafile_out, new_password,
+        new_password_file):
     invalid = []
     if state == "present":
         invalid = ['datafile_out']
@@ -491,11 +491,11 @@ def check_parameters(module, state, action, description, username, service,
                     "action '%s'" % (arg, state, action))
 
 
-def check_encryption_params(module, state, action, vault_type, salt,
-                            password, password_file, public_key,
-                            public_key_file, private_key, private_key_file,
-                            vault_data, datafile_in, datafile_out,
-                            new_password, new_password_file, res_find):
+def check_encryption_params(  # pylint: disable=unused-argument
+        module, state, action, vault_type, salt, password, password_file,
+        public_key, public_key_file, private_key, private_key_file, vault_data,
+        datafile_in, datafile_out, new_password, new_password_file, res_find):
+    """Check parameters used for (de)vault data encryption."""
     vault_type_invalid = []
 
     existing_type = None
@@ -757,9 +757,7 @@ def main():
 
             # Generate args
             args = gen_args(description, username, service, shared, vault_type,
-                            salt, password, password_file, public_key,
-                            public_key_file, vault_data, datafile_in,
-                            datafile_out)
+                            salt, public_key, public_key_file)
             pwdargs = None
 
             # Create command

@@ -466,7 +466,7 @@ def show_host(module, name):
 
 def gen_args(description, locality, location, platform, os, password, random,
              mac_address, sshpubkey, userclass, auth_ind, requires_pre_auth,
-             ok_as_delegate, ok_to_auth_as_delegate, force, reverse,
+             ok_as_delegate, ok_to_auth_as_delegate, force, _reverse,
              ip_address, update_dns):
     # certificate, managedby_host, principal, create_keytab_* and
     # allow_retrieve_keytab_* are not handled here
@@ -529,7 +529,7 @@ def gen_dnsrecord_args(module, ip_address, reverse):
     return _args
 
 
-def check_parameters(
+def check_parameters(   # pylint: disable=unused-argument
         module, state, action,
         description, locality, location, platform, os, password, random,
         certificate, managedby_host, principal, allow_create_keytab_user,
@@ -862,7 +862,7 @@ def main():
                     ok_to_auth_as_delegate, force, reverse, ip_address,
                     update_dns, update_password)
 
-            elif isinstance(host, str) or isinstance(host, unicode):
+            elif isinstance(host, (str, unicode)):
                 name = host
             else:
                 ansible_module.fail_json(msg="Host '%s' is not valid" %

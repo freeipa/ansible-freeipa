@@ -264,10 +264,7 @@ def config_show(module):
 
 
 def gen_args(params):
-    _args = {}
-    for k, v in params.items():
-        if v is not None:
-            _args[k] = v
+    _args = {k: v for k, v in params.items() if v is not None}
 
     return _args
 
@@ -368,7 +365,7 @@ def main():
     reverse_field_map = {v: k for k, v in field_map.items()}
 
     params = {}
-    for x in field_map.keys():
+    for x in field_map:
         val = module_params_get(ansible_module, x)
 
         if val is not None:
@@ -402,11 +399,11 @@ def main():
         ("ipasearchrecordslimit", -1, 2147483647),
         ("ipapwdexpadvnotify", 0, 2147483647),
     ]
-    for arg, min, max in args_with_limits:
-        if arg in params and (params[arg] > max or params[arg] < min):
+    for arg, minimum, maximum in args_with_limits:
+        if arg in params and (params[arg] > maximum or params[arg] < minimum):
             ansible_module.fail_json(
                 msg="Argument '%s' must be between %d and %d."
-                    % (arg, min, max))
+                    % (arg, minimum, maximum))
 
     changed = False
     exit_args = {}
@@ -434,7 +431,7 @@ def main():
             rawresult = api_command_no_name(ansible_module, "config_show", {})
             result = rawresult['result']
             del result['dn']
-            for key, v in result.items():
+            for key, value in result.items():
                 k = reverse_field_map.get(key, key)
                 if ansible_module.argument_spec.get(k):
                     if k == 'ipaselinuxusermaporder':
@@ -449,20 +446,20 @@ def main():
                     elif k == 'groupsearch':
                         exit_args['groupsearch'] = \
                             result.get(key)[0].split(',')
-                    elif isinstance(v, str) and \
+                    elif isinstance(value, str) and \
                             ansible_module.argument_spec[k]['type'] == "list":
-                        exit_args[k] = [v]
-                    elif isinstance(v, list) and \
+                        exit_args[k] = [value]
+                    elif isinstance(value, list) and \
                             ansible_module.argument_spec[k]['type'] == "str":
-                        exit_args[k] = ",".join(v)
-                    elif isinstance(v, list) and \
+                        exit_args[k] = ",".join(value)
+                    elif isinstance(value, list) and \
                             ansible_module.argument_spec[k]['type'] == "int":
-                        exit_args[k] = ",".join(v)
-                    elif isinstance(v, list) and \
+                        exit_args[k] = ",".join(value)
+                    elif isinstance(value, list) and \
                             ansible_module.argument_spec[k]['type'] == "bool":
-                        exit_args[k] = (v[0] == "TRUE")
+                        exit_args[k] = (value[0] == "TRUE")
                     else:
-                        exit_args[k] = v
+                        exit_args[k] = value
     except ipalib_errors.EmptyModlist:
         changed = False
     except Exception as e:

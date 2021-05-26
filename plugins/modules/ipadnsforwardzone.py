@@ -135,8 +135,8 @@ def find_dnsforwardzone(module, name):
             msg="There is more than one dnsforwardzone '%s'" % (name))
     elif len(_result["result"]) == 1:
         return _result["result"][0]
-    else:
-        return None
+
+    return None
 
 
 def gen_args(forwarders, forwardpolicy, skip_overlap_check):
@@ -386,8 +386,8 @@ def main():
                                          **exit_args)
 
             # Execute commands
-            for name, command, args in commands:
-                api_command(ansible_module, command, name, args)
+            for _name, command, args in commands:
+                api_command(ansible_module, command, _name, args)
                 changed = True
 
     except Exception as e:

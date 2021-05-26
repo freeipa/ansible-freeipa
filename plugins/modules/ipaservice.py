@@ -250,8 +250,8 @@ def find_service(module, name):
             _res["usercertificate"] = [encode_certificate(cert) for
                                        cert in certs]
         return _res
-    else:
-        return None
+
+    return None
 
 
 def gen_args(pac_type, auth_ind, skip_host_check, force, requires_pre_auth,
@@ -771,7 +771,7 @@ def main():
             elif state == "absent":
                 if action == "service":
                     if res_find is not None:
-                        args = {'continue': True if delete_continue else False}
+                        args = {'continue': delete_continue}
                         commands.append([name, 'service_del', args])
 
                 elif action == "member":

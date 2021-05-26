@@ -512,10 +512,9 @@ def find_user(module, name, preserved=False):
         if certs is not None:
             _result["usercertificate"] = [encode_certificate(x)
                                           for x in certs]
-
         return _result
-    else:
-        return None
+
+    return None
 
 
 def gen_args(first, last, fullname, displayname, initials, homedir, shell,
@@ -599,17 +598,14 @@ def gen_args(first, last, fullname, displayname, initials, homedir, shell,
     return _args
 
 
-def check_parameters(module, state, action,
-                     first, last, fullname, displayname, initials, homedir,
-                     shell, email, principal, principalexpiration,
-                     passwordexpiration, password, random, uid, gid, city,
-                     phone, mobile, pager, fax, orgunit, title, manager,
-                     carlicense, sshpubkey, userauthtype, userclass, radius,
-                     radiususer, departmentnumber, employeenumber,
-                     employeetype, preferredlanguage, certificate,
-                     certmapdata, noprivate, nomembers, preserve,
-                     update_password):
-
+def check_parameters(  # pylint: disable=unused-argument
+        module, state, action, first, last, fullname, displayname, initials,
+        homedir, shell, email, principal, principalexpiration,
+        passwordexpiration, password, random, uid, gid, city, phone, mobile,
+        pager, fax, orgunit, title, manager, carlicense, sshpubkey,
+        userauthtype, userclass, radius, radiususer, departmentnumber,
+        employeenumber, employeetype, preferredlanguage, certificate,
+        certmapdata, noprivate, nomembers, preserve, update_password):
     if state == "present":
         if action == "member":
             invalid = ["first", "last", "fullname", "displayname", "initials",
@@ -715,7 +711,7 @@ def check_certmapdata(data):
         return False
 
     i = data.find("<I>", 4)
-    s = data.find("<S>", i)
+    s = data.find("<S>", i)   # pylint: disable=invalid-name
     issuer = data[i+3:s]
     subject = data[s+3:]
 
@@ -1033,7 +1029,7 @@ def main():
 
                 email = extend_emails(email, default_email_domain)
 
-            elif isinstance(user, str) or isinstance(user, unicode):
+            elif isinstance(user, (str, unicode)):
                 name = user
             else:
                 ansible_module.fail_json(msg="User '%s' is not valid" %

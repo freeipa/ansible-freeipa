@@ -263,22 +263,18 @@ class DNSZoneModule(FreeIPABaseModule):
         if any(invalid_ips):
             self.fail_json(msg=error_msg % invalid_ips)
 
-    def is_valid_nsec3param_rec(self, nsec3param_rec):
+    def is_valid_nsec3param_rec(self, nsec3param_rec):  # pylint: disable=R0201
         try:
             part1, part2, part3, part4 = nsec3param_rec.split(" ")
         except ValueError:
             return False
 
-        if not all([part1.isdigit(), part2.isdigit(), part3.isdigit()]):
-            return False
-
-        if not 0 <= int(part1) <= 255:
-            return False
-
-        if not 0 <= int(part2) <= 255:
-            return False
-
-        if not 0 <= int(part3) <= 65535:
+        if (
+            not all([part1.isdigit(), part2.isdigit(), part3.isdigit()])
+            or not 0 <= int(part1) <= 255
+            or not 0 <= int(part2) <= 255
+            or not 0 <= int(part3) <= 65535
+        ):
             return False
 
         try:
@@ -298,7 +294,7 @@ class DNSZoneModule(FreeIPABaseModule):
 
         return True
 
-    def get_ipa_nsec3paramrecord(self, **kwargs):
+    def get_ipa_nsec3paramrecord(self, **_kwargs):  # pylint: disable=R1710
         nsec3param_rec = self.ipa_params.nsec3param_rec
         if nsec3param_rec is not None:
             error_msg = (
@@ -310,12 +306,12 @@ class DNSZoneModule(FreeIPABaseModule):
                 self.fail_json(msg=error_msg)
             return nsec3param_rec
 
-    def get_ipa_idnsforwarders(self, **kwargs):
+    def get_ipa_idnsforwarders(self, **_kwargs):  # pylint: disable=R1710
         if self.ipa_params.forwarders is not None:
             forwarders = []
             for forwarder in self.ipa_params.forwarders:
                 ip_address = forwarder.get("ip_address")
-                if not (is_ip_address(ip_address)):
+                if not is_ip_address(ip_address):
                     self.fail_json(
                         msg="Invalid IP for DNS forwarder: %s" % ip_address
                     )
@@ -334,14 +330,14 @@ class DNSZoneModule(FreeIPABaseModule):
 
             return forwarders
 
-    def get_ipa_idnsallowtransfer(self, **kwargs):
+    def get_ipa_idnsallowtransfer(self, **_kwargs):  # pylint: disable=R1710
         if self.ipa_params.allow_transfer is not None:
             error_msg = "Invalid ip_address for DNS allow_transfer: %s"
             self.validate_ips(self.ipa_params.allow_transfer, error_msg)
 
             return (";".join(self.ipa_params.allow_transfer) or "none") + ";"
 
-    def get_ipa_idnsallowquery(self, **kwargs):
+    def get_ipa_idnsallowquery(self, **_kwargs):  # pylint: disable=R1710
         if self.ipa_params.allow_query is not None:
             error_msg = "Invalid ip_address for DNS allow_query: %s"
             self.validate_ips(self.ipa_params.allow_query, error_msg)
@@ -364,27 +360,27 @@ class DNSZoneModule(FreeIPABaseModule):
 
         return ".".join((name, domain))
 
-    def get_ipa_idnssoarname(self, **kwargs):
+    def get_ipa_idnssoarname(self, **_kwargs):  # pylint: disable=R1710
         if self.ipa_params.admin_email is not None:
             return DNSName(
                 self._replace_at_symbol_in_rname(self.ipa_params.admin_email)
             )
 
-    def get_ipa_idnssoamname(self, **kwargs):
+    def get_ipa_idnssoamname(self, **_kwargs):  # pylint: disable=R1710
         if self.ipa_params.name_server is not None:
             return DNSName(self.ipa_params.name_server)
 
-    def get_ipa_skip_overlap_check(self, **kwargs):
+    def get_ipa_skip_overlap_check(self, **kwargs):  # pylint: disable=R1710
         zone = kwargs.get('zone')
         if not zone and self.ipa_params.skip_overlap_check is not None:
             return self.ipa_params.skip_overlap_check
 
-    def get_ipa_skip_nameserver_check(self, **kwargs):
+    def get_ipa_skip_nameserver_check(self, **kwargs):  # pylint: disable=R1710
         zone = kwargs.get('zone')
         if not zone and self.ipa_params.skip_nameserver_check is not None:
             return self.ipa_params.skip_nameserver_check
 
-    def __reverse_zone_name(self, ipaddress):
+    def __reverse_zone_name(self, ipaddress):  # pylint: disable=R1710
         """
         Infer reverse zone name from an ip address.
 
@@ -404,10 +400,9 @@ class DNSZoneModule(FreeIPABaseModule):
             ip_version = ip.version
         if ip_version == 4:
             return u'.'.join(items[4 - prefixlen // 8:])
-        elif ip_version == 6:
+        if ip_version == 6:
             return u'.'.join(items[32 - prefixlen // 4:])
-        else:
-            self.fail_json(msg="Invalid IP version for reverse zone.")
+        self.fail_json(msg="Invalid IP version for reverse zone.")
 
     def get_zone(self, zone_name):
         get_zone_args = {"idnsname": zone_name, "all": True}
@@ -505,6 +500,7 @@ class DNSZoneModule(FreeIPABaseModule):
                 self.add_ipa_command("dnszone_mod", zone_name, args)
 
     def process_command_result(self, name, command, args, result):
+        # pylint: disable=super-with-arguments
         super(DNSZoneModule, self).process_command_result(
             name, command, args, result
         )

@@ -57,7 +57,7 @@ else:
         # FreeIPA releases.
         import re
 
-        class version:
+        class version:  # pylint: disable=invalid-name, too-few-public-methods
             @staticmethod
             def parse(version_str):
                 """
@@ -65,7 +65,7 @@ else:
 
                 This will not work for `rc`, `dev` or similar version string.
                 """
-                return tuple(re.split("[-_\.]", version_str))  # noqa: W605
+                return tuple(re.split("[-_.]", version_str))  # noqa: W605
 
     from ipalib import api
     from ipalib import errors as ipalib_errors  # noqa
@@ -202,11 +202,11 @@ else:
         if not backend.isconnected():
             backend.connect(ccache=os.environ.get('KRB5CCNAME', None))
 
-    def api_command(module, command, name, args):
+    def api_command(_module, command, name, args):
         """Call ipa.Command."""
         return api.Command[command](name, **args)
 
-    def api_command_no_name(module, command, args):
+    def api_command_no_name(_module, command, args):
         """Call ipa.Command without a name."""
         return api.Command[command](**args)
 
@@ -233,7 +233,7 @@ else:
             "!=": operator.ne,
         }
         operation = oper_map.get(oper)
-        if not(operation):
+        if not operation:
             raise NotImplementedError("Invalid operator: %s" % oper)
         return operation(version.parse(VERSION),
                          version.parse(requested_version))
@@ -258,6 +258,8 @@ else:
 
         finally:
             temp_kdestroy(ccache_dir, ccache_name)
+        # fix pylint inconsistent return
+        return None
 
     def date_format(value):
         accepted_date_formats = [
@@ -269,9 +271,9 @@ else:
             '%Y-%m-%d %H:%MZ',     # non-ISO 8601, minute precision
         ]
 
-        for date_format in accepted_date_formats:
+        for _date_format in accepted_date_formats:
             try:
-                return datetime.strptime(value, date_format)
+                return datetime.strptime(value, _date_format)
             except ValueError:
                 pass
         raise ValueError("Invalid date '%s'" % value)
@@ -292,16 +294,8 @@ else:
         # If both args and ipa are None, return there's no difference.
         # If only one is None, return there is a difference.
         # This tests avoid unecessary invalid access to attributes.
-        if args is None and ipa is None:
-            return True
         if args is None or ipa is None:
-            module.debug(
-                base_debug_msg + "args is%s None an ipa is%s None" % (
-                    "" if args is None else " not",
-                    "" if ipa is None else " not",
-                )
-            )
-            return False
+            return args is None and ipa is None
 
         # Fail if args or ipa are not dicts.
         if not (isinstance(args, dict) and isinstance(ipa, dict)):
@@ -313,7 +307,7 @@ else:
         filtered_args = [key for key in args if key not in ignore]
 
         for key in filtered_args:
-            if key not in ipa:
+            if key not in ipa:  # pylint: disable=no-else-return
                 module.debug(
                     base_debug_msg + "Command key not present in IPA: %s" % key
                 )
@@ -365,15 +359,13 @@ else:
         if value is not None:
             if isinstance(value, list):
                 return [_afm_convert(x) for x in value]
-            elif isinstance(value, dict):
+            if isinstance(value, dict):
                 return {_afm_convert(k): _afm_convert(v)
                         for k, v in value.items()}
-            elif isinstance(value, str):
+            if isinstance(value, str):
                 return to_text(value)
-            else:
-                return value
-        else:
-            return value
+
+        return value
 
     def module_params_get(module, name):
         return _afm_convert(module.params.get(name))
@@ -460,14 +452,13 @@ else:
             cert = load_certificate(cert.encode('utf-8'))
         return cert
 
-    def DN_x500_text(text):
+    def DN_x500_text(text):  # pylint: disable=invalid-name
         if hasattr(DN, "x500_text"):
             return DN(text).x500_text()
-        else:
-            # Emulate x500_text
-            dn = DN(text)
-            dn.rdns = reversed(dn.rdns)
-            return str(dn)
+        # Emulate x500_text
+        dn = DN(text)
+        dn.rdns = reversed(dn.rdns)
+        return str(dn)
 
     def is_valid_port(port):
         if not isinstance(port, int):
@@ -536,8 +527,9 @@ else:
 
         def __getitem__(self, key):
             param = self.mapping[key]
-            if param is not None:
-                return _afm_convert(param)
+            if param is None:
+                return None
+            return _afm_convert(param)
 
         def __iter__(self):
             return iter(self.mapping)
@@ -622,6 +614,7 @@ else:
         ipa_param_mapping = None
 
         def __init__(self, *args, **kwargs):
+            # pylint: disable=super-with-arguments
             super(FreeIPABaseModule, self).__init__(*args, **kwargs)
 
             # Attributes to store kerberos credentials (if needed)
@@ -700,7 +693,7 @@ else:
 
         def check_ipa_params(self):
             """Validate ipa_params before command is called."""
-            pass
+            pass  # pylint: disable=unnecessary-pass
 
         def define_ipa_commands(self):
             """Define commands that will be run in IPA server."""
@@ -785,7 +778,7 @@ else:
                         )
 
             if len(errors) > 0:
-                self.fail_json(", ".join("errors"))
+                self.fail_json(", ".join("errors"))  # pylint: disable=E1121
 
         def add_ipa_command(self, command, name=None, args=None):
             """Add a command to the list of commands to be executed."""
@@ -805,7 +798,7 @@ else:
                     self.process_command_result(name, command, args, result)
                 self.get_command_errors(command, result)
 
-        def process_command_result(self, name, command, args, result):
+        def process_command_result(self, _name, _command, _args, result):
             """
             Process an API command result.
 
