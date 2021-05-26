@@ -1,0 +1,11 @@
+---
+- name: Automember hostgroup present example
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure hostgroup automember rule ipaservers is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: ipaservers
+      automember_type: hostgroup
+      state: present

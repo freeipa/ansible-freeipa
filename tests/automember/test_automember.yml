@@ -1,0 +1,311 @@
+---
+- name: Test automember
+  hosts: ipaserver
+  become: true
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure group testgroup is absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      state: absent
+
+  - name: Ensure hostgroup testhostgroup is absent
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      state: absent
+
+  - name: Ensure group automember rule testgroup is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      state: absent
+      automember_type: group
+
+  - name: Ensure hostgroup automember rule testhostgroup is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      state: absent
+      automember_type: hostgroup
+
+  # CREATE TEST ITEMS
+
+  # TESTS
+  - name: Ensure testgroup group is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+
+  - name: Ensure testhostgroup hostgroup is present
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+
+  - name: Ensure testgroup group automember rule is present
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      description: testgroup automember rule.
+      automember_type: group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure testgroup group automember rule is present again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      description: testgroup automember rule.
+      automember_type: group
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Change testgroup group automember rule description
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      description: testgroup automember rule description.
+      automember_type: group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure testgroup group automember rule has conditions
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      automember_type: group
+      inclusive:
+        - key: 'uid'
+          expression: 'uid'
+        - key: 'uidnumber'
+          expression: 'uidnumber'
+      exclusive:
+        - key: 'uid'
+          expression: 'uid'
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure testgroup group automember rule has conditions again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      automember_type: group
+      inclusive:
+        - key: 'uid'
+          expression: 'uid'
+        - key: 'uidnumber'
+          expression: 'uidnumber'
+      exclusive:
+        - key: 'uid'
+          expression: 'uid'
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Add testgroup group automember rule member condition
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      automember_type: group
+      action: member
+      inclusive:
+        - key: 'manager'
+          expression: 'uid=mscott'
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure testgroup group automember rule has conditions
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      automember_type: group
+      inclusive:
+        - key: 'uid'
+          expression: 'uid'
+        - key: 'uidnumber'
+          expression: 'uidnumber'
+        - key: 'manager'
+          expression: 'uid=mscott'
+      exclusive:
+        - key: 'uid'
+          expression: 'uid'
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Remove testgroup group automember rule member condition
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      automember_type: group
+      action: member
+      state: absent
+      inclusive:
+        - key: 'manager'
+          expression: 'uid=mscott'
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure testgroup group automember rule has conditions again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      automember_type: group
+      inclusive:
+        - key: 'uid'
+          expression: 'uid'
+        - key: 'uidnumber'
+          expression: 'uidnumber'
+      exclusive:
+        - key: 'uid'
+          expression: 'uid'
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure testhostgroup hostgroup automember rule is present
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      description: testhostgroup automember rule
+      automember_type: hostgroup
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure testhostgroup hostgroup automember rule is present again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      description: testhostgroup automember rule
+      automember_type: hostgroup
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Change testhostgroup hostgroup automember rule description
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      description: testhostgroup test automember rule
+      automember_type: hostgroup
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure testhostgroup hostgroup automember rule has conditions
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      automember_type: hostgroup
+      inclusive:
+        - key: 'description'
+          expression: 'description'
+        - key: 'description'
+          expression: 'description'
+      exclusive:
+        - key: 'cn'
+          expression: 'cn'
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure testhostgroup hostgroup automember rule has conditions again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      automember_type: hostgroup
+      inclusive:
+        - key: 'description'
+          expression: 'description'
+        - key: 'description'
+          expression: 'description'
+      exclusive:
+        - key: 'cn'
+          expression: 'cn'
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Add testhostgroup hostgroup automember rule member condition
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      automember_type: hostgroup
+      action: member
+      inclusive:
+        - key: 'fqdn'
+          expression: '.*.domain.com'
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure testhostgroup hostgroup automember rule has conditions
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      automember_type: hostgroup
+      inclusive:
+        - key: 'description'
+          expression: 'description'
+        - key: 'description'
+          expression: 'description'
+        - key: 'fqdn'
+          expression: '.*.domain.com'
+      exclusive:
+        - key: 'cn'
+          expression: 'cn'
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Remove testhostgroup hostgroup automember rule member condition
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      automember_type: hostgroup
+      action: member
+      state: absent
+      inclusive:
+        - key: 'fqdn'
+          expression: '.*.domain.com'
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure testhostgroup hostgroup automember rule has conditions
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      automember_type: hostgroup
+      inclusive:
+        - key: 'description'
+          expression: 'description'
+        - key: 'description'
+          expression: 'description'
+      exclusive:
+        - key: 'cn'
+          expression: 'cn'
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure group testgroup is absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      state: absent
+
+  - name: Ensure hostgroup testhostgroup is absent
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      state: absent
+
+  - name: Ensure group automember rule testgroup is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      automember_type: group
+      name: testgroup
+      state: absent
+
+  - name: Ensure hostgroup automember rule testhostgroup is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      automember_type: hostgroup
+      name: testhostgroup
+      state: absent

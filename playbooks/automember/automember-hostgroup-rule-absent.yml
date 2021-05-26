@@ -1,0 +1,15 @@
+---
+- name: Automember hostgroup rule member absent example
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure hostgroup automember condition is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: "My domain hosts"
+      automember_type: hostgroup
+      state: absent
+      action: member
+      inclusive:
+        - key: fqdn
+          expression: ".*.mydomain.com"

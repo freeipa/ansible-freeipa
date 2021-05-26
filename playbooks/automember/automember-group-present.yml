@@ -1,0 +1,11 @@
+---
+- name: Automember group present example
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure group automember rule admins is present
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      name: admins
+      automember_type: group
+      state: present
