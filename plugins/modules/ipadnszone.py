@@ -256,8 +256,7 @@ class DNSZoneModule(FreeIPABaseModule):
             if not any([
                 is_ip_address(ip),
                 is_ip_network_address(ip),
-                ip == "any",
-                ip == "none"
+                ip in ["any", "localhost", "localnets", "none"]
             ])
         ]
         if any(invalid_ips):
