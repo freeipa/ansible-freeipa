@@ -40,7 +40,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present again
     ipahost:
@@ -52,7 +52,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present again with new IP address
     ipahost:
@@ -66,7 +66,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" present again with new IP address again
     ipahost:
@@ -80,7 +80,7 @@
       update_dns: yes
       reverse: no
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" member IPv4 address present
     ipahost:
@@ -89,7 +89,7 @@
       ip_address: "{{ ipv4_prefix + '.201' }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" member IPv4 address present again
     ipahost:
@@ -98,7 +98,7 @@
       ip_address: "{{ ipv4_prefix + '.201' }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" member IPv4 address absent
     ipahost:
@@ -108,7 +108,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" member IPv4 address absent again
     ipahost:
@@ -118,7 +118,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" member IPv6 address present
     ipahost:
@@ -127,7 +127,7 @@
       ip_address: fe80::20c:29ff:fe02:a1b2
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" member IPv6 address present again
     ipahost:
@@ -136,7 +136,7 @@
       ip_address: fe80::20c:29ff:fe02:a1b2
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" member IPv6 address absent
     ipahost:
@@ -146,7 +146,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" member IPv6 address absent again
     ipahost:
@@ -156,6 +156,7 @@
       action: member
       state: absent
     register: result
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" member all ip-addresses absent
     ipahost:
@@ -169,7 +170,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host1_fqdn }}" all member ip-addresses absent again
     ipahost:
@@ -183,7 +184,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" present with same IP addresses
     ipahost:
@@ -202,7 +203,7 @@
         - "{{ ipv4_prefix + '.221' }}"
         - fe80::20c:29ff:fe02:a1b4
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" present with same IP addresses again
     ipahost:
@@ -221,7 +222,7 @@
         - "{{ ipv4_prefix + '.221' }}"
         - fe80::20c:29ff:fe02:a1b4
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Hosts "{{ host3_fqdn }}" present with same IP addresses
     ipahost:
@@ -234,7 +235,7 @@
         - "{{ ipv4_prefix + '.221' }}"
         - fe80::20c:29ff:fe02:a1b4
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Hosts "{{ host3_fqdn }}" present with same IP addresses again
     ipahost:
@@ -247,7 +248,7 @@
         - "{{ ipv4_prefix + '.221' }}"
         - fe80::20c:29ff:fe02:a1b4
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host3_fqdn }}" present with differnt IP addresses
     ipahost:
@@ -260,7 +261,7 @@
         - "{{ ipv4_prefix + '.121' }}"
         - fe80::20c:29ff:fe02:a1b2
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host3_fqdn }}" present with different IP addresses again
     ipahost:
@@ -273,7 +274,7 @@
         - "{{ ipv4_prefix + '.121' }}"
         - fe80::20c:29ff:fe02:a1b2
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host "{{ host3_fqdn }}" present with old IP addresses
     ipahost:
@@ -286,7 +287,7 @@
         - "{{ ipv4_prefix + '.221' }}"
         - fe80::20c:29ff:fe02:a1b4
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ host3_fqdn }}" present with old IP addresses again
     ipahost:
@@ -299,7 +300,7 @@
         - "{{ ipv4_prefix + '.221' }}"
         - fe80::20c:29ff:fe02:a1b4
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Absent host01.ihavenodns.info test
     ipahost:
@@ -308,7 +309,7 @@
       - name: host01.ihavenodns.info
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host absent
     ipahost:

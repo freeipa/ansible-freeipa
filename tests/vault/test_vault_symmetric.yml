@@ -16,7 +16,7 @@
       vault_type: symmetric
       password: SomeVAULTpassword
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure symmetric vault is present, again
     ipavault:
@@ -25,7 +25,7 @@
       vault_type: symmetric
       password: SomeVAULTpassword
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Archive data to symmetric vault, matching `no_log` field.
     ipavault:
@@ -34,7 +34,7 @@
       vault_data: SomeADMINpassword
       password: SomeVAULTpassword
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from symmetric vault.
     ipavault:
@@ -52,7 +52,7 @@
       vault_data: Hello World.
       password: SomeVAULTpassword
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from symmetric vault.
     ipavault:

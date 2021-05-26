@@ -22,7 +22,7 @@
       name: allusers
       usercategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with usercategory 'all', again.
     ipasudorule:
@@ -30,7 +30,7 @@
       name: allusers
       usercategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with no usercategory.
     ipasudorule:
@@ -38,7 +38,7 @@
       name: allusers
       usercategory: ""
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with no usercategory, again.
     ipasudorule:
@@ -46,7 +46,7 @@
       name: allusers
       usercategory: ""
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with hostcategory 'all'
     ipasudorule:
@@ -54,7 +54,7 @@
       name: allusers
       hostcategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with hostcategory 'all', again.
     ipasudorule:
@@ -62,7 +62,7 @@
       name: allusers
       hostcategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with no usercategory.
     ipasudorule:
@@ -70,7 +70,7 @@
       name: allusers
       hostcategory: ""
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with no hostcategory, again.
     ipasudorule:
@@ -78,7 +78,7 @@
       name: allusers
       hostcategory: ""
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with cmdcategory 'all'
     ipasudorule:
@@ -86,7 +86,7 @@
       name: allusers
       cmdcategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with cmdcategory 'all', again.
     ipasudorule:
@@ -94,7 +94,7 @@
       name: allusers
       cmdcategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with no cmdcategory.
     ipasudorule:
@@ -102,7 +102,7 @@
       name: allusers
       cmdcategory: ""
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with no cmdcategory, again.
     ipasudorule:
@@ -110,7 +110,7 @@
       name: allusers
       cmdcategory: ""
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with runasusercategory 'all'
     ipasudorule:
@@ -118,7 +118,7 @@
       name: allusers
       runasusercategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with runasusercategory 'all', again.
     ipasudorule:
@@ -126,7 +126,7 @@
       name: allusers
       runasusercategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with no runasusercategory.
     ipasudorule:
@@ -134,7 +134,7 @@
       name: allusers
       runasusercategory: ""
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with no runasusercategory, again.
     ipasudorule:
@@ -142,7 +142,7 @@
       name: allusers
       runasusercategory: ""
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with runasgroupcategory 'all'
     ipasudorule:
@@ -150,7 +150,7 @@
       name: allusers
       runasgroupcategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with runasgroupcategory 'all', again.
     ipasudorule:
@@ -158,7 +158,7 @@
       name: allusers
       runasgroupcategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorule is present, with no runasgroupcategory.
     ipasudorule:
@@ -166,7 +166,7 @@
       name: allusers
       runasgroupcategory: ""
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule is present, with no runasgroupcategory, again.
     ipasudorule:
@@ -174,7 +174,7 @@
       name: allusers
       runasgroupcategory: ""
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure sudorules are absent
     ipasudorule:
@@ -183,7 +183,7 @@
       - allusers
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure `host` cannot be added if hostcategory is `all`.
     ipasudorule:

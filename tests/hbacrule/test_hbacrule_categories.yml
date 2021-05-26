@@ -19,7 +19,7 @@
       name: testrule
       usercategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with usercategory 'all', again.
     ipahbacrule:
@@ -27,7 +27,7 @@
       name: testrule
       usercategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with no usercategory.
     ipahbacrule:
@@ -35,7 +35,7 @@
       name: testrule
       usercategory: ""
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with no usercategory, again.
     ipahbacrule:
@@ -43,7 +43,7 @@
       name: testrule
       usercategory: ""
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with hostcategory 'all'
     ipahbacrule:
@@ -51,7 +51,7 @@
       name: testrule
       hostcategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with hostcategory 'all', again.
     ipahbacrule:
@@ -59,7 +59,7 @@
       name: testrule
       hostcategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with no hostcategory.
     ipahbacrule:
@@ -67,7 +67,7 @@
       name: testrule
       hostcategory: ""
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with no hostcategory, again.
     ipahbacrule:
@@ -75,7 +75,7 @@
       name: testrule
       hostcategory: ""
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with servicecategory 'all'
     ipahbacrule:
@@ -83,7 +83,7 @@
       name: testrule
       servicecategory: all
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with servicecategory 'all', again.
     ipahbacrule:
@@ -91,7 +91,7 @@
       name: testrule
       servicecategory: all
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with no servicecategory.
     ipahbacrule:
@@ -99,7 +99,7 @@
       name: testrule
       servicecategory: ""
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC rule is present, with no servicecategory, again.
     ipahbacrule:
@@ -107,7 +107,7 @@
       name: testrule
       servicecategory: ""
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure `user` cannot be added if usercategory is `all`.
     ipahbacrule:

@@ -38,7 +38,7 @@
       name_from_ip: 192.0.2.3/24
       default_ttl: 1234
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Modify existing zone, using `name_from_ip`, again.
     ipadnszone:
@@ -70,14 +70,14 @@
       ipaadmin_password: SomeADMINpassword
       name_from_ip: fd00::0001
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure second ipv6 zone exists for reverse IPv6.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
       name_from_ip: 2001:db8:cafe:1::1
     register: ipv6_sec_zone
-    failed_when: not ipv6_sec_zone.changed or ipv6_zone.failed
+    failed_when: not ipv6_sec_zone.changed or ipv6_zone.failed or ipv6_sec_zone.failed
 
   - name: Ensure second ipv6 zone was created.
     ipadnszone:
@@ -91,7 +91,7 @@
       ipaadmin_password: SomeADMINpassword
       name_from_ip: 2001:db8:cafe:1::1
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # Teardown
   - name: Teardown testing environment

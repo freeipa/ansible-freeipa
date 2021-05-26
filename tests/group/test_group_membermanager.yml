@@ -32,28 +32,28 @@
             first: manageruser2
             last: Last2
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure testgroup is present
         ipagroup:
           ipaadmin_password: SomeADMINpassword
           name: testgroup
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure managergroup1 is present
         ipagroup:
           ipaadmin_password: SomeADMINpassword
           name: managergroup1
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure managergroup2 is present
         ipagroup:
           ipaadmin_password: SomeADMINpassword
           name: managergroup2
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure membermanager user1 is present for testgroup
         ipagroup:
@@ -61,7 +61,7 @@
           name: testgroup
           membermanager_user: manageruser1
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure membermanager user1 is present for testgroup again
         ipagroup:
@@ -69,7 +69,7 @@
           name: testgroup
           membermanager_user: manageruser1
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure membermanager group1 is present for testgroup
         ipagroup:
@@ -77,7 +77,7 @@
           name: testgroup
           membermanager_group: managergroup1
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure membermanager group1 is present for testgroup again
         ipagroup:
@@ -85,7 +85,7 @@
           name: testgroup
           membermanager_group: managergroup1
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure membermanager user2 and group2 members are present for testgroup
         ipagroup:
@@ -95,7 +95,7 @@
           membermanager_group: managergroup2
           action: member
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure membermanager user2 and group2 members are present for testgroup again
         ipagroup:
@@ -105,7 +105,7 @@
           membermanager_group: managergroup2
           action: member
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure membermanager user and group members are present for testgroup again
         ipagroup:
@@ -115,7 +115,7 @@
           membermanager_group: managergroup1,managergroup2
           action: member
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure membermanager user1 and group1 members are absent for testgroup
         ipagroup:
@@ -126,7 +126,7 @@
           action: member
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure membermanager user1 and group1 members are absent for testgroup again
         ipagroup:
@@ -137,7 +137,7 @@
           action: member
           state: absent
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure membermanager user1 and group1 members are present for testgroup
         ipagroup:
@@ -147,7 +147,7 @@
           membermanager_group: managergroup1
           action: member
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure membermanager user1 and group1 members are present for testgroup again
         ipagroup:
@@ -157,7 +157,7 @@
           membermanager_group: managergroup1
           action: member
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure membermanager user and group members are absent for testgroup
         ipagroup:
@@ -168,7 +168,7 @@
           action: member
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure membermanager user and group members are absent for testgroup again
         ipagroup:
@@ -179,7 +179,7 @@
           action: member
           state: absent
         register: result
-        failed_when: result.changed
+        failed_when: result.changed or result.failed
 
       - name: Ensure user manangeruser1 and manageruser2 is absent
         ipauser:
@@ -187,7 +187,7 @@
           name: manageruser1,manageruser2
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
       - name: Ensure unknown membermanager_user member failure
         ipagroup:
@@ -196,7 +196,7 @@
           membermanager_user: unknown_user
           action: member
         register: result
-        failed_when: result.changed or "no such entry" not in result.msg
+        failed_when: result.changed or "no such entry" not in result.msg or not result.failed
 
       - name: Ensure group testgroup, managergroup1 and managergroup2 are absent
         ipagroup:
@@ -204,6 +204,6 @@
           name: testgroup,managergroup1,managergroup2
           state: absent
         register: result
-        failed_when: not result.changed
+        failed_when: not result.changed or result.failed
 
     when: ipa_version is version('4.8.4', '>=')

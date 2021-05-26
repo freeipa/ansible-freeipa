@@ -126,7 +126,7 @@
       name: asymvault
       vault_data: SomeADMINpassword
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from asymmetric vault.
     ipavault:
@@ -135,7 +135,7 @@
       private_key: "{{ lookup('file', 'B_private.b64') }}"
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'SomeADMINpassword' or result.changed
+    failed_when: result.vault.data != 'SomeADMINpassword' or result.changed or result.failed
 
   - name: Change data in asymmetric vault
     ipavault:
@@ -143,7 +143,7 @@
       name: asymvault
       data: Hello World.
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve changed data from asymmetric vault.
     ipavault:
@@ -152,7 +152,7 @@
       private_key: "{{ lookup('file', 'B_private.b64') }}"
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Hello World.' or result.changed
+    failed_when: result.vault.data != 'Hello World.' or result.changed or result.failed
 
   - name: Retrieve data from asymmetric vault into file {{ ansible_facts['env'].HOME }}/data.txt.
     ipavault:
@@ -176,7 +176,7 @@
       name: asymvault
       data: The world of π is half rounded.
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from asymmetric vault.
     ipavault:
@@ -185,7 +185,7 @@
       private_key: "{{ lookup('file', 'B_private.b64') }}"
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'The world of π is half rounded.' or result.changed
+    failed_when: result.vault.data != 'The world of π is half rounded.' or result.changed or result.failed
 
   - name: Archive data in asymmetric vault, from file.
     ipavault:
@@ -194,7 +194,7 @@
       vault_type: asymmetric
       in: "{{ ansible_facts['env'].HOME }}/in.txt"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from asymmetric vault.
     ipavault:
@@ -203,7 +203,7 @@
       private_key: "{{ lookup('file', 'B_private.b64') }}"
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Another World.' or result.changed
+    failed_when: result.vault.data != 'Another World.' or result.changed or result.failed
 
   - name: Archive data with single character to asymmetric vault
     ipavault:
@@ -211,7 +211,7 @@
       name: asymvault
       data: c
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from asymmetric vault.
     ipavault:
@@ -220,7 +220,7 @@
       private_key: "{{ lookup('file', 'B_private.b64') }}"
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'c' or result.changed
+    failed_when: result.vault.data != 'c' or result.changed or result.failed
 
   - name: Ensure asymmetric vault is absent
     ipavault:
@@ -228,7 +228,7 @@
       name: asymvault
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure asymmetric vault is absent, again
     ipavault:
@@ -236,7 +236,7 @@
       name: asymvault
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure asymmetric vault is present, with public key from file.
     ipavault:
@@ -245,7 +245,7 @@
       public_key_file: "{{ ansible_facts['env'].HOME }}/B_public.pem"
       vault_type: asymmetric
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure asymmetric vault is present, with password from file, again.
     ipavault:
@@ -254,7 +254,7 @@
       public_key_file: "{{ ansible_facts['env'].HOME }}/B_public.pem"
       vault_type: asymmetric
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Archive data to asymmetric vault
     ipavault:
@@ -262,7 +262,7 @@
       name: asymvault
       data: Hello World.
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Retrieve data from asymmetric vault.
     ipavault:
@@ -271,7 +271,7 @@
       private_key: "{{ lookup('file', 'B_private.b64') }}"
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Hello World.' or result.changed
+    failed_when: result.vault.data != 'Hello World.' or result.changed or result.failed
 
   - name: Retrieve data from asymmetric vault, with password file.
     ipavault:
@@ -280,7 +280,7 @@
       private_key_file: "{{ ansible_facts['env'].HOME }}/B_private.pem"
       state: retrieved
     register: result
-    failed_when: result.vault.data != 'Hello World.' or result.changed
+    failed_when: result.vault.data != 'Hello World.' or result.changed or result.failed
 
   - name: Ensure asymmetric vault is absent
     ipavault:
@@ -288,7 +288,7 @@
       name: asymvault
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure asymmetric vault is absent, again
     ipavault:
@@ -296,7 +296,7 @@
       name: asymvault
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Cleanup testing environment.
     import_tasks: env_cleanup.yml

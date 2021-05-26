@@ -23,7 +23,7 @@
       forwardpolicy: first
       skip_overlap_check: true
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: ensure forwardzone example.com is present again
     ipadnsforwardzone:
@@ -35,7 +35,7 @@
       forwardpolicy: first
       skip_overlap_check: true
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: ensure forwardzone example.com has two forwarders
     ipadnsforwardzone:
@@ -49,7 +49,7 @@
       forwardpolicy: first
       skip_overlap_check: true
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: ensure forwardzone example.com has one forwarder again
     ipadnsforwardzone:
@@ -61,7 +61,7 @@
       skip_overlap_check: true
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: skip_overlap_check can only be set on creation so change nothing
     ipadnsforwardzone:
@@ -73,7 +73,7 @@
       skip_overlap_check: false
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: ensure forwardzone example.com is absent.
     ipadnsforwardzone:
@@ -81,7 +81,7 @@
       name: example.com
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: ensure forwardzone example.com is absent, again.
     ipadnsforwardzone:
@@ -89,7 +89,7 @@
       name: example.com
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: change all the things at once
     ipadnsforwardzone:
@@ -104,7 +104,7 @@
       skip_overlap_check: true
       permission: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: change zone forward policy
     ipadnsforwardzone:
@@ -112,7 +112,7 @@
       name: example.com
       forwardpolicy: first
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: change zone forward policy, again
     ipadnsforwardzone:
@@ -120,13 +120,23 @@
       name: example.com
       forwardpolicy: first
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: ensure forwardzone example.com is absent.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       name: example.com
       state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: ensure forwardzone example.com is absent, again.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      name: example.com
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: ensure forwardzone example.com is created with minimal args
     ipadnsforwardzone:
@@ -137,7 +147,18 @@
       forwarders:
         - ip_address: 8.8.8.8
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
+
+  - name: ensure forwardzone example.com is created with minimal args, again
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      state: present
+      name: example.com
+      skip_overlap_check: true
+      forwarders:
+        - ip_address: 8.8.8.8
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: add a forwarder to any existing ones
     ipadnsforwardzone:
@@ -149,7 +170,19 @@
           port: 8053
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
+
+  - name: add a forwarder to any existing ones, again
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      state: present
+      name: example.com
+      forwarders:
+        - ip_address: 4.4.4.4
+          port: 8053
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: check the list of forwarders is what we expect
     ipadnsforwardzone:
@@ -162,7 +195,7 @@
         - ip_address: 8.8.8.8
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: remove a single forwarder
     ipadnsforwardzone:
@@ -173,7 +206,18 @@
         - ip_address: 8.8.8.8
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
+
+  - name: remove a single forwarder, again
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      state: absent
+      name: example.com
+      forwarders:
+        - ip_address: 8.8.8.8
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: check the list of forwarders is what we expect now
     ipadnsforwardzone:
@@ -185,7 +229,7 @@
           port: 8053
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Add a permission for per-forward zone access delegation.
     ipadnsforwardzone:
@@ -194,7 +238,7 @@
       permission: yes
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Add a permission for per-forward zone access delegation, again.
     ipadnsforwardzone:
@@ -203,7 +247,7 @@
       permission: yes
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Remove a permission for per-forward zone access delegation.
     ipadnsforwardzone:
@@ -212,7 +256,7 @@
       permission: no
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Remove a permission for per-forward zone access delegation, again.
     ipadnsforwardzone:
@@ -221,7 +265,7 @@
       permission: no
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: disable the forwarder
     ipadnsforwardzone:
@@ -229,7 +273,7 @@
       name: example.com
       state: disabled
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: disable the forwarder again
     ipadnsforwardzone:
@@ -237,7 +281,7 @@
       name: example.com
       state: disabled
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: enable the forwarder
     ipadnsforwardzone:
@@ -245,7 +289,7 @@
       name: example.com
       state: enabled
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: enable the forwarder, again
     ipadnsforwardzone:
@@ -253,7 +297,7 @@
       name: example.com
       state: enabled
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: ensure forwardzone example.com is absent again
     ipadnsforwardzone:

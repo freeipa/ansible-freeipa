@@ -18,7 +18,7 @@
       zone_name: "{{ testzone }}"
       a_rec: 192.168.122.101
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that dns A record for 'host01' is present, again
     ipadnsrecord:
@@ -27,7 +27,7 @@
       zone_name: "{{ testzone }}"
       a_rec: 192.168.122.101
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that dns A records for 'host01' are present
     ipadnsrecord:
@@ -39,7 +39,7 @@
       - 192.168.122.102
       - 192.168.122.103
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that dns A records for 'host01' are present, again
     ipadnsrecord:
@@ -51,7 +51,7 @@
       - 192.168.122.102
       - 192.168.122.103
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that dns A records for 'host01' are absent
     ipadnsrecord:
@@ -63,7 +63,7 @@
       - 192.168.122.102
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that dns A records for 'host01' are absent, again
     ipadnsrecord:
@@ -75,7 +75,7 @@
       - 192.168.122.102
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   ####
 
@@ -86,7 +86,7 @@
       zone_name: "{{ testzone }}"
       aaaa_rec: fd00::0001
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that dns AAAA record for 'host01' is present, again
     ipadnsrecord:
@@ -95,7 +95,7 @@
       zone_name: "{{ testzone }}"
       aaaa_rec: fd00::0001
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that dns AAAA records for 'host01' are present
     ipadnsrecord:
@@ -107,7 +107,7 @@
       - fd00::0011
       - fd00::0021
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that dns AAAAA records for 'host01' are present, again
     ipadnsrecord:
@@ -119,7 +119,7 @@
       - fd00::0011
       - fd00::0021
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that dns AAAAA records for 'host01' are absent
     ipadnsrecord:
@@ -131,7 +131,7 @@
       - fd00::0011
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that dns AAAAA records for 'host01' are absent, again
     ipadnsrecord:
@@ -143,7 +143,7 @@
       - fd00::0011
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # Cleanup
   - name: Cleanup test environment.

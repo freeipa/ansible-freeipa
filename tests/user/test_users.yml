@@ -46,7 +46,7 @@
         first: user10
         last: Last
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Users user1..10 present
     ipauser:
@@ -83,8 +83,11 @@
         first: user10
         last: Last
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
+  # failed_when: not result.failed has been added as this test needs to
+  # fail because two users with the same name should be added in the same
+  # task.
   - name: Duplicate names in users failure test
     ipauser:
       ipaadmin_password: SomeADMINpassword
@@ -102,7 +105,7 @@
         first: user3
         last: Last
     register: result
-    failed_when: result.changed or "is used more than once" not in result.msg
+    failed_when: result.changed or not result.failed or "is used more than once" not in result.msg
 
   - name: Remove test users
     ipauser:
@@ -130,7 +133,7 @@
         first: Manager3
         last: One3
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky present
     ipauser:
@@ -173,7 +176,7 @@
       #issuer: PinkyIssuer
       #subject: PinkySubject
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Same user pinky present again
     ipauser:
@@ -216,7 +219,7 @@
       #issuer: PinkyIssuer
       #subject: PinkySubject
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User pinky present with changed settings
     ipauser:
@@ -230,7 +233,7 @@
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCqmVDpEX5gnSjKuv97AyzOhaUMMKz8ahOA3GY77tVC4o68KNgMCmDSEG1/kOIaElngNLaCha3p/2iAcU9Bi1tLKUlm2bbO5NHNwHfRxY/3cJtq+/7D1vxJzqThYwI4F9vr1WxyY2+mMTv3pXbfAJoR8Mu06XaEY5PDetlDKjHLuNWF+/O7ZU8PsULTa1dJZFrtXeFpmUoLoGxQBvlrlcPI1zDciCSU24t27Zan5Py2l5QchyI7yhCyMM77KDtj5+AFVpmkb9+zq50rYJAyFVeyUvwjzErvQrKJzYpA0NyBp7vskWbt36M16/M/LxEK7HA6mkcakO3ESWx5MT1LAjvdlnxbWG3787MxweHXuB8CZU+9bZPFBaJ+VQtOfJ7I8eH0S16moPC4ak8FlcFvOH8ERDPWLFDqfy09yaZ7bVIF0//5ZI7Nf3YDe3S7GrBX5ieYuECyP6UNkTx9BRsAQeVvXEc6otzB7iCSnYBMGUGzCqeigoAWaVQUONsSR3Uatks= pinky@ipaserver.el81.local
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDc8MIjaSrxLYHvu+hduoF4m6NUFSlXZWzYbd3BK4L47/U4eiXoOS6dcfuZJDjmLfOipc7XVp7NADwAgA1yBOAjbeVpXr2tC8w8saZibl75WBOEjDfNroiOh/f/ojrwwHg05QTVSZHs27sU1HBPyCQM/FHVM6EnRfmyiBkEBA/3ca0PJ9UJhWb2XisCaz6y6QcTh4gQnvHzgmEmK31GwiKnmBSEQuj8P5NGCO8RlN3cq3zpRpMDEoBRCjQYicllf/5P43r5OGvS1LhTiAMfyqE37URezNQa7aozBpH1GhIwAmjAtm84jXQjxUgZPYC0aSLuADYErScOP4792r6koH9t/DM5/M+jG2c4PNWynDczUw6Eaxl5E3hU0Ee9UN0Oee7iBnVenS/QMeZNyo5lMA/HXT5lrYiJGTYM0shRjGXXYBbJZhWerguSWDAdUd1gvuGP1nb7/+/Cvb46+HX7zYouS5Ojo0yPzMZ07X142jnKAfx9LnKdMUCwBJzbtoJ91Zc= pinky@ipaserver.el81.local
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky add manager manager1
     ipauser:
@@ -239,7 +242,7 @@
       manager: manager1
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky add manager manager1 again
     ipauser:
@@ -248,7 +251,7 @@
       manager: manager1
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User pinky add manager manager2, manager3
     ipauser:
@@ -257,7 +260,7 @@
       manager: manager2,manager3
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky add manager manager2, manager3 again
     ipauser:
@@ -266,7 +269,7 @@
       manager: manager2,manager3
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User pinky remove manager manager1
     ipauser:
@@ -276,7 +279,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky remove manager manager1 again
     ipauser:
@@ -286,7 +289,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User pinky add principal pa
     ipauser:
@@ -295,7 +298,7 @@
       principal: pa
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky add principal pa again
     ipauser:
@@ -304,7 +307,7 @@
       principal: pa
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User pinky add principal pa1
     ipauser:
@@ -313,7 +316,7 @@
       principal: pa1
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky remove principal pa1
     ipauser:
@@ -323,7 +326,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky remove principal pa1 again
     ipauser:
@@ -333,7 +336,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User pinky remove principal pa
     ipauser:
@@ -343,7 +346,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky remove principal non-existing pa2
     ipauser:
@@ -353,7 +356,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: User pinky absent and preserved
     ipauser:
@@ -362,7 +365,7 @@
       preserve: yes
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky undeleted (preserved before)
     ipauser:
@@ -370,7 +373,7 @@
       name: pinky
       state: undeleted
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Users pinky disabled
     ipauser:
@@ -378,7 +381,7 @@
       name: pinky
       state: disabled
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: User pinky enabled
     ipauser:
@@ -386,7 +389,7 @@
       name: pinky
       state: enabled
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Remove test users
     ipauser:

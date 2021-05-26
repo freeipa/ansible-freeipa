@@ -41,7 +41,7 @@
         - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}" 
         force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host hostX... principal 'host/hostX... present (existing already) X=[1,2]
     ipahost:
@@ -55,7 +55,7 @@
         - "{{ 'host/host2.' + ipaserver_domain + '@' + ipaserver_realm }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host hostX... principal host/testhostX... present again X=[1,2]
     ipahost:
@@ -69,7 +69,7 @@
         - "{{ 'host/testhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host hostX.. principal host/testhostX... absent X=[1,2]
     ipahost:
@@ -84,7 +84,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host hostX... principal host/testhostX... absent again X=[1,2]
     ipahost:
@@ -99,7 +99,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host hostX... principal host/testhostX... and host/myhostX... present X=[1,2]
     ipahost:
@@ -115,7 +115,7 @@
         - "{{ 'host/myhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host hostX... principal host/testhostX... and host/myhostX... present again X=[1,2]
     ipahost:
@@ -131,7 +131,7 @@
         - "{{ 'host/myhost2.' + ipaserver_domain + '@' + ipaserver_realm }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host hostX... principal host/testhostX... and host/myhostX... absent X=[1,2]
     ipahost:
@@ -148,7 +148,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host hostX... principal host/testhostX... and host/myhostX... absent again X=[1,2]
     ipahost:
@@ -165,7 +165,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Hosts host1... and host2... absent
     ipahost:

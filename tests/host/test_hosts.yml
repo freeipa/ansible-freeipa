@@ -47,7 +47,7 @@
       - name: "{{ host6_fqdn }}"
         force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Hosts host1..host6 present again
     ipahost:
@@ -66,7 +66,7 @@
       - name: "{{ host6_fqdn }}"
         force: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Hosts host1..host6 absent
     ipahost:
@@ -80,7 +80,7 @@
       - name: "{{ host6_fqdn }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Hosts host1..host6 absent again
     ipahost:
@@ -94,8 +94,10 @@
       - name: "{{ host6_fqdn }}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
+  # Use failed_when: not result.failed as this test needs to fail because a
+  # host is added two times in the same task
   - name: Duplicate names in hosts failure test
     ipahost:
       ipaadmin_password: SomeADMINpassword
@@ -109,4 +111,4 @@
       - name: "{{ host3_fqdn }}"
         force: yes
     register: result
-    failed_when: result.changed or "is used more than once" not in result.msg
+    failed_when: result.changed or not result.failed or "is used more than once" not in result.msg

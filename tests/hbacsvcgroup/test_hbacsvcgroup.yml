@@ -21,14 +21,14 @@
       ipaadmin_password: SomeADMINpassword
       name: login
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service Group login is present again
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
       name: login
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure HBAC Service sshd is present in HBAC Service Group login
     ipahbacsvcgroup:
@@ -38,7 +38,7 @@
       - sshd
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service sshd is present in HBAC Service Group login again
     ipahbacsvcgroup:
@@ -48,7 +48,7 @@
       - sshd
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure HBAC Services sshd and foo are absent in HBAC Service Group login
     ipahbacsvcgroup:
@@ -60,7 +60,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Services sshd and foo are absent in HBAC Service Group login again
     ipahbacsvcgroup:
@@ -72,7 +72,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure HBAC Service Group login is absent
     ipahbacsvcgroup:
@@ -80,7 +80,7 @@
       name: login
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure HBAC Service Group login is absent again
     ipahbacsvcgroup:
@@ -88,4 +88,4 @@
       name: login
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed

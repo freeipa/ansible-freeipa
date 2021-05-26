@@ -33,7 +33,7 @@
       name: "{{ 'db1.' + ipaserver_domain }}"
       force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host "{{ 'db2.' + ipaserver_domain }}" present
     ipahost:
@@ -41,7 +41,7 @@
       name: "{{ 'db2.' + ipaserver_domain }}"
       force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group mysql-server is present
     ipahostgroup:
@@ -49,7 +49,7 @@
       name: mysql-server
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group mysql-server is present again
     ipahostgroup:
@@ -57,7 +57,7 @@
       name: mysql-server
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure host-group oracle-server is present
     ipahostgroup:
@@ -65,7 +65,7 @@
       name: oracle-server
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group oracle-server is present again
     ipahostgroup:
@@ -73,7 +73,7 @@
       name: oracle-server
       state: present
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure host-group databases is present
     ipahostgroup:
@@ -85,7 +85,7 @@
       hostgroup:
       - oracle-server
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group databases is present again
     ipahostgroup:
@@ -97,7 +97,7 @@
       hostgroup:
       - oracle-server
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure host db2 is member of host-group databases
     ipahostgroup:
@@ -108,7 +108,7 @@
       - "{{ 'db2.' + ipaserver_domain }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host db2 is member of host-group databases again
     ipahostgroup:
@@ -119,7 +119,7 @@
       - "{{ 'db2.' + ipaserver_domain }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure host-group mysql-server is member of host-group databases
     ipahostgroup:
@@ -130,7 +130,7 @@
       - mysql-server
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group mysql-server is member of host-group databases again
     ipahostgroup:
@@ -141,7 +141,7 @@
       - mysql-server
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure host-group oracle-server is member of host-group databases (again)
     ipahostgroup:
@@ -152,7 +152,7 @@
       - oracle-server
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure host-group databases, mysql-server and oracle-server are absent
     ipahostgroup:
@@ -163,7 +163,7 @@
       - oracle-server
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group databases, mysql-server and oracle-server are absent again
     ipahostgroup:
@@ -174,7 +174,7 @@
       - oracle-server
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Test hosts db1 and db2 absent
     ipahost:

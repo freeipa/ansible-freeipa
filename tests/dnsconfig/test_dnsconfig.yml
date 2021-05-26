@@ -53,7 +53,7 @@
       forward_policy: only
       allow_sync_ptr: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Set dnsconfig, with the same values.
     ipadnsconfig:
@@ -66,7 +66,7 @@
       forward_policy: only
       allow_sync_ptr: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure forwarder is absent.
     ipadnsconfig:
@@ -75,7 +75,7 @@
         - ip_address: 8.8.8.8
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure forwarder is absent, again.
     ipadnsconfig:
@@ -84,63 +84,63 @@
         - ip_address: 8.8.8.8
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Disable global forwarders.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
       forward_policy: none
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Disable global forwarders, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
       forward_policy: none
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Re-enable global forwarders.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
       forward_policy: first
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Re-enable global forwarders, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
       forward_policy: first
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Disable PTR record synchronization.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
       allow_sync_ptr: no
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Disable PTR record synchronization, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
       allow_sync_ptr: no
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Re-enable PTR record synchronization.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
       allow_sync_ptr: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Re-enable PTR record synchronization, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
       allow_sync_ptr: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure all forwarders are absent.
     ipadnsconfig:
@@ -152,7 +152,7 @@
           port: 53
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
 
   - name: Ensure all forwarders are absent, again.
@@ -165,7 +165,7 @@
           port: 53
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # Cleanup.
   - name: Ensure forwarders are absent.

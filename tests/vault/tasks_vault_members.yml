@@ -9,7 +9,7 @@
       name: "{{vault.name}}"
       vault_type: "{{vault.vault_type}}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
     when: vault.vault_type == 'standard'
 
   - name: Ensure vault is present
@@ -19,7 +19,7 @@
       vault_password: SomeVAULTpassword
       vault_type: "{{vault.vault_type}}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
     when: vault.vault_type == 'symmetric'
 
   - name: Ensure vault is present
@@ -29,7 +29,7 @@
       vault_type: "{{ vault.vault_type }}"
       public_key: "{{lookup('file', 'A_private.b64')}}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
     when: vault.vault_type == 'asymmetric'
 
   - name: Ensure vault member user is present.
@@ -40,7 +40,7 @@
       users:
       - user02
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure vault member user is present, again.
     ipavault:
@@ -50,7 +50,7 @@
       users:
       - user02
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure more vault member users are present.
     ipavault:
@@ -61,7 +61,7 @@
       - admin
       - user02
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure vault member user is still present.
     ipavault:
@@ -71,7 +71,7 @@
       users:
       - user02
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure vault users are absent.
     ipavault:
@@ -83,7 +83,7 @@
       - user02
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure vault users are absent, again.
     ipavault:
@@ -95,7 +95,7 @@
       - user02
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure vault user is absent, once more.
     ipavault:
@@ -106,7 +106,7 @@
       - admin
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure vault member group is present.
     ipavault:
@@ -115,7 +115,7 @@
       action: member
       groups: vaultgroup
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure vault member group is present, again.
     ipavault:
@@ -124,7 +124,7 @@
       action: member
       groups: vaultgroup
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure vault member group is absent.
     ipavault:
@@ -134,7 +134,7 @@
       groups: vaultgroup
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure vault member group is absent, again.
     ipavault:
@@ -144,7 +144,7 @@
       groups: vaultgroup
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure vault member service is present.
     ipavault:
@@ -153,7 +153,7 @@
       action: member
       services: "HTTP/{{ ansible_facts['fqdn'] }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure vault member service is present, again.
     ipavault:
@@ -162,7 +162,7 @@
       action: member
       services: "HTTP/{{ ansible_facts['fqdn'] }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure vault member service is absent.
     ipavault:
@@ -172,7 +172,7 @@
       services: "HTTP/{{ ansible_facts['fqdn'] }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure vault member service is absent, again.
     ipavault:
@@ -182,7 +182,7 @@
       services: "HTTP/{{ ansible_facts['fqdn'] }}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure user03 is an owner of vault.
     ipavault:
@@ -191,7 +191,7 @@
       owners: user03
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure user03 is an owner of vault, again.
     ipavault:
@@ -200,7 +200,7 @@
       owners: user03
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure user03 is not owner of vault.
     ipavault:
@@ -210,7 +210,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure user03 is not owner of vault, again.
     ipavault:
@@ -220,7 +220,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure vaultgroup is an ownergroup of vault.
     ipavault:
@@ -229,7 +229,7 @@
       ownergroups: vaultgroup
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure vaultgroup is an ownergroup of vault, again.
     ipavault:
@@ -238,7 +238,7 @@
       ownergroups: vaultgroup
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure vaultgroup is not ownergroup of vault.
     ipavault:
@@ -248,7 +248,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure vaultgroup is not ownergroup of vault, again.
     ipavault:
@@ -258,7 +258,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure service is an owner of vault.
     ipavault:
@@ -267,7 +267,7 @@
       ownerservices: "HTTP/{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure service is an owner of vault, again.
     ipavault:
@@ -276,7 +276,7 @@
       ownerservices: "HTTP/{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure service is not owner of vault.
     ipavault:
@@ -286,7 +286,7 @@
       state: absent
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure service is not owner of vault, again.
     ipavault:
@@ -296,7 +296,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure {{vault.vault_type}} vault is absent
     ipavault:
@@ -304,7 +304,7 @@
       name: "{{vault.name}}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure {{vault.vault_type}} vault is absent, again
     ipavault:
@@ -312,7 +312,7 @@
       name: "{{vault.name}}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Cleanup testing environment.
     import_tasks: env_cleanup.yml

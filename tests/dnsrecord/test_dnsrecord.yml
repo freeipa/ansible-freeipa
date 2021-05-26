@@ -28,7 +28,7 @@
       record_type: AAAA
       record_value: ::1
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that dns record 'host01' is present, again
     ipadnsrecord:
@@ -38,7 +38,7 @@
       record_type: AAAA
       record_value: ::1
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that dns record 'host02' is present
     ipadnsrecord:
@@ -48,7 +48,7 @@
       record_type: A
       record_value: "{{ ipv4_prefix }}.102"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that dns record 'host02' is present, again
     ipadnsrecord:
@@ -58,7 +58,7 @@
       record_type: A
       record_value: "{{ ipv4_prefix }}.102"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Modify record 'host02' with multiple A and AAAA record.
     ipadnsrecord:
@@ -75,7 +75,7 @@
           record_type: AAAA
           record_value: ::1
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Modify record 'host02' with multiple A and AAAA record, again.
     ipadnsrecord:
@@ -92,7 +92,7 @@
           record_type: AAAA
           record_value: ::1
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure 'host02' A6 record is present.
     ipadnsrecord:
@@ -101,7 +101,7 @@
       name: host02
       a6_data: ::1
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure 'host02' A6 record is present, again.
     ipadnsrecord:
@@ -110,7 +110,7 @@
       name: host02
       a6_rec: ::1
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure 'host02' A6 record is absent.
     ipadnsrecord:
@@ -120,7 +120,7 @@
       a6_rec: ::1
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure 'host02' A6 record is absent, again.
     ipadnsrecord:
@@ -130,7 +130,7 @@
       a6_rec: ::1
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that dns record 'host03' is present, with reverse record.
     ipadnsrecord:
@@ -140,7 +140,7 @@
       a_ip_address: "{{ ipv4_prefix }}.103"
       a_create_reverse: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that dns record 'host03' is present, with reverse record, again
     ipadnsrecord:
@@ -151,7 +151,7 @@
       record_value: "{{ ipv4_prefix }}.103"
       create_reverse: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Delete all entries associated with host03
     ipadnsrecord:
@@ -161,7 +161,7 @@
       del_all: yes
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Delete all entries associated with host03, again
     ipadnsrecord:
@@ -171,7 +171,7 @@
       del_all: yes
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' has CNAME
     ipadnsrecord:
@@ -181,7 +181,7 @@
       record_type: CNAME
       record_value: "host04.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has CNAME, again
     ipadnsrecord:
@@ -190,7 +190,7 @@
       name: host04
       cname_hostname: "host04.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' CNAME is absent
     ipadnsrecord:
@@ -200,7 +200,7 @@
       cname_rec: "host04.{{ testzone }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' CNAME is absent, again
     ipadnsrecord:
@@ -211,7 +211,7 @@
       record_value: "host04.{{ testzone }}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' and 'host03' have CNAME, with cname_hostname
     ipadnsrecord:
@@ -223,7 +223,7 @@
         - name: host03
           cname_hostname: "host03.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has CNAME, with cname_hostname, again
     ipadnsrecord:
@@ -232,7 +232,7 @@
       name: host04
       cname_hostname: "host04.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' CNAME is absent.
     ipadnsrecord:
@@ -242,7 +242,7 @@
       cname_rec: "host04.{{ testzone }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has A record.
     ipadnsrecord:
@@ -251,7 +251,7 @@
       name: host04
       ip_address: "{{ ipv4_prefix }}.104"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has A record, again.
     ipadnsrecord:
@@ -260,7 +260,7 @@
       name: host04
       ip_address: "{{ ipv4_prefix }}.104"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' has the same A record with reverse.
     ipadnsrecord:
@@ -270,7 +270,7 @@
       a_rec: "{{ ipv4_prefix }}.104"
       reverse: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has the same A record with reverse, again.
     ipadnsrecord:
@@ -280,17 +280,18 @@
       a_rec: "{{ ipv4_prefix }}.104"
       reverse: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
-  - name: Ensure that 'host04' has an A record with reverse, for NS record.
+  - name: Ensure that 'host04' has another A record with reverse.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: host04
       ip_address: "{{ ipv4_prefix }}.114"
       reverse: yes
+    failed_when: result.changed or result.failed
 
-  - name: Ensure that 'host04' has an A record with reverse, again.
+  - name: Ensure that 'host04' has another A record with reverse, again.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
@@ -298,7 +299,7 @@
       ip_address: "{{ ipv4_prefix }}.114"
       reverse: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' has AAAA record.
     ipadnsrecord:
@@ -308,7 +309,7 @@
       aaaa_ip_address: fd00::0004
       aaaa_create_reverse: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has AAAA record, again.
     ipadnsrecord:
@@ -318,7 +319,7 @@
       ip_address: fd00::0004
       reverse: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' has AAAA record, without reverse.
     ipadnsrecord:
@@ -327,7 +328,7 @@
       name: host04
       ip_address: fd00::0014
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' previous AAAA record, now has a reverse record.
     ipadnsrecord:
@@ -337,7 +338,7 @@
       aaaa_rec: fd00::0014
       reverse: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' previous AAAA record, now has a reverse record, again.
     ipadnsrecord:
@@ -347,7 +348,7 @@
       aaaa_rec: fd00::0014
       reverse: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' has PTR record.
     ipadnsrecord:
@@ -356,7 +357,7 @@
       name: "124"
       ptr_hostname: "host04.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has PTR record, again.
     ipadnsrecord:
@@ -365,7 +366,7 @@
       name: "124"
       ptr_hostname: "host04.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' has PTR record is absent.
     ipadnsrecord:
@@ -375,7 +376,7 @@
       ptr_rec: "host04.{{ testzone }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has PTR record is absent, again.
     ipadnsrecord:
@@ -385,7 +386,7 @@
       ptr_rec: "host04.{{ testzone }}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' has DNAME record.
     ipadnsrecord:
@@ -394,7 +395,7 @@
       name: host04
       dname_target: "ipa.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has DNAME record, again.
     ipadnsrecord:
@@ -403,7 +404,7 @@
       name: host04
       dname_target: "ipa.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' DNAME record is absent.
     ipadnsrecord:
@@ -413,7 +414,7 @@
       dname_rec: "ipa.{{ testzone }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' DNAME record is absent, again.
     ipadnsrecord:
@@ -423,8 +424,10 @@
       dname_rec: "ipa.{{ testzone }}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
+  # This task only ensures proper records are present,
+  # it is not testing anything, and should not faild.
   - name: Ensure that 'host04' has a A record with reverse, for NS record.
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
@@ -432,6 +435,8 @@
       name: host04
       ip_address: "{{ ipv4_prefix }}.114"
       reverse: yes
+    register: result
+    failed_when: result.failed
 
   - name: Ensure that 'host04' has NS record.
     ipadnsrecord:
@@ -440,7 +445,7 @@
       name: host04
       ns_hostname: host04
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has NS record, again.
     ipadnsrecord:
@@ -449,7 +454,9 @@
       name: host04
       ns_hostname: host04
     register: result
-    failed_when: result.changed
+    # IPA issue 8850 should be fixed before we handle the failed_when
+    # message. For now, we'll just test if it does not fail.
+    failed_when: result.changed or not result.failed
 
   - name: Ensure that 'host04' NS record is absent.
     ipadnsrecord:
@@ -459,7 +466,7 @@
       ns_rec: host04
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' NS record is absent, again.
     ipadnsrecord:
@@ -469,7 +476,7 @@
       ns_rec: host04
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' DLV record is present.
     ipadnsrecord:
@@ -566,7 +573,7 @@
       zone_name: "{{ safezone }}"
       ip_address: "{{ ansible_facts['default_ipv4'].address }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that NS record for "{{ safezone }}" is present
     ipadnsrecord:
@@ -575,7 +582,7 @@
       zone_name: "{{ safezone }}"
       ns_hostname: iron01
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'iron01' DS record is present.
     ipadnsrecord:
@@ -588,7 +595,7 @@
       # digest is sha1sum of 'iron01."{{ safezone }}"'
       ds_digest: 84763786e4213cca9a6938dba5dacd64f87ec216
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'iron01' DS record is present, again.
     ipadnsrecord:
@@ -600,7 +607,7 @@
       ds_digest_type: 1
       ds_digest: 84763786e4213cca9a6938dba5dacd64f87ec216
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'iron01' DS record is present, with a different key tag.
     ipadnsrecord:
@@ -610,7 +617,7 @@
       ds_key_tag: 54321
       ds_rec: 12345 3 1 84763786e4213cca9a6938dba5dacd64f87ec216
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'iron01' DS record is present, with a different key tag, again.
     ipadnsrecord:
@@ -620,7 +627,7 @@
       ds_key_tag: 54321
       ds_rec: 12345 3 1 84763786e4213cca9a6938dba5dacd64f87ec216
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or (result.failed and "DS record does not contain" not in result.msg)
 
   - name: Ensure that 'iron01' DS record is absent.
     ipadnsrecord:
@@ -630,7 +637,7 @@
       ds_rec: 54321 3 1 84763786e4213cca9a6938dba5dacd64f87ec216
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'iron01' DS record is absent, again.
     ipadnsrecord:
@@ -640,7 +647,7 @@
       ds_rec: 54321 3 1 84763786e4213cca9a6938dba5dacd64f87ec216
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' AFSDB record is present.
     ipadnsrecord:
@@ -650,7 +657,7 @@
       afsdb_subtype: 1
       afsdb_hostname: "host04.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' AFSDB record is present, again.
     ipadnsrecord:
@@ -660,7 +667,7 @@
       afsdb_subtype: 1
       afsdb_hostname: "host04.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' AFSDB record subtype is 2.
     ipadnsrecord:
@@ -670,7 +677,7 @@
       afsdb_subtype: 2
       afsdb_rec: "1 host04.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' AFSDB record subtype is 2, again.
     ipadnsrecord:
@@ -680,7 +687,7 @@
       afsdb_subtype: 2
       afsdb_rec: "1 host04.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or (result.failed and "AFSDB record does not contain" not in result.msg)
 
   - name: Ensure that 'host04' AFSDB record is absent.
     ipadnsrecord:
@@ -690,7 +697,7 @@
       afsdb_rec: "2 host04.{{ testzone }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' AFSDB record is absent, again.
     ipadnsrecord:
@@ -700,7 +707,7 @@
       afsdb_rec: "2 host04.{{ testzone }}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' CERT record is present.
     ipadnsrecord:
@@ -712,7 +719,7 @@
       cert_algorithm: 3
       cert_certificate_or_crl: "{{ lookup('file', 'cert1.b64') }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' CERT record is present, again.
     ipadnsrecord:
@@ -724,7 +731,7 @@
       cert_algorithm: 3
       cert_certificate_or_crl: "{{ lookup('file', 'cert1.b64') }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' CERT record is absent.
     ipadnsrecord:
@@ -734,7 +741,7 @@
       cert_rec: "1 1234 3 {{ lookup('file', 'cert1.b64') }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' CERT record is absent, again.
     ipadnsrecord:
@@ -744,7 +751,7 @@
       cert_rec: 1 1234 3 "{{ lookup('file', 'cert1.b64') }}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' KX record is present.
     ipadnsrecord:
@@ -754,7 +761,7 @@
       kx_preference: 10
       kx_exchanger: "keyex.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' KX record is present, again.
     ipadnsrecord:
@@ -764,7 +771,7 @@
       kx_preference: 10
       kx_exchanger: "keyex.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' KX record is present with preference set to 20.
     ipadnsrecord:
@@ -774,7 +781,7 @@
       kx_preference: 20
       kx_rec: "10 keyex.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' KX record is present with preference set to 20, again.
     ipadnsrecord:
@@ -784,7 +791,7 @@
       kx_preference: 20
       kx_rec: "10 keyex.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or (result.failed and "KX record does not contain" not in result.msg)
 
   - name: Ensure that 'host04' KX record is present with preference set to 20, one more time.
     ipadnsrecord:
@@ -794,7 +801,7 @@
       kx_preference: 20
       kx_rec: "20 keyex.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' KX record is absent.
     ipadnsrecord:
@@ -804,7 +811,7 @@
       kx_rec: "20 keyex.{{ testzone }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' KX record is absent, again.
     ipadnsrecord:
@@ -814,7 +821,7 @@
       kx_rec: "20 keyex.{{ testzone }}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' MX record is present.
     ipadnsrecord:
@@ -824,7 +831,7 @@
       mx_preference: 10
       mx_exchanger: "mail.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' MX record is present, again.
     ipadnsrecord:
@@ -834,7 +841,7 @@
       mx_preference: 10
       mx_exchanger: "mail.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' MX record is present with preference set to 20.
     ipadnsrecord:
@@ -844,7 +851,7 @@
       mx_preference: 20
       mx_rec: "10 mail.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' MX record is absent.
     ipadnsrecord:
@@ -854,7 +861,7 @@
       mx_rec: "20 mail.{{ testzone }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' MX record is absent, again.
     ipadnsrecord:
@@ -864,7 +871,7 @@
       mx_rec: "20 mail.{{ testzone }}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' LOC record is present.
     ipadnsrecord:
@@ -884,7 +891,7 @@
       loc_h_precision: 10000
       loc_v_precision: 10
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' LOC record is present, again.
     ipadnsrecord:
@@ -904,7 +911,7 @@
       loc_h_precision: 10000
       loc_v_precision: 10
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' LOC record is present, with loc_size 1.00.
     ipadnsrecord:
@@ -914,7 +921,7 @@
       loc_size: 1.00
       loc_rec: 52 22 23.000 N 4 53 32.000 E -2.00 0.00 10000.00 10.00
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' LOC record is absent.
     ipadnsrecord:
@@ -924,7 +931,7 @@
       loc_rec: 52 22 23.000 N 4 53 32.000 E -2.00 1.00 10000.00 10.00
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' LOC record is absent, again.
     ipadnsrecord:
@@ -934,7 +941,7 @@
       loc_rec: 52 22 23.000 N 4 53 32.000 E -2.00 1.00 10000.00 10.00
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that '_sip._udp' service has NAPTR record.
     ipadnsrecord:
@@ -948,7 +955,7 @@
       naptr_regexp: "!^.*$!sip:info@example.com!"
       naptr_replacement: "."
     register: result
-    failed_when: result.failed or not result.changed
+    failed_when: result.failed or not result.changed or result.failed
 
   - name: Ensure that '_sip._udp' service has NAPTR record, again.
     ipadnsrecord:
@@ -1049,7 +1056,7 @@
       srv_port: 5060
       srv_target: "sip-server.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that '_sip._udp' service has SRV record, again.
     ipadnsrecord:
@@ -1061,7 +1068,7 @@
       srv_port: 5060
       srv_target: "sip-server.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure '_sip._udp' SRV record has priority equals to 4.
     ipadnsrecord:
@@ -1074,7 +1081,7 @@
       srv_target: "sip-server.{{ testzone }}"
       srv_rec: "10 10 5060 sip-server.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure '_sip._udp' SRV record has priority equals to 4, again.
     ipadnsrecord:
@@ -1087,7 +1094,7 @@
       srv_target: sip-server."{{ testzone }}"
       srv_rec: "10 10 5060 sip-server.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or (result.failed and "SRV record does not contain" not in result.msg)
 
   - name: Ensurer '_sip._udp' SRV record has priority 2, weight 20
     ipadnsrecord:
@@ -1099,7 +1106,7 @@
       srv_port: 5060
       srv_target: "sip-server.{{ testzone }}"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensurer '_sip._udp' SRV record has priority 2, weight 20, again.
     ipadnsrecord:
@@ -1111,7 +1118,7 @@
       srv_port: 5060
       srv_target: "sip-server.{{ testzone }}"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that '_sip._udp' SRV record is absent.
     ipadnsrecord:
@@ -1121,7 +1128,7 @@
       srv_record: "2 20 5060 sip-server.{{ testzone }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that '_sip._udp' SRV record is absent, again.
     ipadnsrecord:
@@ -1131,7 +1138,7 @@
       srv_record: "2 20 5060 sip-server.{{ testzone }}"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # SSHFP fingerprint generated with `ssh-keygen -r host04."{{ testzone }}"`
   - name: Ensure that 'host04' has SSHFP record.
@@ -1143,7 +1150,7 @@
       sshfp_fp_type: 1
       sshfp_fingerprint: d21802c61733e055b8d16296cbce300efb8a167a
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has SSHFP record, again.
     ipadnsrecord:
@@ -1154,7 +1161,7 @@
       sshfp_fp_type: 1
       sshfp_fingerprint: d21802c61733e055b8d16296cbce300efb8a167a
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' SSHFP record is absent.
     ipadnsrecord:
@@ -1164,7 +1171,7 @@
       sshfp_rec: 1 1 d21802c61733e055b8d16296cbce300efb8a167a
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' SSHFP record is absent, again.
     ipadnsrecord:
@@ -1174,7 +1181,7 @@
       sshfp_rec: 1 1 d21802c61733e055b8d16296cbce300efb8a167a
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # Data is sha356sum of 'Some Text to Test', it should be created from
   # a real certificate.
@@ -1188,7 +1195,7 @@
       tlsa_matching_type: 1
       tlsa_cert_association_data: 9c0ad776dbeae8d9d55b0ad42899d30235c114d5f918fd69746e4279e47bdaa2
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' has TLSA record present, again.
     ipadnsrecord:
@@ -1200,7 +1207,7 @@
       tlsa_matching_type: 1
       tlsa_cert_association_data: 9c0ad776dbeae8d9d55b0ad42899d30235c114d5f918fd69746e4279e47bdaa2
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Modify 'host04' has TLSA record.
     ipadnsrecord:
@@ -1210,7 +1217,7 @@
       tlsa_matching_type: 0
       tlsa_rec: 3 1 1 9c0ad776dbeae8d9d55b0ad42899d30235c114d5f918fd69746e4279e47bdaa2
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Modify 'host04' has TLSA record, again.
     ipadnsrecord:
@@ -1220,7 +1227,7 @@
       tlsa_matching_type: 0
       tlsa_rec: 3 1 1 9c0ad776dbeae8d9d55b0ad42899d30235c114d5f918fd69746e4279e47bdaa2
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or (result.failed and "TLSA record does not contain" not in result.msg)
 
   - name: Ensure that 'host04' TLSA record is absent.
     ipadnsrecord:
@@ -1230,7 +1237,7 @@
       tlsa_rec: 3 1 0 9c0ad776dbeae8d9d55b0ad42899d30235c114d5f918fd69746e4279e47bdaa2
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' TLSA record is absent, again.
     ipadnsrecord:
@@ -1240,7 +1247,7 @@
       tlsa_rec: 3 1 0 9c0ad776dbeae8d9d55b0ad42899d30235c114d5f918fd69746e4279e47bdaa2
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' has TXT record present.
     ipadnsrecord:
@@ -1249,7 +1256,7 @@
       name: host04
       txt_data: Some Text
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   # - name: Ensure that 'host04' has TXT record present, again.
   #   ipadnsrecord:
@@ -1258,7 +1265,7 @@
   #     name: host04
   #     txt_data: Some Text
   #   register: result
-  #   failed_when: result.changed
+  #   failed_when: result.changed or result.failed
 
   - name: Change value of  'host04' TXT record.
     ipadnsrecord:
@@ -1268,7 +1275,7 @@
       txt_data: Some new Text
       txt_rec: Some Text
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Add a second TXT record to 'host04'.
     ipadnsrecord:
@@ -1277,7 +1284,7 @@
       name: host04
       txt_rec: Some Other Text
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Add a second TXT record to 'host04', again.
     ipadnsrecord:
@@ -1286,7 +1293,7 @@
       name: host04
       txt_rec: Some Other Text
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that one of 'host04' TXT record is absent.
     ipadnsrecord:
@@ -1296,7 +1303,7 @@
       txt_rec: Some new Text
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that one of 'host04' TXT record is absent, again.
     ipadnsrecord:
@@ -1306,7 +1313,7 @@
       txt_rec: Some new Text
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that 'host04' TXT record are all absent.
     ipadnsrecord:
@@ -1318,7 +1325,7 @@
       - Some Other Text
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that 'host04' TXT record are all absent, again.
     ipadnsrecord:
@@ -1330,7 +1337,7 @@
       - Some Other Text
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that '_ftp._tcp' has URI record.
     ipadnsrecord:
@@ -1341,7 +1348,7 @@
       uri_weight: 1
       uri_target: ftp://ftp.host04.{{ testzone }}/public
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that '_ftp._tcp' has URI record, again
     ipadnsrecord:
@@ -1352,7 +1359,7 @@
       uri_weight: 1
       uri_target: ftp://ftp.host04.{{ testzone }}/public
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Change '_ftp._tcp' URI record weight to 3 and priority to 5.
     ipadnsrecord:
@@ -1363,14 +1370,17 @@
       uri_weight: 3
       uri_rec: 10 1 "ftp://ftp.host04.{{ testzone }}/public"
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Verify if modification worked.
     ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      zone_name: "{{ testzone }}"
+      name: _ftp._tcp
       uri_rec: 10 1 ftp://ftp.host04.{{ testzone }}/public
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
 
   - name: Change '_ftp._tcp' URI record weight to 3 and priority to 5, again.
@@ -1382,7 +1392,7 @@
       uri_weight: 3
       uri_rec: 5 3 "ftp://ftp.host04.{{ testzone }}/public"
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure that '_ftp._tcp' URI record is absent.
     ipadnsrecord:
@@ -1392,7 +1402,7 @@
       uri_rec: 5 3 "ftp://ftp.host04.{{ testzone }}/public"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure that '_ftp._tcp' URI record is absent, again.
     ipadnsrecord:
@@ -1402,7 +1412,7 @@
       uri_rec: 5 3 "ftp://ftp.host04.{{ testzone }}/public"
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   # cleanup
   - name: Cleanup test environment.

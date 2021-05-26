@@ -31,49 +31,49 @@
         first: user3
         last: Last
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group1 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: group1
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group1 is present again
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: group1
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure group2 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: group2
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group2 is present again
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: group2
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure group3 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: group3
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group3 is present again
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: group3
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure groups group2 and group3 are present in group group1
     ipagroup:
@@ -84,7 +84,7 @@
       - group3
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure groups group2 and group3 are present in group group1 again
     ipagroup:
@@ -95,7 +95,7 @@
       - group3
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure group3 ia present in group group1
     ipagroup:
@@ -105,7 +105,7 @@
       - group3
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure users user1, user2 and user3 are present in group group1
     ipagroup:
@@ -117,7 +117,7 @@
       - user3
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure users user1, user2 and user3 are present in group group1 again
     ipagroup:
@@ -129,7 +129,7 @@
       - user3
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   #- ipagroup:
   #    ipaadmin_password: SomeADMINpassword
@@ -147,7 +147,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure group group4 is absent
     ipagroup:
@@ -155,7 +155,7 @@
       name: group4
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Ensure group group3, group2 and group1 are absent
     ipagroup:
@@ -163,7 +163,7 @@
       name: group3,group2,group1
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure users user1, user2 and user3 are absent
     ipauser:
@@ -171,5 +171,5 @@
       name: user1,user2,user3
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 

@@ -23,7 +23,7 @@
       - name: "{{ 'test.' + ipaserver_domain }}"
         force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Generate self-signed certificates.
     shell:
@@ -46,7 +46,7 @@
         - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host test cert members present again
     ipahost:
@@ -59,7 +59,7 @@
         - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host test cert members absent
     ipahost:
@@ -73,7 +73,7 @@
       state: absent
       action: member
     #register: result
-    #failed_when: not result.changed
+    #failed_when: not result.changed or result.failed
 
   - name: Host test cert members absent again
     ipahost:
@@ -87,7 +87,7 @@
       state: absent
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host test absent
     ipahost:
@@ -96,7 +96,7 @@
       - name: "{{ 'test.' + ipaserver_domain }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Remove certificate files.
     shell:

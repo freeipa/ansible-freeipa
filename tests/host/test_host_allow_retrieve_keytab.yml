@@ -58,7 +58,7 @@
       - name: "{{ host3_fqdn }}"
         force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group hostgroup1 present
     ipahostgroup:
@@ -66,7 +66,7 @@
       name: hostgroup1
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-group hostgroup2 present
     ipahostgroup:
@@ -74,7 +74,7 @@
       name: hostgroup2
       state: present
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure users user1 and user2 present
     ipauser:
@@ -87,21 +87,21 @@
         first: First2
         last: Last2
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group1 present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: group1
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group2 present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: group2
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host host1... present with allow_retrieve_keytab users,groups,hosts and hostgroups
     ipahost:
@@ -121,7 +121,7 @@
       - hostgroup2
       force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host host1... present with allow_retrieve_keytab users,groups,hosts and hostgroups again
     ipahost:
@@ -141,7 +141,7 @@
       - hostgroup2
       force: yes
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host host1... absent
     ipahost:
@@ -156,7 +156,7 @@
       name: "{{ host1_fqdn }}"
       force: yes
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host host1... ensure allow_retrieve_keytab users,groups,hosts and hostgroups present
     ipahost:
@@ -176,7 +176,7 @@
       - hostgroup2
       action: member
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host host1... ensure allow_retrieve_keytab users,groups,hosts and hostgroups present again
     ipahost:
@@ -196,7 +196,7 @@
       - hostgroup2
       action: member
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host host1... ensure allow_retrieve_keytab users,groups,hosts and hostgroups absent
     ipahost:
@@ -217,7 +217,7 @@
       action: member
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Host host1... ensure allow_retrieve_keytab users,groups,hosts and hostgroups absent again
     ipahost:
@@ -238,7 +238,7 @@
       action: member
       state: absent
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or result.failed
 
   - name: Host host1..., host2... and host3... absent
     ipahost:
@@ -249,7 +249,7 @@
       - "{{ host3_fqdn }}"
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure host-groups hostgroup1 and hostgroup2 absent
     ipahostgroup:
@@ -257,7 +257,7 @@
       name: hostgroup1,hostgroup2
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure users user1 and user2 absent
     ipauser:
@@ -267,7 +267,7 @@
       - name: user2
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group1 and group2 absent
     ipagroup:
@@ -275,4 +275,4 @@
       name: group1,group2
       state: absent
     register: result
-    failed_when: not result.changed
+    failed_when: not result.changed or result.failed
