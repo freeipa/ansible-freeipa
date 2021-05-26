@@ -1374,6 +1374,7 @@
 
   - name: Verify if modification worked.
     ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
       zone_name: "{{ testzone }}"
       name: _ftp._tcp
       uri_rec: 10 1 ftp://ftp.host04.{{ testzone }}/public
