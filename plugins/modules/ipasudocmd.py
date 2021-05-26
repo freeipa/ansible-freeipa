@@ -56,15 +56,15 @@ author:
 
 EXAMPLES = """
 # Ensure sudocmd is present
-- ipacommand:
+- ipasudocmd:
     ipaadmin_password: SomeADMINpassword
-    name: su
+    name: /usr/bin/su
     state: present
 
 # Ensure sudocmd is absent
-- ipacommand:
+- ipasudocmd:
     ipaadmin_password: SomeADMINpassword
-    name: su
+    name: /usr/bin/su
     state: absent
 """
 

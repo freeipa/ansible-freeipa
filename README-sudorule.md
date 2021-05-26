@@ -125,7 +125,7 @@ Variable | Description | Required
 `usercategory` \| `usercat` | User category the rule applies to. Choices: ["all", ""] | no
 `hostcategory` \| `hostcat` | Host category the rule applies to. Choices: ["all", ""] | no
 `cmdcategory` \| `cmdcat` | Command category the rule applies to. Choices: ["all", ""] | no
-`runasusercategory` \| `rusasusercat` | RunAs User category the rule applies to. Choices: ["all", ""] | no
+`runasusercategory` \| `runasusercat` | RunAs User category the rule applies to. Choices: ["all", ""] | no
 `runasgroupcategory` \| `runasgroupcat` | RunAs Group category the rule applies to. Choices: ["all", ""] | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
 `host` | List of host name strings assigned to this sudorule. | no
@@ -136,8 +136,8 @@ Variable | Description | Required
 `deny_sudocmd` | List of sudocmd name strings assigned to the deny group of this sudorule. | no
 `allow_sudocmdgroup` | List of sudocmd groups name strings assigned to the allow group of this sudorule. | no
 `deny_sudocmdgroup` | List of sudocmd groups name strings assigned to the deny group of this sudorule. | no
-`sudooption` \| `option` | List of options to the sudorule | no
-`order` | Integer to order the sudorule | no
+`sudooption` \| `options` | List of options to the sudorule | no
+`order` \| `sudoorder` | Integer to order the sudorule | no
 `runasuser` | List of users for Sudo to execute as. | no
 `runasgroup` | List of groups for Sudo to execute as. | no
 `action` | Work on sudorule or member level. It can be on of `member` or `sudorule` and defaults to `sudorule`. | no

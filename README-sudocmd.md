@@ -67,7 +67,7 @@ Example playbook to make sure sudocmd is absent:
 
   tasks:
   # Ensure sudocmd are absent
-  - ipahostgroup:
+  - ipasudocmd:
       ipaadmin_password: SomeADMINpassword
       name: /usr/bin/su
       state: absent
