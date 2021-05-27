@@ -197,7 +197,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-   # cleanup
+  # cleanup
   - name: Ensure that dns record 'host01' is absent
     ipadnsrecord:
       ipaadmin_password: SomeADMINpassword

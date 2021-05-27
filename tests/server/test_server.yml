@@ -48,7 +48,7 @@
       name: mylocation
       state: absent
 
-# CREATE TEST ITEMS
+  # CREATE TEST ITEMS
 
   - name: Ensure location "mylocation" is present
     ipalocation:

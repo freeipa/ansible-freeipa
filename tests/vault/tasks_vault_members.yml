@@ -1,5 +1,5 @@
 ---
-# Tasks to test member management for Vault module.
+  # Tasks to test member management for Vault module.
   - name: Setup testing environment.
     import_tasks: env_setup.yml
 
