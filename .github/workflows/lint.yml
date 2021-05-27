@@ -4,15 +4,14 @@ on:
   - push
   - pull_request
 jobs:
-  linters:
-    name: Run Linters
+  ansible_lint:
+    name: Verify ansible-lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.6"
-
+          python-version: "3.x"
       - name: Run ansible-lint
         uses: ansible/ansible-lint-action@master
         with:
@@ -26,12 +25,51 @@ jobs:
           ANSIBLE_MODULE_UTILS: plugins/module_utils
           ANSIBLE_LIBRARY: plugins/modules
 
+  yamllint:
+    name: Verify yamllint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
       - name: Run yaml-lint
         uses: ibiqlik/action-yamllint@v1
 
-      - name: Run Python linters
-        uses: rjeffman/python-lint-action@v2
+  pydocstyle:
+    name: Verify pydocstyle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Run pydocstyle
+        run: |
+            pip install pydocstyle
+            pydocstyle
 
+  flake8:
+    name: Verify flake8
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Run flake8
+        run: |
+            pip install flake8
+            flake8
+
+  pylint:
+    name: Verify pylint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
       - name: Run pylint
         run: |
             pip install pylint==2.8.2
