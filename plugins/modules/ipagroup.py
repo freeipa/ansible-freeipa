@@ -185,7 +185,8 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    api_check_param, module_params_get, gen_add_del_lists, api_check_command
+    api_check_param, module_params_get, gen_add_del_lists, api_check_command, \
+    gen_add_list, gen_intersection_list
 
 
 def find_group(module, name):
@@ -556,12 +557,43 @@ def main():
                                 "non-external group."
                         )
 
+                    # Reduce add lists for member_user, member_group,
+                    # member_service and member_external to new entries
+                    # only that are not in res_find.
+                    if user is not None and "member_user" in res_find:
+                        user = gen_add_list(
+                            user, res_find["member_user"])
+                    if group is not None and "member_group" in res_find:
+                        group = gen_add_list(
+                            group, res_find["member_group"])
+                    if service is not None and "member_service" in res_find:
+                        service = gen_add_list(
+                            service, res_find["member_service"])
+                    if externalmember is not None \
+                       and "member_external" in res_find:
+                        externalmember = gen_add_list(
+                            externalmember, res_find["member_external"])
+
                     if any([user, group, service, externalmember]):
                         commands.append(
                             [name, "group_add_member", add_member_args]
                         )
 
                     if has_add_membermanager:
+                        # Reduce add list for membermanager_user and
+                        # membermanager_group to new entries only that are
+                        # not in res_find.
+                        if membermanager_user is not None \
+                           and "membermanager_user" in res_find:
+                            membermanager_user = gen_add_list(
+                                membermanager_user,
+                                res_find["membermanager_user"])
+                        if membermanager_group is not None \
+                           and "membermanager_group" in res_find:
+                            membermanager_group = gen_add_list(
+                                membermanager_group,
+                                res_find["membermanager_group"])
+
                         # Add membermanager users and groups
                         if membermanager_user is not None or \
                            membermanager_group is not None:
@@ -596,12 +628,40 @@ def main():
                                 "non-external group."
                         )
 
+                    # Reduce del lists of member_user, member_group,
+                    # member_service and member_external to the entries only
+                    # that are in res_find.
+                    if user is not None:
+                        user = gen_intersection_list(
+                            user, res_find.get("member_user"))
+                    if group is not None:
+                        group = gen_intersection_list(
+                            group, res_find.get("member_group"))
+                    if service is not None:
+                        service = gen_intersection_list(
+                            service, res_find.get("member_service"))
+                    if externalmember is not None:
+                        externalmember = gen_intersection_list(
+                            externalmember, res_find.get("member_external"))
+
                     if any([user, group, service, externalmember]):
                         commands.append(
                             [name, "group_remove_member", del_member_args]
                         )
 
                     if has_add_membermanager:
+                        # Reduce del lists of membermanager_user and
+                        # membermanager_group to the entries only that are
+                        # in res_find.
+                        if membermanager_user is not None:
+                            membermanager_user = gen_intersection_list(
+                                membermanager_user,
+                                res_find.get("membermanager_user"))
+                        if membermanager_group is not None:
+                            membermanager_group = gen_intersection_list(
+                                membermanager_group,
+                                res_find.get("membermanager_group"))
+
                         # Remove membermanager users and groups
                         if membermanager_user is not None or \
                            membermanager_group is not None:
@@ -635,16 +695,12 @@ def main():
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(e)))
             # Get all errors
-            # All "already a member" and "not a member" failures in the
             # result are ignored. All others are reported.
             errors = []
             for failed_item in result.get("failed", []):
                 failed = result["failed"][failed_item]
                 for member_type in failed:
                     for member, failure in failed[member_type]:
-                        if "already a member" in failure \
-                           or "not a member" in failure:
-                            continue
                         errors.append("%s: %s %s: %s" % (
                             command, member_type, member, failure))
             if len(errors) > 0:
