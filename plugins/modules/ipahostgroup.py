@@ -141,7 +141,8 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get, gen_add_del_lists, api_check_command, api_check_param
+    module_params_get, gen_add_del_lists, api_check_command, api_check_param, \
+    gen_add_list, gen_intersection_list
 
 
 def find_hostgroup(module, name):
@@ -396,6 +397,15 @@ def main():
                         ansible_module.fail_json(
                             msg="No hostgroup '%s'" % name)
 
+                    # Reduce add lists for member_host and member_hostgroup,
+                    # to new entries only that are not in res_find.
+                    if host is not None and "member_host" in res_find:
+                        host = gen_add_list(host, res_find["member_host"])
+                    if hostgroup is not None \
+                       and "member_hostgroup" in res_find:
+                        hostgroup = gen_add_list(
+                            hostgroup, res_find["member_hostgroup"])
+
                     # Ensure members are present
                     commands.append([name, "hostgroup_add_member",
                                      {
@@ -404,6 +414,20 @@ def main():
                                      }])
 
                     if has_add_membermanager:
+                        # Reduce add list for membermanager_user and
+                        # membermanager_group to new entries only that are
+                        # not in res_find.
+                        if membermanager_user is not None \
+                           and "membermanager_user" in res_find:
+                            membermanager_user = gen_add_list(
+                                membermanager_user,
+                                res_find["membermanager_user"])
+                        if membermanager_group is not None \
+                           and "membermanager_group" in res_find:
+                            membermanager_group = gen_add_list(
+                                membermanager_group,
+                                res_find["membermanager_group"])
+
                         # Add membermanager users and groups
                         if membermanager_user is not None or \
                            membermanager_group is not None:
@@ -441,6 +465,15 @@ def main():
                         ansible_module.fail_json(
                             msg="No hostgroup '%s'" % name)
 
+                    # Reduce del lists of member_host and member_hostgroup,
+                    # to the entries only that are in res_find.
+                    if host is not None:
+                        host = gen_intersection_list(
+                            host, res_find.get("member_host"))
+                    if hostgroup is not None:
+                        hostgroup = gen_intersection_list(
+                            hostgroup, res_find.get("member_hostgroup"))
+
                     # Ensure members are absent
                     commands.append([name, "hostgroup_remove_member",
                                      {
@@ -449,6 +482,18 @@ def main():
                                      }])
 
                     if has_add_membermanager:
+                        # Reduce del lists of membermanager_user and
+                        # membermanager_group to the entries only that are
+                        # in res_find.
+                        if membermanager_user is not None:
+                            membermanager_user = gen_intersection_list(
+                                membermanager_user,
+                                res_find.get("membermanager_user"))
+                        if membermanager_group is not None:
+                            membermanager_group = gen_intersection_list(
+                                membermanager_group,
+                                res_find.get("membermanager_group"))
+
                         # Remove membermanager users and groups
                         if membermanager_user is not None or \
                            membermanager_group is not None:
@@ -487,9 +532,6 @@ def main():
                 failed = result["failed"][failed_item]
                 for member_type in failed:
                     for member, failure in failed[member_type]:
-                        if "already a member" in failure \
-                           or "not a member" in failure:
-                            continue
                         errors.append("%s: %s %s: %s" % (
                             command, member_type, member, failure))
             if len(errors) > 0:
