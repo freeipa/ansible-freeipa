@@ -72,8 +72,8 @@
         - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       state: absent
       action: member
-    #register: result
-    #failed_when: not result.changed or result.failed
+    register: result
+    failed_when: not result.changed or result.failed
 
   - name: Host test cert members absent again
     ipahost:
