@@ -5,7 +5,8 @@
   gather_facts: no
 
   tasks:
-  - iparole:
+  - name: Ensure role member 'service' is absent.
+    iparole:
       ipaadmin_password: SomeADMINpassword
       name: testrole
       service:

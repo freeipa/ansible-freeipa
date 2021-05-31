@@ -1,12 +1,12 @@
 ---
-- name: Test PTR Record is present.
+- name: Playbook to manage DNS records.
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  # Ensure a PTR record is present
-  - ipadnsrecord:
+  - name: Ensure a PTR record is present
+    ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       name: 5
       record_type: 'PTR'

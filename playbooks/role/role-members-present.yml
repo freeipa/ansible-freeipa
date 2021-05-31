@@ -5,7 +5,8 @@
   gather_facts: no
 
   tasks:
-  - iparole:
+  - name: Ensure role members are present.
+    iparole:
       ipaadmin_password: SomeADMINpassword
       name: somerole
       user:
@@ -21,3 +22,4 @@
       - User Administrators
       service:
       - service01
+      action: member

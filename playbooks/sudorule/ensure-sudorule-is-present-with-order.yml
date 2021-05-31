@@ -5,8 +5,8 @@
   gather_facts: false
 
   tasks:
-  # Ensure sudorule is present with the given order.
-  - ipasudorule:
+  - name: Ensure sudorule is present with the given order.
+    ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
       order: 2

@@ -5,8 +5,8 @@
   gather_facts: false
 
   tasks:
-  # Ensure hostgroup cluster is absent in Sudo Rule
-  - ipasudorule:
+  - name: Ensure hostgroup 'cluster' is absent in sudorule
+    ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
       hostgroup: cluster

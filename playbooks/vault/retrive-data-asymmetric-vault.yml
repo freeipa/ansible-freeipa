@@ -14,5 +14,6 @@
         state: retrieved
       register: result
       no_log: true
-    - debug:
-       msg: "Data: {{ result.vault.data }}"
+    - name: Display retrieved data.
+      debug:
+        msg: "Data: {{ result.vault.data }}"

@@ -1,12 +1,12 @@
 ---
-- name: Test CNAME Record is present.
+- name: Playbook to manage DNS records.
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  # Ensure that 'host04' has CNAME, with cname_hostname
-  - ipadnsrecord:
+  - name: Ensure that 'host04' has CNAME, with cname_hostname, is absent
+    ipadnsrecord:
       zone_name: example.com
       name: host04
       cname_hostname: host04.example.com

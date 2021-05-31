@@ -5,7 +5,8 @@
   gather_facts: false
 
   tasks:
-  - ipavault:
+  - name: Archive data into asymmetric vault.
+    ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       username: user01

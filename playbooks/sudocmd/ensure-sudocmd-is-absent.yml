@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  # Ensure sudo command is absent
-  - ipasudocmd:
+  - name: Ensure sudo command is absent
+    ipasudocmd:
       ipaadmin_password: SomeADMINpassword
       name: /usr/bin/su
       state: absent

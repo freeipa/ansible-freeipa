@@ -5,7 +5,8 @@
   gather_facts: false
 
   tasks:
-  - ipavault:
+  - name: Archieve data into symmetric vault.
+    ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin

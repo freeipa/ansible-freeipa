@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  # Ensure hosts and hostgroups are present in existing databases hostgroup
-  - ipahostgroup:
+  - name: Ensure hosts and hostgroups are absent in existing databases hostgroup
+    ipahostgroup:
       ipaadmin_password: SomeADMINpassword
       name: databases
       host:

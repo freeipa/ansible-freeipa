@@ -1,12 +1,12 @@
 ---
-- name: Test SRV Record is present.
+- name: Playbook to manage DNS records.
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  # Ensure a SRV record is present
-  - ipadnsrecord:
+  - name: Ensure a SRV record is present
+    ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       name: _kerberos._udp.example.com
       record_type: 'SRV'

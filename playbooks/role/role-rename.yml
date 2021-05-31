@@ -5,7 +5,8 @@
   gather_facts: no
 
   tasks:
-  - iparole:
+  - name: Rename role.
+    iparole:
       ipaadmin_password: SomeADMINpassword
       name: somerole
       rename: anotherrole

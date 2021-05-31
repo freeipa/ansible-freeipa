@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  # Ensure sudocmds are absent in sudocmdgroup
-  - ipasudocmdgroup:
+  - name: Ensure sudocmds are absent in sudocmdgroup
+    ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
       name: network
       sudocmd:

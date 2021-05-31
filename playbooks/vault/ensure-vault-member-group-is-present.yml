@@ -5,7 +5,8 @@
   gather_facts: false
 
   tasks:
-  - ipavault:
+  - name: Ensure vault member "group" is present.
+    ipavault:
       ipaadmin_password: SomeADMINpassword
       name: keychain
       username: admin

@@ -1,12 +1,12 @@
 ---
-- name: Test SSHFP Record is present.
+- name: Playbook to manage DNS records.
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  # Ensure a SSHFP record is present
-  - ipadnsrecord:
+  - name: Ensure a TLSA record is present
+    ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       zone_name: example.com
       name: host04

@@ -4,16 +4,16 @@
   become: true
 
   tasks:
-  # Ensure sudo commands are present
-  - ipasudocmd:
-     ipaadmin_password: SomeADMINpassword
-     name:
-     - /usr/sbin/ifconfig
-     - /usr/sbin/iwlist
-     state: present
+  - name: Ensure sudo commands are present
+    ipasudocmd:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - /usr/sbin/ifconfig
+      - /usr/sbin/iwlist
+      state: present
 
-  # Ensure sudo commands are present in existing sudocmdgroup
-  - ipasudocmdgroup:
+  - name: Ensure sudocmdgroup is present with sudo commands.
+    ipasudocmdgroup:
      ipaadmin_password: SomeADMINpassword
      name: network
      sudocmd:

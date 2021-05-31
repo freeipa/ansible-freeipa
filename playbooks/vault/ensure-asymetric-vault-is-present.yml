@@ -5,7 +5,8 @@
   gather_facts: false
 
   tasks:
-  - ipavault:
+  - name: Ensure asymmetric vault is present.
+    ipavault:
       ipaadmin_password: SomeADMINpassword
       name: asymvault
       username: admin

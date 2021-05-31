@@ -5,7 +5,8 @@
   gather_facts: no
 
   tasks:
-  - iparole:
+  - name: Ensure role is present.
+    iparole:
       ipaadmin_password: SomeADMINpassword
       name: somerole
       description: A role in IPA.

@@ -5,8 +5,8 @@
   gather_facts: false
 
   tasks:
-  # Ensure sudooption is present in sudorule
-  - ipasudorule:
+  - name: Ensure sudooption '!root' is present in sudorule
+    ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
       sudooption: "!root"

@@ -5,7 +5,7 @@
   gather_facts: false
 
   tasks:
-  # Ensure service is present
-  - ipaservice:
+  - name: Ensure service is present
+    ipaservice:
       ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com
