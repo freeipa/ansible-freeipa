@@ -159,7 +159,7 @@ EXAMPLES = '''
       register: result
     - name: display default login shell
       debug:
-        msg: '{{result.config.defaultshell[0] }}'
+        msg: '{{ result.config.defaultshell[0] }}'
 
     - name: set defaultshell and maxusername
       ipaconfig:

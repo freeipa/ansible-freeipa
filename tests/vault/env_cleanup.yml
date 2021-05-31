@@ -7,7 +7,7 @@
       - stdvault
       - symvault
       - asymvault
-      username: "{{username}}"
+      username: "{{ username }}"
       state: absent
     loop:
       - admin

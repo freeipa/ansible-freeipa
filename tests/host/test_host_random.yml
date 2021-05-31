@@ -64,18 +64,18 @@
 
   - assert:
       that:
-      - ipahost.host["{{host1_fqdn }}"].randompassword is
+      - ipahost.host["{{ host1_fqdn }}"].randompassword is
         defined
-      - ipahost.host["{{host2_fqdn }}"].randompassword is
+      - ipahost.host["{{ host2_fqdn }}"].randompassword is
         defined
 
-  - name: Print generated random password for "{{host1_fqdn }}"
+  - name: Print generated random password for "{{ host1_fqdn }}"
     debug:
-      var: ipahost.host["{{host1_fqdn }}"].randompassword
+      var: ipahost.host["{{ host1_fqdn }}"].randompassword
 
-  - name: Print generated random password for "{{host2_fqdn }}"
+  - name: Print generated random password for "{{ host2_fqdn }}"
     debug:
-      var: ipahost.host["{{host2_fqdn }}"].randompassword
+      var: ipahost.host["{{ host2_fqdn }}"].randompassword
 
   - name: Enrolled host "{{ ansible_facts['fqdn'] }}" fails to set random password with update_password always
     ipahost:

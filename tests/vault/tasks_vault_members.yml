@@ -6,8 +6,8 @@
   - name: Ensure vault is present
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
-      vault_type: "{{vault.vault_type}}"
+      name: "{{ vault.name }}"
+      vault_type: "{{ vault.vault_type }}"
     register: result
     failed_when: not result.changed or result.failed
     when: vault.vault_type == 'standard'
@@ -15,9 +15,9 @@
   - name: Ensure vault is present
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       vault_password: SomeVAULTpassword
-      vault_type: "{{vault.vault_type}}"
+      vault_type: "{{ vault.vault_type }}"
     register: result
     failed_when: not result.changed or result.failed
     when: vault.vault_type == 'symmetric'
@@ -27,7 +27,7 @@
       ipaadmin_password: SomeADMINpassword
       name: "{{ vault.name }}"
       vault_type: "{{ vault.vault_type }}"
-      public_key: "{{lookup('file', 'A_private.b64')}}"
+      public_key: "{{ lookup('file', 'A_private.b64') }}"
     register: result
     failed_when: not result.changed or result.failed
     when: vault.vault_type == 'asymmetric'
@@ -35,7 +35,7 @@
   - name: Ensure vault member user is present.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       users:
       - user02
@@ -45,7 +45,7 @@
   - name: Ensure vault member user is present, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       users:
       - user02
@@ -55,7 +55,7 @@
   - name: Ensure more vault member users are present.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       users:
       - admin
@@ -66,7 +66,7 @@
   - name: Ensure vault member user is still present.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       users:
       - user02
@@ -76,7 +76,7 @@
   - name: Ensure vault users are absent.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       users:
       - admin
@@ -88,7 +88,7 @@
   - name: Ensure vault users are absent, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       users:
       - admin
@@ -100,7 +100,7 @@
   - name: Ensure vault user is absent, once more.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       users:
       - admin
@@ -111,7 +111,7 @@
   - name: Ensure vault member group is present.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       groups: vaultgroup
     register: result
@@ -120,7 +120,7 @@
   - name: Ensure vault member group is present, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       groups: vaultgroup
     register: result
@@ -129,7 +129,7 @@
   - name: Ensure vault member group is absent.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       groups: vaultgroup
       state: absent
@@ -139,7 +139,7 @@
   - name: Ensure vault member group is absent, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       groups: vaultgroup
       state: absent
@@ -149,7 +149,7 @@
   - name: Ensure vault member service is present.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       services: "HTTP/{{ ansible_facts['fqdn'] }}"
     register: result
@@ -158,7 +158,7 @@
   - name: Ensure vault member service is present, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       services: "HTTP/{{ ansible_facts['fqdn'] }}"
     register: result
@@ -167,7 +167,7 @@
   - name: Ensure vault member service is absent.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       services: "HTTP/{{ ansible_facts['fqdn'] }}"
       state: absent
@@ -177,7 +177,7 @@
   - name: Ensure vault member service is absent, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       action: member
       services: "HTTP/{{ ansible_facts['fqdn'] }}"
       state: absent
@@ -187,7 +187,7 @@
   - name: Ensure user03 is an owner of vault.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       owners: user03
       action: member
     register: result
@@ -196,7 +196,7 @@
   - name: Ensure user03 is an owner of vault, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       owners: user03
       action: member
     register: result
@@ -205,7 +205,7 @@
   - name: Ensure user03 is not owner of vault.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       owners: user03
       state: absent
       action: member
@@ -215,7 +215,7 @@
   - name: Ensure user03 is not owner of vault, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       owners: user03
       state: absent
       action: member
@@ -225,7 +225,7 @@
   - name: Ensure vaultgroup is an ownergroup of vault.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       ownergroups: vaultgroup
       action: member
     register: result
@@ -234,7 +234,7 @@
   - name: Ensure vaultgroup is an ownergroup of vault, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       ownergroups: vaultgroup
       action: member
     register: result
@@ -243,7 +243,7 @@
   - name: Ensure vaultgroup is not ownergroup of vault.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       ownergroups: vaultgroup
       state: absent
       action: member
@@ -253,7 +253,7 @@
   - name: Ensure vaultgroup is not ownergroup of vault, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       ownergroups: vaultgroup
       state: absent
       action: member
@@ -263,7 +263,7 @@
   - name: Ensure service is an owner of vault.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       ownerservices: "HTTP/{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
@@ -272,7 +272,7 @@
   - name: Ensure service is an owner of vault, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       ownerservices: "HTTP/{{ ansible_facts['fqdn'] }}"
       action: member
     register: result
@@ -281,7 +281,7 @@
   - name: Ensure service is not owner of vault.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       ownerservices: "HTTP/{{ ansible_facts['fqdn'] }}"
       state: absent
       action: member
@@ -291,25 +291,25 @@
   - name: Ensure service is not owner of vault, again.
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       ownerservices: "HTTP/{{ ansible_facts['fqdn'] }}"
       state: absent
       action: member
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure {{vault.vault_type}} vault is absent
+  - name: Ensure {{ vault.vault_type }} vault is absent
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       state: absent
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure {{vault.vault_type}} vault is absent, again
+  - name: Ensure {{ vault.vault_type }} vault is absent, again
     ipavault:
       ipaadmin_password: SomeADMINpassword
-      name: "{{vault.name}}"
+      name: "{{ vault.name }}"
       state: absent
     register: result
     failed_when: result.changed or result.failed
