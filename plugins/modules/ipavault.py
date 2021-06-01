@@ -119,6 +119,7 @@ options:
     description: Users that are owners of the vault.
     required: false
     type: list
+    aliases: ["ownerusers"]
   ownergroups:
     description: Groups that are owners of the vault.
     required: false

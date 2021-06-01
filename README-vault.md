@@ -219,23 +219,25 @@ Variable | Description | Required
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `name` \| `cn` | The list of vault name strings. | yes
 `description` | The vault description string. | no
-`nomembers` | Suppress processing of membership attributes. (bool) | no
 `password` \| `vault_password` \| `ipavaultpassword` \| `old_password`| Vault password. | no
 `password_file` \| `vault_password_file` \| `old_password_file`| File containing Base64 encoded Vault password. | no
 `new_password` | Vault new password. | no
 `new_password_file` | File containing Base64 encoded new Vault password. | no
-`public_key ` \| `vault_public_key` \| `old_password_file` | Base64 encoded vault public key. | no
+`public_key ` \| `vault_public_key` \| `ipavaultpublickey` | Base64 encoded vault public key. | no
 `public_key_file` \| `vault_public_key_file` | Path to file with public key. | no
-`private_key `\| `vault_private_key` | Base64 encoded vault private key. Used only to retrieve data. | no
+`private_key `\| `vault_private_key` \| `ipavaultprivatekey` | Base64 encoded vault private key. Used only to retrieve data. | no
 `private_key_file` \| `vault_private_key_file` | Path to file with private key. Used only to retrieve data. | no
 `salt` \| `vault_salt` \| `ipavaultsalt` | Vault salt. | no
 `vault_type` \| `ipavaulttype` | Vault types are based on security level. It can be one of `standard`, `symmetric` or `asymmetric`, default: `symmetric` | no
-`user` \| `username` | Any user can own one or more user vaults. | no
+`username` \| `user` | Any user can own one or more user vaults. | no
 `service` | Any service can own one or more service vaults. | no
 `shared` | Vault is shared. Default to false. (bool) | no
-`users` | Users that are members of the vault. | no
-`groups` | Groups that are member of the vault. | no
-`services` | Services that are member of the vault. | no
+`users` | List of users that are members of the vault. | no
+`groups` | List of groups that are member of the vault. | no
+`services` | List of services that are member of the vault. | no
+`owners` \| `ownerusers` | List of users that are owners of the vault. | no
+`ownergroups` | List of groups that are owners of the vault. | no
+`ownerservices` | List of services that are owners of the vault. | no
 `data` \|`vault_data` \| `ipavaultdata` | Data to be stored in the vault. | no
 `in` \| `datafile_in` | Path to file with data to be stored in the vault. | no
 `out` \| `datafile_out` | Path to file to store data retrieved from the vault. | no
