@@ -260,12 +260,12 @@ Certificate system Variables
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaserver_external_ca` | Generate a CSR for the IPA CA certificate to be signed by an external CA. (bool, default: false) | no
-`ipaserver_external_ca_type` | Type of the external CA. (choice: generic,ms-cs) | no
+`ipaserver_external_ca_type` | Type of the external CA. (choice: generic, ms-cs) | no
 `ipaserver_external_ca_profile` | Specify the certificate profile/template to use at the external CA. (string) | no
 `ipaserver_external_cert_files` | Files containing the IPA CA certificates and the external CA certificate chains (list of string) | no
 `ipaserver_subject_base` | The certificate subject base (default O=<realm-name>). RDNs are in LDAP order (most specific RDN first). (string) | no
 `ipaserver_ca_subject` | The CA certificate subject DN (default CN=Certificate Authority,O=<realm-name>). RDNs are in LDAP order (most specific RDN first). (string) | no
-`ipaserver_ca_signing_algorithm` | Signing algorithm of the IPA CA certificate. (choice: SHA1withRSA,SHA256withRSA,SHA512withRSA) | no
+`ipaserver_ca_signing_algorithm` | Signing algorithm of the IPA CA certificate. (choice: SHA1withRSA, SHA256withRSA, SHA512withRSA) | no
 
 DNS Variables
 -------------
