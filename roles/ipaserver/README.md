@@ -280,7 +280,7 @@ Variable | Description | Required
 `ipaserver_forwarders` | Add DNS forwarders to the DNS configuration. (list of strings) | no
 `ipaserver_no_forwarders` | Do not add any DNS forwarders. Root DNS servers will be used instead. (bool, default: false) | no
 `ipaserver_auto_forwarders` | Add DNS forwarders configured in /etc/resolv.conf to the list of forwarders used by IPA DNS. (bool, default: false) | no
-`ipaserver_forward_policy` | DNS forwarding policy for global forwarders specified using other options. (choice: first|only) | no
+`ipaserver_forward_policy` | DNS forwarding policy for global forwarders specified using other options. (choice: first, only) | no
 `ipaserver_no_dnssec_validation` | Disable DNSSEC validation on this server. (bool, default: false) | no
 
 AD trust Variables
