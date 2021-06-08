@@ -176,20 +176,23 @@ else:
         """
         Initialize IPA API with the provided context.
 
-        `context` can be any of:
-            * `server` (default)
-            * `ansible-freeipa`
-            * `cli_installer`
+        context:
+            The context to execute IPA plugins. Can be any of
+            [server, client, cli].
         """
         env = Env()
         env._bootstrap()
         env._finalize_core(**dict(DEFAULT_CONFIG))
 
-        # available contexts are 'server', 'ansible-freeipa' and
-        # 'cli_installer'
-
+        # IPA uses 'cli' for a 'client' context, but 'client'
+        # provides a better user interface. Here we map the
+        # value if needed.
         if context is None:
             context = 'server'
+        elif context == "client":
+            context = "cli"
+        if context not in ('server', 'cli'):
+            raise ValueError("Invalid execution context: %s" % (context))
 
         api.bootstrap(context=context, debug=env.debug, log=None)
         api.finalize()
@@ -722,6 +725,7 @@ else:
             """
             principal = self.ipa_params.ipaadmin_principal
             password = self.ipa_params.ipaadmin_password
+            ipa_context = self.ipa_params.ipa_context
 
             try:
                 if not valid_creds(self, principal):
@@ -729,7 +733,7 @@ else:
                         principal, password,
                     )
 
-                api_connect()
+                api_connect(ipa_context)
 
             except Exception as excpt:
                 self.fail_json(msg=str(excpt))
