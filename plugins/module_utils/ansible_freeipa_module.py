@@ -172,26 +172,57 @@ else:
         if ccache_dir is not None:
             shutil.rmtree(ccache_dir, ignore_errors=True)
 
-    def api_connect(context=None):
+    def api_connect(**kwargs):
         """
         Initialize IPA API with the provided context.
 
-        `context` can be any of:
-            * `server` (default)
-            * `ansible-freeipa`
-            * `cli_installer`
+        context:
+            The context to execute IPA plugins. Can be any of
+            [server, client, cli].
+        ldap_cache:
+            Turn LDAP cache layer for commands on or off. Default is True.
         """
+        valid_args = {
+            "context": (str, {"client": "cil"}, ["server", "cli"], "server"),
+            "ldap_cache": (bool, None, None, None),
+        }
+
         env = Env()
         env._bootstrap()
         env._finalize_core(**dict(DEFAULT_CONFIG))
 
-        # available contexts are 'server', 'ansible-freeipa' and
-        # 'cli_installer'
+        # Ensure kwargs has only valid argument.
+        invalid = set(kwargs) - set(valid_args)
+        if invalid:
+            raise TypeError(
+                "Invalid parameter to api_connect: %s" % (", ".join(invalid))
+            )
 
-        if context is None:
-            context = 'server'
+        # Validate values for keyword arguments.
+        for key, config in valid_args.items():
+            arg_type, value_map, valid_values, default = config
+            # Ensure default value is set.
+            if key not in kwargs:
+                if default is not None:
+                    kwargs[key] = default
+                else:
+                    continue
+            value = kwargs[key]
+            # Ensure argument has correct data type.
+            if arg_type is not None and not isinstance(value, arg_type):
+                raise TypeError(
+                    "Invalid type for '%s': '%s'" % (key, arg_type)
+                )
+            # Some values might need to be mapped to differente ones.
+            # (e.g.: "client" -> "cli", for "context").
+            if value_map is not None and value in value_map:
+                kwargs[key] = value = value_map[value]
+            # Ensure value is a valid value for the argument.
+            if bool(valid_values) and value not in valid_values:
+                raise ValueError("Invalid value for '%s': '%s'" % (key, value))
 
-        api.bootstrap(context=context, debug=env.debug, log=None)
+        # kwargs have only valid keys and values at this point.
+        api.bootstrap(debug=env.debug, log=None, **kwargs)
         api.finalize()
 
         if api.env.in_server:
@@ -722,6 +753,14 @@ else:
             """
             principal = self.ipa_params.ipaadmin_principal
             password = self.ipa_params.ipaadmin_password
+            ipaapi_config = {
+                apikey: self.ipa_params[key]
+                for key, apikey in {
+                    "ipaapi_context": "context",
+                    "ipaapi_ldap_cache": "ldap_cache",
+                }.items()
+                if key in self.ipa_params and self.ipa_params[key] is not None
+            }
 
             try:
                 if not valid_creds(self, principal):
@@ -729,7 +768,7 @@ else:
                         principal, password,
                     )
 
-                api_connect()
+                api_connect(**ipaapi_config)
 
             except Exception as excpt:
                 self.fail_json(msg=str(excpt))
