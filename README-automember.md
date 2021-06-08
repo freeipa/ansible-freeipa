@@ -122,6 +122,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipa_context` | The context in which the module will execute. Executing in a server context is preferred, use `client` to execute in a client context if the server cannot be accessed. Valid values are `server`, `client`. Default to `server`. | no
 `name` \| `cn` | Automember rule. | yes
 `description` | A description of this auto member rule. | no
 `automember_type` | Grouping to which the rule applies. It can be one of `group`, `hostgroup`. | yes

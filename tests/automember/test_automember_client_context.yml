@@ -1,0 +1,99 @@
+---
+- name: Test automember
+  hosts: ipaclients
+  become: true
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+    # CLEANUP TEST ITEMS
+    - name: Ensure group testgroup is absent
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testgroup
+        state: absent
+
+    - name: Ensure group automember rule testgroup is absent
+      ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testgroup
+        state: absent
+        automember_type: group
+
+    # CREATE TEST ITEMS
+    - name: Ensure testgroup group is present
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testgroup
+
+    # START TESTS
+    - name: Execute with server context in the client.
+      ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        name: testgroup
+        description: testgroup automember rule.
+        automember_type: group
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure testgroup group automember rule is present
+      ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testgroup
+        description: testgroup automember rule.
+        automember_type: group
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure testgroup group automember rule is present again
+      ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testgroup
+        description: testgroup automember rule.
+        automember_type: group
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure testgroup group automember rule is absent
+      ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testgroup
+        description: testgroup automember rule.
+        automember_type: group
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure testgroup group automember rule is absent, again
+      ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testgroup
+        description: testgroup automember rule.
+        automember_type: group
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+     # CLEANUP TEST ITEMS
+    - name: Ensure group testgroup is absent
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testgroup
+        state: absent
+
+    - name: Ensure group automember rule testgroup is absent
+      ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        automember_type: group
+        name: testgroup
+        state: absent
+
+    when: groups['ipaclients'] is defined
