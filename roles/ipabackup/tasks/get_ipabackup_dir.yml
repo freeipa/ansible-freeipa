@@ -1,12 +1,8 @@
 ---
-- name: Get IPA_BACKUP_DIR dir from ipaplatform
-  command: "{{ ansible_python_interpreter | default('/usr/bin/python') }}"
-  args:
-    stdin: |
-      from ipaplatform.paths import paths
-      print(paths.IPA_BACKUP_DIR)
-  register: result_ipaplatform_backup_dir
+- name: Get IPA_BACKUP_DIR from ipaplatform
+  ipabackup_get_backup_dir:
+  register: result_ipabackup_get_backup_dir
 
 - name: Set IPA backup dir
   set_fact:
-    ipabackup_dir: "{{ result_ipaplatform_backup_dir.stdout_lines | first }}"
+    ipabackup_dir: "{{ result_ipabackup_get_backup_dir.backup_dir }}"
