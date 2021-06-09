@@ -425,8 +425,10 @@ def main():
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
         api_connect(ipa_context)
+
+        res_show = config_show(ansible_module)
+
         if params:
-            res_show = config_show(ansible_module)
             # If executed in a client context, values are always returned
             # as lists, and not scalars. Here, we fix the values that should
             # not be a list of elements.
@@ -457,34 +459,33 @@ def main():
                     api_command_no_name(ansible_module, "config_mod", params)
 
         else:
-            rawresult = api_command_no_name(ansible_module, "config_show", {})
-            result = rawresult['result']
-            del result['dn']
-            for key, value in result.items():
+            if 'dn' in res_show:
+                del res_show['dn']
+            for key, value in res_show.items():
                 k = reverse_field_map.get(key, key)
                 if ansible_module.argument_spec.get(k):
                     if k == 'ipaselinuxusermaporder':
                         exit_args['ipaselinuxusermaporder'] = \
-                            result.get(key)[0].split('$')
+                            res_show.get(key)[0].split('$')
                     elif k == 'domain_resolution_order':
                         exit_args['domain_resolution_order'] = \
-                           result.get(key)[0].split('$')
+                           res_show.get(key)[0].split('$')
                     elif k == 'usersearch':
                         exit_args['usersearch'] = \
-                            result.get(key)[0].split(',')
+                            res_show.get(key)[0].split(',')
                     elif k == 'groupsearch':
                         exit_args['groupsearch'] = \
-                            result.get(key)[0].split(',')
+                            res_show.get(key)[0].split(',')
                     elif isinstance(value, str) and \
                             ansible_module.argument_spec[k]['type'] == "list":
                         exit_args[k] = [value]
-                    elif isinstance(value, list) and \
+                    elif isinstance(value, (list, tuple)) and \
                             ansible_module.argument_spec[k]['type'] == "str":
                         exit_args[k] = ",".join(value)
-                    elif isinstance(value, list) and \
+                    elif isinstance(value, (list, tuple)) and \
                             ansible_module.argument_spec[k]['type'] == "int":
                         exit_args[k] = ",".join(value)
-                    elif isinstance(value, list) and \
+                    elif isinstance(value, (list, tuple)) and \
                             ansible_module.argument_spec[k]['type'] == "bool":
                         exit_args[k] = (value[0] == "TRUE")
                     else:
