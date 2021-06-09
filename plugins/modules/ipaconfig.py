@@ -41,6 +41,13 @@ options:
     ipaadmin_password:
         description: The admin password
         required: false
+    ipa_context:
+      description: |
+        The context in which the module will execute. Executing in a server
+        context is preferred, use `client` to execute in a client context if
+        the server cannot be accessed.
+      choices: ["server", "client"]
+      default: server
     maxusername:
         description: Set the maximum username length between 1-255
         required: false
@@ -275,6 +282,8 @@ def main():
             # general
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", required=False, no_log=True),
+            ipa_context=dict(type="str", required=False, default="server",
+                             choices=["server", "client"]),
             maxusername=dict(type="int", required=False,
                              aliases=['ipamaxusernamelength']),
             maxhostname=dict(type="int", required=False,
@@ -338,6 +347,7 @@ def main():
                                            "ipaadmin_principal")
     ipaadmin_password = module_params_get(ansible_module,
                                           "ipaadmin_password")
+    ipa_context = module_params_get(ansible_module, "ipa_context")
 
     field_map = {
         "maxusername": "ipamaxusernamelength",
@@ -414,9 +424,28 @@ def main():
         if not valid_creds(ansible_module, ipaadmin_principal):
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
-        api_connect()
+        api_connect(ipa_context)
         if params:
             res_show = config_show(ansible_module)
+            # If executed in a client context, values are always returned
+            # as lists, and not scalars. Here, we fix the values that should
+            # not be a list of elements.
+            if ipa_context != 'server':
+                non_list = (
+                  "ca_renewal_master_server", "defaultgroup", "defaultshell",
+                  "emaildomain", "enable_migration", "homedirectory",
+                  "maxhostname", "maxusername", "pwdexpnotify",
+                  "searchrecordslimit", "searchtimelimit",
+                  "selinuxusermapdefault"
+                )
+                res_show = {
+                    k: value[0] if (
+                        reverse_field_map.get(k, k) in non_list
+                        and isinstance(value, (list, tuple))
+                    ) else value
+                    for k, value in res_show.items()
+                }
+
             params = {
                 k: v for k, v in params.items()
                 if k not in res_show or res_show[k] != v
