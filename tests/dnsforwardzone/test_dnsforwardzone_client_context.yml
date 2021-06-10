@@ -1,0 +1,390 @@
+---
+- name: Test dnsforwardzone
+  hosts: ipaclients
+  become: true
+  gather_facts: false
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Execute with server context in the client.
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        name:
+        - example.com
+        - newfailzone.com
+        state: absent
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: ensure test forwardzones are absent
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - example.com
+        - newfailzone.com
+        state: absent
+
+    - name: ensure forwardzone example.com is created
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        forwarders:
+          - ip_address: 8.8.8.8
+        forwardpolicy: first
+        skip_overlap_check: true
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: ensure forwardzone example.com is present again
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        forwarders:
+          - ip_address: 8.8.8.8
+        forwardpolicy: first
+        skip_overlap_check: true
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: ensure forwardzone example.com has two forwarders
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        forwarders:
+          - ip_address: 8.8.8.8
+          - ip_address: 4.4.4.4
+            port: 8053
+        forwardpolicy: first
+        skip_overlap_check: true
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: ensure forwardzone example.com has one forwarder again
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        forwarders:
+          - ip_address: 8.8.8.8
+        forwardpolicy: first
+        skip_overlap_check: true
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: skip_overlap_check can only be set on creation so change nothing
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        forwarders:
+          - ip_address: 8.8.8.8
+        forwardpolicy: first
+        skip_overlap_check: false
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: ensure forwardzone example.com is absent.
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: ensure forwardzone example.com is absent, again.
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: change all the things at once
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        forwarders:
+          - ip_address: 8.8.8.8
+          - ip_address: 4.4.4.4
+            port: 8053
+        forwardpolicy: only
+        skip_overlap_check: true
+        permission: yes
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: change zone forward policy
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        forwardpolicy: first
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: change zone forward policy, again
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        forwardpolicy: first
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: ensure forwardzone example.com is absent.
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: ensure forwardzone example.com is absent, again.
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: ensure forwardzone example.com is created with minimal args
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        skip_overlap_check: true
+        forwarders:
+          - ip_address: 8.8.8.8
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: ensure forwardzone example.com is created with minimal args, again
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        skip_overlap_check: true
+        forwarders:
+          - ip_address: 8.8.8.8
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: add a forwarder to any existing ones
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        forwarders:
+          - ip_address: 4.4.4.4
+            port: 8053
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: add a forwarder to any existing ones, again
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        forwarders:
+          - ip_address: 4.4.4.4
+            port: 8053
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: check the list of forwarders is what we expect
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        forwarders:
+          - ip_address: 4.4.4.4
+            port: 8053
+          - ip_address: 8.8.8.8
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: remove a single forwarder
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: absent
+        name: example.com
+        forwarders:
+          - ip_address: 8.8.8.8
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: remove a single forwarder, again
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: absent
+        name: example.com
+        forwarders:
+          - ip_address: 8.8.8.8
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: check the list of forwarders is what we expect now
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        forwarders:
+          - ip_address: 4.4.4.4
+            port: 8053
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Add a permission for per-forward zone access delegation.
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        permission: yes
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Add a permission for per-forward zone access delegation, again.
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        permission: yes
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Remove a permission for per-forward zone access delegation.
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        permission: no
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Remove a permission for per-forward zone access delegation, again.
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        permission: no
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: disable the forwarder
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        state: disabled
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: disable the forwarder again
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        state: disabled
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: enable the forwarder
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        state: enabled
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: enable the forwarder, again
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        state: enabled
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: ensure forwardzone example.com is absent again
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        state: absent
+
+    - name: try to create a new forwarder with action=member
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: present
+        name: example.com
+        forwarders:
+          - ip_address: 4.4.4.4
+            port: 8053
+        action: member
+        skip_overlap_check: true
+      register: result
+      failed_when: not result.failed or "not found" not in result.msg
+
+    - name: try to create a new forwarder with disabled state
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: example.com
+        state: disabled
+      register: result
+      failed_when: not result.failed or "not found" not in result.msg
+
+    - name: Ensure forwardzone is not added without forwarders, with correct message.
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: newfailzone.com
+      register: result
+      failed_when: not result.failed or "No forwarders specified" not in result.msg
+
+    - name: ensure forwardzone example.com is absent - tidy up
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - example.com
+        - newfailzone.com
+        state: absent
+
+    when: groups['ipaclients'] is defined
