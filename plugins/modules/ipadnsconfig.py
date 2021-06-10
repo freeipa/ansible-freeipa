@@ -39,7 +39,13 @@ options:
   ipaadmin_password:
     description: The admin password
     required: false
-
+  ipa_context:
+    description: |
+      The context in which the module will execute. Executing in a server
+      context is preferred, use `client` to execute in a client context if
+      the server cannot be accessed.
+    choices: ["server", "client"]
+    default: server
   forwarders:
     description: The list of global DNS forwarders.
     required: false
@@ -171,23 +177,24 @@ def main():
     )
 
     ansible_module = AnsibleModule(
-       argument_spec=dict(
-           # general
-           ipaadmin_principal=dict(type='str', default='admin'),
-           ipaadmin_password=dict(type='str', no_log=True),
+        argument_spec=dict(
+            # general
+            ipaadmin_principal=dict(type='str', default='admin'),
+            ipaadmin_password=dict(type='str', no_log=True),
+            ipa_context=dict(type="str", required=False, default="server",
+                             choices=["server", "client"]),
+            # dnsconfig
+            forwarders=dict(type='list', default=None, required=False,
+                            options=dict(**forwarder_spec)),
+            forward_policy=dict(type='str', required=False, default=None,
+                                choices=['only', 'first', 'none']),
+            allow_sync_ptr=dict(type='bool', required=False, default=None),
 
-           # dnsconfig
-           forwarders=dict(type='list', default=None, required=False,
-                           options=dict(**forwarder_spec)),
-           forward_policy=dict(type='str', required=False, default=None,
-                               choices=['only', 'first', 'none']),
-           allow_sync_ptr=dict(type='bool', required=False, default=None),
+            # general
+            state=dict(type="str", default="present",
+                       choices=["present", "absent"]),
 
-           # general
-           state=dict(type="str", default="present",
-                      choices=["present", "absent"]),
-
-       )
+        )
     )
 
     ansible_module._ansible_debug = True
@@ -197,6 +204,7 @@ def main():
                                            "ipaadmin_principal")
     ipaadmin_password = module_params_get(ansible_module,
                                           "ipaadmin_password")
+    ipa_context = module_params_get(ansible_module, "ipa_context")
 
     forwarders = module_params_get(ansible_module, 'forwarders') or []
     forward_policy = module_params_get(ansible_module, 'forward_policy')
@@ -224,7 +232,7 @@ def main():
         if not valid_creds(ansible_module, ipaadmin_principal):
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
-        api_connect()
+        api_connect(ipa_context)
 
         res_find = find_dnsconfig(ansible_module)
         args = gen_args(ansible_module, state, res_find, forwarders,

@@ -1,0 +1,212 @@
+---
+- name: Test dnsconfig
+  hosts: ipaclients
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    # Setup.
+    - name: Ensure forwarders are absent.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: 8.8.8.8
+          - ip_address: 8.8.4.4
+          - ip_address: 2001:4860:4860::8888
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        state: absent
+
+    # Tests.
+
+    - name: Execute with server context in the client.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        forwarders:
+          - ip_address: 1.2.3.4
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Set config to invalid IPv4.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: 1.2.3.500
+      register: result
+      failed_when: not result.failed or "Invalid IP for DNS forwarder" not in result.msg
+
+    - name: Set config to invalid IP.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: 1.in.va.lid
+      register: result
+      failed_when: not result.failed or "Invalid IP for DNS forwarder" not in result.msg
+
+    - name: Set config to invalid IPv6.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: fd00::invalid
+      register: result
+      failed_when: not result.failed or "Invalid IP for DNS forwarder" not in result.msg
+
+    - name: Set dnsconfig.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: 8.8.8.8
+          - ip_address: 8.8.4.4
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        forward_policy: only
+        allow_sync_ptr: yes
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Set dnsconfig, with the same values.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: 8.8.8.8
+          - ip_address: 8.8.4.4
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        forward_policy: only
+        allow_sync_ptr: yes
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure forwarder is absent.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: 8.8.8.8
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure forwarder is absent, again.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: 8.8.8.8
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Disable global forwarders.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forward_policy: none
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Disable global forwarders, again.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forward_policy: none
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Re-enable global forwarders.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forward_policy: first
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Re-enable global forwarders, again.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forward_policy: first
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Disable PTR record synchronization.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        allow_sync_ptr: no
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Disable PTR record synchronization, again.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        allow_sync_ptr: no
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Re-enable PTR record synchronization.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        allow_sync_ptr: yes
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Re-enable PTR record synchronization, again.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        allow_sync_ptr: yes
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure all forwarders are absent.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: 8.8.8.8
+          - ip_address: 8.8.4.4
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+
+    - name: Ensure all forwarders are absent, again.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: 8.8.8.8
+          - ip_address: 8.8.4.4
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    # Cleanup.
+    - name: Ensure forwarders are absent.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        forwarders:
+          - ip_address: 8.8.8.8
+          - ip_address: 8.8.4.4
+          - ip_address: 2001:4860:4860::8888
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        state: absent
+
+    when: groups['ipaclients'] is defined
