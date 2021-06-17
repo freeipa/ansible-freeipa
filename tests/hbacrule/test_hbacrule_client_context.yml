@@ -1,0 +1,203 @@
+---
+- name: Test HBAC client context.
+  hosts: ipaclients
+  become: yes
+  gather_facts: no
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Execute with server context in the client.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        name:
+        - testrule
+        state: absent
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure HBAC rules are absent
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - testrule
+        state: absent
+
+    - name: Ensure HBAC rule is present, with usercategory 'all'
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        usercategory: all
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with usercategory 'all', again.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        usercategory: all
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with no usercategory.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        usercategory: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with no usercategory, again.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        usercategory: ""
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with hostcategory 'all'
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        hostcategory: all
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with hostcategory 'all', again.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        hostcategory: all
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with no hostcategory.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        hostcategory: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with no hostcategory, again.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        hostcategory: ""
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with servicecategory 'all'
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        servicecategory: all
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with servicecategory 'all', again.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        servicecategory: all
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with no servicecategory.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        servicecategory: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC rule is present, with no servicecategory, again.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrule
+        servicecategory: ""
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure `user` cannot be added if usercategory is `all`.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        user: shouldfail01
+        usercategory: "all"
+      register: result
+      failed_when: not result.failed or "Users cannot be added when user category='all'" not in result.msg
+
+    - name: Ensure `group` cannot be added if usercategory is `all`.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        group: shouldfail01
+        usercategory: "all"
+      register: result
+      failed_when: not result.failed or "Users cannot be added when user category='all'" not in result.msg
+
+    - name: Ensure `host` cannot be added if hostcategory is `all`.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        host: host.shouldfail.com
+        hostcategory: "all"
+      register: result
+      failed_when: not result.failed or "Hosts cannot be added when host category='all'" not in result.msg
+
+    - name: Ensure `hostgroup` cannot be added if hostcategory is `all`.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        hostgroup: shouldfail_hostgroup
+        hostcategory: "all"
+      register: result
+      failed_when: not result.failed or "Hosts cannot be added when host category='all'" not in result.msg
+
+    - name: Ensure `hbacsvc` cannot be added if hbacsvccategory is `all`.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        hbacsvc: "HTTP/fail.example.com"
+        servicecategory: "all"
+      register: result
+      failed_when: not result.failed or "Services cannot be added when service category='all'" not in result.msg
+
+    - name: Ensure `hbacsvcgroup` cannot be added if hbacsvccategory is `all`.
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        hbacsvcgroup: shouldfail_svcgroup
+        servicecategory: "all"
+      register: result
+      failed_when: not result.failed or "Services cannot be added when service category='all'" not in result.msg
+
+    - name: Ensure HBAC rules are absent
+      ipahbacrule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - testrule
+        state: absent
+
+    when: groups['ipaclients'] is defined
