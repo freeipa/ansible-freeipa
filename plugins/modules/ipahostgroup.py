@@ -39,6 +39,13 @@ options:
   ipaadmin_password:
     description: The admin password
     required: false
+  ipa_context:
+    description: |
+      The context in which the module will execute. Executing in a server
+      context is preferred, use `client` to execute in a client context if
+      the server cannot be accessed.
+    choices: ["server", "client"]
+    default: server
   name:
     description: The hostgroup name
     required: false
@@ -190,7 +197,8 @@ def main():
             # general
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", required=False, no_log=True),
-
+            ipa_context=dict(type="str", required=False, default="server",
+                             choices=["server", "client"]),
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
             # present
@@ -221,6 +229,7 @@ def main():
                                            "ipaadmin_principal")
     ipaadmin_password = module_params_get(ansible_module,
                                           "ipaadmin_password")
+    ipa_context = module_params_get(ansible_module, "ipa_context")
     names = module_params_get(ansible_module, "name")
 
     # present
@@ -293,7 +302,7 @@ def main():
         if not valid_creds(ansible_module, ipaadmin_principal):
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
-        api_connect()
+        api_connect(ipa_context)
 
         has_add_membermanager = api_check_command(
             "hostgroup_add_member_manager")

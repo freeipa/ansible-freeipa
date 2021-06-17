@@ -1,0 +1,215 @@
+---
+- name: Test hostgroup
+  hosts: ipaclients
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Get Domain from server name
+      set_fact:
+        ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+      when: ipaserver_domain is not defined
+
+    - name: Ensure host-group databases, mysql-server and oracle-server are absent
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - databases
+        - mysql-server
+        - oracle-server
+        state: absent
+
+    - name: Test hosts db1 and db2 absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - "{{ 'db1.' + ipaserver_domain }}"
+        - "{{ 'db2.' + ipaserver_domain }}"
+        state: absent
+
+    - name: Host "{{ 'db1.' + ipaserver_domain }}" present
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "{{ 'db1.' + ipaserver_domain }}"
+        force: yes
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Host "{{ 'db2.' + ipaserver_domain }}" present
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "{{ 'db2.' + ipaserver_domain }}"
+        force: yes
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Execute with server context in the client.
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        name: mysql-server
+        state: present
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+    
+    - name: Ensure host-group mysql-server is present
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: mysql-server
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure host-group mysql-server is present again
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: mysql-server
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure host-group oracle-server is present
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: oracle-server
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure host-group oracle-server is present again
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: oracle-server
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure host-group databases is present
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: databases
+        state: present
+        host:
+        - "{{ 'db1.' + ipaserver_domain }}"
+        hostgroup:
+        - oracle-server
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure host-group databases is present again
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: databases
+        state: present
+        host:
+        - "{{ 'db1.' + ipaserver_domain }}"
+        hostgroup:
+        - oracle-server
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure host db2 is member of host-group databases
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: databases
+        state: present
+        host:
+        - "{{ 'db2.' + ipaserver_domain }}"
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure host db2 is member of host-group databases again
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: databases
+        state: present
+        host:
+        - "{{ 'db2.' + ipaserver_domain }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure host-group mysql-server is member of host-group databases
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: databases
+        state: present
+        hostgroup:
+        - mysql-server
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure host-group mysql-server is member of host-group databases again
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: databases
+        state: present
+        hostgroup:
+        - mysql-server
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure host-group oracle-server is member of host-group databases (again)
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: databases
+        state: present
+        hostgroup:
+        - oracle-server
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure host-group databases, mysql-server and oracle-server are absent
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - databases
+        - mysql-server
+        - oracle-server
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure host-group databases, mysql-server and oracle-server are absent again
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - databases
+        - mysql-server
+        - oracle-server
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Test hosts db1 and db2 absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - "{{ 'db1.' + ipaserver_domain }}"
+        - "{{ 'db2.' + ipaserver_domain }}"
+        state: absent
+
+    when: groups['ipaclients'] is defined
