@@ -81,6 +81,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipa_context` | The context in which the module will execute. Executing in a server context is preferred, use `client` to execute in a client context if the server cannot be accessed. Valid values are `server`, `client`. Default to `server`. | no
 `name` \| `idnsname` | The list of location name strings. | yes
 `description` | The IPA location string | false
 `state` | The state to ensure. It can be one of `present`, `absent`, default: `present`. | no

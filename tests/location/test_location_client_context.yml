@@ -1,0 +1,91 @@
+---
+- name: Test location
+  hosts: ipaclients
+  become: yes
+  gather_facts: no
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure location my_location1 is absent
+      ipalocation:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: my_location1
+        state: absent
+
+    # CREATE TEST ITEMS
+
+    # TESTS
+
+    - name: Execute with server context in the client.
+      ipalocation:
+        ipaadmin_password: SomeADMINpassword
+        name: my_location1
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure location my_location1 is present
+      ipalocation:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: my_location1
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure location my_location1 is present again
+      ipalocation:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: my_location1
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure location my_location1 is present with description
+      ipalocation:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: my_location1
+        description: My Location 1
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure location my_location1 is present again with description
+      ipalocation:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: my_location1
+        description: My Location 1
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure location my_location1 is absent
+      ipalocation:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: my_location1
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure location my_location1 is absent again
+      ipalocation:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: my_location1
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure location my_location1 is absent
+      ipalocation:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: my_location1
+        state: absent
+
+    when: groups['ipaclients'] is defined
