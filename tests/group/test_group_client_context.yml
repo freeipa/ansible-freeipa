@@ -1,0 +1,196 @@
+---
+- name: Test group
+  hosts: ipaclients
+  become: yes
+  gather_facts: no
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Execute with server context in the client.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: group1
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure users user1, user2 and user3 are absent
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: user1,user2,user3
+        state: absent
+
+    - name: Ensure group group3, group2 and group1 are absent
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group3,group2,group1
+        state: absent
+
+    - name: Ensure users user1..user3 are present
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        users:
+        - name: user1
+          first: user1
+          last: Last
+        - name: user2
+          first: user2
+          last: Last
+        - name: user3
+          first: user3
+          last: Last
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure group1 is present
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group1
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure group1 is present again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group1
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure group2 is present
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group2
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure group2 is present again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group2
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure group3 is present
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group3
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure group3 is present again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group3
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure groups group2 and group3 are present in group group1
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group1
+        group:
+        - group2
+        - group3
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure groups group2 and group3 are present in group group1 again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group1
+        group:
+        - group2
+        - group3
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure group3 ia present in group group1
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group1
+        group:
+        - group3
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure users user1, user2 and user3 are present in group group1
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group1
+        user:
+        - user1
+        - user2
+        - user3
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure users user1, user2 and user3 are present in group group1 again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group1
+        user:
+        - user1
+        - user2
+        - user3
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure user user7 is absent in group group1
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group1
+        user:
+        - user7
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure group group4 is absent
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group4
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure group group3, group2 and group1 are absent
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: group3,group2,group1
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure users user1, user2 and user3 are absent
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: user1,user2,user3
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    when: groups['ipaclients'] is defined
