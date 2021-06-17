@@ -376,6 +376,7 @@ There are only return values if one or more random passwords have been generated
 Variable | Description | Returned When
 -------- | ----------- | -------------
 `host` | Host dict with random password. (dict) <br>Options: | If random is yes and host did not exist or update_password is yes
+`ipa_context` | The context in which the module will execute. Executing in a server context is preferred, use `client` to execute in a client context if the server cannot be accessed. Valid values are `server`, `client`. Default to `server`. | no
 &nbsp; | `randompassword` - The generated random password | If only one host is handled by the module
 &nbsp; | `name` - The host name of the host that got a new random password. (dict) <br> Options: <br> &nbsp; `randompassword` - The generated random password | If several hosts are handled by the module
 
