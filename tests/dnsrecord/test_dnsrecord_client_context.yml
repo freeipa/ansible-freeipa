@@ -1,0 +1,175 @@
+---
+- name: Test dnsrecord
+  hosts: ipaclients
+  become: no
+  gather_facts: yes
+
+  tasks:
+
+  # tests
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+    - name: Define test context.
+      set_fact:
+        ipa_test_context: "client"
+
+    - name: Setup test environment
+      include_tasks: env_setup.yml
+
+    - name: Execute with server context in the client.
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        name: host01
+        zone_name: "{{ testzone }}"
+        a_rec: 192.168.122.101
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure that dns A record for 'host01' is present
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        a_rec: 192.168.122.101
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure that dns A record for 'host01' is present, again
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        a_rec: 192.168.122.101
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure that dns A records for 'host01' are present
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        a_rec:
+        - 192.168.122.101
+        - 192.168.122.102
+        - 192.168.122.103
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure that dns A records for 'host01' are present, again
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        a_rec:
+        - 192.168.122.101
+        - 192.168.122.102
+        - 192.168.122.103
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure that dns A records for 'host01' are absent
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        a_rec:
+        - 192.168.122.101
+        - 192.168.122.102
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure that dns A records for 'host01' are absent, again
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        a_rec:
+        - 192.168.122.101
+        - 192.168.122.102
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure that dns AAAA record for 'host01' is present
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        aaaa_rec: fd00::0001
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure that dns AAAA record for 'host01' is present, again
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        aaaa_rec: fd00::0001
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure that dns AAAA records for 'host01' are present
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        aaaa_rec:
+        - fd00::0001
+        - fd00::0011
+        - fd00::0021
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure that dns AAAAA records for 'host01' are present, again
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        aaaa_rec:
+        - fd00::0001
+        - fd00::0011
+        - fd00::0021
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure that dns AAAAA records for 'host01' are absent
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        aaaa_rec:
+        - fd00::0001
+        - fd00::0011
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure that dns AAAAA records for 'host01' are absent, again
+      ipadnsrecord:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: host01
+        zone_name: "{{ testzone }}"
+        aaaa_rec:
+        - fd00::0001
+        - fd00::0011
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    # Cleanup
+    - name: Cleanup test environment.
+      include_tasks: env_cleanup.yml
+
+    when: groups['ipaclients'] is defined

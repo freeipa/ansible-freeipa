@@ -249,6 +249,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipa_context` | The context in which the module will execute. Executing in a server context is preferred, use `client` to execute in a client context if the server cannot be accessed. Valid values are `server`, `client`. Default to `server`. | no
 `zone_name` \| `dnszone` | The DNS zone name to which DNS record needs to be managed. You can use one global zone name for multiple records. | no
   required: true
 `records` | The list of dns records dicts. Each `records` dict entry can contain **record variables**. | no

@@ -40,6 +40,13 @@ options:
   ipaadmin_password:
     description: The admin password
     required: false
+  ipa_context:
+    description: |
+      The context in which the module will execute. Executing in a server
+      context is preferred, use `client` to execute in a client context if
+      the server cannot be accessed.
+    choices: ["server", "client"]
+    default: server
   records:
     description: The list of user dns records dicts
     required: false
@@ -1111,7 +1118,8 @@ def configure_module():
             # general
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", no_log=True),
-
+            ipa_context=dict(type="str", required=False, default="server",
+                             choices=["server", "client"]),
             name=dict(type="list", aliases=["record_name"], default=None,
                       required=False),
 
@@ -1221,13 +1229,14 @@ def connect_to_api(module):
     """Connect to the IPA API."""
     ipaadmin_principal = module_params_get(module, "ipaadmin_principal")
     ipaadmin_password = module_params_get(module, "ipaadmin_password")
+    ipa_context = module_params_get(module, "ipa_context")
 
     ccache_dir = None
     ccache_name = None
     if not valid_creds(module, ipaadmin_principal):
         ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                              ipaadmin_password)
-    api_connect()
+    api_connect(ipa_context)
 
     return ccache_dir, ccache_name
 

@@ -3,6 +3,7 @@
    - name: Ensure that dns records are absent
      ipadnsrecord:
        ipaadmin_password: SomeADMINpassword
+       ipa_context: "{{ ipa_test_context | default('server') }}"
        zone_name: "{{ testzone }}"
        del_all: yes
        name:
@@ -17,6 +18,7 @@
    - name: Ensure that dns reverse ipv6 records are absent
      ipadnsrecord:
        ipaadmin_password: SomeADMINpassword
+       ipa_context: "{{ ipa_test_context | default('server') }}"
        zone_name: ip6.arpa.
        del_all: yes
        name:
@@ -31,6 +33,7 @@
    - name: Ensure that dns reverse ipv6 records are absent (workaround)
      ipadnsrecord:
        ipaadmin_password: SomeADMINpassword
+       ipa_context: "{{ ipa_test_context | default('server') }}"
        zone_name: "{{ zone_ipv6_reverse_workaround }}"
        del_all: yes
        name:
@@ -45,6 +48,7 @@
    - name: Ensure that dns reverse records are absent
      ipadnsrecord:
        ipaadmin_password: SomeADMINpassword
+       ipa_context: "{{ ipa_test_context | default('server') }}"
        zone_name: "{{ zone_prefix_reverse_24 }}"
        name:
        - "101"
@@ -65,6 +69,7 @@
    - name: Ensure that dns reverse records are absent (workaround 1)
      ipadnsrecord:
        ipaadmin_password: SomeADMINpassword
+       ipa_context: "{{ ipa_test_context | default('server') }}"
        zone_name: "{{ zone_prefix_reverse_16 }}"
        name:
        - "101.122"
@@ -85,6 +90,7 @@
    - name: Ensure that dns reverse records are absent (workaround 2)
      ipadnsrecord:
        ipaadmin_password: SomeADMINpassword
+       ipa_context: "{{ ipa_test_context | default('server') }}"
        zone_name: "{{ zone_prefix_reverse_8 }}"
        name:
        - "168.101.122"
@@ -105,6 +111,7 @@
    - name: Ensure that "{{ safezone }}" dns records are absent
      ipadnsrecord:
        ipaadmin_password: SomeADMINpassword
+       ipa_context: "{{ ipa_test_context | default('server') }}"
        zone_name: "{{ safezone }}"
        records:
        - name: iron01
@@ -114,6 +121,7 @@
    - name: Ensure that NS record for "{{ safezone }}" is absent
      ipadnsrecord:
        ipaadmin_password: SomeADMINpassword
+       ipa_context: "{{ ipa_test_context | default('server') }}"
        name: iron01
        zone_name: "{{ safezone }}"
        ns_rec: iron01
@@ -122,6 +130,7 @@
    - name: Ensure DNS testing zones are absent.
      ipadnszone:
        ipaadmin_password: SomeADMINpassword
+       ipa_context: "{{ ipa_test_context | default('server') }}"
        name: "{{ item }}"
        state: absent
      with_items:
