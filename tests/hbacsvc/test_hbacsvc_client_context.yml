@@ -1,0 +1,77 @@
+---
+- name: Test hbacsvc
+  hosts: ipaclients
+  become: yes
+  gather_facts: no
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Execute with server context in the client.
+      ipahbacsvc:
+        ipaadmin_password: SomeADMINpassword
+        name: http,tftp
+        state: absent
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure HBAC Service for http is absent
+      ipahbacsvc:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: http,tftp
+        state: absent
+
+    - name: Ensure HBAC Service for http is present
+      ipahbacsvc:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: http
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC Service for http is present again
+      ipahbacsvc:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: http
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure HBAC Service for tftp is present
+      ipahbacsvc:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: tftp
+        description: TFTP service
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC Service for tftp is present again
+      ipahbacsvc:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: tftp
+        description: TFTP service
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure HBAC Services for http and tftp are absent
+      ipahbacsvc:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: http,tftp
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC Services for http and tftp are absent again
+      ipahbacsvc:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: http,tftp
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    when: groups['ipaclients'] is defined
