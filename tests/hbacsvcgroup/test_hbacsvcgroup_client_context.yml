@@ -1,0 +1,113 @@
+---
+- name: Test hbacsvcgroup
+  hosts: ipaclients
+  become: yes 
+  gather_facts: no
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Execute with server context in the client.
+      ipahbacsvcgroup:
+        ipaadmin_password: SomeADMINpassword
+        name: login
+        state: absent
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure HBAC Service Group login is absent
+      ipahbacsvcgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: login
+        state: absent
+
+    - name: Ensure HBAC Service for sshd is present
+      ipahbacsvc:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: login
+
+    - name: Ensure HBAC Service Group login is present
+      ipahbacsvcgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: login
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC Service Group login is present again
+      ipahbacsvcgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: login
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure HBAC Service sshd is present in HBAC Service Group login
+      ipahbacsvcgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: login
+        hbacsvc:
+        - sshd
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC Service sshd is present in HBAC Service Group login again
+      ipahbacsvcgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: login
+        hbacsvc:
+        - sshd
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure HBAC Services sshd and foo are absent in HBAC Service Group login
+      ipahbacsvcgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: login
+        hbacsvc:
+        - sshd
+        - foo
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC Services sshd and foo are absent in HBAC Service Group login again
+      ipahbacsvcgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: login
+        hbacsvc:
+        - sshd
+        - foo
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure HBAC Service Group login is absent
+      ipahbacsvcgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: login
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure HBAC Service Group login is absent again
+      ipahbacsvcgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: login
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    when: groups['ipaclients'] is defined
