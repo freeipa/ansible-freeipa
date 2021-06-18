@@ -1,0 +1,146 @@
+---
+- name: Test sudocmd
+  hosts: ipaclients
+  become: no
+  gather_facts: no
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Execute with server context in the client.
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        name:
+        - /usr/bin/su
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure sudocmds are absent
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - /usr/bin/su
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        state: absent
+
+    - name: Ensure sudocmd is present
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: /usr/bin/su
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudocmd is present again
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: /usr/bin/su
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudocmd is absent
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: /usr/bin/su
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudocmd is absent again
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: /usr/bin/su
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure multiple sudocmd are present
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure multiple sudocmd are present again
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure multiple sudocmd are absent
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure multiple sudocmd are absent again
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudocmds are absent
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - /usr/bin/su
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        state: absent
+
+    - name: Ensure sudocmds are absent
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - /usr/sbin/ifconfig
+        state: absent
+
+    - name: Ensure sudocmds are present
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - /usr/sbin/iwlist
+        state: present
+
+    - name: Ensure multiple sudocmd are absent when only one was present
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    when: groups['ipaclients'] is defined
+
