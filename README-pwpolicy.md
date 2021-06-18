@@ -98,6 +98,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipa_context` | The context in which the module will execute. Executing in a server context is preferred, use `client` to execute in a client context if the server cannot be accessed. Valid values are `server`, `client`. Default to `server`. | no
 `name` \| `cn` | The list of pwpolicy name strings. If name is not given, `global_policy` will be used automatically. | no
 `maxlife` \| `krbmaxpwdlife` | Maximum password lifetime in days. (int) | no
 `minlife` \| `krbminpwdlife` | Minimum password lifetime in hours. (int) | no

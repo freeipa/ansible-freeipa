@@ -1,0 +1,130 @@
+---
+- name: Test pwpolicy
+  hosts: ipaclients
+  become: no
+  gather_facts: no
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Execute with server context in the client.
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        maxlife: 90
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure maxlife of 90 for global_policy
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        maxlife: 90
+
+    - name: Ensure absence of group ops
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: ops
+        state: absent
+
+    - name: Ensure absence of pwpolicies for group ops
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: ops
+        state: absent
+
+    - name: Ensure presence of group ops
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: ops
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure presence of pwpolicies for group ops
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: ops
+        minlife: 7
+        maxlife: 49
+        history: 5
+        priority: 1
+        lockouttime: 300
+        minlength: 8
+        minclasses: 5
+        maxfail: 3
+        failinterval: 5
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure presence of pwpolicies for group ops again
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: ops
+        minlife: 7
+        maxlife: 49
+        history: 5
+        priority: 1
+        lockouttime: 300
+        minlength: 8
+        minclasses: 5
+        maxfail: 3
+        failinterval: 5
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure maxlife of 49 for global_policy
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        maxlife: 49
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure maxlife of 49 for global_policy again
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        maxlife: 49
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure absence of pwpoliciy global_policy will fail
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        state: absent
+      register: result
+      failed_when: not result.failed or "'global_policy' can not be made absent." not in result.msg
+
+    - name: Ensure absence of pwpolicies for group ops
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: ops
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure maxlife of 90 for global_policy
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        maxlife: 90
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure absence of pwpolicies for group ops
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: ops
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    when: groups['ipaclients'] is defined
