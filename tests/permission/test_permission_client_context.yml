@@ -1,0 +1,419 @@
+---
+- name: Test permission
+  hosts: ipaclients
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - include_tasks: ../env_freeipa_facts.yml
+
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Ensure testing groups are present.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - rbacgroup1
+        - rbacgroup2
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure permission perm-test-1 is absent
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - perm-test-1
+        - perm-test-bindtype-test
+        - perm-test-renamed
+        state: absent
+
+    # TESTS
+
+    - name: Execute with server context in the client.
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        name:
+        - perm-test-1
+        - perm-test-bindtype-test
+        - perm-test-renamed
+        state: absent
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure permission perm-test-1 is present
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        object_type: host
+        memberof: rbacgroup1
+        filter: '(cn=*.ipa.*)'
+        right: all
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 is present again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        object_type: host
+        memberof: rbacgroup1
+        filter: '(cn=*.ipa.*)'
+        right: all
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 has an extra filter '(cn=*.internal.*)'
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        filter: '(cn=*.internal.*)'
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 has an extra filter '(cn=*.internal.*)', again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        filter: '(cn=*.internal.*)'
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 `right` has `write`
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        right: write
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 `right` has `write`, again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        right: write
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 `right` has no `write`
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        right: write
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 `right` has no `write`, again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        right: write
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 `memberof` has `rbackgroup2`
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        memberof: rbacgroup2
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 `memberof` has `rbackgroup2`, again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        memberof: rbacgroup2
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 `memberof` item `rbackgroup1` is absent
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        memberof: rbacgroup1
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 `memberof` item `rbackgroup1` is absent, again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        memberof: rbacgroup1
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 is present with attr carlicense
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        attrs:
+        - carlicense
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 is present with attr carlicense again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        attrs:
+        - carlicense
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 is present with attr carlicense and displayname
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        attrs:
+        - carlicense
+        - displayname
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 is present with attr carlicense and displayname again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        attrs:
+        - carlicense
+        - displayname
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure attr gecos is present in permission perm-test-1
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        attrs:
+        - gecos
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure attr gecos is present in permission perm-test-1 again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        attrs:
+        - gecos
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure attr gecos is absent in permission perm-test-1
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        attrs:
+        - gecos
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure attr gecos is absent in permission perm-test-1 again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        attrs:
+        - gecos
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries"
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "System: Update DNS Entries"
+        attrs:
+        - carlicense
+        - displayname
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries" again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "System: Update DNS Entries"
+        attrs:
+        - carlicense
+        - displayname
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries"
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "System: Update DNS Entries"
+        attrs:
+        - carlicense
+        - displayname
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries" again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "System: Update DNS Entries"
+        attrs:
+        - carlicense
+        - displayname
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 has rawfilter '(objectclass=ipagroup)'
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        rawfilter: '(objectclass=ipagroup)'
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 has rawfilter '(objectclass=ipagroup)', again
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        rawfilter: '(objectclass=ipagroup)'
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure filter and rawfilter cannot be used together.
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        rawfilter: '(objectclass=ipagroup)'
+        filter: '(cn=*.internal.*)'
+        action: member
+      register: result
+      failed_when: not result.failed or "Cannot specify target filter and extra target filter simultaneously" not in result.msg
+
+    - name: Rename permission perm-test-1 to perm-test-renamed
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        rename: perm-test-renamed
+        state: renamed
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure permission perm-test-1 is absent
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-1
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure permission perm-test-renamed is present
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-renamed
+        object_type: host
+        right: all
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure permission with bindtype 'self' is present, if IPA version >= 4.8.7
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-bindtype-test
+        bindtype: self
+        object_type: host
+        right: all
+      when: ipa_version is version('4.8.7', '>=')
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Fail to set permission perm-test-renamed bindtype to 'self', if IPA version < 4.8.7
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: perm-test-bindtype-test
+        bindtype: self
+        object_type: host
+        right: all
+      when: ipa_version is version('4.8.7', '<')
+      register: result
+      failed_when: not result.failed or "Bindtype 'self' is not supported by your IPA version." not in result.msg
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure testing permissions are absent
+      ipapermission:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - perm-test-1
+        - perm-test-bindtype-test
+        - perm-test-renamed
+        state: absent
+
+    - name: Ensure testing groups are absent.
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - rbacgroup1
+        - rbacgroup2
+
+    when: groups['ipaclients'] is defined
