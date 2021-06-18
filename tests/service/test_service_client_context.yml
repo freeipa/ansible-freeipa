@@ -1,0 +1,389 @@
+---
+- name: Test service using client context.
+  hosts: ipaclients
+  become: no
+  gather_facts: yes
+
+  tasks:
+
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    # setup
+    - name: Setup test context.
+      set_fact:
+        ipa_test_context: client
+
+    - name: Setup test environment
+      include_tasks: env_setup.yml
+
+    # tests
+    - name: Execute with server context in the client.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        name: "HTTP/{{ svc_fqdn }}"
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure service is present
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        pac_type:
+          - MS-PAC
+          - PAD
+        auth_ind: otp
+        force: no
+        requires_pre_auth: yes
+        ok_as_delegate: no
+        ok_to_auth_as_delegate: no
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure service is present, again
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        pac_type:
+          - MS-PAC
+          - PAD
+        auth_ind: otp
+        force: no
+        requires_pre_auth: yes
+        ok_as_delegate: no
+        ok_to_auth_as_delegate: no
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Modify service.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        pac_type: NONE
+        ok_as_delegate: yes
+        ok_to_auth_as_delegate: yes
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Modify service, again.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        pac_type: NONE
+        ok_as_delegate: yes
+        ok_to_auth_as_delegate: yes
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure service is present, with host not in DNS.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: HTTP/svc.ihavenodns.info
+        force: yes
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure service is present, with host not in DNS, again.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: HTTP/svc.ihavenodns.info
+        force: yes
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Principal host/test.example.com present in service.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        principal:
+          - host/test.example.com
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Principal host/test.example.com present in service, again.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        principal:
+          - host/test.example.com
+        action: member
+      register: result
+      failed_when:
+        result.changed or (result.failed and "already contains one or more values" not in result.msg)
+
+    - name: Principal host/test.example.com absent in service.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        principal:
+          - host/test.example.com
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Principal host/test.example.com absent in service, again.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        principal:
+          - host/test.example.com
+        action: member
+        state: absent
+      register: result
+      failed_when:
+        result.changed or (result.failed and "does not contain 'one or more values to remove'" not in result.msg)
+
+    - name: Ensure host can manage service.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure host can manage service, again.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        host: "{{ host1_fqdn }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure host cannot manage service.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure host cannot manage service, again.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for users, groups, hosts and hostgroups.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        allow_create_keytab_user:
+        - user01
+        - user02
+        allow_create_keytab_group:
+        - group01
+        - group02
+        allow_create_keytab_host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        allow_create_keytab_hostgroup:
+        - hostgroup01
+        - hostgroup02
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for users, groups, hosts and hostgroups, again.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        allow_create_keytab_user:
+        - user01
+        - user02
+        allow_create_keytab_group:
+        - group01
+        - group02
+        allow_create_keytab_host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        allow_create_keytab_hostgroup:
+        - hostgroup01
+        - hostgroup02
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for users, groups, hosts and hostgroups.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        allow_create_keytab_user:
+        - user01
+        - user02
+        allow_create_keytab_group:
+        - group01
+        - group02
+        allow_create_keytab_host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        allow_create_keytab_hostgroup:
+        - hostgroup01
+        - hostgroup02
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for users, groups, hosts and hostgroups, again.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        allow_create_keytab_user:
+        - user01
+        - user02
+        allow_create_keytab_group:
+        - group01
+        - group02
+        allow_create_keytab_host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        allow_create_keytab_hostgroup:
+        - hostgroup01
+        - hostgroup02
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for users, groups, hosts and hostgroups
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        allow_retrieve_keytab_user:
+        - user01
+        - user02
+        allow_retrieve_keytab_group:
+        - group01
+        - group02
+        allow_retrieve_keytab_host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        allow_retrieve_keytab_hostgroup:
+        - hostgroup01
+        - hostgroup02
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for users, groups, hosts and hostgroups, again.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        allow_retrieve_keytab_user:
+        - user01
+        - user02
+        allow_retrieve_keytab_group:
+        - group01
+        - group02
+        allow_retrieve_keytab_host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        allow_retrieve_keytab_hostgroup:
+        - hostgroup01
+        - hostgroup02
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for users, groups, hosts and hostgroups.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        allow_retrieve_keytab_user:
+        - user01
+        - user02
+        allow_retrieve_keytab_group:
+        - group01
+        - group02
+        allow_retrieve_keytab_host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        allow_retrieve_keytab_hostgroup:
+        - hostgroup01
+        - hostgroup02
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for users, groups, hosts and hostgroups, again.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        allow_retrieve_keytab_user:
+        - user01
+        - user02
+        allow_retrieve_keytab_group:
+        - group01
+        - group02
+        allow_retrieve_keytab_host:
+        - "{{ host1_fqdn }}"
+        - "{{ host2_fqdn }}"
+        allow_retrieve_keytab_hostgroup:
+        - hostgroup01
+        - hostgroup02
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    #
+    - name: Ensure service is absent
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        continue: yes
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure service is absent, again
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: "HTTP/{{ svc_fqdn }}"
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    # cleanup
+    - name: Cleanup test environment
+      include_tasks: env_cleanup.yml
