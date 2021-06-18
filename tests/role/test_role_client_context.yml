@@ -1,0 +1,118 @@
+---
+- name: Test service member in role module.
+  hosts: ipaclients
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Set environment facts.
+      import_tasks: env_facts.yml
+
+    - name: Define client context.
+      set_fact:
+        ipa_test_context: client
+
+    - name: Setup environment.
+      import_tasks: env_setup.yml
+
+    # tests
+
+    - name: Execute with server context in the client.
+      iparole:
+        ipaadmin_password: SomeADMINpassword
+        name: testrole
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+    
+    - name: Ensure role with member service is present.
+      iparole:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrole
+        service:
+        - "service01/{{ host1_fqdn }}"
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure role with member service is present, again.
+      iparole:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrole
+        service:
+        - "service01/{{ host1_fqdn }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure role has member service absent.
+      iparole:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrole
+        service:
+        - "service01/{{ host1_fqdn }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure role has member service absent, again.
+      iparole:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrole
+        service:
+        - "service01/{{ host1_fqdn }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure role has member service with principal name.
+      iparole:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrole
+        service:
+        - "service01/{{ host1_fqdn }}@{{ ipaserver_realm }}"
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure role has member service with principal name, again.
+      iparole:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrole
+        service:
+        - "service01/{{ host1_fqdn }}@{{ ipaserver_realm }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure role is absent.
+      iparole:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrole
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure role is absent, again.
+      iparole:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testrole
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    # cleanup
+    - name: Cleanup environment.
+      include_tasks: env_cleanup.yml
+
+    when: groups['ipaclients'] is defined

@@ -2,6 +2,7 @@
 - name: Ensure test user is absent.
   ipauser:
     ipaadmin_password: SomeADMINpassword
+    ipa_context: "{{ ipa_test_context | default('server') }}"
     name:
     - user01
     - user02
@@ -11,6 +12,7 @@
 - name: Ensure test group is absent.
   ipagroup:
     ipaadmin_password: SomeADMINpassword
+    ipa_context: "{{ ipa_test_context | default('server') }}"
     name:
     - group01
     - group02
@@ -19,6 +21,7 @@
 - name: Ensure test hostgroup is absent.
   ipahostgroup:
     ipaadmin_password: SomeADMINpassword
+    ipa_context: "{{ ipa_test_context | default('server') }}"
     name:
     - hostgroup01
     - hostgroup02
@@ -27,6 +30,7 @@
 - name: Ensure test host is absent.
   ipahost:
     ipaadmin_password: SomeADMINpassword
+    ipa_context: "{{ ipa_test_context | default('server') }}"
     name:
     - "{{ host1_fqdn }}"
     - "{{ host2_fqdn }}"
@@ -35,6 +39,7 @@
 - name: Ensure test service is absent.
   ipaservice:
     ipaadmin_password: SomeADMINpassword
+    ipa_context: "{{ ipa_test_context | default('server') }}"
     name:
     - "service01/{{ host1_fqdn }}"
     - "service02/{{ host2_fqdn }}"
@@ -43,6 +48,7 @@
 - name: Ensure test roles are absent.
   iparole:
     ipaadmin_password: SomeADMINpassword
+    ipa_context: "{{ ipa_test_context | default('server') }}"
     name:
     - renamerole
     - testrole

@@ -40,6 +40,13 @@ options:
   ipaadmin_password:
     description: The admin password.
     required: false
+  ipa_context:
+    description: |
+      The context in which the module will execute. Executing in a server
+      context is preferred, use `client` to execute in a client context if
+      the server cannot be accessed.
+    choices: ["server", "client"]
+    default: server
   role:
     description: The list of role name strings.
     required: true
@@ -425,7 +432,8 @@ def create_module():
             # generalgroups
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", required=False, no_log=True),
-
+            ipa_context=dict(type="str", required=False, default="server",
+                             choices=["server", "client"]),
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
             # present
@@ -459,6 +467,7 @@ def create_module():
 def main():
     """Process role module script."""
     ansible_module = create_module()
+    ipa_context = module_params_get(ansible_module, "ipa_context")
     check_parameters(ansible_module)
 
     # Init
@@ -466,7 +475,7 @@ def main():
     ccache_name = None
     try:
         ccache_dir, ccache_name = verify_credentials(ansible_module)
-        api_connect()
+        api_connect(ipa_context)
 
         state = module_params_get(ansible_module, "state")
         action = module_params_get(ansible_module, "action")
