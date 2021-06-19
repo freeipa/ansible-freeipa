@@ -365,6 +365,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipa_context` | The context in which the module will execute. Executing in a server context is preferred, use `client` to execute in a client context if the server cannot be accessed. Valid values are `server`, `client`. Default to `server`. | no
 `name` | The list of user name strings. `name` with *user variables* or `users` containing *user variables* need to be used. | no
 **User variables** | Only used with `name` variable in the first level. | no
 `users` | The list of user dicts. Each `users` dict entry can contain **user variables**.<br>There is one required option in the `users` dict:| no
@@ -408,7 +409,7 @@ Variable | Description | Required
 `manager` | List of manager user names. | no
 `carlicense` | List of car licenses. | no
 `sshpubkey` \| `ipasshpubkey` | List of SSH public keys. | no
-`userauthtype` | List of supported user authentication types. Choices: `password`, `radius`, `otp` and ``. Use empty string to reset userauthtype to the initial value. | no
+`userauthtype` | List of supported user authentication types. Choices: `password`, `radius`, `otp` and \`\`. Use empty string to reset userauthtype to the initial value. | no
 `userclass` | User category. (semantics placed on this attribute are for local interpretation). | no
 `radius` | RADIUS proxy configuration  | no
 `radiususer` | RADIUS proxy username | no
