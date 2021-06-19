@@ -10,6 +10,7 @@
 
     - name: delete trust
       ipatrust:
+        ipaadmin_password: SomeADMINpassword
         realm: windows.local
         state: absent
       register: del_trust
@@ -36,6 +37,7 @@
 
     - name: add trust
       ipatrust:
+        ipaadmin_password: SomeADMINpassword
         realm: windows.local
         admin: Administrator
         password: secret_ad_pw
