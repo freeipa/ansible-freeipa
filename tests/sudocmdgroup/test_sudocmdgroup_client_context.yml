@@ -1,0 +1,240 @@
+---
+- name: Test sudocmdgroup
+  hosts: ipaclients
+  become: no
+  gather_facts: no
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Ensure sudocmds are present
+      ipasudocmd:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - /usr/bin/su
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        state: present
+
+    - name: Execute with server context in the client.
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        name: network
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure sudocmdgroup is absent
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        state: absent
+
+    - name: Ensure sudocmdgroup is present
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudocmdgroup is present again
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudocmdgroup is absent
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudocmdgroup is absent again
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudocmdgroup is present, with sudocmds.
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudocmdgroup is present, with sudocmds, again.
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Verify sudocmdgroup creation with sudocmds
+      shell: |
+        echo SomeADMINpassword | kinit -c verify_sudocmdgroup admin
+        KRB5CCNAME="verify_sudocmdgroup" ipa sudocmdgroup-show network --all
+        kdestroy -A -q -c verify_sudocmdgroup
+      register: result
+      failed_when: result.failed or not("/usr/sbin/ifconfig" in result.stdout and "/usr/sbin/iwlist" in result.stdout)
+
+    - name: Ensure sudocmdgroup, with sudocmds, is absent
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudocmdgroup, with sudocmds, is absent again
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure testing sudocmdgroup is present
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudo commands are present in existing sudocmdgroup
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudo commands are present in existing sudocmdgroup, again
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudo commands are absent in existing sudocmdgroup
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudo commands are absent in existing sudocmdgroup, again
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudo commands are present in sudocmdgroup
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/ifconfig
+        - /usr/sbin/iwlist
+        action: member
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure one sudo command is not present in sudocmdgroup
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/ifconfig
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure one sudo command is present in sudocmdgroup
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/ifconfig
+        action: member
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure the other sudo command is not present in sudocmdgroup
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/iwlist
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure the other sudo commandsis not present in sudocmdgroup, again
+      ipasudocmdgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: network
+        sudocmd:
+        - /usr/sbin/iwlist
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    when: groups['ipaclients'] is defined
