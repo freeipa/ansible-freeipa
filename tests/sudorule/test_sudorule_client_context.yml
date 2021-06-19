@@ -1,0 +1,295 @@
+---
+- name: Test sudorule in client context
+  hosts: ipaclients
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    - name: Get Domain from the server name
+      set_fact:
+        ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+
+    - name: Ensure sudorules are absent
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - allusers
+        state: absent
+
+    - name: Execute with server context in the client.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: allusers
+        usercategory: all
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure sudorule is present, with usercategory 'all'
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        usercategory: all
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present, with usercategory 'all', again.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        usercategory: all
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorule is present, with no usercategory.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        usercategory: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present, with no usercategory, again.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        usercategory: ""
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorule is present, with hostcategory 'all'
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        hostcategory: all
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present, with hostcategory 'all', again.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        hostcategory: all
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorule is present, with no usercategory.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        hostcategory: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present, with no hostcategory, again.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        hostcategory: ""
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorule is present, with cmdcategory 'all'
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        cmdcategory: all
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present, with cmdcategory 'all', again.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        cmdcategory: all
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorule is present, with no cmdcategory.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        cmdcategory: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present, with no cmdcategory, again.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        cmdcategory: ""
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorule is present, with runasusercategory 'all'
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        runasusercategory: all
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present, with runasusercategory 'all', again.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        runasusercategory: all
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorule is present, with no runasusercategory.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        runasusercategory: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present, with no runasusercategory, again.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        runasusercategory: ""
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorule is present, with runasgroupcategory 'all'
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        runasgroupcategory: all
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present, with runasgroupcategory 'all', again.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        runasgroupcategory: all
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorule is present, with no runasgroupcategory.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        runasgroupcategory: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present, with no runasgroupcategory, again.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        runasgroupcategory: ""
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorules are absent
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - allusers
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure `host` cannot be added if hostcategory is `all`.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        description: sudo rule
+        host: "{{ 'shouldfail.' + ipaserver_domain }}"
+        hostcategory: "all"
+      register: result
+      failed_when: not result.failed or "Hosts cannot be added when host category='all'" not in result.msg
+
+    - name: Ensure `hostgroup` cannot be added if hostcategory is `all`.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        description: sudo rule
+        hostgroup: shouldfail_hostgroup
+        hostcategory: "all"
+      register: result
+      failed_when: not result.failed or "Hosts cannot be added when host category='all'" not in result.msg
+
+    - name: Ensure `user` cannot be added if usercategory is `all`.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        description: sudo rule
+        user: "shouldfail01"
+        usercategory: "all"
+      register: result
+      failed_when: not result.failed or "Users cannot be added when user category='all'" not in result.msg
+
+    - name: Ensure `group` cannot be added if usercategory is `all`.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        description: sudo rule
+        group: "shouldfail01"
+        usercategory: "all"
+      register: result
+      failed_when: not result.failed or "Users cannot be added when user category='all'" not in result.msg
+
+    - name: Ensure `command` cannot be added if cmdcategory is `all`.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        description: sudo rule
+        allow_sudocmd: "/bin/shouldfail"
+        cmdcategory: "all"
+      register: result
+      failed_when: not result.failed or "Commands cannot be added when command category='all'" not in result.msg
+
+    - name: Ensure `command group` cannot be added if cmdcategory is `all`.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: allusers
+        description: sudo rule
+        allow_sudocmdgroup: shouldfail_cmdgroup
+        cmdcategory: "all"
+      register: result
+      failed_when: not result.failed or "Commands cannot be added when command category='all'" not in result.msg
+
+    # cleanup
+    - name: Ensure sudorules are absent
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+        - allusers
+        state: absent
+
+    when: groups['ipaclients'] is defined
