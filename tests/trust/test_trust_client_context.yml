@@ -1,0 +1,70 @@
+---
+- name: find trust
+  hosts: ipaclients
+  become: no
+  gather_facts: no
+
+  tasks:
+
+  - block:
+
+    - name: Execute with server context in the client.
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        realm: windows.local
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: delete trust
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        realm: windows.local
+        state: absent
+      register: del_trust
+
+    - name: check for trust
+      shell: |
+        echo 'SomeADMINpassword' | kinit admin
+        ipa trust-find windows.local
+      register: check_find_trust
+      failed_when: "'0 trusts matched' not in check_find_trust.stdout"
+
+    - name: delete id range
+      shell: |
+        echo 'SomeADMINpassword' | kinit admin
+        ipa idrange-del WINDOWS.LOCAL_id_range
+      when: del_trust['changed'] | bool
+
+    - name: check for range
+      shell: |
+        echo 'SomeADMINpassword' | kinit admin
+        ipa idrange-find WINDOWS.LOCAL_id_range
+      register: check_del_idrange
+      failed_when: "'0 ranges matched' not in check_del_idrange.stdout"
+
+    - name: add trust
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        realm: windows.local
+        admin: Administrator
+        password: secret_ad_pw
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: check for trust
+      shell: |
+        echo 'SomeADMINpassword' | kinit admin
+        ipa trust-find windows.local
+      register: check_add_trust
+      failed_when: "'1 trust matched' not in check_add_trust.stdout"
+
+    - name: delete trust
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        realm: windows.local
+        state: absent
+      register: del_trust
+      failed_when: not result.changed or result.failed
+
+    when: (trust_test_is_supported | default(false)) and groups['ipaclients'] is defined
