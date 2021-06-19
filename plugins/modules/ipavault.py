@@ -592,7 +592,9 @@ def main():
             # generalgroups
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", required=False, no_log=True),
-
+            # Currently vault does not work on 'server' context.
+            # ipa_context=dict(type="str", required=False, default="server",
+            #                  choices=["server", "client"]),
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
 
@@ -738,11 +740,9 @@ def main():
         if not valid_creds(ansible_module, ipaadmin_principal):
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
-            # Need to set krb5 ccache name, due to context='ansible-freeipa'
-            if ccache_name is not None:
-                os.environ["KRB5CCNAME"] = ccache_name
 
-        api_connect(context='ansible-freeipa')
+        # currently, ipavault only works on client context.
+        api_connect(context='client')
 
         commands = []
 
