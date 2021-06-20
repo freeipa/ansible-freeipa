@@ -1,0 +1,252 @@
+---
+- name: Test dnszone
+  hosts: ipaclients
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+
+    # Setup
+    - set_fact:
+        ipa_test_context: client
+
+    - name: Setup testing environment
+      include_tasks: env_setup.yml
+
+    # Tests
+    - name: Execute with server context in the client.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        name: testzone.local
+        state: present
+      register: result
+      failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+    - name: Ensure zone is present.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure zone is present, again.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure zone is disabled.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        state: disabled
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure zone is disabled, again.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        state: disabled
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure zone is enabled.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        state: enabled
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure zone is enabled, again.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        state: enabled
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure forward_policy is none.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        forward_policy: none
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure forward_policy is none, again.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        forward_policy: none
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure forward_policy is first.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        forward_policy: first
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure forward_policy is first, again.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        forward_policy: first
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure first forwarder is set.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        forwarders:
+          - ip_address: 8.8.8.8
+            port: 53
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure first and second forwarder are set.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        forwarders:
+          - ip_address: 8.8.8.8
+            port: 53
+          - ip_address: 2001:4860:4860::8888
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure first and second forwarder are set, again.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        forwarders:
+          - ip_address: 8.8.8.8
+            port: 53
+          - ip_address: 2001:4860:4860::8888
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure only second forwarder is set.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        forwarders:
+          - ip_address: 2001:4860:4860::8888
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Nothing changes.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure no forwarders are set.
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: testzone.local
+        forwarders: []
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Create zones test1
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: test1.testzone.local
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Create zones test1, again
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: test1.testzone.local
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Create zones test2
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: test2.testzone.local
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Create zones test2, again
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: test2.testzone.local
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Create zones test3
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: test3.testzone.local
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Create zones test3, again
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name: test3.testzone.local
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure multiple zones are absent
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+          - test1.testzone.local
+          - test2.testzone.local
+          - test3.testzone.local
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure multiple zones are absent, again
+      ipadnszone:
+        ipaadmin_password: SomeADMINpassword
+        ipa_context: client
+        name:
+          - test1.testzone.local
+          - test2.testzone.local
+          - test3.testzone.local
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    # Teardown
+    - name: Teardown testing environment
+      include_tasks: env_teardown.yml
