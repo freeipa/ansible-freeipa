@@ -45,6 +45,9 @@ else:
     import gssapi
     from datetime import datetime
     from pprint import pformat
+    from collections import namedtuple
+
+    CCache = namedtuple("CCache", "dir name")
 
     # ansible-freeipa requires locale to be C, IPA requires utf-8.
     os.environ["LANGUAGE"] = "C"
@@ -241,28 +244,47 @@ else:
         return operation(version.parse(VERSION),
                          version.parse(requested_version))
 
-    def execute_api_command(module, principal, password, command, name, args):
+    def connect_to_api(module):
         """
-        Execute an API command.
+        Authenticate and connect to backend API.
 
-        Get KRB ticket if not already there, initialize api, connect,
-        execute command and destroy ticket again if it has been created also.
+        The credentials are obtained from the module parameters
+        `ipaadmin_principal` and `ipaadmin_password`. Also, if the
+        module allows execution in a client context, the context is
+        obtained from parameter `ipa_context`.
+
+        A CCache tuple object with 'dir' and 'name' is returned
+        upon success.
         """
-        ccache_dir = None
-        ccache_name = None
-        try:
-            if not valid_creds(module, principal):
-                ccache_dir, ccache_name = temp_kinit(principal, password)
-            api_connect()
+        ccache = CCache(None, None)
 
-            return api_command(module, command, name, args)
-        except Exception as e:
-            module.fail_json(msg=str(e))
+        principal = module_params_get(module, "ipaadmin_principal")
+        password = module_params_get(module, "ipaadmin_password")
+        context = module_params_get(module, "ipa_context")
 
-        finally:
-            temp_kdestroy(ccache_dir, ccache_name)
-        # fix pylint inconsistent return
-        return None
+        module.debug("Verify credentials.")
+        if not valid_creds(module, principal):
+            module.debug("Obtain temporary KRB5 ticket.")
+            ccache = CCache(*temp_kinit(principal, password))
+
+        api_connect(context=context)
+
+        return ccache
+
+    def disconnect_from_api(module, ccache):
+        """
+        Destroy temporary KRB5 ticket.
+
+        Parameters
+        ----------
+        module:
+            The AnsibleModule.
+        ccache:
+            A CCache tuple object.
+
+        """
+        module.debug("Destroy temporay KRB5 ticket.")
+        temp_kdestroy(ccache.dir, ccache.name)
 
     def date_format(value):
         accepted_date_formats = [
@@ -621,17 +643,11 @@ else:
             super(FreeIPABaseModule, self).__init__(*args, **kwargs)
 
             # Attributes to store kerberos credentials (if needed)
-            self.ccache_dir = None
-            self.ccache_name = None
+            self.ccache = None
 
             # Status of an execution. Will be changed to True
             #   if something is actually peformed.
             self.changed = False
-
-            # Status of the connection with the IPA server.
-            # We need to know if the connection was actually stablished
-            #   before we start sending commands.
-            self.ipa_connected = False
 
             # Commands to be executed
             self.ipa_commands = []
@@ -712,50 +728,32 @@ else:
 
             return api_command(self, command, name, args)
 
-        def __enter__(self):
-            """
-            Connect to IPA server.
-
-            Check the there are working Kerberos credentials to connect to
-            IPA server. If there are not we perform a temporary kinit
-            that will be terminated when exiting the context.
-
-            If the connection fails ``ipa_connected`` attribute will be set
-            to False.
-            """
-            principal = self.ipa_params.ipaadmin_principal
-            password = self.ipa_params.ipaadmin_password
-            ipa_context = self.ipa_params.ipa_context
-
+        def connect_to_api(self):
+            """Connect to IPA API."""
             try:
-                if not valid_creds(self, principal):
-                    self.ccache_dir, self.ccache_name = temp_kinit(
-                        principal, password,
-                    )
-
-                api_connect(ipa_context)
-
+                self.ccache = connect_to_api(self)
             except Exception as excpt:
                 self.fail_json(msg=str(excpt))
-            else:
-                self.ipa_connected = True
 
+        def disconnect_from_api(self):
+            """Terminate a connection with the IPA API."""
+            disconnect_from_api(self, self.ccache or CCache(None, None))
+
+        def __enter__(self):
+            self.connect_to_api()
             return self
 
         def __exit__(self, exc_type, exc_val, exc_tb):
             """
-            Terminate a connection with the IPA server.
+            Terminate a connection with the IPA API.
 
-            Deal with exceptions, destroy temporary kinit credentials and
+            Deal with exceptions, disconnect form API, and
             exit the module with proper arguments.
-
             """
-            # TODO: shouldn't we also disconnect from api backend?
-            temp_kdestroy(self.ccache_dir, self.ccache_name)
+            self.disconnect_from_api()
 
             if exc_type == SystemExit:
                 raise
-
             if exc_val:
                 self.fail_json(msg=str(exc_val))
 
@@ -833,8 +831,10 @@ else:
         def ipa_run(self):
             """Execute module actions."""
             with self:
-                if not self.ipa_connected:
-                    return
+                if not self.ccache:
+                    raise RuntimeError(
+                        "Must connect to IPA API before running commands."
+                    )
 
                 self.check_ipa_params()
                 self.define_ipa_commands()
