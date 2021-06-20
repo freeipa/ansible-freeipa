@@ -38,6 +38,13 @@ options:
   ipaadmin_password:
     description: The admin password
     required: false
+  ipa_context:
+    description: |
+      The context in which the module will execute. Executing in a server
+      context is preferred, use `client` to execute in a client context if
+      the server cannot be accessed.
+    choices: ["server", "client"]
+    default: server
   suffix:
     description: Topology suffix
     required: true
@@ -178,6 +185,8 @@ def main():
         argument_spec=dict(
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", required=False, no_log=True),
+            ipa_context=dict(type="str", required=False, default="server",
+                             choices=["server", "client"]),
             suffix=dict(choices=["domain", "ca", "domain+ca"], required=True),
             name=dict(type="str", aliases=["cn"], default=None),
             left=dict(type="str", aliases=["leftnode"], default=None),
@@ -197,6 +206,7 @@ def main():
 
     ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
     ipaadmin_password = ansible_module.params.get("ipaadmin_password")
+    ipa_context = ansible_module.params.get("ipa_context")
     suffixes = ansible_module.params.get("suffix")
     name = ansible_module.params.get("name")
     left = ansible_module.params.get("left")
@@ -220,7 +230,7 @@ def main():
         if not valid_creds(ansible_module, ipaadmin_principal):
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
-        api_connect()
+        api_connect(ipa_context)
 
         commands = []
 

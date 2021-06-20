@@ -38,6 +38,13 @@ options:
   ipaadmin_password:
     description: The admin password
     required: false
+  ipa_context:
+    description: |
+      The context in which the module will execute. Executing in a server
+      context is preferred, use `client` to execute in a client context if
+      the server cannot be accessed.
+    choices: ["server", "client"]
+    default: server
   suffix:
     description: Topology suffix
     required: true
@@ -61,7 +68,10 @@ RETURN = """
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import execute_api_command
+from ansible.module_utils.ansible_freeipa_module import (
+    api_command, connect_to_api, disconnect_from_api, module_params_get,
+    CCache
+)
 
 
 def main():
@@ -69,6 +79,8 @@ def main():
         argument_spec=dict(
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", required=False, no_log=True),
+            ipa_context=dict(type="str", required=False, default="server",
+                             choices=["server", "client"]),
             suffix=dict(choices=["domain", "ca"], required=True),
             state=dict(type="str", default="verified",
                        choices=["verified"]),
@@ -79,28 +91,30 @@ def main():
     ansible_module._ansible_debug = True
 
     # Get parameters
-
-    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
-    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
-    suffix = ansible_module.params.get("suffix")
-    state = ansible_module.params.get("state")
+    suffix = module_params_get(ansible_module, "suffix")
+    state = module_params_get(ansible_module, "state")
 
     # Check parameters
-
-    # Init
-
-    # Create command
-
-    if state in ["verified"]:
-        command = "topologysuffix_verify"
-        args = {}
-    else:
+    if state not in ["verified"]:
         ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
-    # Execute command
+    ccache = CCache(None, None)
+    try:
+        # Init
+        ccache = connect_to_api(ansible_module)
 
-    execute_api_command(ansible_module, ipaadmin_principal, ipaadmin_password,
-                        command, to_text(suffix), args)
+        # Create command
+        command = "topologysuffix_verify"
+        args = {}
+
+        # Execute command
+        api_command(ansible_module, command, to_text(suffix), args)
+
+    except Exception as e:
+        ansible_module.fail_json(msg=str(e))
+
+    finally:
+        disconnect_from_api(ansible_module, ccache)
 
     # Done
 
