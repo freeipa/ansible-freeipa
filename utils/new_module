@@ -154,25 +154,25 @@ mkdir -p $dest
 
 src=ipamodule.py.in
 [ $member == 1 ] && src=ipamodule+member.py.in
-template $src $dest/ipa$name.py
+template $src $dest/ipa${name}.py
 
 # README
 
 src=README-module.md.in
 [ $member == 1 ] && src=README-module+member.md.in
-template $src README-$name.md
+template $src README-${name}.md
 
 # PLAYBOOKS
 
 dest=playbooks/$name
 mkdir -p $dest
 
-template module-present.yml.in $dest/$name-present.yml
-template module-absent.yml.in $dest/$name-absent.yml
+template module-present.yml.in $dest/${name}-present.yml
+template module-absent.yml.in $dest/${name}-absent.yml
 
 if [ $member == 1 ]; then
-    template module-member-present.yml.in $dest/$name-member-present.yml
-    template module-member-absent.yml.in $dest/$name-member-absent.yml
+    template module-member-present.yml.in $dest/${name}-member-present.yml
+    template module-member-absent.yml.in $dest/${name}-member-absent.yml
 fi
 
 # TESTS
@@ -182,4 +182,5 @@ mkdir -p $dest
 
 src=test_module.yml.in
 [ $member == 1 ] && src=test_module+member.yml.in
-template $src $dest/test_$name.yml
+template $src $dest/test_${name}.yml
+template test_module_client_context.yml.in $dest/test_${name}_client_context.yml

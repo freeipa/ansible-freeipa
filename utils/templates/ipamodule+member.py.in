@@ -38,6 +38,13 @@ options:
   ipaadmin_password:
     description: The admin password.
     required: false
+  ipa_context:
+    description: |
+      The context in which the module will execute. Executing in a server
+      context is preferred, use `client` to execute in a client context if
+      the server cannot be accessed.
+    choices: ["server", "client"]
+    default: server
   name:
     description: The list of $name name strings.
     required: true
@@ -97,9 +104,10 @@ RETURN = """
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_freeipa_module import \
-    temp_kinit, temp_kdestroy, valid_creds, api_connect, api_command, \
+from ansible.module_utils.ansible_freeipa_module import (
+    CCache, api_command, connect_to_api, disconnect_from_api,
     compare_args_ipa, module_params_get, gen_add_del_lists
+)
 import six
 
 if six.PY3:
@@ -137,6 +145,8 @@ def main():
             # general
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", required=False, no_log=True),
+            ipa_context=dict(type="str", required=False, default="server",
+                             choices=["server", "client"]),
 
             name=dict(type="list", aliases=["API_PARAMETER_NAME"],
                       default=None, required=True),
@@ -159,9 +169,6 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
     names = module_params_get(ansible_module, "name")
 
     # present
@@ -200,13 +207,9 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
+    ccache = CCache(None, None)
     try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+        ccache = connect_to_api(ansible_module)
 
         commands = []
         for name in names:
@@ -324,7 +327,7 @@ def main():
         ansible_module.fail_json(msg=str(e))
 
     finally:
-        temp_kdestroy(ccache_dir, ccache_name)
+        disconnect_from_api(ansible_module, ccache)
 
     # Done
 
