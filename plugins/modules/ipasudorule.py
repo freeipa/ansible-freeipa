@@ -53,7 +53,7 @@ options:
     required: false
     choices: ["all", ""]
     aliases: ["usercat"]
-  usergroup:
+  group:
     description: List of user groups assigned to the sudo rule.
     required: false
   runasgroupcategory:
