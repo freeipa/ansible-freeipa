@@ -66,11 +66,29 @@ options:
     type: list
     elements: dict
     aliases: ["automemberexclusiveregex"]
+    options:
+      key:
+        description: The attribute of the regex
+        type: str
+        required: true
+      expression:
+        description: The expression of the regex
+        type: str
+        required: true
   inclusive:
     description: List of dictionaries containing the attribute and expression.
     type: list
     elements: dict
     aliases: ["automemberinclusiveregex"]
+    options:
+      key:
+        description: The attribute of the regex
+        type: str
+        required: true
+      expression:
+        description: The expression of the regex
+        type: str
+        required: true
   action:
     description: Work on service or member level
     default: service
@@ -174,10 +192,20 @@ def main():
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", required=False, no_log=True),
 
-            inclusive=dict(type="list", aliases=[
-                           "automemberinclusiveregex"], default=None),
+            inclusive=dict(type="list",
+                           aliases=["automemberinclusiveregex"], default=None,
+                           options=dict(
+                               key=dict(type="str", required=True),
+                               expression=dict(type="str", required=True)
+                           ),
+                           elements="dict", required=False),
             exclusive=dict(type="list", aliases=[
-                           "automemberexclusiveregex"], default=None),
+                           "automemberexclusiveregex"], default=None,
+                           options=dict(
+                               key=dict(type="str", required=True),
+                               expression=dict(type="str", required=True)
+                           ),
+                           elements="dict", required=False),
             name=dict(type="list", aliases=["cn"],
                       default=None, required=True),
             description=dict(type="str", default=None),
