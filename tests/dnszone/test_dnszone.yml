@@ -11,6 +11,24 @@
     include_tasks: env_setup.yml
 
   # Tests
+  - name: Check if zone is present, when in shouldn't be.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: present
+    check_mode: yes
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Check if zone is present again, when in shouldn't be.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: present
+    check_mode: yes
+    register: result
+    failed_when: not result.changed or result.failed
+
   - name: Ensure zone is present.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
@@ -18,6 +36,15 @@
       state: present
     register: result
     failed_when: not result.changed or result.failed
+
+  - name: Check if zone is present, when in should be.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      state: present
+    check_mode: yes
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: Ensure zone is present, again.
     ipadnszone:
