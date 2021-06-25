@@ -72,9 +72,9 @@ options:
     elements: dict
     aliases: ["automemberinclusiveregex"]
   action:
-    description: Work on service or member level
-    default: service
-    choices: ["member", "service"]
+    description: Work on automember or member level
+    default: automember
+    choices: ["member", "automember"]
   state:
     description: State to ensure
     default: present
@@ -183,8 +183,8 @@ def main():
             description=dict(type="str", default=None),
             automember_type=dict(type='str', required=False,
                                  choices=['group', 'hostgroup']),
-            action=dict(type="str", default="service",
-                        choices=["member", "service"]),
+            action=dict(type="str", default="automember",
+                        choices=["member", "automember"]),
             state=dict(type="str", default="present",
                        choices=["present", "absent", "rebuild"]),
             users=dict(type="list", default=None),
@@ -250,7 +250,7 @@ def main():
             if state == 'present':
                 args = gen_args(description, automember_type)
 
-                if action == "service":
+                if action == "automember":
                     if res_find is not None:
                         if not compare_args_ipa(ansible_module,
                                                 args,
@@ -273,7 +273,8 @@ def main():
 
                 elif action == "member":
                     if res_find is None:
-                        ansible_module.fail_json(msg="No service '%s'" % name)
+                        ansible_module.fail_json(
+                            msg="No automember '%s'" % name)
 
                     inclusive_add = transform_conditions(inclusive or [])
                     inclusive_del = []
@@ -309,14 +310,15 @@ def main():
                                      condition_args])
 
             elif state == 'absent':
-                if action == "service":
+                if action == "automember":
                     if res_find is not None:
                         commands.append([name, 'automember_del',
                                          {'type': to_text(automember_type)}])
 
                 elif action == "member":
                     if res_find is None:
-                        ansible_module.fail_json(msg="No service '%s'" % name)
+                        ansible_module.fail_json(
+                            msg="No automember '%s'" % name)
 
                     if inclusive is not None:
                         for _inclusive in transform_conditions(inclusive):
