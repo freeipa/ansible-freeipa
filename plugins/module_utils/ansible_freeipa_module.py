@@ -172,7 +172,7 @@ else:
         if ccache_dir is not None:
             shutil.rmtree(ccache_dir, ignore_errors=True)
 
-    def api_connect(context=None):
+    def api_connect(context=None, **kwargs):
         """
         Initialize IPA API with the provided context.
 
@@ -180,6 +180,9 @@ else:
             * `server` (default)
             * `ansible-freeipa`
             * `cli_installer`
+
+        Other options can also be provided through kwargs:
+            * ldap_cache: Enable/Disable LDAP cache in FreeIPA 4.9.4+.
         """
         env = Env()
         env._bootstrap()
@@ -191,7 +194,12 @@ else:
         if context is None:
             context = 'server'
 
-        api.bootstrap(context=context, debug=env.debug, log=None)
+        api.bootstrap(
+            context=context,
+            debug=env.debug,
+            log=None,
+            **kwargs
+        )
         api.finalize()
 
         if api.env.in_server:
