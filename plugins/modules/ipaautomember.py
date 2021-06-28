@@ -238,7 +238,7 @@ def main():
         if not valid_creds(ansible_module, ipaadmin_principal):
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
-        api_connect()
+        api_connect(ldap_cache=False)
 
         commands = []
 
