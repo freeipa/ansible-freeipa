@@ -385,7 +385,6 @@ def main():
         if ansible_module.check_mode:
             ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
 
-        errors = []
         for name, command, args in commands:
             try:
                 if name is None:
@@ -402,16 +401,13 @@ def main():
             except Exception as ex:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(ex)))
-            # Get all errors
-            if "failed" in result and len(result["failed"]) > 0:
-                for item in result["failed"]:
-                    failed_item = result["failed"][item]
-                    for member_type in failed_item:
-                        for member, failure in failed_item[member_type]:
-                            errors.append("%s: %s %s: %s" % (
-                                command, member_type, member, failure))
-        if len(errors) > 0:
-            ansible_module.fail_json(msg=", ".join(errors))
+
+            # result["failed"] is used only for INCLUDE_RE, EXCLUDE_RE
+            # if entries could not be added that are already there and
+            # it entries could not be removed that are not there.
+            # All other issues like invalid attributes etc. are handled
+            # as exceptions. Therefore the error section is not here as
+            # in other modules.
 
     except Exception as e:
         ansible_module.fail_json(msg=str(e))
