@@ -81,8 +81,7 @@
       ipaadmin_password: SomeADMINpassword
       state: absent
     register: result
-    ignore_errors: True
-    failed_when: (result is defined and result) or result.failed
+    failed_when: not result.failed or "'global_policy' can not be made absent." not in result.msg
 
   - name: Ensure absence of pwpolicies for group ops
     ipapwpolicy:
