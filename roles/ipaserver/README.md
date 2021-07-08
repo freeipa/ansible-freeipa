@@ -260,12 +260,12 @@ Certificate system Variables
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaserver_external_ca` | Generate a CSR for the IPA CA certificate to be signed by an external CA. (bool, default: false) | no
-`ipaserver_external_ca_type` | Type of the external CA. (choice: generic,ms-cs) | no
+`ipaserver_external_ca_type` | Type of the external CA. (choice: generic, ms-cs) | no
 `ipaserver_external_ca_profile` | Specify the certificate profile/template to use at the external CA. (string) | no
 `ipaserver_external_cert_files` | Files containing the IPA CA certificates and the external CA certificate chains (list of string) | no
 `ipaserver_subject_base` | The certificate subject base (default O=<realm-name>). RDNs are in LDAP order (most specific RDN first). (string) | no
 `ipaserver_ca_subject` | The CA certificate subject DN (default CN=Certificate Authority,O=<realm-name>). RDNs are in LDAP order (most specific RDN first). (string) | no
-`ipaserver_ca_signing_algorithm` | Signing algorithm of the IPA CA certificate. (choice: SHA1withRSA,SHA256withRSA,SHA512withRSA) | no
+`ipaserver_ca_signing_algorithm` | Signing algorithm of the IPA CA certificate. (choice: SHA1withRSA, SHA256withRSA, SHA512withRSA) | no
 
 DNS Variables
 -------------
@@ -280,7 +280,7 @@ Variable | Description | Required
 `ipaserver_forwarders` | Add DNS forwarders to the DNS configuration. (list of strings) | no
 `ipaserver_no_forwarders` | Do not add any DNS forwarders. Root DNS servers will be used instead. (bool, default: false) | no
 `ipaserver_auto_forwarders` | Add DNS forwarders configured in /etc/resolv.conf to the list of forwarders used by IPA DNS. (bool, default: false) | no
-`ipaserver_forward_policy` | DNS forwarding policy for global forwarders specified using other options. (choice: first|only) | no
+`ipaserver_forward_policy` | DNS forwarding policy for global forwarders specified using other options. (choice: first, only) | no
 `ipaserver_no_dnssec_validation` | Disable DNSSEC validation on this server. (bool, default: false) | no
 
 AD trust Variables
