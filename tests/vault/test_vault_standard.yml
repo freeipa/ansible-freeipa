@@ -125,6 +125,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: stdvault
+      continue: yes
       state: absent
     register: result
     failed_when: not result.changed or result.failed
@@ -133,6 +134,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: stdvault
+      continue: yes
       state: absent
     register: result
     failed_when: result.changed or result.failed

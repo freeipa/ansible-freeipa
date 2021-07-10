@@ -137,6 +137,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
+      continue: yes
       state: absent
     register: result
     failed_when: result.failed or not result.changed
@@ -145,6 +146,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
+      continue: yes
       state: absent
     register: result
     failed_when: result.failed or result.changed
@@ -292,6 +294,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
+      continue: no
       state: absent
     register: result
     failed_when: result.failed or not result.changed
@@ -300,6 +303,7 @@
     ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
+      continue: no
       state: absent
     register: result
     failed_when: result.failed or result.changed

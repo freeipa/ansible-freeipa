@@ -243,6 +243,7 @@ Variable | Description | Required
 `out` \| `datafile_out` | Path to file to store data retrieved from the vault. | no
 `action` | Work on vault or member level. It can be on of `member` or `vault` and defaults to `vault`. | no
 `state` | The state to ensure. It can be one of `present`, `absent` or `retrieved`, default: `present`. | no
+`continue` \| `delete_continue` | Continuous mode: Don't stop on errors. (bool) | no
 
 
 Return Values

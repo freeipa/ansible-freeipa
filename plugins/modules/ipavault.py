@@ -351,7 +351,7 @@ def find_vault(module, name, username, service, shared):
 
 def gen_args(
         description, username, service, shared, vault_type, salt,
-        public_key, public_key_file):
+        public_key, public_key_file, delete_continue):
     _args = {}
     vault_type = vault_type or to_text("symmetric")
 
@@ -364,6 +364,8 @@ def gen_args(
         _args['service'] = service
     if shared is not None:
         _args['shared'] = shared
+    if delete_continue is not None:
+        _args['continue'] = delete_continue
 
     if vault_type == "symmetric":
         if salt is not None:
@@ -449,10 +451,10 @@ def check_parameters(  # pylint: disable=unused-argument
         groups, services, owners, ownergroups, ownerservices, vault_type, salt,
         password, password_file, public_key, public_key_file, private_key,
         private_key_file, vault_data, datafile_in, datafile_out, new_password,
-        new_password_file):
+        new_password_file, delete_continue):
     invalid = []
     if state == "present":
-        invalid = ['datafile_out']
+        invalid = ['datafile_out', 'delete_continue']
 
         if all([password, password_file]) \
            or all([new_password, new_password_file]):
@@ -476,11 +478,14 @@ def check_parameters(  # pylint: disable=unused-argument
             invalid.extend(['users', 'groups', 'services', 'owners',
                             'ownergroups', 'ownerservices', 'password',
                             'password_file', 'public_key', 'public_key_file'])
+        else:
+            invalid.append("delete_continue")
 
     elif state == "retrieved":
         invalid = ['description', 'salt', 'datafile_in', 'users', 'groups',
                    'owners', 'ownergroups', 'public_key', 'public_key_file',
-                   'vault_data', 'new_password', 'new_password_file']
+                   'vault_data', 'new_password', 'new_password_file',
+                   'delete_continue']
         if action == 'member':
             module.fail_json(
                 msg="State `retrieved` do not support action `member`.")
@@ -595,7 +600,8 @@ def main():
 
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
-
+            delete_continue=dict(type="bool", aliases=["continue"],
+                                 required=False),
             description=dict(required=False, type="str", default=None),
             vault_type=dict(type="str", aliases=["ipavaulttype"],
                             default=None, required=False,
@@ -702,6 +708,7 @@ def main():
 
     action = module_params_get(ansible_module, "action")
     state = module_params_get(ansible_module, "state")
+    delete_continue = module_params_get(ansible_module, "delete_continue")
 
     # Check parameters
 
@@ -724,10 +731,12 @@ def main():
 
     check_parameters(ansible_module, state, action, description, username,
                      service, shared, users, groups, services, owners,
-                     ownergroups, ownerservices, vault_type, salt, password,
-                     password_file, public_key, public_key_file, private_key,
-                     private_key_file, vault_data, datafile_in, datafile_out,
-                     new_password, new_password_file)
+                     ownergroups, ownerservices, vault_type, salt,
+                     password, password_file, public_key, public_key_file,
+                     private_key, private_key_file, vault_data,
+                     datafile_in, datafile_out, new_password,
+                     new_password_file, delete_continue)
+
     # Init
 
     changed = False
@@ -758,7 +767,7 @@ def main():
 
             # Generate args
             args = gen_args(description, username, service, shared, vault_type,
-                            salt, public_key, public_key_file)
+                            salt, public_key, public_key_file, delete_continue)
             pwdargs = None
 
             # Create command
