@@ -127,7 +127,7 @@ Variable | Description | Required
 `automember_type` | Grouping to which the rule applies. It can be one of `group`, `hostgroup`. | yes
 `inclusive` | List of dictionaries in the format of `{'key': attribute, 'expression': inclusive_regex}` | no
 `exclusive` | List of dictionaries in the format of `{'key': attribute, 'expression': exclusive_regex}` | no
-`action` | Work on automember or member level. It can be on of `member` or `automember` and defaults to `automember`. | no
+`action` | Work on automember or member level. It can be one of `member` or `automember` and defaults to `automember`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, default: `present`. | no
 
 
