@@ -185,6 +185,15 @@ def transform_conditions(conditions):
     return transformed
 
 
+def check_condition_keys(ansible_module, conditions, aciattrs):
+    if conditions is None:
+        return
+    for condition in conditions:
+        if condition["key"] not in aciattrs:
+            ansible_module.fail_json(
+                msg="Invalid automember condition key '%s'" % condition["key"])
+
+
 def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
@@ -273,6 +282,28 @@ def main():
         for name in names:
             # Make sure automember rule exists
             res_find = find_automember(ansible_module, name, automember_type)
+
+            # Check inclusive and exclusive conditions
+            if inclusive is not None or exclusive is not None:
+                # automember_type is either "group" or "hostgorup"
+                if automember_type == "group":
+                    _type = "user"
+                elif automember_type == "hostgroup":
+                    _type = "host"
+                else:
+                    ansible_module.fail_json(
+                        msg="Bad automember type '%s'" % automember_type)
+
+                try:
+                    aciattrs = api_command(
+                        ansible_module, "json_metadata", to_text(_type), {}
+                    )['objects'][_type]['aciattrs']
+                except Exception as ex:
+                    ansible_module.fail_json(
+                        msg="%s: %s: %s" % ("json_metadata", _type, str(ex)))
+
+                check_condition_keys(ansible_module, inclusive, aciattrs)
+                check_condition_keys(ansible_module, exclusive, aciattrs)
 
             # Create command
             if state == 'present':
