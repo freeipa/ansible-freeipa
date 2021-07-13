@@ -164,6 +164,34 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure testgroup group automember conditions fails on invalid inclusive key
+    ipaautomember:
+      ipaadmin_principal: admin
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      automember_type: group
+      inclusive:
+        - key: cns
+          expression: 'foo'
+      action: member
+    register: result
+    failed_when: result.changed or not result.failed or
+                 "Invalid automember condition key 'cns'" not in result.msg
+
+  - name: Ensure testgroup group automember conditions fails on invalid exlusive key
+    ipaautomember:
+      ipaadmin_principal: admin
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup
+      automember_type: group
+      exclusive:
+        - key: cns
+          expression: 'foo'
+      action: member
+    register: result
+    failed_when: result.changed or not result.failed or
+                 "Invalid automember condition key 'cns'" not in result.msg
+
   - name: Ensure testhostgroup hostgroup automember rule is present
     ipaautomember:
       ipaadmin_password: SomeADMINpassword
@@ -281,6 +309,35 @@
           expression: 'cn'
     register: result
     failed_when: result.changed or result.failed
+
+
+  - name: Ensure testhostgroup hostgroup automember conditions fails on invalid inclusive key
+    ipaautomember:
+      ipaadmin_principal: admin
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      automember_type: hostgroup
+      inclusive:
+        - key: cns
+          expression: 'foo'
+      action: member
+    register: result
+    failed_when: result.changed or not result.failed or
+                 "Invalid automember condition key 'cns'" not in result.msg
+
+  - name: Ensure testhostgroup hostgroup automember conditions fails on invalid exlusive key
+    ipaautomember:
+      ipaadmin_principal: admin
+      ipaadmin_password: SomeADMINpassword
+      name: testhostgroup
+      automember_type: hostgroup
+      exclusive:
+        - key: cns
+          expression: 'foo'
+      action: member
+    register: result
+    failed_when: result.changed or not result.failed or
+                 "Invalid automember condition key 'cns'" not in result.msg
 
   # CLEANUP TEST ITEMS
 
