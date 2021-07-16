@@ -50,6 +50,7 @@ options:
   rename:
     description: Rename the role object.
     required: false
+    aliases: ["new_name"]
   user:
     description: List of users.
     required: false
@@ -430,8 +431,8 @@ def create_module():
                       required=True),
             # present
             description=dict(required=False, type="str", default=None),
-            rename=dict(required=False, type="str", default=None),
-
+            rename=dict(required=False, type="str", default=None,
+                        aliases=["new_name"]),
             # members
             privilege=dict(required=False, type='list', default=None),
             user=dict(required=False, type='list', default=None),

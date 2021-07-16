@@ -247,7 +247,7 @@ Variable | Description | Required
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `name` \| `cn` | The list of role name strings. | yes
 `description` | A description for the role. | no
-`rename` | Rename the role object. | no
+`rename` \| `new_name` | Rename the role object. | no
 `privilege` | Privileges associated to this role. | no
 `user` | List of users to be assigned or not assigned to the role. | no
 `group` | List of groups to be assigned or not assigned to the role. | no
