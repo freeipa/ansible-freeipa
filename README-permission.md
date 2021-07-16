@@ -175,7 +175,7 @@ Variable | Description | Required
 `targetgroup` | User group to apply permissions to (sets target) | no
 `object_type` | Type of IPA object (sets subtree and objectClass targetfilter) | no
 `no_members` | Suppress processing of membership | no
-`rename` | Rename the permission object | no
+`rename` \| `new_name` | Rename the permission object | no
 `action` | Work on permission or member level. It can be on of `member` or `permission` and defaults to `permission`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, or `renamed` default: `present`. | no
 

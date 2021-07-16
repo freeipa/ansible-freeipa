@@ -102,6 +102,7 @@ options:
   rename:
     description: Rename the permission object
     required: false
+    aliases: ["new_name"]
   action:
     description: Work on permission or member privilege level.
     choices: ["permission", "member"]
@@ -226,8 +227,8 @@ def main():
             object_type=dict(type="str", aliases=["type"], default=None,
                              required=False),
             no_members=dict(type=bool, default=None, require=False),
-            rename=dict(type="str", default=None, required=False),
-
+            rename=dict(type="str", default=None, required=False,
+                        aliases=["new_name"]),
             action=dict(type="str", default="permission",
                         choices=["member", "permission"]),
             # state
