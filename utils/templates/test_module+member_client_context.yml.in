@@ -1,0 +1,117 @@
+---
+- name: Test $name
+  hosts: ipaclients
+  become: true
+
+  tasks:
+  - block:  # only execute tests if groups['ipaclients'] is defined.
+      # CLEANUP TEST ITEMS
+
+      - name: Ensure $name NAME is absent
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: client
+          name: NAME
+          state: absent
+
+      # CREATE TEST ITEMS
+
+      # TESTS
+      - name: Execute with server context in the client.
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: server
+          name: NAME
+        register: result
+        failed_when: not (result.failed and "No module named 'ipaserver'" in result.msg)
+
+      - name: Ensure $name NAME is present
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: client
+          name: NAME
+          # Add needed parameters here
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure $name NAME is present again
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: client
+          name: NAME
+          # Add needed parameters here
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure $name NAME member PARAMETER2 VALUE is present
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: client
+          name: NAME
+          PARAMETER2: VALUE
+          action: member
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure $name NAME member PARAMETER2 VALUE is present again
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: client
+          name: NAME
+          PARAMETER2: VALUE
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure $name NAME member PARAMETER2 VALUE is absent
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: client
+          name: NAME
+          PARAMETER2: VALUE
+          action: member
+          state: absent
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure $name NAME member PARAMETER2 VALUE is absent again
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: client
+          name: NAME
+          PARAMETER2: VALUE
+          action: member
+          state: absent
+        register: result
+        failed_when: result.changed or result.failed
+
+      # more tests here
+
+      - name: Ensure $name NAME is absent
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: client
+          name: NAME
+          state: absent
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure $name NAME is absent again
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: client
+          name: NAME
+          state: absent
+        register: result
+        failed_when: result.changed or result.failed
+
+      # CLEANUP TEST ITEMS
+
+      - name: Ensure $name NAME is absent
+        ipa$name:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: client
+          name: NAME
+          state: absent
+
+  when: groups['ipaclients'] is defined

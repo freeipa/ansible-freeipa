@@ -38,6 +38,18 @@ options:
   ipaadmin_password:
     description: The admin password.
     required: false
+  ipaapi_context:
+    description: |
+      The context in which the module will execute. Executing in a server
+      context is preferred, use `client` to execute in a client context if
+      the server cannot be accessed.
+    choices: ["server", "client"]
+    default: server.
+    required: false
+  ipaapi_ldap_cache:
+    description: Enable of disable the use of IPA API LDAP cache layer.
+    type: bool
+    required: false
   name:
     description: The list of $name name strings.
     required: true
@@ -137,6 +149,9 @@ def main():
             # general
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", required=False, no_log=True),
+            ipaapi_context=dict(type="str", required=False, default="server",
+                                choices=["server", "client"]),
+            ipaapi_ldap_cache=dict(type="bool", required=False),
 
             name=dict(type="list", aliases=["API_PARAMETER_NAME"],
                       default=None, required=True),
@@ -162,6 +177,9 @@ def main():
     ipaadmin_principal = module_params_get(ansible_module,
                                            "ipaadmin_principal")
     ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
+    ipaapi_context = module_params_get(ansible_module, "ipaapi_context")
+    ipaapi_ldap_cache = module_params_get(ansible_module, "ipaapi_ldap_cache")
+
     names = module_params_get(ansible_module, "name")
 
     # present
@@ -206,7 +224,7 @@ def main():
         if not valid_creds(ansible_module, ipaadmin_principal):
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
-        api_connect()
+        api_connect(context=ipaapi_context, ldap_cache=ipaapi_ldap_cache)
 
         commands = []
         for name in names:

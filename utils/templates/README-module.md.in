@@ -84,6 +84,8 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred, use `client` to execute in a client context if the server cannot be accessed. Valid values are `server`, `client`. Default to `server`. | no
+`ipaapi_ldap_cache` | Enable of disable the use of IPA API LDAP cache layer. (bool) | no
 `name` \| `ALIAS` | The list of $name name strings. | yes
 `PARAMETER1` \| `API_PARAMETER_NAME` | DESCRIPTION | BOOL
 `PARAMETER2` \| `API_PARAMETER_NAME` | DESCRIPTION | BOOL
