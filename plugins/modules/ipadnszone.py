@@ -523,6 +523,7 @@ def get_argument_spec():
         ),
         ipaadmin_principal=dict(type="str", default="admin"),
         ipaadmin_password=dict(type="str", required=False, no_log=True),
+        ipaapi_ldap_cache=dict(type="bool", required=False),
         name=dict(
             type="list", default=None, required=False, aliases=["zone_name"]
         ),
