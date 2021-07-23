@@ -45,7 +45,7 @@ Example playbook to make sure $name "NAME" is present:
 ---
 - name: Playbook to manage IPA $name.
   hosts: ipaserver
-  become: yes
+  become: no
 
   tasks:
   - ipa$name:
@@ -61,7 +61,7 @@ Example playbook to make sure $name "NAME" is absent:
 ---
 - name: Playbook to manage IPA $name.
   hosts: ipaserver
-  become: yes
+  become: no
 
   tasks:
   - ipa$name:

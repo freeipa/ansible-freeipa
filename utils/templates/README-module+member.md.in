@@ -45,7 +45,7 @@ Example playbook to make sure $name "NAME" is present:
 ---
 - name: Playbook to manage IPA $name.
   hosts: ipaserver
-  become: yes
+  become: no
 
   tasks:
   - ipa$name:
@@ -60,7 +60,7 @@ Example playbook to make sure $name "NAME" member PARAMETER2 VALUE is present:
 ---
 - name: Playbook to manage IPA $name PARAMETER2 member.
   hosts: ipaserver
-  become: yes
+  become: no
 
   tasks:
   - ipa$name:
@@ -78,7 +78,7 @@ Example playbook to make sure $name "NAME" member PARAMETER2 VALUE is absent:
 ---
 - name: Playbook to manage IPA $name PARAMETER2 member.
   hosts: ipaserver
-  become: yes
+  become: no
 
   tasks:
   - ipa$name:
@@ -96,7 +96,7 @@ Example playbook to make sure $name "NAME" is absent:
 ---
 - name: Playbook to manage IPA $name.
   hosts: ipaserver
-  become: yes
+  become: no
 
   tasks:
   - ipa$name:
