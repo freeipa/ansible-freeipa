@@ -742,7 +742,7 @@ def main():
             if ccache_name is not None:
                 os.environ["KRB5CCNAME"] = ccache_name
 
-        api_connect(context='ansible-freeipa')
+        api_connect(context='client')
 
         commands = []
 
