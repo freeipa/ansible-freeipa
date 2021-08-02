@@ -1,2 +1,3 @@
 # vars/Debian.yml
 ipaclient_packages: [ "freeipa-client" ]
+ansible_python_interpreter: '/usr/bin/python2'
