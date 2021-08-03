@@ -6,6 +6,7 @@
   with_first_found:
     - "{{ role_path }}/vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_version'] }}.yml"
     - "{{ role_path }}/vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
+    - "{{ role_path }}/vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['ansible_distribution_release'] }}.yml"
     - "{{ role_path }}/vars/{{ ansible_facts['distribution'] }}.yml"
     - "{{ role_path }}/vars/default.yml"
 
