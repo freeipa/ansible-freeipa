@@ -11,7 +11,7 @@
   #
   # To avoid this problem we create the directories before starting IPA.
   - name: Ensure lock dirs for DS exists
-    file:
+    ansible.builtin.file:
       state: directory
       owner: dirsrv
       group: dirsrv
@@ -22,6 +22,6 @@
       - /var/lock/dirsrv/slapd-TEST-LOCAL/
 
   - name: Ensure IPA server is up an running
-    service:
+    ansible.builtin.service:
       name: ipa
       state: started

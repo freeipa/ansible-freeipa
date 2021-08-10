@@ -11,7 +11,7 @@ parameters:
     default: centos-8
   - name: ansible_version
     type: string
-    default: ">=2.9,<2.10"
+    default: ""
   - name: python_version
     type: string
     default: 3.6
@@ -34,8 +34,8 @@ jobs:
         "ansible${{ parameters.ansible_version }}"
     displayName: Install molecule and Ansible
 
-  - script: |
-      ansible-galaxy collection install community.docker
+  - script: ansible-galaxy collection install community.docker ansible.posix
+    displayName: Install Ansible collections
 
   - script: pip install -r requirements-tests.txt
     displayName: Install dependencies

@@ -1,7 +1,7 @@
 ---
 # IPA depends on IPv6 and without it dirsrv service won't start.
 - name: Ensure IPv6 is ENABLED
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
     sysctl_set: yes
@@ -19,14 +19,14 @@
 #   This is needed in some IPA versions in order to get KRA enabled.
 #   See https://pagure.io/freeipa/issue/7906 for more information.
 - name: stat protected_regular
-  stat:
+  ansible.builtin.stat:
     path: /proc/sys/fs/protected_regular
   register: result
 
 - name: Ensure fs.protected_regular is disabled
-  sysctl:
+  ansible.posix.sysctl:
     name: fs.protected_regular
-    value: '0'
+    value: 0
     sysctl_set: yes
     state: present
     reload: yes

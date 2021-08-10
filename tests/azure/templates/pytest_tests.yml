@@ -1,15 +1,15 @@
 ---
 parameters:
-- name: build_number
-  type: string
-- name: scenario
-  type: string
-- name: ansible_version
-  type: string
-  default: ">=2.9,<2.10"
-- name: python_version
-  type: string
-  default: 3.6
+  - name: build_number
+    type: string
+  - name: scenario
+    type: string
+  - name: ansible_version
+    type: string
+    default: ""
+  - name: python_version
+    type: string
+    default: 3.6
 
 jobs:
 - job: Test_PyTests
@@ -26,8 +26,8 @@ jobs:
         "ansible${{ parameters.ansible_version }}"
     displayName: Install molecule and Ansible
 
-  - script: |
-      ansible-galaxy collection install community.docker
+  - script: ansible-galaxy collection install community.docker ansible.posix
+    displayName: Install Ansible collections
 
   - script: pip install -r requirements-tests.txt
     displayName: Install dependencies
