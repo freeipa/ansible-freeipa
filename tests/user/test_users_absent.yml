@@ -12,8 +12,13 @@
     include_vars:
       file: users.json
 
+  - name: Create dict with user names
+    set_fact:
+      user_names: "{{ user_names | default([]) + [{ 'name': item.name }] }}"
+    loop: "{{ users }}"
+
   - name: Users absent len:{{ users | length }}
     ipauser:
       ipaadmin_password: SomeADMINpassword
-      users: "{{ users | json_query('[*].{name: name}') }}"
+      users: "{{ user_names }}"
       state: absent
