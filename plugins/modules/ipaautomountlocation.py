@@ -44,6 +44,10 @@ options:
     description: The automount location to be managed
     required: true
     aliases: ["cn","location"]
+  continue:
+    description: |
+      Continuous mode: Don't stop on errors. Valid only if `state: absent`.
+    type: bool
   state:
     description: State to ensure
     required: false
@@ -92,6 +96,12 @@ class AutomountLocation(FreeIPABaseModule):
         if len(self.ipa_params.name) == 0:
             self.fail_json(msg="At least one location must be provided.")
 
+        invalid = []
+        if self.ipa_params.state != "absent":
+            invalid = ["delete_continue"]
+
+        self.check_invalid_params(invalid)
+
     def define_ipa_commands(self):
 
         for location_name in self.ipa_params.name:
@@ -133,6 +143,7 @@ def main():
                       required=True
                       ),
         ),
+        support_delete_continue=True,
     )
     ipa_module.ipa_run()
 

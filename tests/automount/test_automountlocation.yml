@@ -102,3 +102,38 @@
       state: absent
     register: result
     failed_when: result.changed or result.failed
+
+  - name: Ensure automount location location is present.
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation_01
+      state: present
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure automount location is present, with wrong `continue` parameter.
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation_01
+      continue: yes
+      state: present
+    register: result
+    failed_when: not result.failed or "Cannot use argument `delete_continue` with state `present`" not in result.msg
+
+  - name: Ensure automount location is absent, with delete_continue.
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation_01
+      continue: yes
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure automount location is absent, with delete_continue, again.
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestLocation_01
+      continue: yes
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
