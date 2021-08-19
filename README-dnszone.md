@@ -228,6 +228,7 @@ Variable | Description | Required
 `nsec3param_rec`| NSEC3PARAM record for zone in format: hash_algorithm flags iterations salt | no
 `skip_overlap_check`| Force DNS zone creation even if it will overlap with an existing zone | no
 `skip_nameserver_check` | Force DNS zone creation even if nameserver is not resolvable | no
+`continue` \| `delete_continue` | Continuous mode: Don't stop on errors. Valid only if `state: absent`. (bool) | no
 
 
 Return Values

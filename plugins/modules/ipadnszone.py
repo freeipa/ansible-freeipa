@@ -146,6 +146,10 @@ options:
     description: Force DNS zone creation even if nameserver is not resolvable
     required: false
     type: bool
+  continue:
+    description: |
+      Continuous mode: Don't stop on errors. Valid only if `state: absent`.
+    type: bool
 """  # noqa: E501
 
 EXAMPLES = """
@@ -434,17 +438,13 @@ class DNSZoneModule(FreeIPABaseModule):
         return self.ipa_params.name
 
     def check_ipa_params(self):
-        if not self.ipa_params.name and not self.ipa_params.name_from_ip:
-            self.fail_json(
-                msg="Either `name` or `name_from_ip` must be provided."
-            )
-        if self.ipa_params.state != "present" and self.ipa_params.name_from_ip:
-            self.fail_json(
-                msg=(
-                    "Cannot use argument `name_from_ip` with state `%s`."
-                    % self.ipa_params.state
-                )
-            )
+        invalid = []
+        if self.ipa_params.state != "present":
+            invalid = ["name_from_ip"]
+        if self.ipa_params.state != "absent":
+            invalid = ["delete_continue"]
+
+        self.check_invalid_params(invalid)
 
     def define_ipa_commands(self):
         for zone_name in self.get_zone_names():
@@ -567,6 +567,7 @@ def get_argument_spec():
 
 def main():
     DNSZoneModule(
+        support_delete_continue=True,
         argument_spec=get_argument_spec(),
         mutually_exclusive=[["name", "name_from_ip"]],
         required_one_of=[["name", "name_from_ip"]],
