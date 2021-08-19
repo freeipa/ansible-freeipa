@@ -614,8 +614,37 @@ else:
         ipa_param_mapping = None
 
         def __init__(self, *args, **kwargs):
+            """
+            Initialize ansible-freeipa module.
+
+            Along with all paramaters accepted by Ansible's AnsibleModule
+            constructor, the following named parameters can be used to
+            configure the FreeIPABaseModule object:
+
+            - support_delete_continue: bool: Add required configuration for
+              'delete_continue' attribute when calling FreeIPA "*-del" API
+              functions. Testing usage of 'continue' or 'delete_continue'
+              only when `state` is `absent` in 'check_ipa_params()' is
+              strongly suggested.
+            """
+            argument_spec = {}
+            # Add FreeIPABaseModule default configuration to argument_spec
+            if kwargs.get("support_delete_continue"):
+                del kwargs["support_delete_continue"]
+                self.ipa_param_mapping["continue"] = "delete_continue"
+                argument_spec["delete_continue"] = dict(
+                    type='bool', aliases=["continue"],
+                    required=False, default=None
+                )
+            # User argument_spec must override default configuration.
+            if "argument_spec" in kwargs:
+                argument_spec.update(kwargs.get("argument_spec", {}))
+                del kwargs["argument_spec"]
+
             # pylint: disable=super-with-arguments
-            super(FreeIPABaseModule, self).__init__(*args, **kwargs)
+            super(FreeIPABaseModule, self).__init__(
+                *args, argument_spec=argument_spec, **kwargs
+            )
 
             # Attributes to store kerberos credentials (if needed)
             self.ccache_dir = None
@@ -691,6 +720,17 @@ else:
 
             return args
 
+        def check_invalid_params(self, invalid):
+            """Check if any invalid parameter was used for current `state`."""
+            for arg in invalid:
+                if self.ipa_params.get(arg) is not None:
+                    self.fail_json(
+                        msg=(
+                            "Cannot use argument `%s` with state `%s`."
+                            % (arg, self.ipa_params.state)
+                        )
+                    )
+
         def check_ipa_params(self):
             """Validate ipa_params before command is called."""
             pass  # pylint: disable=unnecessary-pass
@@ -722,7 +762,6 @@ else:
             """
             principal = self.ipa_params.ipaadmin_principal
             password = self.ipa_params.ipaadmin_password
-
             try:
                 if not valid_creds(self, principal):
                     self.ccache_dir, self.ccache_name = temp_kinit(
