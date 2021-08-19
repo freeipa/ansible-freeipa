@@ -159,7 +159,8 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get, gen_add_del_lists, gen_add_list, gen_intersection_list
+    module_params_get, gen_add_del_lists, gen_add_list, \
+    gen_intersection_list, api_get_domain, ensure_fqdn
 
 
 def find_hbacrule(module, name):
@@ -324,6 +325,14 @@ def main():
             ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
                                                  ipaadmin_password)
         api_connect()
+
+        # Get default domain
+        default_domain = api_get_domain()
+
+        # Ensure fqdn host names, use default domain for simple names
+        if host is not None:
+            _host = [ensure_fqdn(x, default_domain) for x in host]
+            host = _host
 
         commands = []
 
