@@ -84,7 +84,6 @@ Example playbook to create a DNS zone with all currently supported variables:
         - ip_address: 8.8.8.8
         - ip_address: 8.8.4.4
           port: 52
-      serial: 1234
       refresh: 3600
       retry: 900
       expire: 1209600
@@ -218,7 +217,6 @@ Variable | Description | Required
 `dnssec`| Allow inline DNSSEC signing of records in the zone | no
 `allow_transfer`| List of IP addresses or networks which are allowed to transfer the zone | no
 `allow_query`| List of IP addresses or networks which are allowed to issue queries | no
-`serial`| SOA record serial number | no
 `refresh`| SOA record refresh time | no
 `retry`| SOA record retry time | no
 `expire`| SOA record expire time | no
