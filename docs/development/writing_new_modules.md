@@ -1,7 +1,8 @@
 # Writing a new Ansible FreeIPA module
 
 ## Minimum requirements
-A ansible-freeipa module should have:
+
+An ansible-freeipa module should have:
 
 * Code:
   * A module file placed in `plugins/modules/ipa<module_name>.py`
