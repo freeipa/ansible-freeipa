@@ -90,12 +90,12 @@ if [ -f "plugins/modules/ipa$name.py" ]; then
         echo "WARNING: Overwriting module plugins/modules/ipa$name.py"
     fi
 fi
-if [ -f "README-$name.md" ]; then
+if [ -f "docs/modules/$name.md" ]; then
     if [ $force == 0 ]; then
-        echo "ERROR: The module docs file README-$name.md already exists"
+        echo "ERROR: The module docs file 'docs/modules/$name.md' already exists"
         exit 0
     else
-        echo "WARNING: Overwriting module docs file README-$name.md"
+        echo "WARNING: Overwriting module docs file docs/modules/$name.md"
     fi
 fi
 if [ -f "playbooks/$name" ]; then
@@ -160,7 +160,7 @@ template $src $dest/ipa$name.py
 
 src=README-module.md.in
 [ $member == 1 ] && src=README-module+member.md.in
-template $src README-$name.md
+template $src docs/modules/$name.md
 
 # PLAYBOOKS
 
