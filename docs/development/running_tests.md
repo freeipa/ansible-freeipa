@@ -12,7 +12,7 @@ Some other requirements:
  * IPA admin password must be `SomeADMINpassword`.
  * Directory Server admin password must be `SomeDMpassword`.
 
-To provide broader test coverage, `ipaserver` should be configured with DNS and KRA support, and playbook tests are written based on this configuration. Without such support, some tests are expected to fail. Use a different configuration to evaluate those scenarios. See also [ipaserver role](../roles/ipaserver/README.md).
+To provide broader test coverage, `ipaserver` should be configured with DNS and KRA support, and playbook tests are written based on this configuration. Without such support, some tests are expected to fail. Use a different configuration to evaluate those scenarios. See also [ipaserver role](../roles/ipaserver.md).
 
 ## Running the tests
 
