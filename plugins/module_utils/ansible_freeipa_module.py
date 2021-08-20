@@ -370,6 +370,14 @@ else:
     def module_params_get(module, name):
         return _afm_convert(module.params.get(name))
 
+    def api_get_domain():
+        return api.env.domain
+
+    def ensure_fqdn(name, domain):
+        if "." not in name:
+            return "%s.%s" % (name, domain)
+        return name
+
     def api_get_realm():
         return api.env.realm
 

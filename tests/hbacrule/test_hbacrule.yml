@@ -580,6 +580,28 @@
     register: result
     failed_when: result.changed or result.failed
 
+  # ENSURE SIMPLE HOSTNAMES MATCH
+
+  - name: Ensure HBAC rule hbacrule01 simple host members are usable
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: hbacrule01
+      host:
+      - "testhost01"
+      - "testhost03"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure HBAC rule hbacrule01 simple host members are usable again (and match)
+    ipahbacrule:
+      ipaadmin_password: SomeADMINpassword
+      name: hbacrule01
+      host:
+      - "testhost01"
+      - "testhost03"
+    register: result
+    failed_when: result.changed or result.failed
+
   # CLEANUP TEST ITEMS
 
   - name: Ensure test HBAC rule hbacrule01 is absent
