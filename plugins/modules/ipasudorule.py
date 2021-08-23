@@ -190,7 +190,7 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
     temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get, gen_add_del_lists
+    module_params_get, gen_add_del_lists, gen_add_list, gen_intersection_list
 
 
 def find_sudorule(module, name):
@@ -579,6 +579,58 @@ def main():
                     if res_find is None:
                         ansible_module.fail_json(msg="No sudorule '%s'" % name)
 
+                    # Generate add lists for host, hostgroup, user, group,
+                    # allow_sudocmd, allow_sudocmdgroup, deny_sudocmd,
+                    # deny_sudocmdgroup, sudooption, runasuser, runasgroup
+                    # and res_find to only try to add the items that not in
+                    # the sudorule already
+                    if host is not None and \
+                       "memberhost_host" in res_find:
+                        host = gen_add_list(
+                            host, res_find["memberhost_host"])
+                    if hostgroup is not None and \
+                       "memberhost_hostgroup" in res_find:
+                        hostgroup = gen_add_list(
+                            hostgroup, res_find["memberhost_hostgroup"])
+                    if user is not None and \
+                       "memberuser_user" in res_find:
+                        user = gen_add_list(
+                            user, res_find["memberuser_user"])
+                    if group is not None and \
+                       "memberuser_group" in res_find:
+                        group = gen_add_list(
+                            group, res_find["memberuser_group"])
+                    if allow_sudocmd is not None and \
+                       "memberallowcmd_sudocmd" in res_find:
+                        allow_sudocmd = gen_add_list(
+                            allow_sudocmd, res_find["memberallowcmd_sudocmd"])
+                    if allow_sudocmdgroup is not None and \
+                       "memberallowcmd_sudocmdgroup" in res_find:
+                        allow_sudocmdgroup = gen_add_list(
+                            allow_sudocmdgroup,
+                            res_find["memberallowcmd_sudocmdgroup"])
+                    if deny_sudocmd is not None and \
+                       "memberdenycmd_sudocmd" in res_find:
+                        deny_sudocmd = gen_add_list(
+                            deny_sudocmd, res_find["memberdenycmd_sudocmd"])
+                    if deny_sudocmdgroup is not None and \
+                       "memberdenycmd_sudocmdgroup" in res_find:
+                        deny_sudocmdgroup = gen_add_list(
+                            deny_sudocmdgroup,
+                            res_find["memberdenycmd_sudocmdgroup"])
+                    if sudooption is not None and \
+                       "ipasudoopt" in res_find:
+                        sudooption = gen_add_list(
+                            sudooption, res_find["ipasudoopt"])
+                    if runasuser is not None and \
+                       "ipasudorunas_user" in res_find:
+                        runasuser = gen_add_list(
+                            runasuser, res_find["ipasudorunas_user"])
+                    if runasgroup is not None and \
+                       "ipasudorunasgroup_group" in res_find:
+                        runasgroup = gen_add_list(
+                            runasgroup, res_find["ipasudorunasgroup_group"])
+
                     # Add hosts and hostgroups
                     if host is not None or hostgroup is not None:
                         commands.append([name, "sudorule_add_host",
@@ -612,12 +664,12 @@ def main():
                                           }])
 
                     # Add RunAS Users
-                    if runasuser is not None:
+                    if runasuser is not None and len(runasuser) > 0:
                         commands.append([name, "sudorule_add_runasuser",
                                          {"user": runasuser}])
 
                     # Add RunAS Groups
-                    if runasgroup is not None:
+                    if runasgroup is not None and len(runasgroup) > 0:
                         commands.append([name, "sudorule_add_runasgroup",
                                          {"group": runasgroup}])
 
@@ -637,6 +689,83 @@ def main():
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(msg="No sudorule '%s'" % name)
+
+                    # Generate intersection lists for host, hostgroup, user,
+                    # group, allow_sudocmd, allow_sudocmdgroup, deny_sudocmd
+                    # deny_sudocmdgroup, sudooption, runasuser, runasgroup
+                    # and res_find to only try to remove the items that are
+                    # in sudorule
+                    if host is not None:
+                        if "memberhost_host" in res_find:
+                            host = gen_intersection_list(
+                                host, res_find["memberhost_host"])
+                        else:
+                            host = None
+                    if hostgroup is not None:
+                        if "memberhost_hostgroup" in res_find:
+                            hostgroup = gen_intersection_list(
+                                hostgroup, res_find["memberhost_hostgroup"])
+                        else:
+                            hostgroup = None
+                    if user is not None:
+                        if "memberuser_user" in res_find:
+                            user = gen_intersection_list(
+                                user, res_find["memberuser_user"])
+                        else:
+                            user = None
+                    if group is not None:
+                        if "memberuser_group" in res_find:
+                            group = gen_intersection_list(
+                                group, res_find["memberuser_group"])
+                        else:
+                            group = None
+                    if allow_sudocmd is not None:
+                        if "memberallowcmd_sudocmd" in res_find:
+                            allow_sudocmd = gen_intersection_list(
+                                allow_sudocmd,
+                                res_find["memberallowcmd_sudocmd"])
+                        else:
+                            allow_sudocmd = None
+                    if allow_sudocmdgroup is not None:
+                        if "memberallowcmd_sudocmdgroup" in res_find:
+                            allow_sudocmdgroup = gen_intersection_list(
+                                allow_sudocmdgroup,
+                                res_find["memberallowcmd_sudocmdgroup"])
+                        else:
+                            allow_sudocmdgroup = None
+                    if deny_sudocmd is not None:
+                        if "memberdenycmd_sudocmd" in res_find:
+                            deny_sudocmd = gen_intersection_list(
+                                deny_sudocmd,
+                                res_find["memberdenycmd_sudocmd"])
+                        else:
+                            deny_sudocmd = None
+                    if deny_sudocmdgroup is not None:
+                        if "memberdenycmd_sudocmdgroup" in res_find:
+                            deny_sudocmdgroup = gen_intersection_list(
+                                deny_sudocmdgroup,
+                                res_find["memberdenycmd_sudocmdgroup"])
+                        else:
+                            deny_sudocmdgroup = None
+                    if sudooption is not None:
+                        if "ipasudoopt" in res_find:
+                            sudooption = gen_intersection_list(
+                                sudooption, res_find["ipasudoopt"])
+                        else:
+                            sudooption = None
+                    if runasuser is not None:
+                        if "ipasudorunas_user" in res_find:
+                            runasuser = gen_intersection_list(
+                                runasuser, res_find["ipasudorunas_user"])
+                        else:
+                            runasuser = None
+                    if runasgroup is not None:
+                        if "ipasudorunasgroup_group" in res_find:
+                            runasgroup = gen_intersection_list(
+                                runasgroup,
+                                res_find["ipasudorunasgroup_group"])
+                        else:
+                            runasgroup = None
 
                     # Remove hosts and hostgroups
                     if host is not None or hostgroup is not None:
@@ -733,16 +862,12 @@ def main():
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(ex)))
             # Get all errors
-            # All "already a member" and "not a member" failures in the
             # result are ignored. All others are reported.
             if "failed" in result and len(result["failed"]) > 0:
                 for item in result["failed"]:
                     failed_item = result["failed"][item]
                     for member_type in failed_item:
                         for member, failure in failed_item[member_type]:
-                            if "already a member" in failure \
-                               or "not a member" in failure:
-                                continue
                             errors.append("%s: %s %s: %s" % (
                                 command, member_type, member, failure))
         if len(errors) > 0:
