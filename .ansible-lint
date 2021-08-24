@@ -1,7 +1,14 @@
 exclude_paths:
-  - roles
-  - .tox
-  - .venv
+  - .ansible-freeipa-tests/
+  - .cache/
+  - .github/
+  - .pre-commit-config.yaml
+  - .tox/
+  - .venv/
+  - .yamllint
+  - molecule/
+  - tests/azure/
+
 
 parseable: true
 
