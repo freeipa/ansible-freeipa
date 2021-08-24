@@ -109,6 +109,22 @@ else:
     if six.PY3:
         unicode = str
 
+    # AnsibleModule argument specs for all modules
+    ipamodule_base_spec = dict(
+        ipaadmin_principal=dict(type="str", default="admin"),
+        ipaadmin_password=dict(type="str", required=False, no_log=True),
+    )
+
+    # Get ipamodule common vars as nonlocal
+    def get_ipamodule_base_vars(module):
+        ipaadmin_principal = module_params_get(module, "ipaadmin_principal")
+        ipaadmin_password = module_params_get(module, "ipaadmin_password")
+
+        return dict(
+            ipaadmin_principal=ipaadmin_principal,
+            ipaadmin_password=ipaadmin_password,
+        )
+
     def valid_creds(module, principal):  # noqa
         """Get valid credentials matching the princial, try GSSAPI first."""
         if "KRB5CCNAME" in os.environ:
