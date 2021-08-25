@@ -24,6 +24,7 @@ jobs:
         env:
           ANSIBLE_MODULE_UTILS: plugins/module_utils
           ANSIBLE_LIBRARY: plugins/modules
+          ANSIBLE_DOC_FRAGMENT_PLUGINS: plugins/doc_fragments
 
   yamllint:
     name: Verify yamllint

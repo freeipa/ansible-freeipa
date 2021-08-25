@@ -31,13 +31,9 @@ DOCUMENTATION = """
 module: ipalocation
 short description: Manage FreeIPA location
 description: Manage FreeIPA location
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal.
-    default: admin
-  ipaadmin_password:
-    description: The admin password.
-    required: false
   name:
     description: The list of location name strings.
     required: true
@@ -73,7 +69,8 @@ RETURN = """
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import \
     temp_kinit, temp_kdestroy, valid_creds, api_connect, api_command, \
-    compare_args_ipa, module_params_get
+    compare_args_ipa, module_params_get, ipamodule_base_spec, \
+    get_ipamodule_base_vars
 import six
 
 if six.PY3:
@@ -99,20 +96,20 @@ def gen_args(description):
 
 
 def main():
-    ansible_module = AnsibleModule(
-        argument_spec=dict(
-            # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
+    # Arguments
+    argument_spec = dict(
+        name=dict(type="list", aliases=["idnsname"],
+                  default=None, required=True),
+        # present
+        description=dict(required=False, type='str', default=None),
+        # state
+        state=dict(type="str", default="present",
+                   choices=["present", "absent"]),
+    )
+    argument_spec.update(ipamodule_base_spec)
 
-            name=dict(type="list", aliases=["idnsname"],
-                      default=None, required=True),
-            # present
-            description=dict(required=False, type='str', default=None),
-            # state
-            state=dict(type="str", default="present",
-                       choices=["present", "absent"]),
-        ),
+    ansible_module = AnsibleModule(
+        argument_spec=argument_spec,
         supports_check_mode=True,
     )
 
@@ -121,9 +118,7 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
+    base_vars = get_ipamodule_base_vars(ansible_module)
     names = module_params_get(ansible_module, "name")
 
     # present
@@ -156,9 +151,10 @@ def main():
     ccache_dir = None
     ccache_name = None
     try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
+        if not valid_creds(ansible_module, base_vars["ipaadmin_principal"]):
+            ccache_dir, ccache_name = temp_kinit(
+                base_vars["ipaadmin_principal"],
+                base_vars["ipaadmin_password"])
         api_connect()
 
         commands = []

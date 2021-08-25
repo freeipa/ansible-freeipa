@@ -7,7 +7,7 @@ repos:
     always_run: false
     pass_filenames: true
     files: \.(yaml|yml)$
-    entry: env ANSIBLE_LIBRARY=./plugins/modules ANSIBLE_MODULE_UTILS=./plugins/module_utils ansible-lint --force-color
+    entry: env ANSIBLE_LIBRARY=./plugins/modules ANSIBLE_MODULE_UTILS=./plugins/module_utils ANSIBLE_DOC_FRAGMENT_PLUGINS=./plugins/doc_fragments ansible-lint --force-color
 - repo: https://github.com/adrienverge/yamllint.git
   rev: v1.26.1
   hooks:

@@ -30,9 +30,11 @@ import subprocess
 def run_ansible_doc(role, module, verbose=False):
     playbook_dir, module_path = get_playbook_dir(role, module)
     module_dir = os.path.dirname(module_path)
+    doc_fragments = os.path.dirname(module_path)+"/../doc_fragments/"
 
     command = ["env",
                "ANSIBLE_LIBRARY=%s" % module_dir,
+               "ANSIBLE_DOC_FRAGMENT_PLUGINS=%s" % doc_fragments,
                "ansible-doc",
                "--playbook-dir=%s" % playbook_dir,
                "--type=module",
