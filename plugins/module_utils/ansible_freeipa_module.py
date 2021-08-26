@@ -45,6 +45,7 @@ else:
     import gssapi
     from datetime import datetime
     from pprint import pformat
+    from contextlib import contextmanager
 
     # ansible-freeipa requires locale to be C, IPA requires utf-8.
     os.environ["LANGUAGE"] = "C"
@@ -859,3 +860,109 @@ else:
                 self.check_ipa_params()
                 self.define_ipa_commands()
                 self._run_ipa_commands()
+
+    class IPAAnsibleModule(AnsibleModule):
+        """
+        IPA Ansible Module.
+
+        This class is an extended version of the Ansible Module that provides
+        IPA specific methods to simplify module generation.
+
+        Simple example:
+
+        from ansible.module_utils.ansible_freeipa_module import \
+            IPAAnsibleModule
+
+        def main():
+            ansible_module = IPAAnsibleModule(
+                argument_spec=dict(
+                      name=dict(type="str", aliases=["cn"], default=None),
+                      state=dict(type="str", default="present",
+                                 choices=["present", "absent"]),
+                ),
+            )
+
+            # Get parameters
+            name = ansible_module.params_get("name")
+            state = ansible_module.params_get("state")
+
+            # Connect to IPA API
+            with ansible_module.ipa_connect():
+
+                # Execute command
+                if state == "present":
+                    ansible_module.ipa_command(["command_add", name, {}])
+                else:
+                    ansible_module.ipa_command(["command_del", name, {}])
+
+            # Done
+
+            ansible_module.exit_json(changed=True)
+
+        if __name__ == "__main__":
+            main()
+
+        """
+
+        def __init__(self, *args, **kwargs):
+            # Extend argument_spec with ipamodule_base_spec
+            if "argument_spec" in kwargs:
+                _spec = kwargs["argument_spec"]
+                _spec.update(ipamodule_base_spec)
+                kwargs["argument_spec"] = _spec
+
+            # pylint: disable=super-with-arguments
+            super(IPAAnsibleModule, self).__init__(*args, **kwargs)
+
+            # ipaadmin vars
+            self.ipaadmin_principal = self.params_get("ipaadmin_principal")
+            self.ipaadmin_password = self.params_get("ipaadmin_password")
+
+            # Attributes to store kerberos credentials (if needed)
+            self.ccache_dir = None
+            self.ccache_name = None
+
+        @contextmanager
+        def ipa_connect(self, context=None):
+            ccache_dir = None
+            ccache_name = None
+            try:
+                if not valid_creds(self, self.ipaadmin_principal):
+                    ccache_dir, ccache_name = temp_kinit(
+                        self.ipaadmin_principal, self.ipaadmin_password)
+                api_connect(context)
+            except Exception as e:
+                self.fail_json(msg=str(e))
+            else:
+                try:
+                    yield ccache_name
+                except Exception as e:
+                    self.fail_json(msg=str(e))
+                finally:
+                    temp_kdestroy(ccache_dir, ccache_name)
+
+        def params_get(self, name):
+            return module_params_get(self, name)
+
+        def ipa_command(self, command, name, args):
+            return api_command(self, command, name, args)
+
+        def ipa_command_no_name(self, command, args):
+            return api_command_no_name(self, command, args)
+
+        def ipa_get_domain(self):  # pylint: disable=R0201
+            return api_get_domain()
+
+        def ipa_get_realm(self):  # pylint: disable=R0201
+            return api_get_realm()
+
+        def ipa_command_exists(self, command):  # pylint: disable=R0201
+            return api_check_command(command)
+
+        # pylint: disable=R0201
+        def ipa_command_param_exists(self, command, name):
+            return api_check_param(command, name)
+
+        # pylint: disable=R0201
+        def ipa_check_version(self, oper, requested_version):
+            return api_check_ipa_version(oper, requested_version)
