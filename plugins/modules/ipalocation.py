@@ -66,21 +66,14 @@ RETURN = """
 """
 
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import \
-    temp_kinit, temp_kdestroy, valid_creds, api_connect, api_command, \
-    compare_args_ipa, module_params_get, ipamodule_base_spec, \
-    get_ipamodule_base_vars
-import six
-
-if six.PY3:
-    unicode = str
+    IPAAnsibleModule, compare_args_ipa
 
 
 def find_location(module, name):
     """Find if a location with the given name already exist."""
     try:
-        _result = api_command(module, "location_show", name, {"all": True})
+        _result = module.ipa_command("location_show", name, {"all": True})
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if location name is not found.
         return None
@@ -96,20 +89,16 @@ def gen_args(description):
 
 
 def main():
-    # Arguments
-    argument_spec = dict(
-        name=dict(type="list", aliases=["idnsname"],
-                  default=None, required=True),
-        # present
-        description=dict(required=False, type='str', default=None),
-        # state
-        state=dict(type="str", default="present",
-                   choices=["present", "absent"]),
-    )
-    argument_spec.update(ipamodule_base_spec)
-
-    ansible_module = AnsibleModule(
-        argument_spec=argument_spec,
+    ansible_module = IPAAnsibleModule(
+        argument_spec=dict(
+            name=dict(type="list", aliases=["idnsname"],
+                      default=None, required=True),
+            # present
+            description=dict(required=False, type='str', default=None),
+            # state
+            state=dict(type="str", default="present",
+                       choices=["present", "absent"]),
+        ),
         supports_check_mode=True,
     )
 
@@ -118,14 +107,13 @@ def main():
     # Get parameters
 
     # general
-    base_vars = get_ipamodule_base_vars(ansible_module)
-    names = module_params_get(ansible_module, "name")
+    names = ansible_module.params_get("name")
 
     # present
-    description = module_params_get(ansible_module, "description")
+    description = ansible_module.params_get("description")
 
     # state
-    state = module_params_get(ansible_module, "state")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -148,15 +136,9 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, base_vars["ipaadmin_principal"]):
-            ccache_dir, ccache_name = temp_kinit(
-                base_vars["ipaadmin_principal"],
-                base_vars["ipaadmin_password"])
-        api_connect()
 
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
         commands = []
         for name in names:
             # Make sure location exists
@@ -194,8 +176,7 @@ def main():
 
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, name,
-                                     args)
+                result = ansible_module.ipa_command(command, name, args)
                 if "completed" in result:
                     if result["completed"] > 0:
                         changed = True
@@ -204,12 +185,6 @@ def main():
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(e)))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 
