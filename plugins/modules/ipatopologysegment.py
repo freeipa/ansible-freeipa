@@ -31,13 +31,9 @@ DOCUMENTATION = """
 module: ipatopologysegment
 short description: Manage FreeIPA topology segments
 description: Manage FreeIPA topology segments
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   suffix:
     description: Topology suffix
     required: true
@@ -67,35 +63,41 @@ author:
 
 EXAMPLES = """
 - ipatopologysegment:
+    ipaadmin_password: SomeADMINpassword
     suffix: domain
     left: ipaserver.test.local
     right: ipareplica1.test.local
     state: present
 
 - ipatopologysegment:
+    ipaadmin_password: SomeADMINpassword
     suffix: domain
     name: ipaserver.test.local-to-replica1.test.local
     state: absent
 
 - ipatopologysegment:
+    ipaadmin_password: SomeADMINpassword
     suffix: domain
     left: ipaserver.test.local
     right: ipareplica1.test.local
     state: absent
 
 - ipatopologysegment:
+    ipaadmin_password: SomeADMINpassword
     suffix: ca
     name: ipaserver.test.local-to-replica1.test.local
     direction: left-to-right
     state: reinitialized
 
 - ipatopologysegment:
+    ipaadmin_password: SomeADMINpassword
     suffix: domain+ca
     left: ipaserver.test.local
     right: ipareplica1.test.local
     state: absent
 
 - ipatopologysegment:
+    ipaadmin_password: SomeADMINpassword
     suffix: domain+ca
     left: ipaserver.test.local
     right: ipareplica1.test.local
@@ -113,19 +115,16 @@ not-found:
   type: list
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command
+from ansible.module_utils.ansible_freeipa_module import IPAAnsibleModule
 
 
 def find_left_right(module, suffix, left, right):
     _args = {
-        "iparepltoposegmentleftnode": to_text(left),
-        "iparepltoposegmentrightnode": to_text(right),
+        "iparepltoposegmentleftnode": left,
+        "iparepltoposegmentrightnode": right,
     }
-    _result = api_command(module, "topologysegment_find",
-                          to_text(suffix), _args)
+    _result = module.ipa_command("topologysegment_find",
+                                 suffix, _args)
     if len(_result["result"]) > 1:
         module.fail_json(
             msg="Combination of left node '%s' and right node '%s' is "
@@ -138,10 +137,10 @@ def find_left_right(module, suffix, left, right):
 
 def find_cn(module, suffix, name):
     _args = {
-        "cn": to_text(name),
+        "cn": name,
     }
-    _result = api_command(module, "topologysegment_find",
-                          to_text(suffix), _args)
+    _result = module.ipa_command("topologysegment_find",
+                                 suffix, _args)
     if len(_result["result"]) > 1:
         module.fail_json(
             msg="CN '%s' is not unique for suffix '%s'" % (name, suffix))
@@ -156,7 +155,7 @@ def find_left_right_cn(module, suffix, left, right, name):
         left_right = find_left_right(module, suffix, left, right)
         if left_right is not None:
             if name is not None and \
-               left_right["cn"][0] != to_text(name):
+               left_right["cn"][0] != name:
                 module.fail_json(
                     msg="Left and right nodes do not match "
                     "given name name (cn) '%s'" % name)
@@ -174,10 +173,8 @@ def find_left_right_cn(module, suffix, left, right, name):
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
             suffix=dict(choices=["domain", "ca", "domain+ca"], required=True),
             name=dict(type="str", aliases=["cn"], default=None),
             left=dict(type="str", aliases=["leftnode"], default=None),
@@ -195,14 +192,12 @@ def main():
 
     # Get parameters
 
-    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
-    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
-    suffixes = ansible_module.params.get("suffix")
-    name = ansible_module.params.get("name")
-    left = ansible_module.params.get("left")
-    right = ansible_module.params.get("right")
-    direction = ansible_module.params.get("direction")
-    state = ansible_module.params.get("state")
+    suffixes = ansible_module.params_get("suffix")
+    name = ansible_module.params_get("name")
+    left = ansible_module.params_get("left")
+    right = ansible_module.params_get("right")
+    direction = ansible_module.params_get("direction")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -214,14 +209,8 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
 
+    with ansible_module.ipa_connect():
         commands = []
 
         for suffix in suffixes.split("+"):
@@ -233,17 +222,17 @@ def main():
                     ansible_module.fail_json(
                         msg="Left and right need to be set.")
                 args = {
-                    "iparepltoposegmentleftnode": to_text(left),
-                    "iparepltoposegmentrightnode": to_text(right),
+                    "iparepltoposegmentleftnode": left,
+                    "iparepltoposegmentrightnode": right,
                 }
                 if name is not None:
-                    args["cn"] = to_text(name)
+                    args["cn"] = name
 
                 res_left_right = find_left_right(ansible_module, suffix,
                                                  left, right)
                 if res_left_right is not None:
                     if name is not None and \
-                       res_left_right["cn"][0] != to_text(name):
+                       res_left_right["cn"][0] != name:
                         ansible_module.fail_json(
                             msg="Left and right nodes already used with "
                             "different name (cn) '%s'" % res_left_right["cn"])
@@ -260,7 +249,7 @@ def main():
                     # else: Nothing to change
                 else:
                     if name is None:
-                        args["cn"] = to_text("%s-to-%s" % (left, right))
+                        args["cn"] = "%s-to-%s" % (left, right)
                     commands.append(["topologysegment_add", args, suffix])
 
             elif state in ["absent", "disabled"]:
@@ -333,14 +322,8 @@ def main():
         # Execute command
 
         for command, args, _suffix in commands:
-            api_command(ansible_module, command, to_text(_suffix), args)
+            ansible_module.ipa_command(command, _suffix, args)
             changed = True
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 
