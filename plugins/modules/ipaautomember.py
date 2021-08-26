@@ -22,14 +22,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import (
-    api_command, api_command_no_name, api_connect, compare_args_ipa,
-    gen_add_del_lists, temp_kdestroy, temp_kinit, valid_creds,
-    ipalib_errors
-)
-from ansible.module_utils.basic import AnsibleModule
-
 ANSIBLE_METADATA = {
     "metadata_version": "1.0",
     "supported_by": "community",
@@ -42,13 +34,9 @@ DOCUMENTATION = """
 module: ipaautomember
 short description: Add and delete FreeIPA Auto Membership Rules.
 description: Add, modify and delete an IPA Auto Membership Rules.
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The automember rule
     required: true
@@ -138,14 +126,19 @@ RETURN = """
 """
 
 
+from ansible.module_utils.ansible_freeipa_module import (
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, ipalib_errors
+)
+
+
 def find_automember(module, name, grouping):
     _args = {
         "all": True,
-        "type": to_text(grouping)
+        "type": grouping
     }
 
     try:
-        _result = api_command(module, "automember_show", to_text(name), _args)
+        _result = module.ipa_command("automember_show", name, _args)
     except ipalib_errors.NotFound:
         return None
     return _result["result"]
@@ -157,13 +150,13 @@ def gen_condition_args(grouping,
                        exclusiveregex=None):
     _args = {}
     if grouping is not None:
-        _args['type'] = to_text(grouping)
+        _args['type'] = grouping
     if key is not None:
-        _args['key'] = to_text(key)
+        _args['key'] = key
     if inclusiveregex is not None:
-        _args['automemberinclusiveregex'] = to_text(inclusiveregex)
+        _args['automemberinclusiveregex'] = inclusiveregex
     if exclusiveregex is not None:
-        _args['automemberexclusiveregex'] = to_text(exclusiveregex)
+        _args['automemberexclusiveregex'] = exclusiveregex
 
     return _args
 
@@ -171,9 +164,9 @@ def gen_condition_args(grouping,
 def gen_args(description, grouping):
     _args = {}
     if description is not None:
-        _args["description"] = to_text(description)
+        _args["description"] = description
     if grouping is not None:
-        _args['type'] = to_text(grouping)
+        _args['type'] = grouping
 
     return _args
 
@@ -195,12 +188,9 @@ def check_condition_keys(ansible_module, conditions, aciattrs):
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             inclusive=dict(type="list",
                            aliases=["automemberinclusiveregex"], default=None,
                            options=dict(
@@ -235,27 +225,25 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
-    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
-    names = ansible_module.params.get("name")
+    names = ansible_module.params_get("name")
 
     # present
-    description = ansible_module.params.get("description")
+    description = ansible_module.params_get("description")
 
     # conditions
-    inclusive = ansible_module.params.get("inclusive")
-    exclusive = ansible_module.params.get("exclusive")
+    inclusive = ansible_module.params_get("inclusive")
+    exclusive = ansible_module.params_get("exclusive")
 
     # action
-    action = ansible_module.params.get("action")
+    action = ansible_module.params_get("action")
     # state
-    state = ansible_module.params.get("state")
+    state = ansible_module.params_get("state")
 
     # grouping/type
-    automember_type = ansible_module.params.get("automember_type")
+    automember_type = ansible_module.params_get("automember_type")
 
-    rebuild_users = ansible_module.params.get("users")
-    rebuild_hosts = ansible_module.params.get("hosts")
+    rebuild_users = ansible_module.params_get("users")
+    rebuild_hosts = ansible_module.params_get("hosts")
 
     if (rebuild_hosts or rebuild_users) and state != "rebuild":
         ansible_module.fail_json(
@@ -267,15 +255,9 @@ def main():
     # Init
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
     res_find = None
 
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+    with ansible_module.ipa_connect():
 
         commands = []
 
@@ -287,16 +269,16 @@ def main():
             if inclusive is not None or exclusive is not None:
                 # automember_type is either "group" or "hostgorup"
                 if automember_type == "group":
-                    _type = "user"
+                    _type = u"user"
                 elif automember_type == "hostgroup":
-                    _type = "host"
+                    _type = u"host"
                 else:
                     ansible_module.fail_json(
                         msg="Bad automember type '%s'" % automember_type)
 
                 try:
-                    aciattrs = api_command(
-                        ansible_module, "json_metadata", to_text(_type), {}
+                    aciattrs = ansible_module.ipa_command(
+                        "json_metadata", _type, {}
                     )['objects'][_type]['aciattrs']
                 except Exception as ex:
                     ansible_module.fail_json(
@@ -372,7 +354,7 @@ def main():
                 if action == "automember":
                     if res_find is not None:
                         commands.append([name, 'automember_del',
-                                         {'type': to_text(automember_type)}])
+                                         {'type': automember_type}])
 
                 elif action == "member":
                     if res_find is None:
@@ -400,17 +382,13 @@ def main():
             elif state == "rebuild":
                 if automember_type:
                     commands.append([None, 'automember_rebuild',
-                                     {"type": to_text(automember_type)}])
+                                     {"type": automember_type}])
                 if rebuild_users:
                     commands.append([None, 'automember_rebuild',
-                                    {"users": [
-                                        to_text(_u)
-                                        for _u in rebuild_users]}])
+                                    {"users": rebuild_users}])
                 if rebuild_hosts:
                     commands.append([None, 'automember_rebuild',
-                                    {"hosts": [
-                                        to_text(_h)
-                                        for _h in rebuild_hosts]}])
+                                    {"hosts": rebuild_hosts}])
 
         # Check mode exit
         if ansible_module.check_mode:
@@ -419,10 +397,9 @@ def main():
         for name, command, args in commands:
             try:
                 if name is None:
-                    result = api_command_no_name(ansible_module, command, args)
+                    result = ansible_module.ipa_command_no_name(command, args)
                 else:
-                    result = api_command(ansible_module, command,
-                                         to_text(name), args)
+                    result = ansible_module.ipa_command(command, name, args)
 
                 if "completed" in result:
                     if result["completed"] > 0:
@@ -439,12 +416,6 @@ def main():
             # All other issues like invalid attributes etc. are handled
             # as exceptions. Therefore the error section is not here as
             # in other modules.
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
     ansible_module.exit_json(changed=changed, **exit_args)
