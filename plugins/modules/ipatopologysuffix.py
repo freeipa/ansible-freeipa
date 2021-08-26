@@ -31,13 +31,9 @@ DOCUMENTATION = """
 module: ipatopologysuffix
 short description: Verify FreeIPA topology suffix
 description: Verify FreeIPA topology suffix
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   suffix:
     description: Topology suffix
     required: true
@@ -52,6 +48,7 @@ author:
 
 EXAMPLES = """
 - ipatopologysuffix:
+    ipaadmin_password: SomeADMINpassword
     suffix: domain
     state: verified
 """
@@ -59,16 +56,12 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import execute_api_command
+from ansible.module_utils.ansible_freeipa_module import IPAAnsibleModule
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
             suffix=dict(choices=["domain", "ca"], required=True),
             state=dict(type="str", default="verified",
                        choices=["verified"]),
@@ -80,10 +73,8 @@ def main():
 
     # Get parameters
 
-    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
-    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
-    suffix = ansible_module.params.get("suffix")
-    state = ansible_module.params.get("state")
+    suffix = ansible_module.params_get("suffix")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -91,16 +82,15 @@ def main():
 
     # Create command
 
-    if state in ["verified"]:
-        command = "topologysuffix_verify"
-        args = {}
-    else:
+    if state not in ["verified"]:
         ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
     # Execute command
 
-    execute_api_command(ansible_module, ipaadmin_principal, ipaadmin_password,
-                        command, to_text(suffix), args)
+    with ansible_module.ipa_connect():
+        # Execute command
+        ansible_module.ipa_command(["topologysuffix_verify", suffix,
+                                    {}])
 
     # Done
 
