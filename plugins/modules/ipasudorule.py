@@ -31,13 +31,9 @@ DOCUMENTATION = """
 module: ipasudorule
 short description: Manage FreeIPA sudo rules
 description: Manage FreeIPA sudo rules
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The sudorule name
     required: true
@@ -187,10 +183,9 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get, gen_add_del_lists, gen_add_list, gen_intersection_list
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
+    gen_intersection_list
 
 
 def find_sudorule(module, name):
@@ -199,7 +194,7 @@ def find_sudorule(module, name):
         "cn": name,
     }
 
-    _result = api_command(module, "sudorule_find", name, _args)
+    _result = module.ipa_command("sudorule_find", name, _args)
 
     if len(_result["result"]) > 1:
         module.fail_json(
@@ -235,12 +230,9 @@ def gen_args(description, usercat, hostcat, cmdcat, runasusercat,
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
             # present
@@ -286,42 +278,37 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
-    names = module_params_get(ansible_module, "name")
+    names = ansible_module.params_get("name")
 
     # present
     # The 'noqa' variables are not used here, but required for vars().
     # The use of 'noqa' ensures flake8 does not complain about them.
-    description = module_params_get(ansible_module, "description")  # noqa
-    cmdcategory = module_params_get(ansible_module, 'cmdcategory')  # noqa
-    usercategory = module_params_get(ansible_module, "usercategory")  # noqa
-    hostcategory = module_params_get(ansible_module, "hostcategory")  # noqa
-    runasusercategory = module_params_get(ansible_module,           # noqa
+    description = ansible_module.params_get("description")  # noqa
+    cmdcategory = ansible_module.params_get('cmdcategory')  # noqa
+    usercategory = ansible_module.params_get("usercategory")  # noqa
+    hostcategory = ansible_module.params_get("hostcategory")  # noqa
+    runasusercategory = ansible_module.params_get(          # noqa
                                           "runasusercategory")
-    runasgroupcategory = module_params_get(ansible_module,          # noqa
+    runasgroupcategory = ansible_module.params_get(         # noqa
                                            "runasgroupcategory")
-    hostcategory = module_params_get(ansible_module, "hostcategory")  # noqa
-    nomembers = module_params_get(ansible_module, "nomembers")  # noqa
-    host = module_params_get(ansible_module, "host")
-    hostgroup = module_params_get(ansible_module, "hostgroup")
-    user = module_params_get(ansible_module, "user")
-    group = module_params_get(ansible_module, "group")
-    allow_sudocmd = module_params_get(ansible_module, 'allow_sudocmd')
-    allow_sudocmdgroup = module_params_get(ansible_module,
-                                           'allow_sudocmdgroup')
-    deny_sudocmd = module_params_get(ansible_module, 'deny_sudocmd')
-    deny_sudocmdgroup = module_params_get(ansible_module,
-                                          'deny_sudocmdgroup')
-    sudooption = module_params_get(ansible_module, "sudooption")
-    order = module_params_get(ansible_module, "order")
-    runasuser = module_params_get(ansible_module, "runasuser")
-    runasgroup = module_params_get(ansible_module, "runasgroup")
-    action = module_params_get(ansible_module, "action")
+    hostcategory = ansible_module.params_get("hostcategory")  # noqa
+    nomembers = ansible_module.params_get("nomembers")  # noqa
+    host = ansible_module.params_get("host")
+    hostgroup = ansible_module.params_get("hostgroup")
+    user = ansible_module.params_get("user")
+    group = ansible_module.params_get("group")
+    allow_sudocmd = ansible_module.params_get('allow_sudocmd')
+    allow_sudocmdgroup = ansible_module.params_get('allow_sudocmdgroup')
+    deny_sudocmd = ansible_module.params_get('deny_sudocmd')
+    deny_sudocmdgroup = ansible_module.params_get('deny_sudocmdgroup')
+    sudooption = ansible_module.params_get("sudooption")
+    order = ansible_module.params_get("order")
+    runasuser = ansible_module.params_get("runasuser")
+    runasgroup = ansible_module.params_get("runasgroup")
+    action = ansible_module.params_get("action")
 
     # state
-    state = module_params_get(ansible_module, "state")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -393,13 +380,9 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         commands = []
 
@@ -850,8 +833,7 @@ def main():
         errors = []
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, name,
-                                     args)
+                result = ansible_module.ipa_command(command, name, args)
 
                 if "completed" in result:
                     if result["completed"] > 0:
@@ -872,12 +854,6 @@ def main():
                                 command, member_type, member, failure))
         if len(errors) > 0:
             ansible_module.fail_json(msg=", ".join(errors))
-
-    except Exception as ex:
-        ansible_module.fail_json(msg=str(ex))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 
