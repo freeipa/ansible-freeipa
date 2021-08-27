@@ -31,13 +31,9 @@ DOCUMENTATION = """
 module: ipauser
 short description: Manage FreeIPA users
 description: Manage FreeIPA users
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The list of users (internally uid).
     required: false
@@ -472,16 +468,11 @@ user:
           returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, date_format, \
-    compare_args_ipa, module_params_get, api_check_param, api_get_realm, \
-    api_command_no_name, gen_add_del_lists, encode_certificate, \
-    load_cert_from_str, DN_x500_text, api_check_command
+
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, date_format, \
+    encode_certificate, load_cert_from_str, DN_x500_text, to_text
 import six
-
-
 if six.PY3:
     unicode = str
 
@@ -494,7 +485,7 @@ def find_user(module, name, preserved=False):
     if preserved:
         _args["preserved"] = preserved
 
-    _result = api_command(module, "user_find", name, _args)
+    _result = module.ipa_command("user_find", name, _args)
 
     if len(_result["result"]) > 1:
         module.fail_json(
@@ -792,12 +783,9 @@ def main():
         nomembers=dict(type='bool', default=None),
     )
 
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["login"], default=None,
                       required=False),
             users=dict(type="list", aliases=["login"], default=None,
@@ -836,69 +824,65 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
-    names = module_params_get(ansible_module, "name")
-    users = module_params_get(ansible_module, "users")
+    names = ansible_module.params_get("name")
+    users = ansible_module.params_get("users")
 
     # present
-    first = module_params_get(ansible_module, "first")
-    last = module_params_get(ansible_module, "last")
-    fullname = module_params_get(ansible_module, "fullname")
-    displayname = module_params_get(ansible_module, "displayname")
-    initials = module_params_get(ansible_module, "initials")
-    homedir = module_params_get(ansible_module, "homedir")
-    shell = module_params_get(ansible_module, "shell")
-    email = module_params_get(ansible_module, "email")
-    principal = module_params_get(ansible_module, "principal")
-    principalexpiration = module_params_get(ansible_module,
-                                            "principalexpiration")
+    first = ansible_module.params_get("first")
+    last = ansible_module.params_get("last")
+    fullname = ansible_module.params_get("fullname")
+    displayname = ansible_module.params_get("displayname")
+    initials = ansible_module.params_get("initials")
+    homedir = ansible_module.params_get("homedir")
+    shell = ansible_module.params_get("shell")
+    email = ansible_module.params_get("email")
+    principal = ansible_module.params_get("principal")
+    principalexpiration = ansible_module.params_get(
+        "principalexpiration")
     if principalexpiration is not None:
         if principalexpiration[:-1] != "Z":
             principalexpiration = principalexpiration + "Z"
         principalexpiration = date_format(principalexpiration)
-    passwordexpiration = module_params_get(ansible_module,
-                                           "passwordexpiration")
+    passwordexpiration = ansible_module.params_get("passwordexpiration")
     if passwordexpiration is not None:
         if passwordexpiration[:-1] != "Z":
             passwordexpiration = passwordexpiration + "Z"
         passwordexpiration = date_format(passwordexpiration)
-    password = module_params_get(ansible_module, "password")
-    random = module_params_get(ansible_module, "random")
-    uid = module_params_get(ansible_module, "uid")
-    gid = module_params_get(ansible_module, "gid")
-    city = module_params_get(ansible_module, "city")
-    userstate = module_params_get(ansible_module, "userstate")
-    postalcode = module_params_get(ansible_module, "postalcode")
-    phone = module_params_get(ansible_module, "phone")
-    mobile = module_params_get(ansible_module, "mobile")
-    pager = module_params_get(ansible_module, "pager")
-    fax = module_params_get(ansible_module, "fax")
-    orgunit = module_params_get(ansible_module, "orgunit")
-    title = module_params_get(ansible_module, "title")
-    manager = module_params_get(ansible_module, "manager")
-    carlicense = module_params_get(ansible_module, "carlicense")
-    sshpubkey = module_params_get(ansible_module, "sshpubkey")
-    userauthtype = module_params_get(ansible_module, "userauthtype")
-    userclass = module_params_get(ansible_module, "userclass")
-    radius = module_params_get(ansible_module, "radius")
-    radiususer = module_params_get(ansible_module, "radiususer")
-    departmentnumber = module_params_get(ansible_module, "departmentnumber")
-    employeenumber = module_params_get(ansible_module, "employeenumber")
-    employeetype = module_params_get(ansible_module, "employeetype")
-    preferredlanguage = module_params_get(ansible_module, "preferredlanguage")
-    certificate = module_params_get(ansible_module, "certificate")
-    certmapdata = module_params_get(ansible_module, "certmapdata")
-    noprivate = module_params_get(ansible_module, "noprivate")
-    nomembers = module_params_get(ansible_module, "nomembers")
+    password = ansible_module.params_get("password")
+    random = ansible_module.params_get("random")
+    uid = ansible_module.params_get("uid")
+    gid = ansible_module.params_get("gid")
+    city = ansible_module.params_get("city")
+    userstate = ansible_module.params_get("userstate")
+    postalcode = ansible_module.params_get("postalcode")
+    phone = ansible_module.params_get("phone")
+    mobile = ansible_module.params_get("mobile")
+    pager = ansible_module.params_get("pager")
+    fax = ansible_module.params_get("fax")
+    orgunit = ansible_module.params_get("orgunit")
+    title = ansible_module.params_get("title")
+    manager = ansible_module.params_get("manager")
+    carlicense = ansible_module.params_get("carlicense")
+    sshpubkey = ansible_module.params_get("sshpubkey")
+    userauthtype = ansible_module.params_get("userauthtype")
+    userclass = ansible_module.params_get("userclass")
+    radius = ansible_module.params_get("radius")
+    radiususer = ansible_module.params_get("radiususer")
+    departmentnumber = ansible_module.params_get("departmentnumber")
+    employeenumber = ansible_module.params_get("employeenumber")
+    employeetype = ansible_module.params_get("employeetype")
+    preferredlanguage = ansible_module.params_get("preferredlanguage")
+    certificate = ansible_module.params_get("certificate")
+    certmapdata = ansible_module.params_get("certmapdata")
+    noprivate = ansible_module.params_get("noprivate")
+    nomembers = ansible_module.params_get("nomembers")
     # deleted
-    preserve = module_params_get(ansible_module, "preserve")
+    preserve = ansible_module.params_get("preserve")
     # mod
-    update_password = module_params_get(ansible_module, "update_password")
+    update_password = ansible_module.params_get("update_password")
     # general
-    action = module_params_get(ansible_module, "action")
-    state = module_params_get(ansible_module, "state")
+    action = ansible_module.params_get("action")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -930,21 +914,17 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         # Check version specific settings
 
-        server_realm = api_get_realm()
+        server_realm = ansible_module.ipa_get_realm()
 
         # Default email domain
 
-        result = api_command_no_name(ansible_module, "config_show", {})
+        result = ansible_module.ipa_command_no_name("config_show", {})
         default_email_domain = result["result"]["ipadefaultemaildomain"][0]
 
         # Extend email addresses
@@ -1048,7 +1028,8 @@ def main():
             # be part of check_parameters as this is used also before the
             # connection to the API has been established.
             if passwordexpiration is not None and \
-               not api_check_param("user_add", "krbpasswordexpiration"):
+               not ansible_module.ipa_command_param_exists(
+                   "user_add", "krbpasswordexpiration"):
                 ansible_module.fail_json(
                     msg="The use of passwordexpiration is not supported by "
                     "your IPA version")
@@ -1058,7 +1039,7 @@ def main():
             # be part of check_parameters as this is used also before the
             # connection to the API has been established.
             if certmapdata is not None and \
-               not api_check_command("user_add_certmapdata"):
+               not ansible_module.ipa_command_exists("user_add_certmapdata"):
                 ansible_module.fail_json(
                     msg="The use of certmapdata is not supported by "
                     "your IPA version")
@@ -1387,8 +1368,7 @@ def main():
         errors = []
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, name,
-                                     args)
+                result = ansible_module.ipa_command(command, name, args)
                 if "completed" in result:
                     if result["completed"] > 0:
                         changed = True
@@ -1431,12 +1411,6 @@ def main():
 
         if len(errors) > 0:
             ansible_module.fail_json(msg=", ".join(errors))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
     ansible_module.exit_json(changed=changed, user=exit_args)
