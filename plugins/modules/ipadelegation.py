@@ -31,13 +31,9 @@ DOCUMENTATION = """
 module: ipadelegation
 short description: Manage FreeIPA delegations
 description: Manage FreeIPA delegations and delegation attributes
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal.
-    default: admin
-  ipaadmin_password:
-    description: The admin password.
-    required: false
   name:
     description: The list of delegation name strings.
     required: true
@@ -112,21 +108,14 @@ RETURN = """
 """
 
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import \
-    temp_kinit, temp_kdestroy, valid_creds, api_connect, api_command, \
-    compare_args_ipa, module_params_get
-import six
-
-
-if six.PY3:
-    unicode = str
+    IPAAnsibleModule, compare_args_ipa
 
 
 def find_delegation(module, name):
     """Find if a delegation with the given name already exist."""
     try:
-        _result = api_command(module, "delegation_show", name, {"all": True})
+        _result = module.ipa_command("delegation_show", name, {"all": True})
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if delegation name is not found.
         return None
@@ -148,12 +137,9 @@ def gen_args(permission, attribute, membergroup, group):
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["aciname"], default=None,
                       required=True),
             # present
@@ -177,19 +163,16 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
-    names = module_params_get(ansible_module, "name")
+    names = ansible_module.params_get("name")
 
     # present
-    permission = module_params_get(ansible_module, "permission")
-    attribute = module_params_get(ansible_module, "attribute")
-    membergroup = module_params_get(ansible_module, "membergroup")
-    group = module_params_get(ansible_module, "group")
-    action = module_params_get(ansible_module, "action")
+    permission = ansible_module.params_get("permission")
+    attribute = ansible_module.params_get("attribute")
+    membergroup = ansible_module.params_get("membergroup")
+    group = ansible_module.params_get("group")
+    action = ansible_module.params_get("action")
     # state
-    state = module_params_get(ansible_module, "state")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -236,13 +219,9 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         commands = []
         for name in names:
@@ -318,8 +297,7 @@ def main():
 
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, name,
-                                     args)
+                result = ansible_module.ipa_command(command, name, args)
                 if "completed" in result:
                     if result["completed"] > 0:
                         changed = True
@@ -328,12 +306,6 @@ def main():
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(e)))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 
