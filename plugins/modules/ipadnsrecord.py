@@ -33,13 +33,9 @@ DOCUMENTATION = """
 module: ipadnsrecord
 short description: Manage FreeIPA DNS records
 description: Manage FreeIPA DNS records
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   records:
     description: The list of user dns records dicts
     required: false
@@ -864,11 +860,9 @@ RETURN = """
 """
 
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, module_params_get, \
-    is_ipv4_addr, is_ipv6_addr, ipalib_errors
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, is_ipv4_addr, is_ipv6_addr, ipalib_errors
 import dns.reversename
 import dns.resolver
 
@@ -1106,12 +1100,9 @@ def configure_module():
         uri_weight=dict(type='int', required=False),
     )
 
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", no_log=True),
-
             name=dict(type="list", aliases=["record_name"], default=None,
                       required=False),
 
@@ -1148,8 +1139,8 @@ def find_dnsrecord(module, dnszone, name):
     }
 
     try:
-        _result = api_command(
-            module, "dnsrecord_show", to_text(dnszone), _args)
+        _result = module.ipa_command(
+            "dnsrecord_show", to_text(dnszone), _args)
     except ipalib_errors.NotFound:
         return None
 
@@ -1217,21 +1208,6 @@ def check_parameters(module, state, zone_name, record):
                     (x, state))
 
 
-def connect_to_api(module):
-    """Connect to the IPA API."""
-    ipaadmin_principal = module_params_get(module, "ipaadmin_principal")
-    ipaadmin_password = module_params_get(module, "ipaadmin_password")
-
-    ccache_dir = None
-    ccache_name = None
-    if not valid_creds(module, ipaadmin_principal):
-        ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                             ipaadmin_password)
-    api_connect()
-
-    return ccache_dir, ccache_name
-
-
 def get_entry_from_module(module, name):
     """Create an entry dict from attributes in module."""
     attrs = [
@@ -1243,9 +1219,9 @@ def get_entry_from_module(module, name):
 
     for key_set in [_RECORD_FIELDS, _PART_MAP, attrs]:
         entry.update({
-            key: module_params_get(module, key)
+            key: module.params_get(key)
             for key in key_set
-            if module_params_get(module, key) is not None
+            if module.params_get(key) is not None
         })
 
     return entry
@@ -1436,10 +1412,10 @@ def main():
     """Execute DNS record playbook."""
     ansible_module = configure_module()
 
-    global_zone_name = module_params_get(ansible_module, "zone_name")
-    names = module_params_get(ansible_module, "name")
-    records = module_params_get(ansible_module, "records")
-    state = module_params_get(ansible_module, "state")
+    global_zone_name = ansible_module.params_get("zone_name")
+    names = ansible_module.params_get("name")
+    records = ansible_module.params_get("records")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -1459,11 +1435,9 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
 
-    try:
-        ccache_dir, ccache_name = connect_to_api(ansible_module)
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         commands = []
 
@@ -1501,8 +1475,8 @@ def main():
         # Execute commands
         for name, command, args in commands:
             try:
-                result = api_command(
-                    ansible_module, command, to_text(name), args)
+                result = ansible_module.ipa_command(
+                    command, to_text(name), args)
                 if "completed" in result:
                     if result["completed"] > 0:
                         changed = True
@@ -1518,12 +1492,6 @@ def main():
 
                 ansible_module.fail_json(
                     msg="%s: %s: %s" % (command, name, error_message))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
     ansible_module.exit_json(changed=changed, host=exit_args)
