@@ -32,13 +32,9 @@ DOCUMENTATION = """
 module: ipasudocmdgroup
 short description: Manage FreeIPA sudocmd groups
 description: Manage FreeIPA sudocmd groups
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The sudocmodgroup name
     required: false
@@ -103,18 +99,15 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    gen_add_del_lists, ipalib_errors
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, ipalib_errors
 
 
 def find_sudocmdgroup(module, name):
     args = {"all": True}
 
     try:
-        _result = api_command(module, "sudocmdgroup_show", to_text(name), args)
+        _result = module.ipa_command("sudocmdgroup_show", name, args)
     except ipalib_errors.NotFound:
         return None
     else:
@@ -124,7 +117,7 @@ def find_sudocmdgroup(module, name):
 def gen_args(description, nomembers):
     _args = {}
     if description is not None:
-        _args["description"] = to_text(description)
+        _args["description"] = description
     if nomembers is not None:
         _args["nomembers"] = nomembers
 
@@ -140,12 +133,9 @@ def gen_member_args(sudocmd):
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
             # present
@@ -166,17 +156,15 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
-    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
-    names = ansible_module.params.get("name")
+    names = ansible_module.params_get("name")
 
     # present
-    description = ansible_module.params.get("description")
-    nomembers = ansible_module.params.get("nomembers")
-    sudocmd = ansible_module.params.get("sudocmd")
-    action = ansible_module.params.get("action")
+    description = ansible_module.params_get("description")
+    nomembers = ansible_module.params_get("nomembers")
+    sudocmd = ansible_module.params_get("sudocmd")
+    action = ansible_module.params_get("action")
     # state
-    state = ansible_module.params.get("state")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -209,13 +197,9 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         commands = []
 
@@ -255,9 +239,7 @@ def main():
                         if len(sudocmd_add) > 0:
                             commands.append([name, "sudocmdgroup_add_member",
                                              {
-                                                 "sudocmd": [to_text(c)
-                                                             for c in
-                                                             sudocmd_add]
+                                                 "sudocmd": sudocmd_add
                                              }
                                              ])
                         # Remove members
@@ -265,9 +247,7 @@ def main():
                             commands.append([name,
                                              "sudocmdgroup_remove_member",
                                              {
-                                                 "sudocmd": [to_text(c)
-                                                             for c in
-                                                             sudocmd_del]
+                                                 "sudocmd": sudocmd_del
                                              }
                                              ])
                 elif action == "member":
@@ -277,7 +257,7 @@ def main():
 
                     # Ensure members are present
                     commands.append([name, "sudocmdgroup_add_member",
-                                     {"sudocmd": [to_text(c) for c in sudocmd]}
+                                     {"sudocmd": sudocmd}
                                      ])
             elif state == "absent":
                 if action == "sudocmdgroup":
@@ -291,7 +271,7 @@ def main():
 
                     # Ensure members are absent
                     commands.append([name, "sudocmdgroup_remove_member",
-                                     {"sudocmd": [to_text(c) for c in sudocmd]}
+                                     {"sudocmd": sudocmd}
                                      ])
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
@@ -303,8 +283,7 @@ def main():
         # Execute commands
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, to_text(name),
-                                     args)
+                result = ansible_module.ipa_command(command, name, args)
                 if action == "member":
                     if "completed" in result and result["completed"] > 0:
                         changed = True
@@ -330,12 +309,6 @@ def main():
                                 command, member_type, member, failure))
             if len(errors) > 0:
                 ansible_module.fail_json(msg=", ".join(errors))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 
