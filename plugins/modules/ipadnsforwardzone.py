@@ -34,13 +34,9 @@ author: chris procter
 short_description: Manage FreeIPA DNS Forwarder Zones
 description:
 - Add and delete an IPA DNS Forwarder Zones using IPA API
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description:
     - The DNS zone name which needs to be managed.
@@ -85,7 +81,7 @@ options:
 EXAMPLES = '''
 # Ensure dns zone is present
 - ipadnsforwardzone:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     state: present
     name: example.com
     forwarders:
@@ -96,7 +92,7 @@ EXAMPLES = '''
 
 # Ensure dns zone is present, with forwarder on non-default port
 - ipadnsforwardzone:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     state: present
     name: example.com
     forwarders:
@@ -107,7 +103,7 @@ EXAMPLES = '''
 
 # Ensure that dns zone is removed
 - ipadnsforwardzone:
-    ipaadmin_password: MyPassword123
+    ipaadmin_password: SomeADMINpassword
     name: example.com
     state: absent
 '''
@@ -116,11 +112,9 @@ RETURN = '''
 '''
 
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa
 
 
 def find_dnsforwardzone(module, name):
@@ -128,7 +122,7 @@ def find_dnsforwardzone(module, name):
         "all": True,
         "idnsname": name
     }
-    _result = api_command(module, "dnsforwardzone_find", name, _args)
+    _result = module.ipa_command("dnsforwardzone_find", name, _args)
 
     if len(_result["result"]) > 1:
         module.fail_json(
@@ -167,11 +161,9 @@ def forwarder_list(forwarders):
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
             forwarders=dict(type="list", default=None, required=False,
@@ -199,19 +191,14 @@ def main():
     ansible_module._ansible_debug = True
 
     # Get parameters
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module,
-                                          "ipaadmin_password")
-    names = module_params_get(ansible_module, "name")
-    action = module_params_get(ansible_module, "action")
+    names = ansible_module.params_get("name")
+    action = ansible_module.params_get("action")
     forwarders = forwarder_list(
-        module_params_get(ansible_module, "forwarders"))
-    forwardpolicy = module_params_get(ansible_module, "forwardpolicy")
-    skip_overlap_check = module_params_get(ansible_module,
-                                           "skip_overlap_check")
-    permission = module_params_get(ansible_module, "permission")
-    state = module_params_get(ansible_module, "state")
+        ansible_module.params_get("forwarders"))
+    forwardpolicy = ansible_module.params_get("forwardpolicy")
+    skip_overlap_check = ansible_module.params_get("skip_overlap_check")
+    permission = ansible_module.params_get("permission")
+    state = ansible_module.params_get("state")
 
     if state == 'present' and len(names) != 1:
         ansible_module.fail_json(
@@ -257,20 +244,16 @@ def main():
     changed = False
     exit_args = {}
     args = {}
-    ccache_dir = None
-    ccache_name = None
     is_enabled = "IGNORE"
-    try:
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
+
         # we need to determine 3 variables
         # args = the values we want to change/set
         # command = the ipa api command to call del, add, or mod
         # is_enabled = is the current resource enabled (True)
         #             disabled (False) and do we care (IGNORE)
-
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
 
         for name in names:
             commands = []
@@ -387,14 +370,8 @@ def main():
 
             # Execute commands
             for _name, command, args in commands:
-                api_command(ansible_module, command, _name, args)
+                ansible_module.ipa_command(command, _name, args)
                 changed = True
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
     ansible_module.exit_json(changed=changed, dnsforwardzone=exit_args)
