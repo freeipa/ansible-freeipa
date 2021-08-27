@@ -31,13 +31,9 @@ DOCUMENTATION = """
 module: ipapermission
 short description: Manage FreeIPA permission
 description: Manage FreeIPA permission and permission members
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal.
-    default: admin
-  ipaadmin_password:
-    description: The admin password.
-    required: false
   name:
     description: The permission name string.
     required: true
@@ -133,20 +129,14 @@ RETURN = """
 """
 
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import \
-    temp_kinit, temp_kdestroy, valid_creds, api_connect, api_command, \
-    compare_args_ipa, module_params_get, api_check_ipa_version
-import six
-
-if six.PY3:
-    unicode = str
+    IPAAnsibleModule, compare_args_ipa
 
 
 def find_permission(module, name):
     """Find if a permission with the given name already exist."""
     try:
-        _result = api_command(module, "permission_show", name, {"all": True})
+        _result = module.ipa_command("permission_show", name, {"all": True})
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if permission name is not found.
         return None
@@ -191,12 +181,9 @@ def gen_args(right, attrs, bindtype, subtree,
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["cn"],
                       default=None, required=True),
             # present
@@ -243,31 +230,27 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
-    names = module_params_get(ansible_module, "name")
+    names = ansible_module.params_get("name")
 
     # present
-    right = module_params_get(ansible_module, "right")
-    attrs = module_params_get(ansible_module, "attrs")
-    bindtype = module_params_get(ansible_module, "bindtype")
-    subtree = module_params_get(ansible_module, "subtree")
-    extra_target_filter = module_params_get(ansible_module,
-                                            "extra_target_filter")
-    rawfilter = module_params_get(ansible_module, "rawfilter")
-    target = module_params_get(ansible_module, "target")
-    targetto = module_params_get(ansible_module, "targetto")
-    targetfrom = module_params_get(ansible_module, "targetfrom")
-    memberof = module_params_get(ansible_module, "memberof")
-    targetgroup = module_params_get(ansible_module, "targetgroup")
-    object_type = module_params_get(ansible_module, "object_type")
-    no_members = module_params_get(ansible_module, "no_members")
-    rename = module_params_get(ansible_module, "rename")
-    action = module_params_get(ansible_module, "action")
+    right = ansible_module.params_get("right")
+    attrs = ansible_module.params_get("attrs")
+    bindtype = ansible_module.params_get("bindtype")
+    subtree = ansible_module.params_get("subtree")
+    extra_target_filter = ansible_module.params_get("extra_target_filter")
+    rawfilter = ansible_module.params_get("rawfilter")
+    target = ansible_module.params_get("target")
+    targetto = ansible_module.params_get("targetto")
+    targetfrom = ansible_module.params_get("targetfrom")
+    memberof = ansible_module.params_get("memberof")
+    targetgroup = ansible_module.params_get("targetgroup")
+    object_type = ansible_module.params_get("object_type")
+    no_members = ansible_module.params_get("no_members")
+    rename = ansible_module.params_get("rename")
+    action = ansible_module.params_get("action")
 
     # state
-    state = module_params_get(ansible_module, "state")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -311,7 +294,7 @@ def main():
                 msg="Argument '%s' can not be used with action "
                 "'%s' and state '%s'" % (x, action, state))
 
-    if bindtype == "self" and api_check_ipa_version("<", "4.8.7"):
+    if bindtype == "self" and ansible_module.ipa_check_version("<", "4.8.7"):
         ansible_module.fail_json(
             msg="Bindtype 'self' is not supported by your IPA version.")
 
@@ -324,13 +307,9 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         commands = []
         for name in names:
@@ -454,8 +433,7 @@ def main():
 
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, name,
-                                     args)
+                result = ansible_module.ipa_command(command, name, args)
                 if "completed" in result:
                     if result["completed"] > 0:
                         changed = True
@@ -479,12 +457,6 @@ def main():
                             command, member_type, member, failure))
             if len(errors) > 0:
                 ansible_module.fail_json(msg=", ".join(errors))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 
