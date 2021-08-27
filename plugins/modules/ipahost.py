@@ -31,13 +31,9 @@ DOCUMENTATION = """
 module: ipahost
 short description: Manage FreeIPA hosts
 description: Manage FreeIPA hosts
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The full qualified domain name.
     aliases: ["fqdn"]
@@ -380,7 +376,7 @@ EXAMPLES = """
 
 # Ensure host is absent
 - ipahost:
-    ipaadmin_password: password1
+    ipaadmin_password: SomeADMINpassword
     name: host01.example.com
     state: absent
 """
@@ -404,15 +400,10 @@ host:
           returned: always
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get, gen_add_del_lists, encode_certificate, api_get_realm, \
-    is_ipv4_addr, is_ipv6_addr, ipalib_errors
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
+    encode_certificate, is_ipv4_addr, is_ipv6_addr, ipalib_errors
 import six
-
-
 if six.PY3:
     unicode = str
 
@@ -423,7 +414,7 @@ def find_host(module, name):
     }
 
     try:
-        _result = api_command(module, "host_show", to_text(name), _args)
+        _result = module.ipa_command("host_show", name, _args)
     except ipalib_errors.NotFound as e:
         msg = str(e)
         if "host not found" in msg:
@@ -450,17 +441,16 @@ def find_dnsrecord(module, name):
 
     _args = {
         "all": True,
-        "idnsname": to_text(host_name)
+        "idnsname": host_name
     }
 
-    _result = api_command(module, "dnsrecord_show", to_text(domain_name),
-                          _args)
+    _result = module.ipa_command("dnsrecord_show", domain_name, _args)
 
     return _result["result"]
 
 
 def show_host(module, name):
-    _result = api_command(module, "host_show", to_text(name), {})
+    _result = module.ipa_command("host_show", name, {})
     return _result["result"]
 
 
@@ -663,12 +653,9 @@ def main():
         # krbprincipalname
     )
 
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", no_log=True),
-
             name=dict(type="list", aliases=["fqdn"], default=None,
                       required=False),
 
@@ -705,56 +692,52 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module,
-                                          "ipaadmin_password")
-    names = module_params_get(ansible_module, "name")
-    hosts = module_params_get(ansible_module, "hosts")
+    names = ansible_module.params_get("name")
+    hosts = ansible_module.params_get("hosts")
 
     # present
-    description = module_params_get(ansible_module, "description")
-    locality = module_params_get(ansible_module, "locality")
-    location = module_params_get(ansible_module, "location")
-    platform = module_params_get(ansible_module, "platform")
-    os = module_params_get(ansible_module, "os")
-    password = module_params_get(ansible_module, "password")
-    random = module_params_get(ansible_module, "random")
-    certificate = module_params_get(ansible_module, "certificate")
-    managedby_host = module_params_get(ansible_module, "managedby_host")
-    principal = module_params_get(ansible_module, "principal")
-    allow_create_keytab_user = module_params_get(
-        ansible_module, "allow_create_keytab_user")
-    allow_create_keytab_group = module_params_get(
-        ansible_module, "allow_create_keytab_group")
-    allow_create_keytab_host = module_params_get(
-        ansible_module, "allow_create_keytab_host")
-    allow_create_keytab_hostgroup = module_params_get(
-        ansible_module, "allow_create_keytab_hostgroup")
-    allow_retrieve_keytab_user = module_params_get(
-        ansible_module, "allow_retrieve_keytab_user")
-    allow_retrieve_keytab_group = module_params_get(
-        ansible_module, "allow_retrieve_keytab_group")
-    allow_retrieve_keytab_host = module_params_get(
-        ansible_module, "allow_retrieve_keytab_host")
-    allow_retrieve_keytab_hostgroup = module_params_get(
-        ansible_module, "allow_retrieve_keytab_hostgroup")
-    mac_address = module_params_get(ansible_module, "mac_address")
-    sshpubkey = module_params_get(ansible_module, "sshpubkey")
-    userclass = module_params_get(ansible_module, "userclass")
-    auth_ind = module_params_get(ansible_module, "auth_ind")
-    requires_pre_auth = module_params_get(ansible_module, "requires_pre_auth")
-    ok_as_delegate = module_params_get(ansible_module, "ok_as_delegate")
-    ok_to_auth_as_delegate = module_params_get(ansible_module,
-                                               "ok_to_auth_as_delegate")
-    force = module_params_get(ansible_module, "force")
-    reverse = module_params_get(ansible_module, "reverse")
-    ip_address = module_params_get(ansible_module, "ip_address")
-    update_dns = module_params_get(ansible_module, "update_dns")
-    update_password = module_params_get(ansible_module, "update_password")
+    description = ansible_module.params_get("description")
+    locality = ansible_module.params_get("locality")
+    location = ansible_module.params_get("location")
+    platform = ansible_module.params_get("platform")
+    os = ansible_module.params_get("os")
+    password = ansible_module.params_get("password")
+    random = ansible_module.params_get("random")
+    certificate = ansible_module.params_get("certificate")
+    managedby_host = ansible_module.params_get("managedby_host")
+    principal = ansible_module.params_get("principal")
+    allow_create_keytab_user = ansible_module.params_get(
+        "allow_create_keytab_user")
+    allow_create_keytab_group = ansible_module.params_get(
+        "allow_create_keytab_group")
+    allow_create_keytab_host = ansible_module.params_get(
+        "allow_create_keytab_host")
+    allow_create_keytab_hostgroup = ansible_module.params_get(
+        "allow_create_keytab_hostgroup")
+    allow_retrieve_keytab_user = ansible_module.params_get(
+        "allow_retrieve_keytab_user")
+    allow_retrieve_keytab_group = ansible_module.params_get(
+        "allow_retrieve_keytab_group")
+    allow_retrieve_keytab_host = ansible_module.params_get(
+        "allow_retrieve_keytab_host")
+    allow_retrieve_keytab_hostgroup = ansible_module.params_get(
+        "allow_retrieve_keytab_hostgroup")
+    mac_address = ansible_module.params_get("mac_address")
+    sshpubkey = ansible_module.params_get("sshpubkey")
+    userclass = ansible_module.params_get("userclass")
+    auth_ind = ansible_module.params_get("auth_ind")
+    requires_pre_auth = ansible_module.params_get("requires_pre_auth")
+    ok_as_delegate = ansible_module.params_get("ok_as_delegate")
+    ok_to_auth_as_delegate = ansible_module.params_get(
+        "ok_to_auth_as_delegate")
+    force = ansible_module.params_get("force")
+    reverse = ansible_module.params_get("reverse")
+    ip_address = ansible_module.params_get("ip_address")
+    update_dns = ansible_module.params_get("update_dns")
+    update_password = ansible_module.params_get("update_password")
     # general
-    action = module_params_get(ansible_module, "action")
-    state = module_params_get(ansible_module, "state")
+    action = ansible_module.params_get("action")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -786,17 +769,13 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         # Check version specific settings
 
-        server_realm = api_get_realm()
+        server_realm = ansible_module.ipa_get_realm()
 
         commands = []
         host_set = set()
@@ -973,7 +952,7 @@ def main():
                         # Principals are not returned as utf8 for IPA using
                         # python2 using host_show, therefore we need to
                         # convert the principals that we should remove.
-                        principal_del = [to_text(x) for x in principal_del]
+                        principal_del = [unicode(x) for x in principal_del]
 
                         (allow_create_keytab_user_add,
                          allow_create_keytab_user_del) = \
@@ -1373,8 +1352,7 @@ def main():
         errors = []
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, to_text(name),
-                                     args)
+                result = ansible_module.ipa_command(command, name, args)
                 if "completed" in result:
                     if result["completed"] > 0:
                         changed = True
@@ -1427,12 +1405,6 @@ def main():
 
         if len(errors) > 0:
             ansible_module.fail_json(msg=", ".join(errors))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 
