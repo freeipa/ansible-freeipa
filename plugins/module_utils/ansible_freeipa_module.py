@@ -44,7 +44,6 @@ else:
     import netaddr
     import gssapi
     from datetime import datetime
-    from pprint import pformat
     from contextlib import contextmanager
 
     # ansible-freeipa requires locale to be C, IPA requires utf-8.
@@ -569,7 +568,192 @@ else:
         def __getattr__(self, name):
             return self.get(name)
 
-    class FreeIPABaseModule(AnsibleModule):
+    class IPAAnsibleModule(AnsibleModule):
+        """
+        IPA Ansible Module.
+
+        This class is an extended version of the Ansible Module that provides
+        IPA specific methods to simplify module generation.
+
+        Simple example:
+
+        from ansible.module_utils.ansible_freeipa_module import \
+            IPAAnsibleModule
+
+        def main():
+            ansible_module = IPAAnsibleModule(
+                argument_spec=dict(
+                      name=dict(type="str", aliases=["cn"], default=None),
+                      state=dict(type="str", default="present",
+                                 choices=["present", "absent"]),
+                ),
+            )
+
+            # Get parameters
+            name = ansible_module.params_get("name")
+            state = ansible_module.params_get("state")
+
+            # Connect to IPA API
+            with ansible_module.ipa_connect():
+
+                # Execute command
+                if state == "present":
+                    ansible_module.ipa_command(["command_add", name, {}])
+                else:
+                    ansible_module.ipa_command(["command_del", name, {}])
+
+            # Done
+
+            ansible_module.exit_json(changed=True)
+
+        if __name__ == "__main__":
+            main()
+
+        """
+
+        def __init__(self, *args, **kwargs):
+            # Extend argument_spec with ipamodule_base_spec
+            if "argument_spec" in kwargs:
+                _spec = kwargs["argument_spec"]
+                _spec.update(ipamodule_base_spec)
+                kwargs["argument_spec"] = _spec
+
+            # pylint: disable=super-with-arguments
+            super(IPAAnsibleModule, self).__init__(*args, **kwargs)
+
+            # ipaadmin vars
+            self.ipaadmin_principal = self.params_get("ipaadmin_principal")
+            self.ipaadmin_password = self.params_get("ipaadmin_password")
+
+            # Attributes to store kerberos credentials (if needed)
+            self.ccache_dir = None
+            self.ccache_name = None
+
+        @contextmanager
+        def ipa_connect(self, context=None):
+            """
+            Create a context with a connection to IPA API.
+
+            Parameters
+            ----------
+            context: string
+                An optional parameter defining which context API
+                commands will be executed.
+
+            """
+            ccache_dir = None
+            ccache_name = None
+            try:
+                if not valid_creds(self, self.ipaadmin_principal):
+                    ccache_dir, ccache_name = temp_kinit(
+                        self.ipaadmin_principal, self.ipaadmin_password)
+                api_connect(context)
+            except Exception as e:
+                self.fail_json(msg=str(e))
+            else:
+                try:
+                    yield ccache_name
+                except Exception as e:
+                    self.fail_json(msg=str(e))
+                finally:
+                    temp_kdestroy(ccache_dir, ccache_name)
+
+        def params_get(self, name):
+            """
+            Retrieve value set for module parameter.
+
+            Parameters
+            ----------
+            name: string
+                The name of the parameter to retrieve.
+
+            """
+            return module_params_get(self, name)
+
+        def ipa_command(self, command, name, args):
+            """
+            Execute an IPA API command with a required `name` argument.
+
+            Parameters
+            ----------
+            command: string
+                The IPA API command to execute.
+            name: string
+                The name parameter to pass to the command.
+            args: dict
+                The parameters to pass to the command.
+
+            """
+            return api_command(self, command, name, args)
+
+        def ipa_command_no_name(self, command, args):
+            """
+            Execute an IPA API command requiring no `name` argument.
+
+            Parameters
+            ----------
+            command: string
+                The IPA API command to execute.
+            args: dict
+                The parameters to pass to the command.
+
+            """
+            return api_command_no_name(self, command, args)
+
+        @staticmethod
+        def ipa_get_domain():
+            """Retrieve IPA API domain."""
+            return api_get_domain()
+
+        @staticmethod
+        def ipa_get_realm():
+            """Retrieve IPA API realm."""
+            return api_get_realm()
+
+        @staticmethod
+        def ipa_command_exists(command):
+            """
+            Check if IPA command is supported.
+
+            Parameters
+            ----------
+            command: string
+                The IPA API command to verify.
+
+            """
+            return api_check_command(command)
+
+        @staticmethod
+        def ipa_command_param_exists(command, name):
+            """
+            Check if IPA command support a specific parameter.
+
+            Parameters
+            ----------
+            command: string
+                The IPA API command to test.
+            name: string
+                The parameter name to verify.
+
+            """
+            return api_check_param(command, name)
+
+        @staticmethod
+        def ipa_check_version(oper, requested_version):
+            """
+            Compare available IPA version.
+
+            Parameters
+            ----------
+            oper: string
+                The relational operator to use.
+            requested_version: string
+                The version to compare to.
+
+            """
+            return api_check_ipa_version(oper, requested_version)
+
+    class FreeIPABaseModule(IPAAnsibleModule):
         """
         Base class for FreeIPA Ansible modules.
 
@@ -641,10 +825,6 @@ else:
         def __init__(self, *args, **kwargs):
             # pylint: disable=super-with-arguments
             super(FreeIPABaseModule, self).__init__(*args, **kwargs)
-
-            # Attributes to store kerberos credentials (if needed)
-            self.ccache_dir = None
-            self.ccache_name = None
 
             # Status of an execution. Will be changed to True
             #   if something is actually peformed.
@@ -724,64 +904,6 @@ else:
             """Define commands that will be run in IPA server."""
             raise NotImplementedError
 
-        def api_command(self, command, name=None, args=None):
-            """Execute a single command in IPA server."""
-            if args is None:
-                args = {}
-
-            if name is None:
-                return api_command_no_name(self, command, args)
-
-            return api_command(self, command, name, args)
-
-        def __enter__(self):
-            """
-            Connect to IPA server.
-
-            Check the there are working Kerberos credentials to connect to
-            IPA server. If there are not we perform a temporary kinit
-            that will be terminated when exiting the context.
-
-            If the connection fails ``ipa_connected`` attribute will be set
-            to False.
-            """
-            principal = self.ipa_params.ipaadmin_principal
-            password = self.ipa_params.ipaadmin_password
-
-            try:
-                if not valid_creds(self, principal):
-                    self.ccache_dir, self.ccache_name = temp_kinit(
-                        principal, password,
-                    )
-
-                api_connect()
-
-            except Exception as excpt:
-                self.fail_json(msg=str(excpt))
-            else:
-                self.ipa_connected = True
-
-            return self
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            """
-            Terminate a connection with the IPA server.
-
-            Deal with exceptions, destroy temporary kinit credentials and
-            exit the module with proper arguments.
-
-            """
-            # TODO: shouldn't we also disconnect from api backend?
-            temp_kdestroy(self.ccache_dir, self.ccache_name)
-
-            if exc_type == SystemExit:
-                raise
-
-            if exc_val:
-                self.fail_json(msg=str(exc_val))
-
-            self.exit_json(changed=self.changed, **self.exit_args)
-
         def get_command_errors(self, command, result):
             """Look for erros into command results."""
             # Get all errors
@@ -815,7 +937,7 @@ else:
 
             for name, command, args in self.ipa_commands:
                 try:
-                    result = self.api_command(command, name, args)
+                    result = self.ipa_command(command, name, args)
                 except Exception as excpt:
                     self.fail_json(msg="%s: %s: %s" % (command, name,
                                                        str(excpt)))
@@ -847,122 +969,10 @@ else:
             equal = compare_args_ipa(self, command_args, ipa_attrs)
             return not equal
 
-        def pdebug(self, value):
-            """Debug with pretty formatting."""
-            self.debug(pformat(value))
-
         def ipa_run(self):
             """Execute module actions."""
-            with self:
-                if not self.ipa_connected:
-                    return
-
+            with self.ipa_connect():
                 self.check_ipa_params()
                 self.define_ipa_commands()
                 self._run_ipa_commands()
-
-    class IPAAnsibleModule(AnsibleModule):
-        """
-        IPA Ansible Module.
-
-        This class is an extended version of the Ansible Module that provides
-        IPA specific methods to simplify module generation.
-
-        Simple example:
-
-        from ansible.module_utils.ansible_freeipa_module import \
-            IPAAnsibleModule
-
-        def main():
-            ansible_module = IPAAnsibleModule(
-                argument_spec=dict(
-                      name=dict(type="str", aliases=["cn"], default=None),
-                      state=dict(type="str", default="present",
-                                 choices=["present", "absent"]),
-                ),
-            )
-
-            # Get parameters
-            name = ansible_module.params_get("name")
-            state = ansible_module.params_get("state")
-
-            # Connect to IPA API
-            with ansible_module.ipa_connect():
-
-                # Execute command
-                if state == "present":
-                    ansible_module.ipa_command(["command_add", name, {}])
-                else:
-                    ansible_module.ipa_command(["command_del", name, {}])
-
-            # Done
-
-            ansible_module.exit_json(changed=True)
-
-        if __name__ == "__main__":
-            main()
-
-        """
-
-        def __init__(self, *args, **kwargs):
-            # Extend argument_spec with ipamodule_base_spec
-            if "argument_spec" in kwargs:
-                _spec = kwargs["argument_spec"]
-                _spec.update(ipamodule_base_spec)
-                kwargs["argument_spec"] = _spec
-
-            # pylint: disable=super-with-arguments
-            super(IPAAnsibleModule, self).__init__(*args, **kwargs)
-
-            # ipaadmin vars
-            self.ipaadmin_principal = self.params_get("ipaadmin_principal")
-            self.ipaadmin_password = self.params_get("ipaadmin_password")
-
-            # Attributes to store kerberos credentials (if needed)
-            self.ccache_dir = None
-            self.ccache_name = None
-
-        @contextmanager
-        def ipa_connect(self, context=None):
-            ccache_dir = None
-            ccache_name = None
-            try:
-                if not valid_creds(self, self.ipaadmin_principal):
-                    ccache_dir, ccache_name = temp_kinit(
-                        self.ipaadmin_principal, self.ipaadmin_password)
-                api_connect(context)
-            except Exception as e:
-                self.fail_json(msg=str(e))
-            else:
-                try:
-                    yield ccache_name
-                except Exception as e:
-                    self.fail_json(msg=str(e))
-                finally:
-                    temp_kdestroy(ccache_dir, ccache_name)
-
-        def params_get(self, name):
-            return module_params_get(self, name)
-
-        def ipa_command(self, command, name, args):
-            return api_command(self, command, name, args)
-
-        def ipa_command_no_name(self, command, args):
-            return api_command_no_name(self, command, args)
-
-        def ipa_get_domain(self):  # pylint: disable=R0201
-            return api_get_domain()
-
-        def ipa_get_realm(self):  # pylint: disable=R0201
-            return api_get_realm()
-
-        def ipa_command_exists(self, command):  # pylint: disable=R0201
-            return api_check_command(command)
-
-        # pylint: disable=R0201
-        def ipa_command_param_exists(self, command, name):
-            return api_check_param(command, name)
-
-        # pylint: disable=R0201
-        def ipa_check_version(self, oper, requested_version):
-            return api_check_ipa_version(oper, requested_version)
+            self.exit_json(changed=self.changed, **self.exit_args)
