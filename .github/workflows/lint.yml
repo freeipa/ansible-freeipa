@@ -73,5 +73,5 @@ jobs:
           python-version: "3.x"
       - name: Run pylint
         run: |
-            pip install pylint==2.8.2
+            pip install pylint==2.10.2
             pylint plugins --disable=import-error

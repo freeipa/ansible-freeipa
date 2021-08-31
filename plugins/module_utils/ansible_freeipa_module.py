@@ -104,7 +104,7 @@ else:
     try:
         from collections.abc import Mapping  # noqa
     except ImportError:
-        from collections import Mapping  # noqa
+        from collections import Mapping  # pylint: disable=deprecated-class
 
     if six.PY3:
         unicode = str
