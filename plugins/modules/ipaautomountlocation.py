@@ -33,13 +33,9 @@ author: chris procter
 short_description: Manage FreeIPA autommount locations
 description:
 - Add and delete an IPA automount location
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The automount location to be managed
     required: true
@@ -79,9 +75,9 @@ class AutomountLocation(FreeIPABaseModule):
 
     def get_location(self, location):
         try:
-            response = self.api_command("automountlocation_show",
-                                        location,
-                                        {})
+            response = self.ipa_command(
+                "automountlocation_show", location, {}
+            )
         except ipalib_errors.NotFound:
             return None
         else:
