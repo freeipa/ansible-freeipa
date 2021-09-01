@@ -753,6 +753,72 @@ else:
             """
             return api_check_ipa_version(oper, requested_version)
 
+        def execute_ipa_commands(self, commands, handle_result=None,
+                                 **handle_result_user_args):
+            """
+            Execute IPA API commands from command list.
+
+            Parameters
+            ----------
+            commands: list of string tuple
+                The list of commands in the form (name, command and args)
+                For commands that do not require a 'name', None needs be
+                used.
+            handle_result: function
+                The user function to handle results of the single commands
+            handle_result_user_args: dict (user args mapping)
+                The user args to pass to handle_result function
+
+            Example (ipauser module):
+
+            def handle_result(module, result, command, name, args, exit_args):
+                if "random" in args and command in ["user_add", "user_mod"] \
+                   and "randompassword" in result["result"]:
+                    exit_args.setdefault(name, {})["randompassword"] = \
+                        result["result"]["randompassword"]
+
+            exit_args = {}
+            changed = module.execute_ipa_commands(commands, handle_result,
+                                                  exit_args=exit_args)
+
+            if len(names) == 1:
+                ansible_module.exit_json(changed=changed,
+                                         user=exit_args[names[0]])
+            else:
+                ansible_module.exit_json(changed=changed, user=exit_args)
+
+            """
+            # No commands, report no changes
+            if commands is None:
+                return False
+
+            # In check_mode return if there are commands to do
+            if self.check_mode:
+                return len(commands) > 0
+
+            changed = False
+            for name, command, args in commands:
+                try:
+                    if name is None:
+                        result = self.ipa_command_no_name(command, args)
+                    else:
+                        result = self.ipa_command(command, name, args)
+
+                    if "completed" in result:
+                        if result["completed"] > 0:
+                            changed = True
+                    else:
+                        changed = True
+
+                    if handle_result is not None:
+                        handle_result(self, result, command, name, args,
+                                      **handle_result_user_args)
+
+                except Exception as e:
+                    self.fail_json(msg="%s: %s: %s" % (command, name, str(e)))
+
+            return changed
+
     class FreeIPABaseModule(IPAAnsibleModule):
         """
         Base class for FreeIPA Ansible modules.
