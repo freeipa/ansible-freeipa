@@ -1,6 +1,0 @@
-# defaults file for ipareplica
-# vars/RedHat-7.yml
-ipareplica_packages: [ "ipa-server", "libselinux-python" ]
-ipareplica_packages_dns: [ "ipa-server-dns" ]
-ipareplica_packages_adtrust: [ "ipa-server-trust-ad" ]
-ipareplica_packages_firewalld: [ "firewalld" ]

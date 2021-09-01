@@ -7,6 +7,13 @@
     - "{{ role_path }}/vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_version'] }}.yml"
     - "{{ role_path }}/vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
     - "{{ role_path }}/vars/{{ ansible_facts['distribution'] }}.yml"
+    # os_family is used as a fallback for distros which are not currently
+    # supported, but are based on a supported distro family. For example,
+    # Oracle, Rocky, Alma and Alibaba linux, which are all "RedHat" based.
+    - "vars/{{ ansible_facts['os_family'] }}-{{ ansible_facts['distribution_version'] }}.yml"
+    - "vars/{{ ansible_facts['os_family'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
+    - "vars/{{ ansible_facts['os_family'] }}.yml"
+    # If neither distro nor family is supported, try a default configuration.
     - "{{ role_path }}/vars/default.yml"
 
 - name: Install IPA client
