@@ -78,15 +78,14 @@ class AutomountLocation(FreeIPABaseModule):
     ipa_param_mapping = {}
 
     def get_location(self, location):
-        response = dict()
         try:
             response = self.api_command("automountlocation_show",
                                         location,
                                         {})
         except ipalib_errors.NotFound:
-            pass
-
-        return response.get("result", None)
+            return None
+        else:
+            return response.get("result", None)
 
     def check_ipa_params(self):
         if len(self.ipa_params.name) == 0:
