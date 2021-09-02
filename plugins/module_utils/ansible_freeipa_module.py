@@ -109,22 +109,6 @@ else:
     if six.PY3:
         unicode = str
 
-    # AnsibleModule argument specs for all modules
-    ipamodule_base_spec = dict(
-        ipaadmin_principal=dict(type="str", default="admin"),
-        ipaadmin_password=dict(type="str", required=False, no_log=True),
-    )
-
-    # Get ipamodule common vars as nonlocal
-    def get_ipamodule_base_vars(module):
-        ipaadmin_principal = module_params_get(module, "ipaadmin_principal")
-        ipaadmin_password = module_params_get(module, "ipaadmin_password")
-
-        return dict(
-            ipaadmin_principal=ipaadmin_principal,
-            ipaadmin_password=ipaadmin_password,
-        )
-
     def valid_creds(module, principal):  # noqa
         """Get valid credentials matching the princial, try GSSAPI first."""
         if "KRB5CCNAME" in os.environ:
@@ -253,29 +237,6 @@ else:
             raise NotImplementedError("Invalid operator: %s" % oper)
         return operation(version.parse(VERSION),
                          version.parse(requested_version))
-
-    def execute_api_command(module, principal, password, command, name, args):
-        """
-        Execute an API command.
-
-        Get KRB ticket if not already there, initialize api, connect,
-        execute command and destroy ticket again if it has been created also.
-        """
-        ccache_dir = None
-        ccache_name = None
-        try:
-            if not valid_creds(module, principal):
-                ccache_dir, ccache_name = temp_kinit(principal, password)
-            api_connect()
-
-            return api_command(module, command, name, args)
-        except Exception as e:
-            module.fail_json(msg=str(e))
-
-        finally:
-            temp_kdestroy(ccache_dir, ccache_name)
-        # fix pylint inconsistent return
-        return None
 
     def date_format(value):
         accepted_date_formats = [
@@ -611,23 +572,21 @@ else:
 
         """
 
+        # IPAAnsibleModule argument specs used for all modules
+        ipa_module_base_spec = dict(
+            ipaadmin_principal=dict(type="str", default="admin"),
+            ipaadmin_password=dict(type="str", required=False, no_log=True),
+        )
+
         def __init__(self, *args, **kwargs):
-            # Extend argument_spec with ipamodule_base_spec
+            # Extend argument_spec with ipa_module_base_spec
             if "argument_spec" in kwargs:
                 _spec = kwargs["argument_spec"]
-                _spec.update(ipamodule_base_spec)
+                _spec.update(self.ipa_module_base_spec)
                 kwargs["argument_spec"] = _spec
 
             # pylint: disable=super-with-arguments
             super(IPAAnsibleModule, self).__init__(*args, **kwargs)
-
-            # ipaadmin vars
-            self.ipaadmin_principal = self.params_get("ipaadmin_principal")
-            self.ipaadmin_password = self.params_get("ipaadmin_password")
-
-            # Attributes to store kerberos credentials (if needed)
-            self.ccache_dir = None
-            self.ccache_name = None
 
         @contextmanager
         def ipa_connect(self, context=None):
@@ -641,12 +600,16 @@ else:
                 commands will be executed.
 
             """
+            # ipaadmin vars
+            ipaadmin_principal = self.params_get("ipaadmin_principal")
+            ipaadmin_password = self.params_get("ipaadmin_password")
+
             ccache_dir = None
             ccache_name = None
             try:
-                if not valid_creds(self, self.ipaadmin_principal):
+                if not valid_creds(self, ipaadmin_principal):
                     ccache_dir, ccache_name = temp_kinit(
-                        self.ipaadmin_principal, self.ipaadmin_password)
+                        ipaadmin_principal, ipaadmin_password)
                 api_connect(context)
             except Exception as e:
                 self.fail_json(msg=str(e))
