@@ -1,7 +1,7 @@
 ---
 - name: Test $name
   hosts: ipaserver
-  become: true
+  become: no
 
   tasks:
 

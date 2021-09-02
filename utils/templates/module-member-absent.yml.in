@@ -1,7 +1,7 @@
 ---
 - name: ${name^} absent example
   hosts: ipaserver
-  become: true
+  become: no
 
   tasks:
   - name: Ensure $name NAME is absent
