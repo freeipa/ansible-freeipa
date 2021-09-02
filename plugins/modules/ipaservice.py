@@ -32,13 +32,9 @@ DOCUMENTATION = """
 module: ipaservice
 short description: Manage FreeIPA service
 description: Manage FreeIPA service
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The service to manage
     required: true
@@ -226,11 +222,9 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    encode_certificate, gen_add_del_lists, module_params_get, to_text, \
-    api_check_param, ipalib_errors
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa, encode_certificate, \
+    gen_add_del_lists, ipalib_errors
 
 
 def find_service(module, name):
@@ -239,7 +233,7 @@ def find_service(module, name):
     }
 
     try:
-        _result = api_command(module, "service_show", to_text(name), _args)
+        _result = module.ipa_command("service_show", name, _args)
     except ipalib_errors.NotFound:
         return None
 
@@ -349,12 +343,9 @@ def check_parameters(module, state, action, names, parameters):
 
 
 def init_ansible_module():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["service"], default=None,
                       required=True),
             # service attributesstr
@@ -424,51 +415,48 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
-    names = module_params_get(ansible_module, "name")
+    names = ansible_module.params_get("name")
 
     # service attributes
-    principal = module_params_get(ansible_module, "principal")
-    certificate = module_params_get(ansible_module, "certificate")
-    pac_type = module_params_get(ansible_module, "pac_type")
-    auth_ind = module_params_get(ansible_module, "auth_ind")
-    skip_host_check = module_params_get(ansible_module, "skip_host_check")
-    force = module_params_get(ansible_module, "force")
-    requires_pre_auth = module_params_get(ansible_module, "requires_pre_auth")
-    ok_as_delegate = module_params_get(ansible_module, "ok_as_delegate")
-    ok_to_auth_as_delegate = module_params_get(ansible_module,
-                                               "ok_to_auth_as_delegate")
+    principal = ansible_module.params_get("principal")
+    certificate = ansible_module.params_get("certificate")
+    pac_type = ansible_module.params_get("pac_type")
+    auth_ind = ansible_module.params_get("auth_ind")
+    skip_host_check = ansible_module.params_get("skip_host_check")
+    force = ansible_module.params_get("force")
+    requires_pre_auth = ansible_module.params_get("requires_pre_auth")
+    ok_as_delegate = ansible_module.params_get("ok_as_delegate")
+    ok_to_auth_as_delegate = ansible_module.params_get(
+        "ok_to_auth_as_delegate")
 
-    smb = module_params_get(ansible_module, "smb")
-    netbiosname = module_params_get(ansible_module, "netbiosname")
+    smb = ansible_module.params_get("smb")
+    netbiosname = ansible_module.params_get("netbiosname")
 
-    host = module_params_get(ansible_module, "host")
+    host = ansible_module.params_get("host")
 
-    allow_create_keytab_user = module_params_get(
-        ansible_module, "allow_create_keytab_user")
-    allow_create_keytab_group = module_params_get(
-        ansible_module, "allow_create_keytab_group")
-    allow_create_keytab_host = module_params_get(
-        ansible_module, "allow_create_keytab_host")
-    allow_create_keytab_hostgroup = module_params_get(
-        ansible_module, "allow_create_keytab_hostgroup")
+    allow_create_keytab_user = ansible_module.params_get(
+        "allow_create_keytab_user")
+    allow_create_keytab_group = ansible_module.params_get(
+        "allow_create_keytab_group")
+    allow_create_keytab_host = ansible_module.params_get(
+        "allow_create_keytab_host")
+    allow_create_keytab_hostgroup = ansible_module.params_get(
+        "allow_create_keytab_hostgroup")
 
-    allow_retrieve_keytab_user = module_params_get(
-        ansible_module, "allow_retrieve_keytab_user")
-    allow_retrieve_keytab_group = module_params_get(
-        ansible_module, "allow_retrieve_keytab_group")
-    allow_retrieve_keytab_host = module_params_get(
-        ansible_module, "allow_retrieve_keytab_host")
-    allow_retrieve_keytab_hostgroup = module_params_get(
-        ansible_module, "allow_retrieve_keytab_hostgroup")
-    delete_continue = module_params_get(ansible_module, "delete_continue")
+    allow_retrieve_keytab_user = ansible_module.params_get(
+        "allow_retrieve_keytab_user")
+    allow_retrieve_keytab_group = ansible_module.params_get(
+        "allow_retrieve_keytab_group")
+    allow_retrieve_keytab_host = ansible_module.params_get(
+        "allow_retrieve_keytab_host")
+    allow_retrieve_keytab_hostgroup = ansible_module.params_get(
+        "allow_retrieve_keytab_hostgroup")
+    delete_continue = ansible_module.params_get("delete_continue")
 
     # action
-    action = module_params_get(ansible_module, "action")
+    action = ansible_module.params_get("action")
     # state
-    state = module_params_get(ansible_module, "state")
+    state = ansible_module.params_get("state")
 
     # check parameters
     check_parameters(ansible_module, state, action, names, vars())
@@ -477,15 +465,11 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
 
-        has_skip_host_check = api_check_param(
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
+
+        has_skip_host_check = ansible_module.ipa_command_param_exists(
             "service_add", "skip_host_check")
         if skip_host_check and not has_skip_host_check:
             ansible_module.fail_json(
@@ -850,7 +834,7 @@ def main():
         errors = []
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, name, args)
+                result = ansible_module.ipa_command(command, name, args)
 
                 if "completed" in result:
                     if result["completed"] > 0:
@@ -875,12 +859,6 @@ def main():
                                 command, member_type, member, failure))
         if len(errors) > 0:
             ansible_module.fail_json(msg=", ".join(errors))
-
-    except Exception as ex:
-        ansible_module.fail_json(msg=str(ex))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
     ansible_module.exit_json(changed=changed, **exit_args)

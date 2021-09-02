@@ -111,19 +111,17 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa
 
 
 def find_pwpolicy(module, name):
     _args = {
         "all": True,
-        "cn": to_text(name),
+        "cn": name,
     }
 
-    _result = api_command(module, "pwpolicy_find", to_text(name), _args)
+    _result = module.ipa_command("pwpolicy_find", name, _args)
 
     if len(_result["result"]) > 1:
         module.fail_json(
@@ -160,12 +158,9 @@ def gen_args(maxlife, minlife, history, minclasses, minlength, priority,
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["cn"], default=None,
                       required=False),
             # present
@@ -198,28 +193,26 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
-    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
-    names = ansible_module.params.get("name")
+    names = ansible_module.params_get("name")
 
     # present
-    maxlife = ansible_module.params.get("maxlife")
-    minlife = ansible_module.params.get("minlife")
-    history = ansible_module.params.get("history")
-    minclasses = ansible_module.params.get("minclasses")
-    minlength = ansible_module.params.get("minlength")
-    priority = ansible_module.params.get("priority")
-    maxfail = ansible_module.params.get("maxfail")
-    failinterval = ansible_module.params.get("failinterval")
-    lockouttime = ansible_module.params.get("lockouttime")
+    maxlife = ansible_module.params_get("maxlife")
+    minlife = ansible_module.params_get("minlife")
+    history = ansible_module.params_get("history")
+    minclasses = ansible_module.params_get("minclasses")
+    minlength = ansible_module.params_get("minlength")
+    priority = ansible_module.params_get("priority")
+    maxfail = ansible_module.params_get("maxfail")
+    failinterval = ansible_module.params_get("failinterval")
+    lockouttime = ansible_module.params_get("lockouttime")
 
     # state
-    state = ansible_module.params.get("state")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
     if names is None:
-        names = ["global_policy"]
+        names = [u"global_policy"]
 
     if state == "present":
         if len(names) != 1:
@@ -245,13 +238,8 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    with ansible_module.ipa_connect():
 
         commands = []
 
@@ -292,17 +280,11 @@ def main():
 
         for name, command, args in commands:
             try:
-                api_command(ansible_module, command, to_text(name), args)
+                ansible_module.ipa_command(command, name, args)
                 changed = True
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(e)))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 

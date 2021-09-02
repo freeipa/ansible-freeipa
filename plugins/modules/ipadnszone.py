@@ -31,13 +31,9 @@ DOCUMENTATION = """
 module: ipadnszone
 short description: Manage FreeIPA dnszone
 description: Manage FreeIPA dnszone
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The zone name string.
     required: true
@@ -408,7 +404,9 @@ class DNSZoneModule(FreeIPABaseModule):
         get_zone_args = {"idnsname": zone_name, "all": True}
 
         try:
-            response = self.api_command("dnszone_show", args=get_zone_args)
+            response = self.ipa_command_no_name(
+                "dnszone_show", args=get_zone_args
+            )
         except ipalib_errors.NotFound:
             zone = None
             is_zone_active = False

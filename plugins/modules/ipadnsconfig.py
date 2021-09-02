@@ -32,14 +32,9 @@ DOCUMENTATION = """
 module: ipadnsconfig
 short description: Manage FreeIPA dnsconfig
 description: Manage FreeIPA dnsconfig
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
-
   forwarders:
     description: The list of global DNS forwarders.
     required: false
@@ -70,6 +65,7 @@ options:
 EXAMPLES = """
 # Ensure global DNS forward configuration, allowing PTR record synchronization.
 - ipadnsconfig:
+    ipaadmin_password: SomeADMINpassword
     forwarders:
       - ip_address: 8.8.4.4
       - ip_address: 2001:4860:4860::8888
@@ -79,6 +75,7 @@ EXAMPLES = """
 
 # Ensure forwarder is absent.
 - ipadnsconfig:
+    ipaadmin_password: SomeADMINpassword
     forwarders:
       - ip_address: 2001:4860:4860::8888
         port: 53
@@ -86,21 +83,20 @@ EXAMPLES = """
 
 # Disable PTR record synchronization.
 - ipadnsconfig:
+    ipaadmin_password: SomeADMINpassword
     allow_sync_ptr: no
 
 # Disable global forwarders.
 - ipadnsconfig:
+    ipaadmin_password: SomeADMINpassword
     forward_policy: none
 """
 
 RETURN = """
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, \
-    api_command_no_name, compare_args_ipa, module_params_get, \
-    is_ipv4_addr, is_ipv6_addr
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa, is_ipv4_addr, is_ipv6_addr
 
 
 def find_dnsconfig(module):
@@ -108,7 +104,7 @@ def find_dnsconfig(module):
         "all": True,
     }
 
-    _result = api_command_no_name(module, "dnsconfig_show", _args)
+    _result = module.ipa_command_no_name("dnsconfig_show", _args)
 
     if "result" in _result:
         if _result["result"].get('idnsforwarders', None) is None:
@@ -170,12 +166,8 @@ def main():
        port=dict(type=int, required=False, default=None)
     )
 
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
        argument_spec=dict(
-           # general
-           ipaadmin_principal=dict(type='str', default='admin'),
-           ipaadmin_password=dict(type='str', no_log=True),
-
            # dnsconfig
            forwarders=dict(type='list', default=None, required=False,
                            options=dict(**forwarder_spec)),
@@ -192,17 +184,12 @@ def main():
 
     ansible_module._ansible_debug = True
 
-    # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module,
-                                          "ipaadmin_password")
+    # dnsconfig
+    forwarders = ansible_module.params_get('forwarders') or []
+    forward_policy = ansible_module.params_get('forward_policy')
+    allow_sync_ptr = ansible_module.params_get('allow_sync_ptr')
 
-    forwarders = module_params_get(ansible_module, 'forwarders') or []
-    forward_policy = module_params_get(ansible_module, 'forward_policy')
-    allow_sync_ptr = module_params_get(ansible_module, 'allow_sync_ptr')
-
-    state = module_params_get(ansible_module, 'state')
+    state = ansible_module.params_get('state')
 
     # Check parameters.
     invalid = []
@@ -218,13 +205,9 @@ def main():
     # Init
 
     changed = False
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         res_find = find_dnsconfig(ansible_module)
         args = gen_args(ansible_module, state, res_find, forwarders,
@@ -234,19 +217,13 @@ def main():
         if not compare_args_ipa(ansible_module, args, res_find):
             try:
                 if not ansible_module.check_mode:
-                    api_command_no_name(ansible_module, 'dnsconfig_mod', args)
+                    ansible_module.ipa_command_no_name('dnsconfig_mod', args)
                 # If command did not fail, something changed.
                 changed = True
 
             except Exception as e:
                 msg = str(e)
                 ansible_module.fail_json(msg="dnsconfig_mod: %s" % msg)
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 

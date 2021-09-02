@@ -31,13 +31,9 @@ DOCUMENTATION = """
 module: ipaserver
 short description: Manage FreeIPA server
 description: Manage FreeIPA server
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal.
-    default: admin
-  ipaadmin_password:
-    description: The admin password.
-    required: false
   name:
     description: The list of server name strings.
     required: true
@@ -184,20 +180,14 @@ RETURN = """
 """
 
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_freeipa_module import \
-    temp_kinit, temp_kdestroy, valid_creds, api_connect, api_command, \
-    api_command_no_name, compare_args_ipa, module_params_get, DNSName
-import six
-
-if six.PY3:
-    unicode = str
+    IPAAnsibleModule, compare_args_ipa, DNSName
 
 
 def find_server(module, name):
     """Find if a server with the given name already exist."""
     try:
-        _result = api_command(module, "server_show", name, {"all": True})
+        _result = module.ipa_command("server_show", name, {"all": True})
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if server name is not found.
         return None
@@ -208,12 +198,12 @@ def find_server(module, name):
 def server_role_status(module, name):
     """Get server role of a hidden server with the given name."""
     try:
-        _result = api_command_no_name(module, "server_role_find",
-                                      {"server_server": name,
-                                       "role_servrole": 'IPA master',
-                                       "include_master": True,
-                                       "raw": True,
-                                       "all": True})
+        _result = module.ipa_command_no_name("server_role_find",
+                                             {"server_server": name,
+                                              "role_servrole": 'IPA master',
+                                              "include_master": True,
+                                              "raw": True,
+                                              "all": True})
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if server name is not found.
         return None
@@ -246,12 +236,9 @@ def gen_args(location, service_weight, no_members, delete_continue,
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["cn"],
                       default=None, required=True),
             # present
@@ -282,14 +269,11 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
-    names = module_params_get(ansible_module, "name")
+    names = ansible_module.params_get("name")
 
     # present
-    location = module_params_get(ansible_module, "location")
-    service_weight = module_params_get(ansible_module, "service_weight")
+    location = ansible_module.params_get("location")
+    service_weight = ansible_module.params_get("service_weight")
     # Service weight smaller than 0 leads to resetting service weight
     if service_weight is not None and \
        (service_weight < -1 or service_weight > 65535):
@@ -298,19 +282,18 @@ def main():
             service_weight)
     if service_weight == -1:
         service_weight = ""
-    hidden = module_params_get(ansible_module, "hidden")
-    no_members = module_params_get(ansible_module, "no_members")
+    hidden = ansible_module.params_get("hidden")
+    no_members = ansible_module.params_get("no_members")
 
     # absent
-    delete_continue = module_params_get(ansible_module, "delete_continue")
-    ignore_topology_disconnect = module_params_get(
-        ansible_module, "ignore_topology_disconnect")
-    ignore_last_of_role = module_params_get(ansible_module,
-                                            "ignore_last_of_role")
-    force = module_params_get(ansible_module, "force")
+    delete_continue = ansible_module.params_get("delete_continue")
+    ignore_topology_disconnect = ansible_module.params_get(
+        "ignore_topology_disconnect")
+    ignore_last_of_role = ansible_module.params_get("ignore_last_of_role")
+    force = ansible_module.params_get("force")
 
     # state
-    state = module_params_get(ansible_module, "state")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -338,13 +321,9 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         commands = []
         for name in names:
@@ -414,8 +393,7 @@ def main():
 
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, name,
-                                     args)
+                result = ansible_module.ipa_command(command, name, args)
                 if "completed" in result:
                     if result["completed"] > 0:
                         changed = True
@@ -424,12 +402,6 @@ def main():
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(e)))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 

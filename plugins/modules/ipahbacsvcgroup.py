@@ -32,13 +32,9 @@ DOCUMENTATION = """
 module: ipahbacsvcgroup
 short description: Manage FreeIPA hbacsvcgroups
 description: Manage FreeIPA hbacsvcgroups
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The hbacsvcgroup name
     required: false
@@ -101,20 +97,17 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    gen_add_del_lists
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists
 
 
 def find_hbacsvcgroup(module, name):
     _args = {
         "all": True,
-        "cn": to_text(name),
+        "cn": name,
     }
 
-    _result = api_command(module, "hbacsvcgroup_find", to_text(name), _args)
+    _result = module.ipa_command("hbacsvcgroup_find", name, _args)
 
     if len(_result["result"]) > 1:
         module.fail_json(
@@ -128,7 +121,7 @@ def find_hbacsvcgroup(module, name):
 def gen_args(description, nomembers):
     _args = {}
     if description is not None:
-        _args["description"] = to_text(description)
+        _args["description"] = description
     if nomembers is not None:
         _args["nomembers"] = nomembers
 
@@ -138,18 +131,15 @@ def gen_args(description, nomembers):
 def gen_member_args(hbacsvc):
     _args = {}
     if hbacsvc is not None:
-        _args["member_hbacsvc"] = [to_text(svc) for svc in hbacsvc]
+        _args["member_hbacsvc"] = hbacsvc
 
     return _args
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
             # present
@@ -170,17 +160,15 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
-    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
-    names = ansible_module.params.get("name")
+    names = ansible_module.params_get("name")
 
     # present
-    description = ansible_module.params.get("description")
-    nomembers = ansible_module.params.get("nomembers")
-    hbacsvc = ansible_module.params.get("hbacsvc")
-    action = ansible_module.params.get("action")
+    description = ansible_module.params_get("description")
+    nomembers = ansible_module.params_get("nomembers")
+    hbacsvc = ansible_module.params_get("hbacsvc")
+    action = ansible_module.params_get("action")
     # state
-    state = ansible_module.params.get("state")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -213,13 +201,9 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         commands = []
 
@@ -257,18 +241,14 @@ def main():
                         if len(hbacsvc_add) > 0:
                             commands.append([name, "hbacsvcgroup_add_member",
                                              {
-                                                 "hbacsvc":
-                                                 [to_text(svc)
-                                                  for svc in hbacsvc_add],
+                                                 "hbacsvc": hbacsvc_add
                                              }])
                         # Remove members
                         if len(hbacsvc_del) > 0:
                             commands.append([name,
                                              "hbacsvcgroup_remove_member",
                                              {
-                                                 "hbacsvc":
-                                                 [to_text(svc)
-                                                  for svc in hbacsvc_del],
+                                                 "hbacsvc": hbacsvc_del
                                              }])
                 elif action == "member":
                     if res_find is None:
@@ -278,8 +258,7 @@ def main():
                     # Ensure members are present
                     commands.append([name, "hbacsvcgroup_add_member",
                                      {
-                                         "hbacsvc": [to_text(svc)
-                                                     for svc in hbacsvc],
+                                         "hbacsvc": hbacsvc
                                      }])
             elif state == "absent":
                 if action == "hbacsvcgroup":
@@ -294,8 +273,7 @@ def main():
                     # Ensure members are absent
                     commands.append([name, "hbacsvcgroup_remove_member",
                                      {
-                                         "hbacsvc": [to_text(svc)
-                                                     for svc in hbacsvc],
+                                         "hbacsvc": hbacsvc
                                      }])
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
@@ -308,8 +286,7 @@ def main():
         errors = []
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, to_text(name),
-                                     args)
+                result = ansible_module.ipa_command(command, name, args)
                 if "completed" in result:
                     if result["completed"] > 0:
                         changed = True
@@ -331,12 +308,6 @@ def main():
                                 command, member_type, member, failure))
         if len(errors) > 0:
             ansible_module.fail_json(msg=", ".join(errors))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 

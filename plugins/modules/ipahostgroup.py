@@ -32,13 +32,9 @@ DOCUMENTATION = """
 module: ipahostgroup
 short description: Manage FreeIPA hostgroups
 description: Manage FreeIPA hostgroups
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The hostgroup name
     required: false
@@ -138,11 +134,9 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa, \
-    module_params_get, gen_add_del_lists, api_check_command, api_check_param, \
-    gen_add_list, gen_intersection_list
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
+    gen_intersection_list
 
 
 def find_hostgroup(module, name):
@@ -151,7 +145,7 @@ def find_hostgroup(module, name):
         "cn": name,
     }
 
-    _result = api_command(module, "hostgroup_find", name, _args)
+    _result = module.ipa_command("hostgroup_find", name, _args)
 
     if len(_result["result"]) > 1:
         module.fail_json(
@@ -185,12 +179,9 @@ def gen_member_args(host, hostgroup):
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
             # present
@@ -217,25 +208,19 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = module_params_get(ansible_module,
-                                           "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module,
-                                          "ipaadmin_password")
-    names = module_params_get(ansible_module, "name")
+    names = ansible_module.params_get("name")
 
     # present
-    description = module_params_get(ansible_module, "description")
-    nomembers = module_params_get(ansible_module, "nomembers")
-    host = module_params_get(ansible_module, "host")
-    hostgroup = module_params_get(ansible_module, "hostgroup")
-    membermanager_user = module_params_get(ansible_module,
-                                           "membermanager_user")
-    membermanager_group = module_params_get(ansible_module,
-                                            "membermanager_group")
-    rename = module_params_get(ansible_module, "rename")
-    action = module_params_get(ansible_module, "action")
+    description = ansible_module.params_get("description")
+    nomembers = ansible_module.params_get("nomembers")
+    host = ansible_module.params_get("host")
+    hostgroup = ansible_module.params_get("hostgroup")
+    membermanager_user = ansible_module.params_get("membermanager_user")
+    membermanager_group = ansible_module.params_get("membermanager_group")
+    rename = ansible_module.params_get("rename")
+    action = ansible_module.params_get("action")
     # state
-    state = module_params_get(ansible_module, "state")
+    state = ansible_module.params_get("state")
 
     # Check parameters
 
@@ -287,15 +272,11 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
 
-        has_add_membermanager = api_check_command(
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
+
+        has_add_membermanager = ansible_module.ipa_command_exists(
             "hostgroup_add_member_manager")
         if ((membermanager_user is not None or
              membermanager_group is not None) and not has_add_membermanager):
@@ -303,7 +284,8 @@ def main():
                 msg="Managing a membermanager user or group is not supported "
                 "by your IPA version"
             )
-        has_mod_rename = api_check_param("hostgroup_mod", "rename")
+        has_mod_rename = ansible_module.ipa_command_param_exists(
+            "hostgroup_mod", "rename")
         if not has_mod_rename and rename is not None:
             ansible_module.fail_json(
                 msg="Renaming hostgroups is not supported by your IPA version")
@@ -515,7 +497,7 @@ def main():
         # Execute commands
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, name, args)
+                result = ansible_module.ipa_command(command, name, args)
                 if "completed" in result:
                     if result["completed"] > 0:
                         changed = True
@@ -536,12 +518,6 @@ def main():
                             command, member_type, member, failure))
             if len(errors) > 0:
                 ansible_module.fail_json(msg=", ".join(errors))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 

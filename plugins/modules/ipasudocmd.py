@@ -32,13 +32,9 @@ DOCUMENTATION = """
 module: ipasudocmd
 short description: Manage FreeIPA sudo command
 description: Manage FreeIPA sudo command
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The sudo command
     required: true
@@ -71,19 +67,17 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, compare_args_ipa
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule, compare_args_ipa
 
 
 def find_sudocmd(module, name):
     _args = {
         "all": True,
-        "sudocmd": to_text(name),
+        "sudocmd": name,
     }
 
-    _result = api_command(module, "sudocmd_find", to_text(name), _args)
+    _result = module.ipa_command("sudocmd_find", name, _args)
 
     if len(_result["result"]) > 1:
         module.fail_json(
@@ -97,18 +91,15 @@ def find_sudocmd(module, name):
 def gen_args(description):
     _args = {}
     if description is not None:
-        _args["description"] = to_text(description)
+        _args["description"] = description
 
     return _args
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["sudocmd"], default=None,
                       required=True),
             # present
@@ -125,14 +116,12 @@ def main():
     # Get parameters
 
     # general
-    ipaadmin_principal = ansible_module.params.get("ipaadmin_principal")
-    ipaadmin_password = ansible_module.params.get("ipaadmin_password")
-    names = ansible_module.params.get("name")
+    names = ansible_module.params_get("name")
 
     # present
-    description = ansible_module.params.get("description")
+    description = ansible_module.params_get("description")
     # state
-    state = ansible_module.params.get("state")
+    state = ansible_module.params_get("state")
 
     # Check parameters
     if state == "absent":
@@ -147,13 +136,9 @@ def main():
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                                 ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
 
         commands = []
 
@@ -189,8 +174,7 @@ def main():
         # Execute commands
         for name, command, args in commands:
             try:
-                result = api_command(ansible_module, command, to_text(name),
-                                     args)
+                result = ansible_module.ipa_command(command, name, args)
                 # Check if any changes were made by any command
                 if command == 'sudocmd_del':
                     changed |= "Deleted" in result['summary']
@@ -199,12 +183,6 @@ def main():
             except Exception as e:
                 ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
                                                              str(e)))
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 

@@ -33,13 +33,9 @@ DOCUMENTATION = """
 module: iparole
 short description: Manage FreeIPA role
 description: Manage FreeIPA role
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal.
-    default: admin
-  ipaadmin_password:
-    description: The admin password.
-    required: false
   role:
     description: The list of role name strings.
     required: true
@@ -102,11 +98,9 @@ EXAMPLES = """
 # pylint: disable=wrong-import-position
 # pylint: disable=import-error
 # pylint: disable=no-name-in-module
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
-    temp_kinit, temp_kdestroy, valid_creds, api_connect, api_command, \
-    gen_add_del_lists, compare_args_ipa, module_params_get, api_get_realm
+    IPAAnsibleModule, gen_add_del_lists, compare_args_ipa
 import six
 
 
@@ -117,7 +111,7 @@ if six.PY3:
 def find_role(module, name):
     """Find if a role with the given name already exist."""
     try:
-        _result = api_command(module, "role_show", name, {"all": True})
+        _result = module.ipa_command("role_show", name, {"all": True})
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if role name is not found.
         return None
@@ -134,7 +128,7 @@ def gen_args(module):
     args = {}
 
     for param, arg in arg_map.items():
-        value = module_params_get(module, param)
+        value = module.params_get(param)
         if value is not None:
             args[arg] = value
 
@@ -143,8 +137,8 @@ def gen_args(module):
 
 def check_parameters(module):
     """Check if parameters passed for module processing are valid."""
-    action = module_params_get(module, "action")
-    state = module_params_get(module, "state")
+    action = module.params_get("action")
+    state = module.params_get("state")
 
     invalid = []
 
@@ -158,30 +152,15 @@ def check_parameters(module):
             invalid.extend(['privilege'])
 
     for arg in invalid:
-        if module_params_get(module, arg) is not None:
+        if module.params_get(arg) is not None:
             module.fail_json(
                 msg="Argument '%s' can not be used with action '%s'" %
                 (arg, state))
 
 
-def verify_credentials(module):
-    """Ensure there are valid Kerberos credentials."""
-    ccache_dir = None
-    ccache_name = None
-
-    ipaadmin_principal = module_params_get(module, "ipaadmin_principal")
-    ipaadmin_password = module_params_get(module, "ipaadmin_password")
-
-    if not valid_creds(module, ipaadmin_principal):
-        ccache_dir, ccache_name = temp_kinit(ipaadmin_principal,
-                                             ipaadmin_password)
-
-    return (ccache_dir, ccache_name)
-
-
 def member_intersect(module, attr, memberof, res_find):
     """Filter member arguments from role found by intersection."""
-    params = module_params_get(module, attr)
+    params = module.params_get(attr)
     if not res_find:
         return params
     filtered = []
@@ -193,7 +172,7 @@ def member_intersect(module, attr, memberof, res_find):
 
 def member_difference(module, attr, memberof, res_find):
     """Filter member arguments from role found by difference."""
-    params = module_params_get(module, attr)
+    params = module.params_get(attr)
     if not res_find:
         return params
     filtered = []
@@ -248,7 +227,7 @@ def filter_service(module, res_find, predicate):
     modified service to be compared to.
     """
     _services = []
-    service = module_params_get(module, 'service')
+    service = module.params_get('service')
     if service:
         existing = [to_text(x) for x in res_find.get('member_service', [])]
         for svc in service:
@@ -262,7 +241,7 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
     """Define commands to ensure member are present for action `role`."""
     commands = []
     privilege_add, privilege_del = gen_add_del_lists(
-        module_params_get(module, "privilege"),
+        module.params_get("privilege"),
         res_find.get('memberof_privilege', []))
 
     if privilege_add:
@@ -277,7 +256,7 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
 
     for key in ["user", "group", "host", "hostgroup"]:
         add_list, del_list = gen_add_del_lists(
-            module_params_get(module, key),
+            module.params_get(key),
             res_find.get('member_%s' % key, [])
         )
         if add_list:
@@ -286,8 +265,10 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
             del_members[key] = [to_text(item) for item in del_list]
 
     service = [
-        to_text(svc) if '@' in svc else ('%s@%s' % (svc, api_get_realm()))
-        for svc in (module_params_get(module, 'service') or [])
+        to_text(svc)
+        if '@' in svc
+        else ('%s@%s' % (svc, module.ipa_get_realm()))
+        for svc in (module.params_get('service') or [])
     ]
     existing = [str(svc) for svc in res_find.get('member_service', [])]
     add_list, del_list = gen_add_del_lists(service, existing)
@@ -364,7 +345,7 @@ def process_commands(module, commands):
 
     for name, command, args in commands:
         try:
-            result = api_command(module, command, name, args)
+            result = module.ipa_command(command, name, args)
             if "completed" in result:
                 if result["completed"] > 0:
                     changed = True
@@ -386,7 +367,7 @@ def role_commands_for_name(module, state, action, name):
     """Define commands for the Role module."""
     commands = []
 
-    rename = module_params_get(module, "rename")
+    rename = module.params_get("rename")
 
     res_find = find_role(module, name)
 
@@ -421,12 +402,9 @@ def role_commands_for_name(module, state, action, name):
 
 def create_module():
     """Create module description."""
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # generalgroups
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
-
             name=dict(type="list", aliases=["cn"], default=None,
                       required=True),
             # present
@@ -463,15 +441,13 @@ def main():
     check_parameters(ansible_module)
 
     # Init
-    ccache_dir = None
-    ccache_name = None
-    try:
-        ccache_dir, ccache_name = verify_credentials(ansible_module)
-        api_connect()
 
-        state = module_params_get(ansible_module, "state")
-        action = module_params_get(ansible_module, "action")
-        names = module_params_get(ansible_module, "name")
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
+
+        state = ansible_module.params_get("state")
+        action = ansible_module.params_get("action")
+        names = ansible_module.params_get("name")
         commands = []
 
         for name in names:
@@ -479,12 +455,6 @@ def main():
             commands.extend(cmds)
 
         changed, exit_args = process_commands(ansible_module, commands)
-
-    except Exception as exception:  # pylint: disable=broad-except
-        ansible_module.fail_json(msg=str(exception))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
     ansible_module.exit_json(changed=changed, **exit_args)

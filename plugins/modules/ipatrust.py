@@ -20,9 +20,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ansible.module_utils.ansible_freeipa_module import temp_kinit, \
-    temp_kdestroy, valid_creds, api_connect, api_command, module_params_get
-from ansible.module_utils.basic import AnsibleModule
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'supported_by': 'community',
                     'status': ['preview'],
@@ -33,6 +30,8 @@ DOCUMENTATION = """
 module: ipatrust
 short_description: Manage FreeIPA Domain Trusts.
 description: Manage FreeIPA Domain Trusts.
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
   realm:
     description:
@@ -97,6 +96,7 @@ author:
 EXAMPLES = """
 # add ad-trust
 - ipatrust:
+    ipaadmin_password: SomeADMINpassword
     realm: ad.example.test
     trust_type: ad
     admin: Administrator
@@ -105,6 +105,7 @@ EXAMPLES = """
 
 # delete ad-trust
 - ipatrust:
+    ipaadmin_password: SomeADMINpassword
     realm: ad.example.test
     state: absent
 """
@@ -113,13 +114,17 @@ RETURN = """
 """
 
 
+from ansible.module_utils.ansible_freeipa_module import \
+    IPAAnsibleModule
+
+
 def find_trust(module, realm):
     _args = {
         "all": True,
         "cn": realm,
     }
 
-    _result = api_command(module, "trust_find", realm, _args)
+    _result = module.ipa_command("trust_find", realm, _args)
 
     if len(_result["result"]) > 1:
         module.fail_json(msg="There is more than one realm '%s'" % (realm))
@@ -132,7 +137,7 @@ def find_trust(module, realm):
 def del_trust(module, realm):
     _args = {}
 
-    _result = api_command(module, "trust_del", realm, _args)
+    _result = module.ipa_command("trust_del", realm, _args)
     if len(_result["result"]["failed"]) > 0:
         module.fail_json(
             msg="Trust deletion has failed for '%s'" % (realm))
@@ -141,7 +146,7 @@ def del_trust(module, realm):
 def add_trust(module, realm, args):
     _args = args
 
-    _result = api_command(module, "trust_add", realm, _args)
+    _result = module.ipa_command("trust_add", realm, _args)
 
     if "cn" not in _result["result"]:
         module.fail_json(
@@ -174,11 +179,9 @@ def gen_args(trust_type, admin, password, server, trust_secret, base_id,
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            ipaadmin_principal=dict(type="str", default="admin"),
-            ipaadmin_password=dict(type="str", required=False, no_log=True),
             realm=dict(type="str", default=None, required=True),
             # state
             state=dict(type="str", default="present",
@@ -207,35 +210,29 @@ def main():
     ansible_module._ansible_debug = True
 
     # general
-    ipaadmin_principal = module_params_get(
-        ansible_module, "ipaadmin_principal")
-    ipaadmin_password = module_params_get(ansible_module, "ipaadmin_password")
-    realm = module_params_get(ansible_module, "realm")
+    realm = ansible_module.params_get("realm")
 
     # state
-    state = module_params_get(ansible_module, "state")
+    state = ansible_module.params_get("state")
 
     # trust
-    trust_type = module_params_get(ansible_module, "trust_type")
-    admin = module_params_get(ansible_module, "admin")
-    password = module_params_get(ansible_module, "password")
-    server = module_params_get(ansible_module, "server")
-    trust_secret = module_params_get(ansible_module, "trust_secret")
-    base_id = module_params_get(ansible_module, "base_id")
-    range_size = module_params_get(ansible_module, "range_size")
-    range_type = module_params_get(ansible_module, "range_type")
-    two_way = module_params_get(ansible_module, "two_way")
-    external = module_params_get(ansible_module, "external")
+    trust_type = ansible_module.params_get("trust_type")
+    admin = ansible_module.params_get("admin")
+    password = ansible_module.params_get("password")
+    server = ansible_module.params_get("server")
+    trust_secret = ansible_module.params_get("trust_secret")
+    base_id = ansible_module.params_get("base_id")
+    range_size = ansible_module.params_get("range_size")
+    range_type = ansible_module.params_get("range_type")
+    two_way = ansible_module.params_get("two_way")
+    external = ansible_module.params_get("external")
 
     changed = False
     exit_args = {}
-    ccache_dir = None
-    ccache_name = None
-    try:
-        if not valid_creds(ansible_module, ipaadmin_principal):
-            ccache_dir, ccache_name = temp_kinit(
-                ipaadmin_principal, ipaadmin_password)
-        api_connect()
+
+    # Connect to IPA API
+    with ansible_module.ipa_connect():
+
         res_find = find_trust(ansible_module, realm)
 
         if state == "absent":
@@ -256,12 +253,6 @@ def main():
                 if not ansible_module.check_mode:
                     add_trust(ansible_module, realm, args)
                 changed = True
-
-    except Exception as e:
-        ansible_module.fail_json(msg=str(e))
-
-    finally:
-        temp_kdestroy(ccache_dir, ccache_name)
 
     # Done
 
