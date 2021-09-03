@@ -1,6 +1,6 @@
 ---
 - name: Test sudocmdgroup
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: false
 
@@ -8,6 +8,7 @@
   - name: Ensure sudocmds are present
     ipasudocmd:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - /usr/bin/su
       - /usr/sbin/ifconfig
@@ -17,12 +18,14 @@
   - name: Ensure sudocmdgroup is absent
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       state: absent
 
   - name: Ensure sudocmdgroup is present
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       state: present
     register: result
@@ -31,6 +34,7 @@
   - name: Ensure sudocmdgroup is present again
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       state: present
     register: result
@@ -39,6 +43,7 @@
   - name: Ensure sudocmdgroup is absent
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       state: absent
     register: result
@@ -47,6 +52,7 @@
   - name: Ensure sudocmdgroup is absent again
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       state: absent
     register: result
@@ -55,6 +61,7 @@
   - name: Ensure sudocmdgroup is present, with sudocmds.
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/ifconfig
@@ -66,6 +73,7 @@
   - name: Ensure sudocmdgroup is present, with sudocmds, again.
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/ifconfig
@@ -85,6 +93,7 @@
   - name: Ensure sudocmdgroup, with sudocmds, is absent
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       state: absent
     register: result
@@ -93,6 +102,7 @@
   - name: Ensure sudocmdgroup, with sudocmds, is absent again
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       state: absent
     register: result
@@ -101,6 +111,7 @@
   - name: Ensure testing sudocmdgroup is present
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       state: present
     register: result
@@ -109,6 +120,7 @@
   - name: Ensure sudo commands are present in existing sudocmdgroup
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/ifconfig
@@ -120,6 +132,7 @@
   - name: Ensure sudo commands are present in existing sudocmdgroup, again
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/ifconfig
@@ -131,6 +144,7 @@
   - name: Ensure sudo commands are absent in existing sudocmdgroup
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/ifconfig
@@ -143,6 +157,7 @@
   - name: Ensure sudo commands are absent in existing sudocmdgroup, again
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/ifconfig
@@ -155,6 +170,7 @@
   - name: Ensure sudo commands are present in sudocmdgroup
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/ifconfig
@@ -167,6 +183,7 @@
   - name: Ensure one sudo command is not present in sudocmdgroup
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/ifconfig
@@ -178,6 +195,7 @@
   - name: Ensure one sudo command is present in sudocmdgroup
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/ifconfig
@@ -189,6 +207,7 @@
   - name: Ensure the other sudo command is not present in sudocmdgroup
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/iwlist
@@ -200,6 +219,7 @@
   - name: Ensure the other sudo commandsis not present in sudocmdgroup, again
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: network
       sudocmd:
       - /usr/sbin/iwlist
