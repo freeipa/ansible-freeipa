@@ -1,6 +1,6 @@
 ---
 - name: find trust
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: false
 
@@ -11,6 +11,7 @@
     - name: delete trust
       ipatrust:
         ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
         realm: windows.local
         state: absent
       register: del_trust
@@ -38,6 +39,7 @@
     - name: add trust
       ipatrust:
         ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
         realm: windows.local
         admin: Administrator
         password: secret_ad_pw
