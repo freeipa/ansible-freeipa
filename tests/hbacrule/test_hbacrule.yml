@@ -1,6 +1,6 @@
 ---
 - name: Test hbacrule
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
 
   tasks:
@@ -14,6 +14,7 @@
   - name: Ensure test hosts are absent
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - "{{ 'testhost01.' + ipaserver_domain }}"
       - "{{ 'testhost02.' + ipaserver_domain }}"
@@ -24,30 +25,35 @@
   - name: Ensure test hostgroups are absent
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhostgroup01,testhostgroup02,testhostgroup03,testhostgroup04
       state: absent
 
   - name: Ensure test users are absent
     ipauser:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testuser01,testuser02,testuser03,testuser04
       state: absent
 
   - name: Ensure test user groups are absent
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testgroup01,testgroup02,testgroup03,testgroup04
       state: absent
 
   - name: Ensure test HBAC Services are absent
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvc01,testhbacsvc02,testhbacsvc03,testhbacsvc04
       state: absent
 
   - name: Ensure test HBAC Service Groups are absent
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvcgroup01,testhbacsvcgroup02,testhbacsvcgroup03,testhbacsvcgroup04
       state: absent
 
@@ -56,6 +62,7 @@
   - name: Ensure hosts "{{ 'host[1..4].' + ipaserver_domain }}" are present
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       hosts:
       - name: "{{ 'testhost01.' + ipaserver_domain }}"
         force: yes
@@ -71,6 +78,7 @@
   - name: Ensure host-group testhostgroup01 is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhostgroup01
     register: result
     failed_when: not result.changed or result.failed
@@ -78,6 +86,7 @@
   - name: Ensure host-group testhostgroup02 is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhostgroup02
     register: result
     failed_when: not result.changed or result.failed
@@ -85,6 +94,7 @@
   - name: Ensure host-group testhostgroup03 is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhostgroup03
     register: result
     failed_when: not result.changed or result.failed
@@ -92,6 +102,7 @@
   - name: Ensure host-group testhostgroup04 is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhostgroup04
     register: result
     failed_when: not result.changed or result.failed
@@ -99,6 +110,7 @@
   - name: Ensure testusers are present
     ipauser:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       users:
       - name: testuser01
         first: test
@@ -118,6 +130,7 @@
   - name: Ensure user group testgroup01 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testgroup01
     register: result
     failed_when: not result.changed or result.failed
@@ -125,6 +138,7 @@
   - name: Ensure user group testgroup02 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testgroup02
     register: result
     failed_when: not result.changed or result.failed
@@ -132,6 +146,7 @@
   - name: Ensure user group testgroup03 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testgroup03
     register: result
     failed_when: not result.changed or result.failed
@@ -139,6 +154,7 @@
   - name: Ensure user group testgroup04 is present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testgroup04
     register: result
     failed_when: not result.changed or result.failed
@@ -146,6 +162,7 @@
   - name: Ensure HBAC Service testhbacsvc01 is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvc01
     register: result
     failed_when: not result.changed or result.failed
@@ -153,6 +170,7 @@
   - name: Ensure HBAC Service testhbacsvc02 is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvc02
     register: result
     failed_when: not result.changed or result.failed
@@ -160,6 +178,7 @@
   - name: Ensure HBAC Service testhbacsvc03 is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvc03
     register: result
     failed_when: not result.changed or result.failed
@@ -167,6 +186,7 @@
   - name: Ensure HBAC Service testhbacsvc04 is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvc04
     register: result
     failed_when: not result.changed or result.failed
@@ -174,6 +194,7 @@
   - name: Ensure HBAC Service Group testhbacsvcgroup01 is present
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvcgroup01
     register: result
     failed_when: not result.changed or result.failed
@@ -181,6 +202,7 @@
   - name: Ensure HBAC Service Group testhbacsvcgroup02 is present
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvcgroup02
     register: result
     failed_when: not result.changed or result.failed
@@ -188,6 +210,7 @@
   - name: Ensure HBAC Service Group testhbacsvcgroup03 is present
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvcgroup03
     register: result
     failed_when: not result.changed or result.failed
@@ -195,6 +218,7 @@
   - name: Ensure HBAC Service Group testhbacsvcgroup04 is present
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvcgroup04
     register: result
     failed_when: not result.changed or result.failed
@@ -202,6 +226,7 @@
   - name: Ensure test HBAC rule hbacrule01 is absent
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       state: absent
 
@@ -210,6 +235,7 @@
   - name: Ensure HBAC rule hbacrule01 is present
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
     register: result
     failed_when: not result.changed or result.failed
@@ -217,6 +243,7 @@
   - name: Ensure HBAC rule hbacrule01 is present again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
     register: result
     failed_when: result.changed or result.failed
@@ -226,6 +253,7 @@
   - name: Ensure HBAC rule hbacrule01 is present with hosts, hostgroups, users, groups, hbassvcs and hbacsvcgroups
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost01.' + ipaserver_domain }}"
@@ -241,6 +269,7 @@
   - name: Ensure HBAC rule hbacrule01 is present with hosts, hostgroups, users, groups, hbassvcs and hbacsvcgroups again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost01.' + ipaserver_domain }}"
@@ -258,6 +287,7 @@
   - name: Ensure test HBAC rule hbacrule01 host members are absent
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost01.' + ipaserver_domain }}"
@@ -270,6 +300,7 @@
   - name: Ensure test HBAC rule hbacrule01 host members are absent again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost01.' + ipaserver_domain }}"
@@ -282,6 +313,7 @@
   - name: Ensure test HBAC rule hbacrule01 hostgroup members are absent
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hostgroup: testhostgroup01,testhostgroup02
       state: absent
@@ -292,6 +324,7 @@
   - name: Ensure test HBAC rule hbacrule01 hostgroup members are absent again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hostgroup: testhostgroup01,testhostgroup02
       state: absent
@@ -302,6 +335,7 @@
   - name: Ensure test HBAC rule hbacrule01 user members are absent
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       user: testuser01,testuser02
       state: absent
@@ -312,6 +346,7 @@
   - name: Ensure test HBAC rule hbacrule01 user members are absent again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       user: testuser01,testuser02
       state: absent
@@ -322,6 +357,7 @@
   - name: Ensure test HBAC rule hbacrule01 user group members are absent
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       group: testgroup01,testgroup02
       state: absent
@@ -332,6 +368,7 @@
   - name: Ensure test HBAC rule hbacrule01 user group members are absent again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       group: testgroup01,testgroup02
       state: absent
@@ -342,6 +379,7 @@
   - name: Ensure test HBAC rule hbacrule01 hbacsvc members are absent
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hbacsvc: testhbacsvc01,testhbacsvc02
       state: absent
@@ -352,6 +390,7 @@
   - name: Ensure test HBAC rule hbacrule01 hbacsvc members are absent again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hbacsvc: testhbacsvc01,testhbacsvc02
       state: absent
@@ -362,6 +401,7 @@
   - name: Ensure test HBAC rule hbacrule01 hbacsvcgroup members are absent
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hbacsvcgroup: testhbacsvcgroup01,testhbacsvcgroup02
       state: absent
@@ -372,6 +412,7 @@
   - name: Ensure test HBAC rule hbacrule01 hbacsvcgroup members are absent again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hbacsvcgroup: testhbacsvcgroup01,testhbacsvcgroup02
       state: absent
@@ -384,6 +425,7 @@
   - name: Ensure test HBAC rule hbacrule01 host members are present
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost01.' + ipaserver_domain }}"
@@ -395,6 +437,7 @@
   - name: Ensure test HBAC rule hbacrule01 host members are present again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost01.' + ipaserver_domain }}"
@@ -406,6 +449,7 @@
   - name: Ensure test HBAC rule hbacrule01 hostgroup members are present
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hostgroup: testhostgroup01,testhostgroup02
       action: member
@@ -415,6 +459,7 @@
   - name: Ensure test HBAC rule hbacrule01 hostgroup members are present again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hostgroup: testhostgroup01,testhostgroup02
       action: member
@@ -424,6 +469,7 @@
   - name: Ensure test HBAC rule hbacrule01 user members are present
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       user: testuser01,testuser02
       action: member
@@ -433,6 +479,7 @@
   - name: Ensure test HBAC rule hbacrule01 user members are present again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       user: testuser01,testuser02
       action: member
@@ -442,6 +489,7 @@
   - name: Ensure test HBAC rule hbacrule01 user group members are present
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       group: testgroup01,testgroup02
       action: member
@@ -451,6 +499,7 @@
   - name: Ensure test HBAC rule hbacrule01 user group members are present again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       group: testgroup01,testgroup02
       action: member
@@ -460,6 +509,7 @@
   - name: Ensure test HBAC rule hbacrule01 hbacsvc members are present
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hbacsvc: testhbacsvc01,testhbacsvc02
       action: member
@@ -469,6 +519,7 @@
   - name: Ensure test HBAC rule hbacrule01 hbacsvc members are present again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hbacsvc: testhbacsvc01,testhbacsvc02
       action: member
@@ -478,6 +529,7 @@
   - name: Ensure test HBAC rule hbacrule01 hbacsvcgroup members are present
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hbacsvcgroup: testhbacsvcgroup01,testhbacsvcgroup02
       action: member
@@ -487,6 +539,7 @@
   - name: Ensure test HBAC rule hbacrule01 hbacsvcgroup members are present again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       hbacsvcgroup: testhbacsvcgroup01,testhbacsvcgroup02
       action: member
@@ -498,6 +551,7 @@
   - name: Ensure HBAC rule hbacrule01 is present with different hosts, hostgroups, users, groups, hbassvcs and hbacsvcgroups
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost03.' + ipaserver_domain }}"
@@ -513,6 +567,7 @@
   - name: Ensure HBAC rule hbacrule01 is present with different hosts, hostgroups, users, groups, hbassvcs and hbacsvcgroups again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost03.' + ipaserver_domain }}"
@@ -530,6 +585,7 @@
   - name: Ensure HBAC rule hbacrule01 members (same) are present
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost01.' + ipaserver_domain }}"
@@ -549,6 +605,7 @@
   - name: Ensure HBAC rule hbacrule01 members are absent
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost03.' + ipaserver_domain }}"
@@ -566,6 +623,7 @@
   - name: Ensure HBAC rule hbacrule01 members are absent again
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "{{ 'testhost03.' + ipaserver_domain }}"
@@ -585,6 +643,7 @@
   - name: Ensure HBAC rule hbacrule01 simple host members are usable
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "testhost01"
@@ -595,6 +654,7 @@
   - name: Ensure HBAC rule hbacrule01 simple host members are usable again (and match)
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       host:
       - "testhost01"
@@ -607,12 +667,14 @@
   - name: Ensure test HBAC rule hbacrule01 is absent
     ipahbacrule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: hbacrule01
       state: absent
 
   - name: Ensure test hosts are absent
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - "{{ 'testhost01.' + ipaserver_domain }}"
       - "{{ 'testhost02.' + ipaserver_domain }}"
@@ -623,29 +685,34 @@
   - name: Ensure test hostgroups are absent
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhostgroup01,testhostgroup02,testhostgroup03,testhostgroup04
       state: absent
 
   - name: Ensure test users are absent
     ipauser:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testuser01,testuser02,testuser03,testuser04
       state: absent
 
   - name: Ensure test user groups are absent
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testgroup01,testgroup02,testgroup03,testgroup04
       state: absent
 
   - name: Ensure test HBAC Services are absent
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvc01,testhbacsvc02,testhbacsvc03,testhbacsvc04
       state: absent
 
   - name: Ensure test HBAC Service Groups are absent
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testhbacsvcgroup01,testhbacsvcgroup02,testhbacsvcgroup03,testhbacsvcgroup04
       state: absent
