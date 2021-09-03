@@ -1,6 +1,6 @@
 ---
 - name: Test hbacsvcgroup
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: false
 
@@ -8,17 +8,20 @@
   - name: Ensure HBAC Service Group login is absent
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: login
       state: absent
 
   - name: Ensure HBAC Service for sshd is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: login
 
   - name: Ensure HBAC Service Group login is present
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: login
     register: result
     failed_when: not result.changed or result.failed
@@ -26,6 +29,7 @@
   - name: Ensure HBAC Service Group login is present again
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: login
     register: result
     failed_when: result.changed or result.failed
@@ -33,6 +37,7 @@
   - name: Ensure HBAC Service sshd is present in HBAC Service Group login
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: login
       hbacsvc:
       - sshd
@@ -43,6 +48,7 @@
   - name: Ensure HBAC Service sshd is present in HBAC Service Group login again
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: login
       hbacsvc:
       - sshd
@@ -53,6 +59,7 @@
   - name: Ensure HBAC Services sshd and foo are absent in HBAC Service Group login
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: login
       hbacsvc:
       - sshd
@@ -65,6 +72,7 @@
   - name: Ensure HBAC Services sshd and foo are absent in HBAC Service Group login again
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: login
       hbacsvc:
       - sshd
@@ -77,6 +85,7 @@
   - name: Ensure HBAC Service Group login is absent
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: login
       state: absent
     register: result
@@ -85,6 +94,7 @@
   - name: Ensure HBAC Service Group login is absent again
     ipahbacsvcgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: login
       state: absent
     register: result
