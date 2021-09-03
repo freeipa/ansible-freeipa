@@ -1,6 +1,6 @@
 ---
 - name: Test location
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
 
   tasks:
@@ -10,6 +10,7 @@
   - name: Ensure location my_location1 is absent
     ipalocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: my_location1
       state: absent
 
@@ -20,6 +21,7 @@
   - name: Ensure location my_location1 is present
     ipalocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: my_location1
     register: result
     failed_when: not result.changed or result.failed
@@ -27,6 +29,7 @@
   - name: Ensure location my_location1 is present again
     ipalocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: my_location1
     register: result
     failed_when: result.changed or result.failed
@@ -34,6 +37,7 @@
   - name: Ensure location my_location1 is present with description
     ipalocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: my_location1
       description: My Location 1
     register: result
@@ -42,6 +46,7 @@
   - name: Ensure location my_location1 is present again with description
     ipalocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: my_location1
       description: My Location 1
     register: result
@@ -50,6 +55,7 @@
   - name: Ensure location my_location1 is absent
     ipalocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: my_location1
       state: absent
     register: result
@@ -58,6 +64,7 @@
   - name: Ensure location my_location1 is absent again
     ipalocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: my_location1
       state: absent
     register: result
@@ -68,5 +75,6 @@
   - name: Ensure location my_location1 is absent
     ipalocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: my_location1
       state: absent
