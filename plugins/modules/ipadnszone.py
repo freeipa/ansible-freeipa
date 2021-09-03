@@ -405,7 +405,7 @@ class DNSZoneModule(FreeIPABaseModule):
             is_zone_active = False
         else:
             zone = response["result"]
-            is_zone_active = zone.get("idnszoneactive") == ["TRUE"]
+            is_zone_active = "TRUE" in zone.get("idnszoneactive")
 
         return zone, is_zone_active
 
