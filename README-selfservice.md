@@ -138,6 +138,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `name` \| `aciname` | The list of selfservice name strings. | yes
 `permission` \| `permissions` |  The permission to grant `read`, `read,write`, `write`]. Default is `write`. | no
 `attribute` \| `attrs` | The attribute list to which the selfservice applies. | no

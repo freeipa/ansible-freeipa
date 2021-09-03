@@ -1,6 +1,6 @@
 ---
 - name: Test selfservice
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
 
   tasks:
@@ -10,6 +10,7 @@
   - name: Ensure selfservice "Users can manage their own name details" is absent
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       state: absent
 
@@ -20,6 +21,7 @@
   - name: Ensure selfservice "Users can manage their own name details" is present
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       permission: write
       attribute:
@@ -32,6 +34,7 @@
   - name: Ensure selfservice "Users can manage their own name details" is present again
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       permission: write
       attribute:
@@ -44,6 +47,7 @@
   - name: Ensure selfservice "Users can manage their own name details" is present with different attribute initials
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       permission: write
       attribute:
@@ -54,6 +58,7 @@
   - name: Ensure selfservice "Users can manage their own name details" is present with different attribute initials again
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       permission: write
       attribute:
@@ -64,6 +69,7 @@
   - name: Ensure selfservice "Users can manage their own name details" member attributes givenname, displayname and title are present
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       attribute:
       - givenname
@@ -76,6 +82,7 @@
   - name: Ensure selfservice "Users can manage their own name details" member attributes givenname, displayname and title are present again
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       attribute:
       - givenname
@@ -88,6 +95,7 @@
   - name: Ensure selfservice "Users can manage their own name details" member attribute title is absent
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       attribute:
       - title
@@ -99,6 +107,7 @@
   - name: Ensure selfservice "Users can manage their own name details" member attribute title is absent again
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       attribute:
       - title
@@ -112,6 +121,7 @@
   - name: Ensure selfservice "Users can manage their own name details" is present with different read,write permission
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       permission: read,write
     register: result
@@ -120,6 +130,7 @@
   - name: Ensure selfservice "Users can manage their own name details" is present with different read,write permission again
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       permission: read,write
     register: result
@@ -128,6 +139,7 @@
   - name: Ensure selfservice "Users can manage their own name details" fails with bad permission read,read
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       permission: read,read
     register: result
@@ -136,6 +148,7 @@
   - name: Ensure selfservice "Users can manage their own name details" fails with bad permission read,write,write
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       permission: read,write,write
     register: result
@@ -144,6 +157,7 @@
   - name: Ensure selfservice "Users can manage their own name details" fails with bad attribute title,title
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       attribute:
       - title
@@ -156,5 +170,6 @@
   - name: Ensure selfservice "Users can manage their own name details" is absent
     ipaselfservice:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "Users can manage their own name details"
       state: absent
