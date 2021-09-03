@@ -1,6 +1,6 @@
 ---
 - name: Test permission
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
 
   tasks:
@@ -9,6 +9,7 @@
   - name: Ensure testing groups are present.
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ item }}"
       state: present
     with_items:
@@ -20,6 +21,7 @@
   - name: Ensure permission perm-test-1 is absent
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - perm-test-1
       - perm-test-bindtype-test
@@ -31,6 +33,7 @@
   - name: Ensure permission perm-test-1 is present
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       object_type: host
       memberof: rbacgroup1
@@ -42,6 +45,7 @@
   - name: Ensure permission perm-test-1 is present again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       object_type: host
       memberof: rbacgroup1
@@ -53,6 +57,7 @@
   - name: Ensure permission perm-test-1 has an extra filter '(cn=*.internal.*)'
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       filter: '(cn=*.internal.*)'
       action: member
@@ -62,6 +67,7 @@
   - name: Ensure permission perm-test-1 has an extra filter '(cn=*.internal.*)', again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       filter: '(cn=*.internal.*)'
       action: member
@@ -71,6 +77,7 @@
   - name: Ensure permission perm-test-1 `right` has `write`
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       right: write
       action: member
@@ -80,6 +87,7 @@
   - name: Ensure permission perm-test-1 `right` has `write`, again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       right: write
       action: member
@@ -89,6 +97,7 @@
   - name: Ensure permission perm-test-1 `right` has no `write`
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       right: write
       action: member
@@ -99,6 +108,7 @@
   - name: Ensure permission perm-test-1 `right` has no `write`, again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       right: write
       action: member
@@ -109,6 +119,7 @@
   - name: Ensure permission perm-test-1 `memberof` has `rbackgroup2`
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       memberof: rbacgroup2
       action: member
@@ -118,6 +129,7 @@
   - name: Ensure permission perm-test-1 `memberof` has `rbackgroup2`, again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       memberof: rbacgroup2
       action: member
@@ -127,6 +139,7 @@
   - name: Ensure permission perm-test-1 `memberof` item `rbackgroup1` is absent
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       memberof: rbacgroup1
       action: member
@@ -137,6 +150,7 @@
   - name: Ensure permission perm-test-1 `memberof` item `rbackgroup1` is absent, again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       memberof: rbacgroup1
       action: member
@@ -147,6 +161,7 @@
   - name: Ensure permission perm-test-1 is present with attr carlicense
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       attrs:
       - carlicense
@@ -156,6 +171,7 @@
   - name: Ensure permission perm-test-1 is present with attr carlicense again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       attrs:
       - carlicense
@@ -165,6 +181,7 @@
   - name: Ensure permission perm-test-1 is present with attr carlicense and displayname
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       attrs:
       - carlicense
@@ -175,6 +192,7 @@
   - name: Ensure permission perm-test-1 is present with attr carlicense and displayname again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       attrs:
       - carlicense
@@ -185,6 +203,7 @@
   - name: Ensure attr gecos is present in permission perm-test-1
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       attrs:
       - gecos
@@ -195,6 +214,7 @@
   - name: Ensure attr gecos is present in permission perm-test-1 again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       attrs:
       - gecos
@@ -205,6 +225,7 @@
   - name: Ensure attr gecos is absent in permission perm-test-1
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       attrs:
       - gecos
@@ -216,6 +237,7 @@
   - name: Ensure attr gecos is absent in permission perm-test-1 again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       attrs:
       - gecos
@@ -227,6 +249,7 @@
   - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries"
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "System: Update DNS Entries"
       attrs:
       - carlicense
@@ -238,6 +261,7 @@
   - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries" again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "System: Update DNS Entries"
       attrs:
       - carlicense
@@ -249,6 +273,7 @@
   - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries"
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "System: Update DNS Entries"
       attrs:
       - carlicense
@@ -261,6 +286,7 @@
   - name: Ensure attributes carlicense and displayname are present in permission "System{{':'}} Update DNS Entries" again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "System: Update DNS Entries"
       attrs:
       - carlicense
@@ -273,6 +299,7 @@
   - name: Ensure permission perm-test-1 has rawfilter '(objectclass=ipagroup)'
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       rawfilter: '(objectclass=ipagroup)'
       action: member
@@ -282,6 +309,7 @@
   - name: Ensure permission perm-test-1 has rawfilter '(objectclass=ipagroup)', again
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       rawfilter: '(objectclass=ipagroup)'
       action: member
@@ -291,6 +319,7 @@
   - name: Ensure filter and rawfilter cannot be used together.
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       rawfilter: '(objectclass=ipagroup)'
       filter: '(cn=*.internal.*)'
@@ -301,6 +330,7 @@
   - name: Rename permission perm-test-1 to perm-test-renamed
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       rename: perm-test-renamed
       state: renamed
@@ -310,6 +340,7 @@
   - name: Ensure permission perm-test-1 is absent
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-1
       state: absent
     register: result
@@ -318,6 +349,7 @@
   - name: Ensure permission perm-test-renamed is present
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-renamed
       object_type: host
       right: all
@@ -327,6 +359,7 @@
   - name: Ensure permission with bindtype 'self' is present, if IPA version >= 4.8.7
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-bindtype-test
       bindtype: self
       object_type: host
@@ -338,6 +371,7 @@
   - name: Fail to set permission perm-test-renamed bindtype to 'self', if IPA version < 4.8.7
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: perm-test-bindtype-test
       bindtype: self
       object_type: host
@@ -351,6 +385,7 @@
   - name: Ensure testing permissions are absent
     ipapermission:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - perm-test-1
       - perm-test-bindtype-test
@@ -360,6 +395,7 @@
   - name: Ensure testing groups are absent.
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ item }}"
       state: absent
     with_items:

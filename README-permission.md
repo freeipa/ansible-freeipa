@@ -161,6 +161,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `name` \| `cn` | The permission name string. | yes
 `right` \| `ipapermright` | Rights to grant. It can be a list of one or more of `read`, `search`, `compare`, `write`, `add`, `delete`, and `all` default: `all` | no
 `attrs` | All attributes to which the permission applies. | no
