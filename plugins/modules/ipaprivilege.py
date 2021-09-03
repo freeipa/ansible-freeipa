@@ -126,6 +126,22 @@ def find_privilege(module, name):
         return _result["result"]
 
 
+# pylint: disable=unused-argument
+def result_handler(module, result, command, name, args, errors):
+    # Get all errors
+    # All "already a member" and "not a member" failures in the
+    # result are ignored. All others are reported.
+    for failed_item in result.get("failed", []):
+        failed = result["failed"][failed_item]
+        for member_type in failed:
+            for member, failure in failed[member_type]:
+                if "already a member" in failure \
+                   or "not a member" in failure:
+                    continue
+                errors.append("%s: %s %s: %s" % (
+                    command, member_type, member, failure))
+
+
 def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
@@ -304,38 +320,9 @@ def main():
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
-        # Check mode exit
-        if ansible_module.check_mode:
-            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
-
         # Execute commands
 
-        for name, command, args in commands:
-            try:
-                result = ansible_module.ipa_command(command, name, args)
-                if "completed" in result:
-                    if result["completed"] > 0:
-                        changed = True
-                else:
-                    changed = True
-            except Exception as e:
-                ansible_module.fail_json(
-                    msg="%s: %s: %s" % (command, name, str(e)))
-            # Get all errors
-            # All "already a member" and "not a member" failures in the
-            # result are ignored. All others are reported.
-            errors = []
-            for failed_item in result.get("failed", []):
-                failed = result["failed"][failed_item]
-                for member_type in failed:
-                    for member, failure in failed[member_type]:
-                        if "already a member" in failure \
-                           or "not a member" in failure:
-                            continue
-                        errors.append("%s: %s %s: %s" % (
-                            command, member_type, member, failure))
-            if len(errors) > 0:
-                ansible_module.fail_json(msg=", ".join(errors))
+        changed = ansible_module.execute_ipa_commands(commands, result_handler)
 
     # Done
 
