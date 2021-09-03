@@ -1,6 +1,6 @@
 ---
 - name: Test role module
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: yes
   gather_facts: yes
 
@@ -15,6 +15,7 @@
   - name: Ensure role is present.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: renamerole
       description: A role in IPA.
     register: result
@@ -23,6 +24,7 @@
   - name: Ensure role is present, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: renamerole
       description: A role in IPA.
     register: result
@@ -31,6 +33,7 @@
   - name: Rename role.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: renamerole
       rename: testrole
     register: result
@@ -41,6 +44,7 @@
   - name: Rename role, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: renamerole
       rename: testrole
     register: result
@@ -49,6 +53,7 @@
   - name: Ensure role has member has privileges.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       privilege:
       - DNS Servers
@@ -60,6 +65,7 @@
   - name: Ensure role has member has privileges, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       privilege:
       - DNS Servers
@@ -71,6 +77,7 @@
   - name: Ensure role has less privileges.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       privilege:
       - Host Administrators
@@ -82,6 +89,7 @@
   - name: Ensure role has less privileges, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       privilege:
       - Host Administrators
@@ -93,6 +101,7 @@
   - name: Ensure role has member has privileges restored.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       privilege:
       - DNS Servers
@@ -104,6 +113,7 @@
   - name: Ensure role has member has privileges restored, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       privilege:
       - DNS Servers
@@ -115,6 +125,7 @@
   - name: Ensure role member privileges are absent.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       privilege:
       - DNS Servers
@@ -127,6 +138,7 @@
   - name: Ensure role member privileges are absent, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       privilege:
       - DNS Servers
@@ -139,6 +151,7 @@
   - name: Ensure invalid privileged is not assigned to role.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       privilege: Invalid Privilege
       action: member
@@ -148,6 +161,7 @@
   - name: Ensure role has member user present.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       user:
       - user01
@@ -158,6 +172,7 @@
   - name: Ensure role has member user present, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       user:
       - user01
@@ -168,6 +183,7 @@
   - name: Ensure role has member user absent.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       user:
       - user01
@@ -179,6 +195,7 @@
   - name: Ensure role has member user absent, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       user:
       - user01
@@ -190,6 +207,7 @@
   - name: Ensure role has member group present.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       group:
       - group01
@@ -200,6 +218,7 @@
   - name: Ensure role has member group present, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       group:
       - group01
@@ -210,6 +229,7 @@
   - name: Ensure role has member group absent.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       group:
       - group01
@@ -221,6 +241,7 @@
   - name: Ensure role has member group absent, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       group:
       - group01
@@ -232,6 +253,7 @@
   - name: Ensure role has member host present.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       host:
       - "{{ host1_fqdn }}"
@@ -242,6 +264,7 @@
   - name: Ensure role has member host present, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       host:
       - "{{ host1_fqdn }}"
@@ -252,6 +275,7 @@
   - name: Ensure role has member host absent.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       host:
       - "{{ host1_fqdn }}"
@@ -263,6 +287,7 @@
   - name: Ensure role has member host absent, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       host:
       - "{{ host1_fqdn }}"
@@ -274,6 +299,7 @@
   - name: Ensure role has member hostgroup present.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       hostgroup:
       - hostgroup01
@@ -284,6 +310,7 @@
   - name: Ensure role has member hostgroup present, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       hostgroup:
       - hostgroup01
@@ -294,6 +321,7 @@
   - name: Ensure role has member hostgroup absent.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       hostgroup:
       - hostgroup01
@@ -305,6 +333,7 @@
   - name: Ensure role has member hostgroup absent, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       hostgroup:
       - hostgroup01
@@ -316,6 +345,7 @@
   - name: Ensure role is absent.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       state: absent
     register: result
@@ -324,6 +354,7 @@
   - name: Ensure role is absent, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       state: absent
     register: result
@@ -332,6 +363,7 @@
   - name: Ensure role with members is present.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       user:
       - user01
@@ -352,6 +384,7 @@
   - name: Ensure role with members is present, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       user:
       - user01
@@ -372,6 +405,7 @@
   - name: Ensure role is absent.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       state: absent
     register: result
@@ -380,6 +414,7 @@
   - name: Ensure role is absent, again.
     iparole:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrole
       state: absent
     register: result
