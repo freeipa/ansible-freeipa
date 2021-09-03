@@ -35,11 +35,13 @@
   - name: Ensure vaultgroup exists.
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: vaultgroup
 
   - name: Ensure testing users exist.
     ipauser:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       users:
       - name: user01
         first: First
