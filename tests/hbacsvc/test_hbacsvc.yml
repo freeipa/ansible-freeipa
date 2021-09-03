@@ -1,6 +1,6 @@
 ---
 - name: Test hbacsvc
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: false
 
@@ -8,12 +8,14 @@
   - name: Ensure HBAC Service for http is absent
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: http,tftp
       state: absent
 
   - name: Ensure HBAC Service for http is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: http
     register: result
     failed_when: not result.changed or result.failed
@@ -21,6 +23,7 @@
   - name: Ensure HBAC Service for http is present again
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: http
     register: result
     failed_when: result.changed or result.failed
@@ -28,6 +31,7 @@
   - name: Ensure HBAC Service for tftp is present
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: tftp
       description: TFTP service
     register: result
@@ -36,6 +40,7 @@
   - name: Ensure HBAC Service for tftp is present again
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: tftp
       description: TFTP service
     register: result
@@ -44,6 +49,7 @@
   - name: Ensure HBAC Services for http and tftp are absent
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: http,tftp
       state: absent
     register: result
@@ -52,6 +58,7 @@
   - name: Ensure HBAC Services for http and tftp are absent again
     ipahbacsvc:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: http,tftp
       state: absent
     register: result
