@@ -962,6 +962,10 @@ else:
 
         def _run_ipa_commands(self):
             """Execute commands in self.ipa_commands."""
+            if self.check_mode:
+                self.changed = len(self.ipa_commands) > 0
+                return
+
             result = None
 
             for name, command, args in self.ipa_commands:

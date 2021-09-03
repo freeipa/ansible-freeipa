@@ -537,6 +537,7 @@ def main():
         argument_spec=get_argument_spec(),
         mutually_exclusive=[["name", "name_from_ip"]],
         required_one_of=[["name", "name_from_ip"]],
+        supports_check_mode=True,
     ).ipa_run()
 
 
