@@ -390,32 +390,16 @@ def main():
                     commands.append([None, 'automember_rebuild',
                                     {"hosts": rebuild_hosts}])
 
-        # Check mode exit
-        if ansible_module.check_mode:
-            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
+        # Execute commands
 
-        for name, command, args in commands:
-            try:
-                if name is None:
-                    result = ansible_module.ipa_command_no_name(command, args)
-                else:
-                    result = ansible_module.ipa_command(command, name, args)
+        changed = ansible_module.execute_ipa_commands(commands)
 
-                if "completed" in result:
-                    if result["completed"] > 0:
-                        changed = True
-                else:
-                    changed = True
-            except Exception as ex:
-                ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
-                                                             str(ex)))
-
-            # result["failed"] is used only for INCLUDE_RE, EXCLUDE_RE
-            # if entries could not be added that are already there and
-            # it entries could not be removed that are not there.
-            # All other issues like invalid attributes etc. are handled
-            # as exceptions. Therefore the error section is not here as
-            # in other modules.
+        # result["failed"] is used only for INCLUDE_RE, EXCLUDE_RE
+        # if entries could not be added that are already there and
+        # if entries could not be removed that are not there.
+        # All other issues like invalid attributes etc. are handled
+        # as exceptions. Therefore the error section is not here as
+        # in other modules.
 
     # Done
     ansible_module.exit_json(changed=changed, **exit_args)
