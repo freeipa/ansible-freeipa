@@ -1,6 +1,6 @@
 ---
 - name: Test dnsforwardzone
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: false
 
@@ -8,6 +8,7 @@
   - name: ensure test forwardzones are absent
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - example.com
       - newfailzone.com
@@ -16,6 +17,7 @@
   - name: ensure forwardzone example.com is created
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       forwarders:
@@ -28,6 +30,7 @@
   - name: ensure forwardzone example.com is present again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       forwarders:
@@ -40,6 +43,7 @@
   - name: ensure forwardzone example.com has two forwarders
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       forwarders:
@@ -54,6 +58,7 @@
   - name: ensure forwardzone example.com has one forwarder again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       forwarders:
         - ip_address: 8.8.8.8
@@ -66,6 +71,7 @@
   - name: skip_overlap_check can only be set on creation so change nothing
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       forwarders:
         - ip_address: 8.8.8.8
@@ -78,6 +84,7 @@
   - name: ensure forwardzone example.com is absent.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: absent
     register: result
@@ -86,6 +93,7 @@
   - name: ensure forwardzone example.com is absent, again.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: absent
     register: result
@@ -94,6 +102,7 @@
   - name: change all the things at once
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       forwarders:
@@ -109,6 +118,7 @@
   - name: change zone forward policy
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       forwardpolicy: first
     register: result
@@ -117,6 +127,7 @@
   - name: change zone forward policy, again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       forwardpolicy: first
     register: result
@@ -125,6 +136,7 @@
   - name: ensure forwardzone example.com is absent.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: absent
     register: result
@@ -133,6 +145,7 @@
   - name: ensure forwardzone example.com is absent, again.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: absent
     register: result
@@ -141,6 +154,7 @@
   - name: ensure forwardzone example.com is created with minimal args
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       skip_overlap_check: true
@@ -152,6 +166,7 @@
   - name: ensure forwardzone example.com is created with minimal args, again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       skip_overlap_check: true
@@ -163,6 +178,7 @@
   - name: add a forwarder to any existing ones
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       forwarders:
@@ -175,6 +191,7 @@
   - name: add a forwarder to any existing ones, again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       forwarders:
@@ -187,6 +204,7 @@
   - name: check the list of forwarders is what we expect
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       forwarders:
@@ -200,6 +218,7 @@
   - name: remove a single forwarder
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: absent
       name: example.com
       forwarders:
@@ -211,6 +230,7 @@
   - name: remove a single forwarder, again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: absent
       name: example.com
       forwarders:
@@ -222,6 +242,7 @@
   - name: check the list of forwarders is what we expect now
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       forwarders:
@@ -234,6 +255,7 @@
   - name: Add a permission for per-forward zone access delegation.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       permission: yes
       action: member
@@ -243,6 +265,7 @@
   - name: Add a permission for per-forward zone access delegation, again.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       permission: yes
       action: member
@@ -252,6 +275,7 @@
   - name: Remove a permission for per-forward zone access delegation.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       permission: no
       action: member
@@ -261,6 +285,7 @@
   - name: Remove a permission for per-forward zone access delegation, again.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       permission: no
       action: member
@@ -270,6 +295,7 @@
   - name: disable the forwarder
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: disabled
     register: result
@@ -278,6 +304,7 @@
   - name: disable the forwarder again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: disabled
     register: result
@@ -286,6 +313,7 @@
   - name: enable the forwarder
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: enabled
     register: result
@@ -294,6 +322,7 @@
   - name: enable the forwarder, again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: enabled
     register: result
@@ -302,12 +331,14 @@
   - name: ensure forwardzone example.com is absent again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: absent
 
   - name: try to create a new forwarder with action=member
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       state: present
       name: example.com
       forwarders:
@@ -321,6 +352,7 @@
   - name: try to create a new forwarder with disabled state
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: disabled
     register: result
@@ -329,6 +361,7 @@
   - name: Ensure forwardzone is not added without forwarders, with correct message.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: newfailzone.com
     register: result
     failed_when: not result.failed or "No forwarders specified" not in result.msg
@@ -336,6 +369,7 @@
   - name: ensure forwardzone example.com is absent - tidy up
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - example.com
       - newfailzone.com
