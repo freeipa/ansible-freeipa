@@ -1,6 +1,6 @@
 ---
 - name: Test hostgroup
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: true
 
@@ -13,6 +13,7 @@
   - name: Ensure host-group databases, mysql-server and oracle-server are absent
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - databases
       - mysql-server
@@ -22,6 +23,7 @@
   - name: Test hosts db1 and db2 absent
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - "{{ 'db1.' + ipaserver_domain }}"
       - "{{ 'db2.' + ipaserver_domain }}"
@@ -30,6 +32,7 @@
   - name: Host "{{ 'db1.' + ipaserver_domain }}" present
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ 'db1.' + ipaserver_domain }}"
       force: yes
     register: result
@@ -38,6 +41,7 @@
   - name: Host "{{ 'db2.' + ipaserver_domain }}" present
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ 'db2.' + ipaserver_domain }}"
       force: yes
     register: result
@@ -46,6 +50,7 @@
   - name: Ensure host-group mysql-server is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: mysql-server
       state: present
     register: result
@@ -54,6 +59,7 @@
   - name: Ensure host-group mysql-server is present again
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: mysql-server
       state: present
     register: result
@@ -62,6 +68,7 @@
   - name: Ensure host-group oracle-server is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: oracle-server
       state: present
     register: result
@@ -70,6 +77,7 @@
   - name: Ensure host-group oracle-server is present again
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: oracle-server
       state: present
     register: result
@@ -78,6 +86,7 @@
   - name: Ensure host-group databases is present
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: databases
       state: present
       host:
@@ -90,6 +99,7 @@
   - name: Ensure host-group databases is present again
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: databases
       state: present
       host:
@@ -102,6 +112,7 @@
   - name: Ensure host db2 is member of host-group databases
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: databases
       state: present
       host:
@@ -113,6 +124,7 @@
   - name: Ensure host db2 is member of host-group databases again
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: databases
       state: present
       host:
@@ -124,6 +136,7 @@
   - name: Ensure host-group mysql-server is member of host-group databases
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: databases
       state: present
       hostgroup:
@@ -135,6 +148,7 @@
   - name: Ensure host-group mysql-server is member of host-group databases again
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: databases
       state: present
       hostgroup:
@@ -146,6 +160,7 @@
   - name: Ensure host-group oracle-server is member of host-group databases (again)
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: databases
       state: present
       hostgroup:
@@ -157,6 +172,7 @@
   - name: Ensure host-group databases, mysql-server and oracle-server are absent
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - databases
       - mysql-server
@@ -168,6 +184,7 @@
   - name: Ensure host-group databases, mysql-server and oracle-server are absent again
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - databases
       - mysql-server
@@ -179,6 +196,7 @@
   - name: Test hosts db1 and db2 absent
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - "{{ 'db1.' + ipaserver_domain }}"
       - "{{ 'db2.' + ipaserver_domain }}"
