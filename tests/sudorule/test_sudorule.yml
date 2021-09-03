@@ -1,7 +1,7 @@
 ---
 
 - name: Test sudorule
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: true
 
@@ -11,18 +11,21 @@
   - name: Ensure user is absent
     ipauser:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: user01
       state: absent
 
   - name: Ensure group is absent
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group01
       state: absent
 
   - name: Ensure user is present
     ipauser:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: user01
       first: user
       last: zeroone
@@ -30,24 +33,28 @@
   - name: Ensure group is present, with user01 on it.
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group01
       user: user01
 
   - name: Ensure sudocmdgroup is absent
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test_sudorule
       state: absent
 
   - name: Ensure hostgroup is present, with a host.
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: cluster
       host: "{{ ansible_facts['fqdn'] }}"
 
   - name: Ensure some sudocmds are available
     ipasudocmd:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
           - /sbin/ifconfig
           - /usr/bin/vim
@@ -56,6 +63,7 @@
   - name: Ensure sudocmdgroup is available
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test_sudorule
       sudocmd: /usr/bin/vim
       state: present
@@ -63,6 +71,7 @@
   - name: Ensure sudorules are absent
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - testrule1
       - allusers
@@ -75,6 +84,7 @@
   - name: Ensure sudorule is present
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
     register: result
     failed_when: not result.changed or result.failed
@@ -82,6 +92,7 @@
   - name: Ensure sudorule is present again
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
     register: result
     failed_when: result.changed or result.failed
@@ -89,6 +100,7 @@
   - name: Ensure user01 is on the list of users sudorule execute as.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       runasuser:
         - user01
@@ -99,6 +111,7 @@
   - name: Ensure user01 is on the list of users sudorule execute as, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       runasuser:
         - user01
@@ -109,6 +122,7 @@
   - name: Ensure user01 is not on the list of users sudorule execute as.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       runasuser:
         - user01
@@ -120,6 +134,7 @@
   - name: Ensure user01 is not on the list of users sudorule execute as, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       runasuser:
         - user01
@@ -131,6 +146,7 @@
   - name: Ensure group01 is on the list of group sudorule execute as.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       runasgroup:
         - group01
@@ -141,6 +157,7 @@
   - name: Ensure group01 is on the list of group sudorule execute as, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       runasgroup:
         - group01
@@ -151,6 +168,7 @@
   - name: Ensure group01 is not on the list of group sudorule execute as.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       runasgroup:
         - group01
@@ -162,6 +180,7 @@
   - name: Ensure group01 is not on the list of groups sudorule execute as, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       runasgroup:
         - group01
@@ -173,6 +192,7 @@
   - name: Ensure sudorule is present, with usercategory 'all'
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       usercategory: all
     register: result
@@ -181,6 +201,7 @@
   - name: Ensure sudorule is present, with usercategory 'all', again
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       usercategory: all
     register: result
@@ -189,6 +210,7 @@
   - name: Ensure sudorule is with usercategory 'all' is absent
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       state: absent
     register: result
@@ -197,6 +219,7 @@
   - name: Ensure sudorule is present, with runasusercategory 'all'.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       runasusercategory: all
     register: result
@@ -205,6 +228,7 @@
   - name: Ensure sudorule is present, with runasusercategory 'all', again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       runasusercategory: all
     register: result
@@ -213,6 +237,7 @@
   - name: Ensure sudorule is with runasusercategory 'all' is absent
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       state: absent
     register: result
@@ -221,6 +246,7 @@
   - name: Ensure sudorule is present, with runasgroupcategory 'all'.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       runasgroupcategory: all
     register: result
@@ -229,6 +255,7 @@
   - name: Ensure sudorule is present, with runasgroupcategory 'all', again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       runasgroupcategory: all
     register: result
@@ -237,6 +264,7 @@
   - name: Ensure sudorule is with runasgroupcategory 'all' is absent
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       state: absent
     register: result
@@ -245,6 +273,7 @@
   - name: Ensure sudorule is present, with usercategory 'all'.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       usercategory: all
     register: result
@@ -253,6 +282,7 @@
   - name: Ensure sudorule is present, with usercategory 'all', again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       usercategory: all
     register: result
@@ -261,6 +291,7 @@
   - name: Ensure sudorule is present, with hostategory 'all'
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allhosts
       hostcategory: all
     register: result
@@ -269,6 +300,7 @@
   - name: Ensure sudorule is present, with hostategory 'all', again
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allhosts
       hostcategory: all
     register: result
@@ -277,6 +309,7 @@
   - name: Ensure sudorule is disabled
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       state: disabled
     register: result
@@ -285,6 +318,7 @@
   - name: Ensure sudorule is disabled, again
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       state: disabled
     register: result
@@ -293,6 +327,7 @@
   - name: Ensure sudorule is enabled
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       state: enabled
     register: result
@@ -301,6 +336,7 @@
   - name: Ensure sudorule is enabled, again
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       state: enabled
     register: result
@@ -309,6 +345,7 @@
   - name: Ensure user is present in sudorule.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       user: user01
       action: member
@@ -318,6 +355,7 @@
   - name: Ensure user is present in sudorule, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       user: user01
       action: member
@@ -327,6 +365,7 @@
   - name: Ensure user is absent from sudorule.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       user: user01
       action: member
@@ -337,6 +376,7 @@
   - name: Ensure user is absent from sudorule, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       user: user01
       action: member
@@ -347,6 +387,7 @@
   - name: Ensure group is present in sudorule.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       group: group01
       action: member
@@ -356,6 +397,7 @@
   - name: Ensure group is present in sudorule, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       group: group01
       action: member
@@ -365,6 +407,7 @@
   - name: Ensure group is absent from sudorule.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       group: group01
       action: member
@@ -375,6 +418,7 @@
   - name: Ensure group is absent from sudorule, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       group: group01
       action: member
@@ -385,6 +429,7 @@
   - name: Ensure sudorule has a sudooption.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       sudooption: '!authenticate'
       action: member
@@ -394,6 +439,7 @@
   - name: Ensure sudorule has a sudooption, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       sudooption: '!authenticate'
       action: member
@@ -403,6 +449,7 @@
   - name: Ensure sudorule has an order.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       order: 1
     register: result
@@ -411,6 +458,7 @@
   - name: Ensure sudorule has an order, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       order: 1
     register: result
@@ -419,6 +467,7 @@
   - name: Ensure sudorule has another order.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       order: 10
     register: result
@@ -427,6 +476,7 @@
   - name: Ensure sudorule is present and some sudocmd are allowed.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       allow_sudocmd:
       - /sbin/ifconfig
@@ -437,6 +487,7 @@
   - name: Ensure sudorule is present and some sudocmd are allowed, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       allow_sudocmd:
       - /sbin/ifconfig
@@ -447,6 +498,7 @@
   - name: Ensure sudorule is present and some sudocmd are denyed.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       deny_sudocmd:
       - /usr/bin/vim
@@ -457,6 +509,7 @@
   - name: Ensure sudorule is present and some sudocmd are denyed, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       deny_sudocmd:
       - /usr/bin/vim
@@ -467,6 +520,7 @@
   - name: Ensure sudorule is present and, sudocmds are absent.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       allow_sudocmd: /sbin/ifconfig
       deny_sudocmd: /usr/bin/vim
@@ -478,6 +532,7 @@
   - name: Ensure sudorule is present and, sudocmds are absent, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       allow_sudocmd: /sbin/ifconfig
       deny_sudocmd: /usr/bin/vim
@@ -489,6 +544,7 @@
   - name: Ensure sudorule is present with cmdcategory 'all'.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allcommands
       cmdcategory: all
     register: result
@@ -497,6 +553,7 @@
   - name: Ensure sudorule is present with cmdcategory 'all', again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allcommands
       cmdcategory: all
     register: result
@@ -505,6 +562,7 @@
   - name: Ensure host "{{ ansible_facts['fqdn'] }}" is present in sudorule.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       host: "{{ ansible_facts['fqdn'] }}"
       action: member
@@ -514,6 +572,7 @@
   - name: Ensure host "{{ ansible_facts['fqdn'] }}" is present in sudorule, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       host: "{{ ansible_facts['fqdn'] }}"
       action: member
@@ -523,6 +582,7 @@
   - name: Ensure hostgroup is present in sudorule.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       hostgroup: cluster
       action: member
@@ -532,6 +592,7 @@
   - name: Ensure hostgroup is present in sudorule, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       hostgroup: cluster
       action: member
@@ -541,6 +602,7 @@
   - name: Ensure sudorule is present, with an allow_sudocmdgroup.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       allow_sudocmdgroup: test_sudorule
       state: present
@@ -550,6 +612,7 @@
   - name: Ensure sudorule is present, with an allow_sudocmdgroup, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       allow_sudocmdgroup: test_sudorule
       state: present
@@ -559,6 +622,7 @@
   - name: Ensure sudorule is present, but allow_sudocmdgroup is absent.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       allow_sudocmdgroup: test_sudorule
       action: member
@@ -569,6 +633,7 @@
   - name: Ensure sudorule is present, but allow_sudocmdgroup is absent.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       allow_sudocmdgroup: test_sudorule
       action: member
@@ -579,6 +644,7 @@
   - name: Ensure sudorule is present, with an deny_sudocmdgroup.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       deny_sudocmdgroup: test_sudorule
       state: present
@@ -588,6 +654,7 @@
   - name: Ensure sudorule is present, with an deny_sudocmdgroup, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       deny_sudocmdgroup: test_sudorule
       state: present
@@ -597,6 +664,7 @@
   - name: Ensure sudorule is present, but deny_sudocmdgroup is absent.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       deny_sudocmdgroup: test_sudorule
       action: member
@@ -607,6 +675,7 @@
   - name: Ensure sudorule is present, but deny_sudocmdgroup is absent, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       deny_sudocmdgroup: test_sudorule
       action: member
@@ -617,6 +686,7 @@
   - name: Ensure sudorule is absent
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       state: absent
     register: result
@@ -625,6 +695,7 @@
   - name: Ensure sudorule is absent, again.
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testrule1
       state: absent
     register: result
@@ -633,6 +704,7 @@
   - name: Ensure sudorule allhosts is absent
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allhosts
       state: absent
     register: result
@@ -641,6 +713,7 @@
   - name: Ensure sudorule allhosts is absent, again
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allhosts
       state: absent
     register: result
@@ -649,6 +722,7 @@
   - name: Ensure sudorule allusers is absent
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       state: absent
     register: result
@@ -657,6 +731,7 @@
   - name: Ensure sudorule allusers is absent, again
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allusers
       state: absent
     register: result
@@ -665,6 +740,7 @@
   - name: Ensure sudorule allcommands is absent
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allcommands
       state: absent
     register: result
@@ -673,6 +749,7 @@
   - name: Ensure sudorule allcommands is absent, again
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: allcommands
       state: absent
     register: result
@@ -682,12 +759,14 @@
   - name : Ensure sudocmdgroup is absent
     ipasudocmdgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test_sudorule
       state: absent
 
   - name: Ensure sudocmds are absent
     ipasudocmd:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - /sbin/ifconfig
       - /usr/bin/vim
@@ -696,6 +775,7 @@
   - name: Ensure sudorules are absent
     ipasudorule:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - testrule1
       - allusers
@@ -706,5 +786,6 @@
   - name: Ensure hostgroup is absent.
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: cluster
       state: absent
