@@ -99,10 +99,6 @@ options:
     description: List of IP addresses or networks which are allowed to issue queries
     required: false
     type: bool
-  serial:
-    description: SOA record serial number
-    required: false
-    type: int
   refresh:
     description: SOA record refresh time
     required: false
@@ -167,7 +163,6 @@ EXAMPLES = """
       - ip_address: 8.8.8.8
       - ip_address: 8.8.4.4
         port: 52
-    serial: 1234
     refresh: 3600
     retry: 900
     expire: 1209600
@@ -224,7 +219,6 @@ class DNSZoneModule(FreeIPABaseModule):
     ipa_param_mapping = {
         # Direct Mapping
         "idnsforwardpolicy": "forward_policy",
-        "idnssoaserial": "serial",
         "idnssoarefresh": "refresh",
         "idnssoaretry": "retry",
         "idnssoaexpire": "expire",
@@ -449,10 +443,6 @@ class DNSZoneModule(FreeIPABaseModule):
             # Look for existing zone in IPA
             zone, is_zone_active = self.get_zone(zone_name)
             args = self.get_ipa_command_args(zone=zone)
-            set_serial = self.ipa_params.serial is not None
-
-            if set_serial:
-                del args["idnssoaserial"]
 
             if self.ipa_params.state in ["present", "enabled", "disabled"]:
                 if not zone:
@@ -476,26 +466,6 @@ class DNSZoneModule(FreeIPABaseModule):
 
             if self.ipa_params.state == "absent" and zone is not None:
                 self.add_ipa_command("dnszone_del", zone_name)
-
-            # Due to a bug in FreeIPA dnszone-add won't set
-            # SOA Serial in the creation of a zone, or if
-            # another field is modified along with it.
-            # As a workaround, we set only the SOA serial,
-            # with dnszone-mod, after other changes.
-            # See:
-            #   - https://pagure.io/freeipa/issue/8227
-            #   - https://pagure.io/freeipa/issue/8489
-            # Only set SOA Serial if it is not set already.
-            if (set_serial and
-                (zone is None
-                 or "idnssoaserial" not in zone
-                 or zone["idnssoaserial"] is None
-                 or zone["idnssoaserial"][0] != str(self.ipa_params.serial)
-                 )):
-                args = {
-                    "idnssoaserial": self.ipa_params.serial,
-                }
-                self.add_ipa_command("dnszone_mod", zone_name, args)
 
     def process_command_result(self, name, command, args, result):
         # pylint: disable=super-with-arguments
@@ -550,7 +520,6 @@ def get_argument_spec():
         dnssec=dict(type="bool", required=False, default=None),
         allow_transfer=dict(type="list", required=False, default=None),
         allow_query=dict(type="list", required=False, default=None),
-        serial=dict(type="int", required=False, default=None),
         refresh=dict(type="int", required=False, default=None),
         retry=dict(type="int", required=False, default=None),
         expire=dict(type="int", required=False, default=None),

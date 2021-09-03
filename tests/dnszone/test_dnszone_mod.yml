@@ -10,81 +10,6 @@
   - name: Setup testing environment
     include_tasks: env_setup.yml
 
-  # Tests
-  - name: Verify if zone can be created with a specific SOA serial.
-    block:
-    - name: Create zone with serial, refresh, retry and expire.
-      ipadnszone:
-        ipaadmin_password: SomeADMINpassword
-        name: testzone.local
-        serial: 4567
-        refresh: 70
-        retry: 89
-        expire: 200
-
-    - name: Verify zone was created with correct values.
-      shell: |
-         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-         KRB5CCNAME={{ KRB5CCNAME }} ipa dnszone-show testzone.local
-         kdestroy -A -q -c {{ KRB5CCNAME }}
-      register: result
-      failed_when: |
-        result.failed or not (
-          "serial: 4567" in result.stdout
-          and "refresh: 70" in result.stdout
-          and "retry: 89" in result.stdout
-          and "expire: 200" in result.stdout
-        )
-
-    - name: Remove test zone.
-      ipadnszone:
-        ipaadmin_password: SomeADMINpassword
-        name: testzone.local
-        state: absent
-
-    vars:
-      KRB5CCNAME: verify_bz_1876896
-
-  - name: Verify if a zone can have the the SOA serial modified to a specific value.
-    block:
-    - name: Create zone.
-      ipadnszone:
-        ipaadmin_password: SomeADMINpassword
-        name: testzone.local
-        state: present
-
-    - name: Modify zone with serial, refresh, retry and expire.
-      ipadnszone:
-        ipaadmin_password: SomeADMINpassword
-        name: testzone.local
-        serial: 4567
-        refresh: 70
-        retry: 89
-        expire: 200
-
-    - name: Verify zone was modified to the correct values
-      shell: |
-         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-         KRB5CCNAME={{ KRB5CCNAME }} ipa dnszone-show testzone.local
-         kdestroy -A -q -c {{ KRB5CCNAME }}
-      register: result
-      failed_when: |
-        result.failed or not (
-          "serial: 4567" in result.stdout
-          and "refresh: 70" in result.stdout
-          and "retry: 89" in result.stdout
-          and "expire: 200" in result.stdout
-        )
-
-    - name: Remove test zone.
-      ipadnszone:
-        ipaadmin_password: SomeADMINpassword
-        name: testzone.local
-        state: absent
-
-    vars:
-      KRB5CCNAME: verify_bz_1876896
-
   - name: Ensure zone is present.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
@@ -98,7 +23,6 @@
       allow_query:
         - 1.1.1.1
         - 2.2.2.2
-      serial: 1234
       refresh: 3600
       retry: 900
       expire: 1209600
@@ -112,14 +36,6 @@
       state: present
     register: result
     failed_when: not result.changed or result.failed
-
-  - name: Set serial to 1234, again.
-    ipadnszone:
-      ipaadmin_password: SomeADMINpassword
-      name: testzone.local
-      serial: 1234
-    register: result
-    failed_when: result.changed or result.failed
 
   - name: Set different nsec3param_rec.
     ipadnszone:
@@ -230,22 +146,6 @@
       ipaadmin_password: SomeADMINpassword
       name: testzone.local
       refresh: 4000
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: Set serial to 12345.
-    ipadnszone:
-      ipaadmin_password: SomeADMINpassword
-      name: testzone.local
-      serial: 12345
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: Set serial to 12345, again.
-    ipadnszone:
-      ipaadmin_password: SomeADMINpassword
-      name: testzone.local
-      serial: 12345
     register: result
     failed_when: result.changed or result.failed
 

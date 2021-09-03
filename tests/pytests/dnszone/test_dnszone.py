@@ -78,7 +78,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
         self.check_details(["Active zone: TRUE"], "dnszone-find", [zone26])
 
     def test_dnszone_name_from_ip(self):
-        """TC-35: Add dns zone with reverse zone IP. Bug#1845056"""
+        """TC-35: Add dns zone with reverse zone IP. Bug#1845056."""
         zone = "8.192.in-addr.arpa."
         expected_msg = "Zone name: {0}".format(zone)
         self.check_notexists([expected_msg], "dnszone-find", [zone])
@@ -92,7 +92,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
         self.check_details([expected_msg], "dnszone-find", [zone])
 
     def test_dnszone_del_multiple(self):
-        """TC-33: Delete multiple DNS zones Bug#1845058"""
+        """TC-33: Delete multiple DNS zones Bug#1845058."""
         zone = ["delzone1.com", "delzone2.com", "delzone3.com"]
         for add_zone in zone:
             kinit_admin(self.master)
@@ -112,7 +112,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
             self.check_notexists([error], "dnszone-show", [add_zone])
 
     def test_dnszone_invalid_ip(self):
-        """TC-07: Update with invalid IP’s in allow_transfer. Bug#1845051"""
+        """TC-07: Update with invalid IP’s in allow_transfer. Bug#1845051."""
         invalid_zone_name = "invalidzone.test"
         invalid_zone_ip = "in.va.li.d"
         expected_error = "Invalid IP for DNS forwarder"
@@ -128,20 +128,3 @@ class TestDNSZone(AnsibleFreeIPATestCase):
         self.check_notexists(
             [invalid_zone_ip], "dnszone-show", [invalid_zone_name],
         )
-
-    def test_invalid_serial(self):
-        """TC-13: Update invalid Serial."""
-        invalid_zone_name = "invalidserialzone.test"
-        invalid_serial = "429496729599"
-        expected_error = "invalid 'serial': can be at most 4294967295"
-
-        self.mark_xfail_using_ansible_freeipa_version(
-            version="ansible-freeipa-0.1.12-5.el8.noarch",
-            reason="Fix is not available for BZ-1845058",
-        )
-
-        self.run_playbook_with_exp_msg(
-            BASE_PATH + "dnszone_invalid_serial.yaml", expected_error
-        )
-        cmd = "dnszone-show"
-        self.check_notexists([invalid_serial], cmd, [invalid_zone_name])
