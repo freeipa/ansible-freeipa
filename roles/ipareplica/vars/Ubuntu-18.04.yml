@@ -1,0 +1,9 @@
+# vars/Ubuntu.yml
+ipareplica_packages: [ "freeipa-server" ]
+ipareplica_packages_dns: [ "freeipa-server-dns" ]
+ipareplica_packages_adtrust: [ "freeipa-server-trust-ad" ]
+ipareplica_packages_firewalld: [ "firewalld" ]
+# Ubuntu Bionic Beaver must use python2 as Python interpreter due
+# to the way python-ipalib package is defined.
+# Package python2.7 must be installed before executing this role.
+ansible_python_interpreter: '/usr/bin/python2.7'
