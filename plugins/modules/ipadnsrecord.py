@@ -1241,7 +1241,7 @@ def create_reverse_ip_record(module, zone_name, name, ips):
                 'idnsname': to_text(reverse_host),
                 "ptrrecord": "%s.%s" % (name, zone_name)
             }
-            _cmds.append([reverse_zone, 'dnsrecord_add', rev_args])
+            _cmds.append([to_text(reverse_zone), 'dnsrecord_add', rev_args])
 
     return _cmds
 
@@ -1408,6 +1408,14 @@ def define_commands_for_absent_state(module, zone_name, entry, res_find):
     return _commands
 
 
+# pylint: disable=unused-argument
+def exception_handler(module, ex):
+    if isinstance(ex, (ipalib_errors.EmptyModlist,
+                       ipalib_errors.DuplicateEntry)):
+        return True
+    return False
+
+
 def main():
     """Execute DNS record playbook."""
     ansible_module = configure_module()
@@ -1468,30 +1476,10 @@ def main():
             if cmds:
                 commands.extend(cmds)
 
-        # Check mode exit
-        if ansible_module.check_mode:
-            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
-
         # Execute commands
-        for name, command, args in commands:
-            try:
-                result = ansible_module.ipa_command(
-                    command, to_text(name), args)
-                if "completed" in result:
-                    if result["completed"] > 0:
-                        changed = True
-                else:
-                    changed = True
 
-            except ipalib_errors.EmptyModlist:
-                continue
-            except ipalib_errors.DuplicateEntry:
-                continue
-            except Exception as e:
-                error_message = str(e)
-
-                ansible_module.fail_json(
-                    msg="%s: %s: %s" % (command, name, error_message))
+        changed = ansible_module.execute_ipa_commands(
+            commands, exception_handler=exception_handler)
 
     # Done
     ansible_module.exit_json(changed=changed, host=exit_args)
