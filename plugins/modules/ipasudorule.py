@@ -824,36 +824,10 @@ def main():
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
-        # Check mode exit
-        if ansible_module.check_mode:
-            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
-
         # Execute commands
 
-        errors = []
-        for name, command, args in commands:
-            try:
-                result = ansible_module.ipa_command(command, name, args)
-
-                if "completed" in result:
-                    if result["completed"] > 0:
-                        changed = True
-                else:
-                    changed = True
-            except Exception as ex:
-                ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
-                                                             str(ex)))
-            # Get all errors
-            # result are ignored. All others are reported.
-            if "failed" in result and len(result["failed"]) > 0:
-                for item in result["failed"]:
-                    failed_item = result["failed"][item]
-                    for member_type in failed_item:
-                        for member, failure in failed_item[member_type]:
-                            errors.append("%s: %s %s: %s" % (
-                                command, member_type, member, failure))
-        if len(errors) > 0:
-            ansible_module.fail_json(msg=", ".join(errors))
+        changed = ansible_module.execute_ipa_commands(
+            commands, fail_on_member_errors=True)
 
     # Done
 

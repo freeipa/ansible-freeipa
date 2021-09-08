@@ -289,23 +289,9 @@ def main():
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
-        # Check mode exit
-        if ansible_module.check_mode:
-            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
-
         # Execute commands
 
-        for name, command, args in commands:
-            try:
-                result = ansible_module.ipa_command(command, name, args)
-                if "completed" in result:
-                    if result["completed"] > 0:
-                        changed = True
-                else:
-                    changed = True
-            except Exception as e:
-                ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
-                                                             str(e)))
+        changed = ansible_module.execute_ipa_commands(commands)
 
     # Done
 

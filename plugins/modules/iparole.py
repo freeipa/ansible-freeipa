@@ -314,12 +314,12 @@ def ensure_members_are_present(module, name, res_find):
     return commands
 
 
-def process_command_failures(command, result):
+# pylint: disable=unused-argument
+def result_handler(module, result, command, name, args, errors):
     """Process the result of a command, looking for errors."""
     # Get all errors
     # All "already a member" and "not a member" failures in the
     # result are ignored. All others are reported.
-    errors = []
     if "failed" in result and len(result["failed"]) > 0:
         for item in result["failed"]:
             failed_item = result["failed"][item]
@@ -330,37 +330,6 @@ def process_command_failures(command, result):
                         continue
                     errors.append("%s: %s %s: %s" % (
                         command, member_type, member, failure))
-    return errors
-
-
-def process_commands(module, commands):
-    """Process the list of IPA API commands."""
-    errors = []
-    exit_args = {}
-    changed = False
-
-    # Check mode exit
-    if module.check_mode:
-        return len(commands) > 0, exit_args
-
-    for name, command, args in commands:
-        try:
-            result = module.ipa_command(command, name, args)
-            if "completed" in result:
-                if result["completed"] > 0:
-                    changed = True
-            else:
-                changed = True
-
-            errors = process_command_failures(command, result)
-        except Exception as exception:  # pylint: disable=broad-except
-            module.fail_json(
-                msg="%s: %s: %s" % (command, name, str(exception)))
-
-    if errors:
-        module.fail_json(msg=", ".join(errors))
-
-    return changed, exit_args
 
 
 def role_commands_for_name(module, state, action, name):
@@ -454,7 +423,11 @@ def main():
             cmds = role_commands_for_name(ansible_module, state, action, name)
             commands.extend(cmds)
 
-        changed, exit_args = process_commands(ansible_module, commands)
+        exit_args = {}
+
+        # Execute commands
+
+        changed = ansible_module.execute_ipa_commands(commands, result_handler)
 
     # Done
     ansible_module.exit_json(changed=changed, **exit_args)

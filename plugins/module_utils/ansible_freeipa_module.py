@@ -45,6 +45,7 @@ else:
     import gssapi
     from datetime import datetime
     from contextlib import contextmanager
+    import inspect
 
     # ansible-freeipa requires locale to be C, IPA requires utf-8.
     os.environ["LANGUAGE"] = "C"
@@ -716,8 +717,21 @@ else:
             """
             return api_check_ipa_version(oper, requested_version)
 
-        def execute_ipa_commands(self, commands, handle_result=None,
-                                 **handle_result_user_args):
+        # pylint: disable=unused-argument
+        @staticmethod
+        def member_error_handler(module, result, command, name, args, errors):
+            # Get all errors
+            for failed_item in result.get("failed", []):
+                failed = result["failed"][failed_item]
+                for member_type in failed:
+                    for member, failure in failed[member_type]:
+                        errors.append("%s: %s %s: %s" % (
+                            command, member_type, member, failure))
+
+        def execute_ipa_commands(self, commands, result_handler=None,
+                                 exception_handler=None,
+                                 fail_on_member_errors=False,
+                                 **handlers_user_args):
             """
             Execute IPA API commands from command list.
 
@@ -727,30 +741,56 @@ else:
                 The list of commands in the form (name, command and args)
                 For commands that do not require a 'name', None needs be
                 used.
-            handle_result: function
+            result_handler: function
                 The user function to handle results of the single commands
-            handle_result_user_args: dict (user args mapping)
-                The user args to pass to handle_result function
+            exception_handler: function
+                The user function to handle exceptions of the single commands
+                Returns True to continue to next command, else False
+            fail_on_member_errors: bool
+                Use default member error handler handler member_error_handler
+            handlers_user_args: dict (user args mapping)
+                The user args to pass to result_handler and exception_handler
+                functions
 
             Example (ipauser module):
 
-            def handle_result(module, result, command, name, args, exit_args):
+            def result_handler(module, result, command, name, args, exit_args,
+                              one_name):
                 if "random" in args and command in ["user_add", "user_mod"] \
                    and "randompassword" in result["result"]:
-                    exit_args.setdefault(name, {})["randompassword"] = \
-                        result["result"]["randompassword"]
+                    if one_name:
+                        exit_args["randompassword"] = \
+                            result["result"]["randompassword"]
+                    else:
+                        exit_args.setdefault(name, {})["randompassword"] = \
+                            result["result"]["randompassword"]
+
+            def exception_handler(module, ex, exit_args, one_name):
+                if ex.exception == ipalib_errors.EmptyModlist:
+                    result = {}
+                return False
 
             exit_args = {}
-            changed = module.execute_ipa_commands(commands, handle_result,
-                                                  exit_args=exit_args)
+            changed = module.execute_ipa_commands(commands, result_handler,
+                                                  exception_handler,
+                                                  exit_args=exit_args,
+                                                  one_name=len(names)==1)
 
-            if len(names) == 1:
-                ansible_module.exit_json(changed=changed,
-                                         user=exit_args[names[0]])
-            else:
-                ansible_module.exit_json(changed=changed, user=exit_args)
+            ansible_module.exit_json(changed=changed, user=exit_args)
 
             """
+            # Fail on given handlers_user_args without result or exception
+            # handler
+            if result_handler is None and exception_handler is None and \
+               len(handlers_user_args) > 0:
+                self.fail_json(msg="Args without result and exception hander: "
+                               "%s" % repr(handlers_user_args))
+
+            # Fail on given result_handler and fail_on_member_errors
+            if result_handler is not None and fail_on_member_errors:
+                self.fail_json(
+                    msg="result_handler given and fail_on_member_errors set")
+
             # No commands, report no changes
             if commands is None:
                 return False
@@ -758,6 +798,24 @@ else:
             # In check_mode return if there are commands to do
             if self.check_mode:
                 return len(commands) > 0
+
+            # Error list for result_handler and error_handler
+            _errors = []
+
+            # Handle fail_on_member_errors, set result_handler to
+            # member_error_handler
+            # Add internal _errors for result_hendler if the module is not
+            # adding it. This also activates the final fail_json if
+            # errors are found.
+            if fail_on_member_errors:
+                result_handler = IPAAnsibleModule.member_error_handler
+                handlers_user_args["errors"] = _errors
+            elif result_handler is not None:
+                if "errors" not in handlers_user_args:
+                    # pylint: disable=deprecated-method
+                    argspec = inspect.getargspec(result_handler)
+                    if "errors" in argspec.args:
+                        handlers_user_args["errors"] = _errors
 
             changed = False
             for name, command, args in commands:
@@ -773,12 +831,21 @@ else:
                     else:
                         changed = True
 
-                    if handle_result is not None:
-                        handle_result(self, result, command, name, args,
-                                      **handle_result_user_args)
+                    # If result_handler is not None, call it with user args
+                    # defined in **handlers_user_args
+                    if result_handler is not None:
+                        result_handler(self, result, command, name, args,
+                                       **handlers_user_args)
 
                 except Exception as e:
+                    if exception_handler is not None and \
+                       exception_handler(self, e, **handlers_user_args):
+                        continue
                     self.fail_json(msg="%s: %s: %s" % (command, name, str(e)))
+
+            # Fail on errors from result_handler and exception_handler
+            if len(_errors) > 0:
+                self.fail_json(msg=", ".join(_errors))
 
             return changed
 

@@ -572,6 +572,54 @@ def check_parameters(   # pylint: disable=unused-argument
                         "'member' for state '%s'" % (x, state))
 
 
+# pylint: disable=unused-argument
+def result_handler(module, result, command, name, args, errors, exit_args,
+                   one_name):
+    if "random" in args and command in ["host_add", "host_mod"] \
+       and "randompassword" in result["result"]:
+        if one_name:
+            exit_args["randompassword"] = \
+                result["result"]["randompassword"]
+        else:
+            exit_args.setdefault(name, {})["randompassword"] = \
+                result["result"]["randompassword"]
+
+    # All "already a member" and "not a member" failures in the
+    # result are ignored. All others are reported.
+    if "failed" in result and len(result["failed"]) > 0:
+        for item in result["failed"]:
+            failed_item = result["failed"][item]
+            for member_type in failed_item:
+                for member, failure in failed_item[member_type]:
+                    if "already a member" in failure \
+                       or "not a member" in failure:
+                        continue
+                    errors.append("%s: %s %s: %s" % (
+                        command, member_type, member, failure))
+
+
+# pylint: disable=unused-argument
+def exception_handler(module, ex, errors, exit_args, one_name):
+    msg = str(ex)
+    if "already contains" in msg \
+       or "does not contain" in msg:
+        return True
+
+    #  The canonical principal name may not be removed
+    if "equal to the canonical principal name must" in msg:
+        return True
+
+    # Host is already disabled, ignore error
+    if "This entry is already disabled" in msg:
+        return True
+
+    # Ignore no modification error.
+    if "no modifications to be performed" in msg:
+        return True
+
+    return False
+
+
 def main():
     host_spec = dict(
         # present
@@ -1343,68 +1391,11 @@ def main():
 
         del host_set
 
-        # Check mode exit
-        if ansible_module.check_mode:
-            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
-
         # Execute commands
 
-        errors = []
-        for name, command, args in commands:
-            try:
-                result = ansible_module.ipa_command(command, name, args)
-                if "completed" in result:
-                    if result["completed"] > 0:
-                        changed = True
-                else:
-                    changed = True
-
-                if "random" in args and command in ["host_add", "host_mod"] \
-                   and "randompassword" in result["result"]:
-                    if len(names) == 1:
-                        exit_args["randompassword"] = \
-                            result["result"]["randompassword"]
-                    else:
-                        exit_args.setdefault(name, {})["randompassword"] = \
-                            result["result"]["randompassword"]
-
-            except Exception as e:
-                msg = str(e)
-                if "already contains" in msg \
-                   or "does not contain" in msg:
-                    continue
-
-                #  The canonical principal name may not be removed
-                if "equal to the canonical principal name must" in msg:
-                    continue
-
-                # Host is already disabled, ignore error
-                if "This entry is already disabled" in msg:
-                    continue
-
-                # Ignore no modification error.
-                if "no modifications to be performed" in msg:
-                    continue
-
-                ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
-                                                             msg))
-
-            # Get all errors
-            # All "already a member" and "not a member" failures in the
-            # result are ignored. All others are reported.
-            if "failed" in result and len(result["failed"]) > 0:
-                for item in result["failed"]:
-                    failed_item = result["failed"][item]
-                    for member_type in failed_item:
-                        for member, failure in failed_item[member_type]:
-                            if "already a member" in failure \
-                               or "not a member" in failure:
-                                continue
-                            errors.append("%s: %s %s: %s" % (
-                                command, member_type, member, failure))
-
-        if len(errors) > 0:
-            ansible_module.fail_json(msg=", ".join(errors))
+        changed = ansible_module.execute_ipa_commands(
+            commands, result_handler, exception_handler,
+            exit_args=exit_args, one_name=len(names) == 1)
 
     # Done
 
