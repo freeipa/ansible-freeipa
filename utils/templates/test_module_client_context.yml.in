@@ -1,0 +1,39 @@
+---
+- name: Test ${name}
+  hosts: ipaclients, ipaserver
+  # Change "become" or "gather_facts" to "yes",
+  # if you test playbook requires any.
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Include FreeIPA facts.
+    include_tasks: ../env_freeipa_facts.yml
+
+  # Test will only be executed if host is not a server.
+  - name: Execute with server context in the client.
+    ipa${name}:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: server
+      name: ThisShouldNotWork
+    register: result
+    failed_when: not (result.failed and result.msg is regex("No module named '*ipaserver'*"))
+    when: ipa_host_is_client
+
+# Import basic module tests, and execute with ipa_context set to 'client'.
+# If ipaclients is set, it will be executed using the client, if not,
+# ipaserver will be used.
+#
+# With this setup, tests can be executed against an IPA client, against
+# an IPA server using "client" context, and ensure that tests are executed
+# in upstream CI.
+
+- name: Test ${name} using client context, in client host.
+  import_playbook: test_${name}.yml
+  when: groups['ipaclients']
+  vars:
+    ipa_test_host: ipaclients
+
+- name: Test ${name} using client context, in server host.
+  import_playbook: test_${name}.yml
+  when: groups['ipaclients'] is not defined or not groups['ipaclients']
