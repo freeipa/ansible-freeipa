@@ -559,9 +559,9 @@ else:
 
                 # Execute command
                 if state == "present":
-                    ansible_module.ipa_command(["command_add", name, {}])
+                    ansible_module.ipa_command("command_add", name, {})
                 else:
-                    ansible_module.ipa_command(["command_del", name, {}])
+                    ansible_module.ipa_command("command_del", name, {})
 
             # Done
 
