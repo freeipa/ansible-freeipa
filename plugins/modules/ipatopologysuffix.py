@@ -89,8 +89,7 @@ def main():
 
     with ansible_module.ipa_connect():
         # Execute command
-        ansible_module.ipa_command(["topologysuffix_verify", suffix,
-                                    {}])
+        ansible_module.ipa_command("topologysuffix_verify", suffix, {})
 
     # Done
 
