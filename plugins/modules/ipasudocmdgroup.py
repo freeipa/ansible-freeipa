@@ -256,6 +256,7 @@ def main():
                         ansible_module.fail_json(
                             msg="No sudocmdgroup '%s'" % name)
 
+                    # Ensure members are present
                     sudocmd = gen_add_list(
                         sudocmd, res_find.get("member_sudocmd") or [])
                     if sudocmd:
@@ -272,7 +273,6 @@ def main():
                         ansible_module.fail_json(
                             msg="No sudocmdgroup '%s'" % name)
 
-                    # Ensure members are absent
                     sudocmd = gen_intersection_list(
                         sudocmd, res_find.get("member_sudocmd") or [])
                     if sudocmd:
@@ -282,37 +282,8 @@ def main():
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
-        # Check mode exit
-        if ansible_module.check_mode:
-            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
-
-        # Execute commands
-        for name, command, args in commands:
-            try:
-                result = ansible_module.ipa_command(command, name, args)
-                if action == "member":
-                    if "completed" in result and result["completed"] > 0:
-                        changed = True
-                else:
-                    if command == "sudocmdgroup_del":
-                        changed |= "Deleted" in result['summary']
-                    elif command == "sudocmdgroup_add":
-                        changed |= "Added" in result['summary']
-            except Exception as e:
-                ansible_module.fail_json(msg="%s: %s: %s" % (command, name,
-                                                             str(e)))
-            # Get all errors
-            # All "already a member" and "not a member" failures in the
-            # result are ignored. All others are reported.
-            errors = []
-            if "failed" in result and "member" in result["failed"]:
-                failed = result["failed"]["member"]
-                for member_type in failed:
-                    for member, failure in failed[member_type]:
-                        errors.append("%s: %s %s: %s" % (
-                            command, member_type, member, failure))
-            if len(errors) > 0:
-                ansible_module.fail_json(msg=", ".join(errors))
+        changed = ansible_module.execute_ipa_commands(
+            commands, fail_on_member_errors=True)
 
     # Done
 
