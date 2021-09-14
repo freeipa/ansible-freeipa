@@ -100,7 +100,8 @@ RETURN = """
 """
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, ipalib_errors
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
+    gen_add_list, gen_intersection_list, ipalib_errors
 
 
 def find_sudocmdgroup(module, name):
@@ -255,10 +256,12 @@ def main():
                         ansible_module.fail_json(
                             msg="No sudocmdgroup '%s'" % name)
 
-                    # Ensure members are present
-                    commands.append([name, "sudocmdgroup_add_member",
-                                     {"sudocmd": sudocmd}
-                                     ])
+                    sudocmd = gen_add_list(
+                        sudocmd, res_find.get("member_sudocmd") or [])
+                    if sudocmd:
+                        commands.append([name, "sudocmdgroup_add_member",
+                                         {"sudocmd": sudocmd}
+                                         ])
             elif state == "absent":
                 if action == "sudocmdgroup":
                     if res_find is not None:
@@ -270,9 +273,12 @@ def main():
                             msg="No sudocmdgroup '%s'" % name)
 
                     # Ensure members are absent
-                    commands.append([name, "sudocmdgroup_remove_member",
-                                     {"sudocmd": sudocmd}
-                                     ])
+                    sudocmd = gen_intersection_list(
+                        sudocmd, res_find.get("member_sudocmd") or [])
+                    if sudocmd:
+                        commands.append([name, "sudocmdgroup_remove_member",
+                                         {"sudocmd": sudocmd}
+                                         ])
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
@@ -303,10 +309,8 @@ def main():
                 failed = result["failed"]["member"]
                 for member_type in failed:
                     for member, failure in failed[member_type]:
-                        if "already a member" not in failure \
-                           and "not a member" not in failure:
-                            errors.append("%s: %s %s: %s" % (
-                                command, member_type, member, failure))
+                        errors.append("%s: %s %s: %s" % (
+                            command, member_type, member, failure))
             if len(errors) > 0:
                 ansible_module.fail_json(msg=", ".join(errors))
 
