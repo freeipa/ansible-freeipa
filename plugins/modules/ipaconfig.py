@@ -257,12 +257,6 @@ def config_show(module):
     return _result["result"]
 
 
-def gen_args(params):
-    _args = {k: v for k, v in params.items() if v is not None}
-
-    return _args
-
-
 def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
