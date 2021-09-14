@@ -1,0 +1,5 @@
+# vars/Debian-10.yml
+ipaclient_packages: [ "freeipa-client" ]
+# On Debian Buster freeipa-client package contains only files for Python2. Thus, Python2 is the only remote Python
+# interpreter that has the required modules and must be used.
+ansible_python_interpreter: '/usr/bin/python2'
