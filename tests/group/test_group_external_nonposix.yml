@@ -14,6 +14,28 @@
         - posixgroup
         state: absent
 
+    - name: Ensure test users testuser1, testuser2 and testuser3 are absent
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        name: testuser1,testuser2,testuser3
+        state: absent
+
+    - name: Ensure test users testuser1..testuser3 are present
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        users:
+        - name: testuser1
+          first: testuser1
+          last: Last
+        - name: testuser2
+          first: testuser2
+          last: Last
+        - name: testuser3
+          first: testuser3
+          last: Last
+      register: result
+      failed_when: not result.changed or result.failed
+
     - name: Add nonposix group.
       ipagroup:
         ipaadmin_password: SomeADMINpassword
@@ -52,7 +74,7 @@
         name: extgroup
         external: no
       register: result
-      failed_when: not result.failed or "Cannot change `external` status of group" not in result.msg
+      failed_when: not result.failed or "group can not be non-external" not in result.msg
 
     - name: Set external group to be posix.
       ipagroup:
@@ -60,7 +82,7 @@
         name: extgroup
         posix: yes
       register: result
-      failed_when: not result.failed or "Cannot change `external` status of group" not in result.msg
+      failed_when: not result.failed or "Cannot change `external` group" not in result.msg
 
     - name: Add nonposix group.
       ipagroup:
@@ -92,23 +114,23 @@
         name: posixgroup
         external: yes
       register: result
-      failed_when: not result.failed or "Cannot change `POSIX` status of a group" not in result.msg
+      failed_when: not result.failed or "Cannot change `posix` group" not in result.msg
 
-    - name: Set posix group to be non-POSIX.
+    - name: Set posix group to be non-posix.
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
         posix: no
       register: result
-      failed_when: not result.failed or "Cannot change `POSIX` status of a group" not in result.msg
+      failed_when: not result.failed or "Cannot change `posix` group" not in result.msg
 
-    - name: Set posix group to be non-POSIX.
+    - name: Set posix group to be non-posix.
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
         nonposix: yes
       register: result
-      failed_when: not result.failed or "Cannot change `POSIX` status of a group" not in result.msg
+      failed_when: not result.failed or "Cannot change `posix` group" not in result.msg
 
     - name: Add nonposix group.
       ipagroup:
@@ -126,8 +148,159 @@
       register: result
       failed_when: result.failed or result.changed
 
+
+    # NONPOSIX MEMBER TEST
+
+    - name: Ensure users testuser1, testuser2 and testuser3 are present in group nonposixgroup
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: nonposixgroup
+        nonposix: yes
+        user:
+        - testuser1
+        - testuser2
+        - testuser3
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure users testuser1, testuser2 and testuser3 are present in group nonposixgroup again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: nonposixgroup
+        nonposix: yes
+        user:
+        - testuser1
+        - testuser2
+        - testuser3
+      register: result
+      failed_when: result.changed or result.failed
+
+
+    # POSIX MEMBER TEST
+
+    - name: Ensure users testuser1, testuser2 and testuser3 are present in group posixgroup
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        posix: yes
+        user:
+        - testuser1
+        - testuser2
+        - testuser3
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure users testuser1, testuser2 and testuser3 are present in group posixgroup again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        posix: yes
+        user:
+        - testuser1
+        - testuser2
+        - testuser3
+      register: result
+      failed_when: result.changed or result.failed
+
+    # EXTERNAL MEMBER TEST (REQUIRES AD)
+
+    - block:
+
+      - name: Ensure users testuser1, testuser2 and testuser3 are present in group externalgroup
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: externalgroup
+          external: yes
+          user:
+          - testuser1
+          - testuser2
+          - testuser3
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure users testuser1, testuser2 and testuser3 are present in group externalgroup again
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: externalgroup
+          external: yes
+          user:
+          - testuser1
+          - testuser2
+          - testuser3
+        register: result
+        failed_when: result.changed or result.failed
+
+      when: trust_test_is_supported | default(false)
+
+    # CONVERT NONPOSIX TO POSIX GROUP WITH USERS
+
+    - name: Ensure nonposix group nonposixgroup as posix
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: nonposixgroup
+        posix: yes
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure nonposix group nonposixgroup as posix, again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: nonposixgroup
+        posix: yes
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure nonposix group nonposixgroup (now posix) has users still
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: nonposixgroup
+        posix: yes
+        user:
+        - testuser1
+        - testuser2
+        - testuser3
+      register: result
+      failed_when: result.changed or result.failed
+
+    # FAIL ON COMBINATIONS OF NONPOSIX, POSIX AND EXTERNAL
+
+    - name: Fail to ensure group as nonposix and posix
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        nonposix: yes
+        posix: yes
+      register: result
+      failed_when: not result.failed or "parameters are mutually exclusive" not in result.msg
+
+    - name: Fail to ensure group as nonposix and external
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        nonposix: yes
+        external: yes
+      register: result
+      failed_when: not result.failed or "parameters are mutually exclusive" not in result.msg
+
+    - name: Fail to ensure group as posix and external
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        name: posixgroup
+        posix: yes
+        external: yes
+      register: result
+      failed_when: not result.failed or "parameters are mutually exclusive" not in result.msg
+
+    # CLEANUP
+
     - name: Remove testing groups.
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: extgroup,nonposixgroup,posixgroup
+        state: absent
+
+    - name: Ensure test users testuser1, testuser2 and testuser3 are absent
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        name: testuser1,testuser2,testuser3
         state: absent
