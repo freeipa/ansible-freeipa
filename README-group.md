@@ -157,9 +157,9 @@ Variable | Description | Required
 `name` \| `cn` | The list of group name strings. | no
 `description` | The group description string. | no
 `gid` \| `gidnumber` | The GID integer. | no
-`posix` | Create a non-POSIX group or change a non-POSIX to a posix group. (bool) | no
-`nonposix` | Create as a non-POSIX group. (bool) | no
-`external` | Allow adding external non-IPA members from trusted domains. (bool) | no
+`posix` | Create a non-POSIX group or change a non-POSIX to a posix group. `nonposix`, `posix` and `external` are mutually exclusive. (bool) | no
+`nonposix` | Create as a non-POSIX group. `nonposix`, `posix` and `external` are mutually exclusive. (bool) | no
+`external` | Allow adding external non-IPA members from trusted domains. `nonposix`, `posix` and `external` are mutually exclusive. (bool) | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
 `user` | List of user name strings assigned to this group. | no
 `group` | List of group name strings assigned to this group. | no

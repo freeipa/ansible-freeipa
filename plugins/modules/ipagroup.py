@@ -232,43 +232,25 @@ def is_external_group(res_find):
 
 
 def is_posix_group(res_find):
-    """Verify if the result group is an external group."""
+    """Verify if the result group is an posix group."""
     return res_find and 'posixgroup' in res_find['objectclass']
 
 
-def check_objectclass_args(module, res_find, nonposix, posix, external):
+def check_objectclass_args(module, res_find, posix, external):
+    # Only a nonposix group can be changed to posix or external
+
+    # A posix group can not be changed to nonposix or external
     if is_posix_group(res_find):
-        if (
-            (posix is not None and posix is False)
-            or nonposix
-            or external
-        ):
+        if external is not None and external or posix is False:
             module.fail_json(
-                msg="Cannot change `POSIX` status of a group "
-                    "to `non-POSIX` or `external`.")
-    # Can't change an existing external group
+                msg="Cannot change `posix` group to `non-posix` or "
+                "`external`.")
+    # An external group can not be changed to nonposix or posix or nonexternal
     if is_external_group(res_find):
-        if (
-            posix
-            or (nonposix is not None and nonposix is False)
-            or (external is not None and external is False)
-        ):
+        if external is False or posix is not None:
             module.fail_json(
-                msg="Cannot change `external` status of group "
-                    "to `POSIX` or `non-external`.")
-
-
-def should_modify_group(module, res_find, args, nonposix, posix, external):
-    if not compare_args_ipa(module, args, res_find):
-        return True
-    if any([posix, nonposix]):
-        set_posix = posix or (nonposix is not None and not nonposix)
-        if set_posix and not is_posix_group(res_find):
-            return True
-    if not is_external_group(res_find) and external:
-        if not is_posix_group(res_find):
-            return True
-    return False
+                msg="Cannot change `external` group to `posix` or "
+                "`non-posix`.")
 
 
 def main():
@@ -301,7 +283,9 @@ def main():
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
         ),
-        mutually_exclusive=[['posix', 'nonposix']],
+        # It does not make sense to set posix, nonposix or external at the
+        # same time
+        mutually_exclusive=[['posix', 'nonposix', 'external']],
         supports_check_mode=True,
     )
 
@@ -358,10 +342,18 @@ def main():
                     msg="Argument '%s' can not be used with state '%s'" %
                     (x, state))
 
+    if external is False:
+        ansible_module.fail_json(
+            msg="group can not be non-external")
+
     # Init
 
     changed = False
     exit_args = {}
+
+    # If nonposix is used, set posix as not nonposix
+    if nonposix is not None:
+        posix = not nonposix
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
@@ -391,8 +383,8 @@ def main():
             # Create command
             if state == "present":
                 # Can't change an existing posix group
-                check_objectclass_args(ansible_module, res_find, nonposix,
-                                       posix, external)
+                check_objectclass_args(ansible_module, res_find, posix,
+                                       external)
 
                 # Generate args
                 args = gen_args(description, gid, nomembers)
@@ -400,21 +392,25 @@ def main():
                 if action == "group":
                     # Found the group
                     if res_find is not None:
-                        # For all settings is args, check if there are
+                        # For all settings in args, check if there are
                         # different settings in the find result.
                         # If yes: modify
-                        if should_modify_group(ansible_module, res_find, args,
-                                               nonposix, posix, external):
-                            if (
-                                posix
-                                or (nonposix is not None and not nonposix)
-                            ):
+                        # Also if it is a modification from nonposix to posix
+                        # or nonposix to external.
+                        if not compare_args_ipa(ansible_module, args,
+                                                res_find) or \
+                           (
+                               not is_posix_group(res_find) and
+                               not is_external_group(res_find) and
+                               (posix or external)
+                           ):
+                            if posix:
                                 args['posix'] = True
                             if external:
                                 args['external'] = True
                             commands.append([name, "group_mod", args])
                     else:
-                        if nonposix or (posix is not None and not posix):
+                        if posix is not None and not posix:
                             args['nonposix'] = True
                         if external:
                             args['external'] = True
