@@ -252,7 +252,7 @@ from ansible.module_utils.ansible_freeipa_module import \
 
 
 def config_show(module):
-    _result = module.ipa_command_no_name("config_show", {})
+    _result = module.ipa_command_no_name("config_show", {"all": True})
 
     return _result["result"]
 
@@ -388,19 +388,18 @@ def main():
 
     changed = False
     exit_args = {}
-    res_show = None
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
 
+        result = config_show(ansible_module)
         if params:
-            res_show = config_show(ansible_module)
             params = {
                 k: v for k, v in params.items()
-                if k not in res_show or res_show[k] != v
+                if k not in result or result[k] != v
             }
             if params \
-               and not compare_args_ipa(ansible_module, params, res_show):
+               and not compare_args_ipa(ansible_module, params, result):
                 changed = True
                 if not ansible_module.check_mode:
                     try:
@@ -409,38 +408,36 @@ def main():
                     except ipalib_errors.EmptyModlist:
                         changed = False
         else:
-            rawresult = ansible_module.ipa_command_no_name("config_show", {})
-            result = rawresult['result']
             del result['dn']
+            type_map = {"str": str, "int": int, "list": list, "bool": bool}
             for key, value in result.items():
                 k = reverse_field_map.get(key, key)
                 if ansible_module.argument_spec.get(k):
-                    if k == 'ipaselinuxusermaporder':
-                        exit_args['ipaselinuxusermaporder'] = \
-                            result.get(key)[0].split('$')
-                    elif k == 'domain_resolution_order':
-                        exit_args['domain_resolution_order'] = \
-                           result.get(key)[0].split('$')
-                    elif k == 'usersearch':
-                        exit_args['usersearch'] = \
-                            result.get(key)[0].split(',')
-                    elif k == 'groupsearch':
-                        exit_args['groupsearch'] = \
-                            result.get(key)[0].split(',')
-                    elif isinstance(value, str) and \
-                            ansible_module.argument_spec[k]['type'] == "list":
+                    arg_type = ansible_module.argument_spec[k]['type']
+                    if k in (
+                           'ipaselinuxusermaporder', 'domain_resolution_order'
+                       ):
+                        exit_args[k] = result.get(key)[0].split('$')
+                    elif k in (
+                           'usersearch', 'groupsearch'
+                       ):
+                        exit_args[k] = result.get(key)[0].split(',')
+                    elif isinstance(value, str) and arg_type == "list":
                         exit_args[k] = [value]
-                    elif isinstance(value, list) and \
-                            ansible_module.argument_spec[k]['type'] == "str":
-                        exit_args[k] = ",".join(value)
-                    elif isinstance(value, list) and \
-                            ansible_module.argument_spec[k]['type'] == "int":
-                        exit_args[k] = ",".join(value)
-                    elif isinstance(value, list) and \
-                            ansible_module.argument_spec[k]['type'] == "bool":
+                    elif (
+                        isinstance(value, (tuple, list))
+                        and arg_type in ("str", "int")
+                    ):
+                        exit_args[k] = type_map[arg_type](value[0])
+                    elif (
+                        isinstance(value, (tuple, list)) and arg_type == "bool"
+                    ):
                         exit_args[k] = (value[0] == "TRUE")
                     else:
-                        exit_args[k] = value
+                        if arg_type not in type_map:
+                            raise ValueError(
+                                "Unexpected attribute type: %s" % arg_type)
+                        exit_args[k] = type_map[arg_type](value)
 
     # Done
     ansible_module.exit_json(changed=changed, config=exit_args)
