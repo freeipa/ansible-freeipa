@@ -99,6 +99,16 @@ options:
       Configures the machine to attempt dns updates when the ip address
       changes
     required: yes
+  configure_dns_resolver:
+    description:
+      Configures the DNS resolver of the machine
+    required: yes
+  dns_servers:
+    description: List of fully qualified name of DNS servers
+    required: yes
+  dns_domain_names:
+    description: List of DNS search domains
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -189,7 +199,14 @@ ipa_python_version:
 nosssd_files:
   description: >
     The dist of nss_ldap or nss-pam-ldapd files if sssd is disabled
+dns_servers:
+  description: The list of dns_servers
   type: list
+  sample: ["dns.example.com"]
+dns_domain_names:
+  description: The list of dns domains
+  type: list
+  sample: ["example.com"]
 '''
 
 import os
@@ -209,7 +226,7 @@ from ansible.module_utils.ansible_ipa_client import (
     CLIENT_INSTALL_ERROR, tasks, check_ldap_conf, timeconf, constants,
     validate_hostname, nssldap_exists, gssapi, remove_file,
     check_ip_addresses, ipadiscovery, print_port_conf_info,
-    IPA_PYTHON_VERSION
+    IPA_PYTHON_VERSION, configure_dns_resolver
 )
 
 
@@ -288,6 +305,11 @@ def main():
             # sssd
             enable_dns_updates=dict(required=False, type='bool',
                                     default=False),
+            # DNS resolver
+            configure_dns_resolver=dict(required=False, type='bool',
+                                        default=False),
+            dns_servers=dict(required=False, type='list', default=None),
+            dns_domain_names=dict(required=False, type='list', default=None),
         ),
         supports_check_mode=True,
     )
@@ -313,6 +335,9 @@ def main():
     options.all_ip_addresses = module.params.get('all_ip_addresses')
     options.on_master = module.params.get('on_master')
     options.enable_dns_updates = module.params.get('enable_dns_updates')
+    setup_dns_resolver = module.params.get('configure_dns_resolver')
+    dns_servers = module.params.get('dns_servers')
+    dns_domain_names = module.params.get('dns_domain_names')
 
     # Get domain from first server if domain is not set, but if there are
     # servers
@@ -482,7 +507,7 @@ def main():
         cli_domain_source = 'Unknown source'
         cli_server_source = 'Unknown source'
 
-        # fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
+        fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
 
         if not os.getegid() == 0:
             raise ScriptError(
@@ -619,6 +644,17 @@ def main():
             raise ScriptError(
                 "Failed to check ip addresses, check installation log",
                 rval=CLIENT_INSTALL_ERROR)
+
+        if setup_dns_resolver:
+            if dns_servers is None:
+                dns_servers = options.servers
+            if dns_domain_names is None:
+                dns_domain_names = [options.domain]
+
+            configure_dns_resolver(dns_servers, dns_domain_names, fstore)
+        else:
+            dns_servers = None
+            dns_domain_names = None
 
         # Create the discovery instance
         # pylint: disable=invalid-name
@@ -932,7 +968,9 @@ def main():
                      ntp_pool=options.ntp_pool,
                      client_already_configured=client_already_configured,
                      ipa_python_version=IPA_PYTHON_VERSION,
-                     nosssd_files=nosssd_files)
+                     nosssd_files=nosssd_files,
+                     dns_servers=dns_servers,
+                     dns_domain_names=dns_domain_names)
 
 
 if __name__ == '__main__':

@@ -25,6 +25,7 @@ ipasssd_enable_dns_updates: no
 ipasssd_no_krb5_offline_passwords: no
 ipasssd_preserve_sssd: no
 ipaclient_request_cert: no
+ipaclient_configure_dns_resolver: no
 
 ### packages ###
 ipaclient_install_packages: yes

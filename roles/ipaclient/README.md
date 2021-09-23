@@ -199,7 +199,9 @@ Variable | Description | Required
 `ipaclient_allow_repair` | The bool value defines if an already joined or partly set-up client can be repaired. `ipaclient_allow_repair` defaults to `no`. Contrary to `ipaclient_force_join=yes` the host entry will not be changed on the server. | no
 `ipaclient_install_packages` | The bool value defines if the needed packages are installed on the node. `ipaclient_install_packages` defaults to `yes`. | no
 `ipaclient_on_master` | The bool value is only used in the server and replica installation process to install the client part. It should not be set otherwise. `ipaclient_on_master` defaults to `no`. | no
-
+`ipaclient_configure_dns_resolver` | The bool value defines if the DNS resolver will be configured. NetworkManager and systemd-resolved will be configured if enabled else /etc/resolv.conf will be adapted. `ipaclient_configure_dns_resolver` defaults to `no` | no
+`ipaclient_dns_servers` | List of DNS servers to use if `ipaclient_configure_dns_resolver` is enabled. If `ipaclient_dns_servers` is not defined, the list will be generated from `ipaclient_servers` or `ipaservers` group. | no
+`ipaclient_dns_domain_names` | List of DNS search domain names to use if `ipaclient_configure_dns_resolver` is enabled. if `ipaclient_dns_domain_names` the list will be generated using the domain name. | no
 
 Authors
 =======

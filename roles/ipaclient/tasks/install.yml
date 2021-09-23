@@ -50,6 +50,10 @@
     ### sssd ###
     enable_dns_updates: "{{ ipassd_enable_dns_updates
                             | default(ipasssd_enable_dns_updates) }}"
+    ### DNS resolver ###
+    configure_dns_resolver: "{{ ipaclient_configure_dns_resolver }}"
+    dns_servers: "{{ ipaclient_dns_servers | default(omit) }}"
+    dns_domain_names: "{{ ipaclient_dns_domain_names | default(omit) }}"
   register: result_ipaclient_test
 
 - block:
