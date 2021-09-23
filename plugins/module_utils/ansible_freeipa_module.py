@@ -629,6 +629,7 @@ else:
             ipaapi_context=dict(
                 type="str", required=False, choices=["server", "client"],
             ),
+            ipaapi_ldap_cache=dict(type="bool", default="True"),
         )
 
         def __init__(self, *args, **kwargs):

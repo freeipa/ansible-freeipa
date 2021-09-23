@@ -37,4 +37,8 @@ options:
       determined by the execution environment.
     choices: ["server", "client"]
     required: false
+  ipaapi_ldap_cache:
+    description: Use LDAP cache for IPA connection.
+    type: bool
+    default: true
 """
