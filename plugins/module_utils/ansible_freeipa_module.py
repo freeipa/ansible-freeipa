@@ -201,17 +201,31 @@ else:
         if ccache_dir is not None:
             shutil.rmtree(ccache_dir, ignore_errors=True)
 
-    def api_connect(context=None):
+    def api_connect(context=None, **overrides):
         """
-        Initialize IPA API with the provided context.
+        Initialize IPA API with the provided configuration.
 
-        `context` can be any of:
-            * `server` (default)
-            * `client`
+        Parameters
+        ----------
+        context:
+            Set IPA API execution context. Valid values: "server", "client"
+
+        overrides:
+            Keyword argument dict containing arguments passed to
+            api.bootstrap() to configure API connection.
+            Valid overrides arguments include:
+                ldap_cache: Control use of LDAP cache layer. (bool)
+
         """
         env = Env()
         env._bootstrap()
         env._finalize_core(**dict(DEFAULT_CONFIG))
+
+        # Fail connection if an unexpected argument is passed in 'overrides'.
+        _allowed = set(["ldap_cache"])
+        _inv = set(overrides.keys()) - _allowed
+        if _inv:
+            raise ValueError("Cannot override parameters: %s" % ",".join(_inv))
 
         # If not set, context will be based on current API context.
         if context is None:
@@ -227,7 +241,7 @@ else:
         if context == "client":
             context = "cli"
 
-        api.bootstrap(context=context, debug=env.debug, log=None)
+        api.bootstrap(context=context, debug=env.debug, log=None, **overrides)
         api.finalize()
 
         if api.env.in_server:
@@ -645,13 +659,23 @@ else:
             if context is None:
                 context = self.params_get("ipaapi_context")
 
+            # Get set of parameters to override in api.bootstrap().
+            # Here, all 'ipaapi_*' params are allowed, and the control
+            # of invalid parameters is delegated to api_connect.
+            _excl_override = ["ipaapi_context"]
+            overrides = {
+                name[len("ipaapi_"):]: self.params_get(name)
+                for name in self.params
+                if name.startswith("ipaapi_") and name not in _excl_override
+            }
+
             ccache_dir = None
             ccache_name = None
             try:
                 if not valid_creds(self, ipaadmin_principal):
                     ccache_dir, ccache_name = temp_kinit(
                         ipaadmin_principal, ipaadmin_password)
-                api_connect(context)
+                api_connect(context, **overrides)
             except Exception as e:
                 self.fail_json(msg=str(e))
             else:
