@@ -111,6 +111,11 @@ options:
   no_dns_sshfp:
     description: Do not automatically create DNS SSHFP records
     required: yes
+  nosssd_files:
+    description: >
+      The dist of nss_ldap or nss-pam-ldapd files if sssd is disabled
+    required: yes
+    type: dict
 author:
     - Thomas Woerner
 '''
@@ -143,7 +148,7 @@ from ansible.module_utils.ansible_ipa_client import (
     get_certs_from_ldap, DN, certstore, x509, logger, certdb,
     CalledProcessError, tasks, client_dns, configure_certmonger, services,
     update_ssh_keys, save_state, configure_ldap_conf, configure_nslcd_conf,
-    nosssd_files, configure_openldap_conf, hardcode_ldap_server
+    configure_openldap_conf, hardcode_ldap_server
 )
 
 
@@ -174,6 +179,7 @@ def main():
             permit=dict(required=False, type='bool'),
             no_krb5_offline_passwords=dict(required=False, type='bool'),
             no_dns_sshfp=dict(required=False, type='bool', default=False),
+            nosssd_files=dict(required=True, type='dict'),
         ),
         supports_check_mode=True,
     )
@@ -221,7 +227,9 @@ def main():
     options.no_sssd = False
     options.sssd = not options.no_sssd
     options.no_ac = False
+    nosssd_files = module.params.get('nosssd_files')
 
+    # pylint: disable=invalid-name
     CCACHE_FILE = paths.IPA_DNS_CCACHE
 
     api.bootstrap(context='cli_installer',
@@ -311,6 +319,7 @@ def main():
         except Exception:
             pass
 
+        # pylint: disable=deprecated-method
         argspec_save_state = inspect.getargspec(save_state)
 
         # Name Server Caching Daemon. Disable for SSSD, use otherwise
@@ -374,6 +383,7 @@ def main():
 
         if not options.no_ac:
             # Modify nsswitch/pam stack
+            # pylint: disable=deprecated-method
             argspec = inspect.getargspec(tasks.modify_nsswitch_pam_stack)
             if "sudo" in argspec.args:
                 tasks.modify_nsswitch_pam_stack(

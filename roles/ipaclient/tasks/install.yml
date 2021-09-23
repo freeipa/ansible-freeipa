@@ -329,6 +329,7 @@
           "{{ ipassd_no_krb5_offline_passwords
               | default(ipasssd_no_krb5_offline_passwords) }}"
         no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
+        nosssd_files: "{{ result_ipaclient_test.nosssd_files }}"
 
     - name: Install - Configure SSH and SSHD
       ipaclient_setup_ssh:
