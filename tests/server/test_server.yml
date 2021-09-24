@@ -2,21 +2,41 @@
 - name: Test server
   hosts: ipaserver
   become: true
+  gather_facts: yes
 
   tasks:
 
   # CLEANUP TEST ITEMS
+  - block:
+      - name: Get server name from hostname
+        set_fact:
+          ipa_server_name: "{{ ansible_facts['hostname'].split('.')[0] }}"
+    rescue:
+      - name: Fallback to 'ipaserver'
+        set_fact:
+          ipa_server_name: ipaserver
+    when: ipa_server_name is not defined
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without location
+  - block:
+      - name: Get domain name from hostname.
+        set_fact:
+          ipaserver_domain: "{{ ansible_facts['hostname'].split('.')[0][1:] }}"
+    rescue:
+      - name: Fallback to 'ipa.test'
+        set_fact:
+          ipaserver_domain: "ipa.test"
+    when: ipaserver_domain is not defined
+
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" without location
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
       location: ""
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without service weight
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" without service weight
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
       service_weight: -1
 
   - name: Ensure location "mylocation" is absent
@@ -36,73 +56,73 @@
 
   # TESTS
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" is present
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" is present
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" with location "mylocation"
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" with location "mylocation"
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
       location: "mylocation"
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" with location "mylocation" again
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" with location "mylocation" again
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
       location: "mylocation"
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without location
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" without location
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
       location: ""
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without location again
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" without location again
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
       location: ""
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" with service weight 1
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" with service weight 1
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
       service_weight: 1
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" with service weight 1 again
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" with service weight 1 again
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
       service_weight: 1
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without service weight
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" without service weight
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
       service_weight: -1
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure server "{{ 'ipaserver.' + ipaserver_domain }}" without service weight again
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" without service weight again
     ipaserver:
       ipaadmin_password: SomeADMINpassword
-      name: "{{ 'ipaserver.' + ipaserver_domain }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
       service_weight: -1
     register: result
     failed_when: result.changed or result.failed
