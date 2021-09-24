@@ -7,399 +7,429 @@
   tasks:
   - include_tasks: ../env_freeipa_facts.yml
 
-  # Retrieve current configuration.
-  - name: return current values of the global configuration options
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-    register: previousconfig
-
-  - debug:
-      msg: "{{previousconfig}}"
-
-  # setup environment.
-  - name: create test group
-    ipagroup:
-      ipaadmin_password: 'SomeADMINpassword'
-      name: somedefaultgroup
-
-  - name: Ensure the default e-mail domain is ipa.test.
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      emaildomain: ipa.test
-
-  - name: set default shell to '/bin/sh'
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      defaultshell: /bin/sh
-
-  - name: set default group
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      defaultgroup: ipausers
-
-  - name: set default home directory
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      homedirectory: /home
-
-  - name: clear pac-type
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      pac_type: ""
-
-  - name: set maxhostname to 255
-    block:
-      - ipaconfig:
+  - block:
+      # Retrieve current configuration.
+      - name: return current values of the global configuration options
+        ipaconfig:
           ipaadmin_password: SomeADMINpassword
-          maxhostname: 255
-    when: ipa_version is version('4.8.0', '>=')
+        register: previousconfig
 
-  - name: set maxusername to 45
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      maxusername: 45
+      - debug:
+          var: previousconfig
 
-  - name: set pwdexpnotify to 0
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      pwdexpnotify: 0
-
-  - name: set searchrecordslimit to 10
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      searchrecordslimit: 10
-
-  - name: set searchtimelimit to 1
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      searchtimelimit: 1
-
-  - name: clear configstring
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      configstring: ""
-
-  - name: set configstring to AllowNThash
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      configstring: 'KDC:Disable Lockout'
-
-  - name: set selinuxusermapdefault
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      selinuxusermapdefault: "staff_u:s0-s0:c0.c1023"
-
-  - name: set selinuxusermaporder
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      selinuxusermaporder: 'user_u:s0$staff_u:s0-s0:c0.c1023'
-
-  - name: set usersearch to `uid`
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      usersearch: uid
-
-  - name: set groupsearch to `cn`
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      groupsearch: cn
-
-  # tests
-  - name: Ensure the default e-mail domain is somedomain.test.
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      emaildomain: somedomain.test
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: Ensure the default e-mail domain is somedomain.test, again.
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      emaildomain: somedomain.test
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set default shell to '/bin/someshell'
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      defaultshell: /bin/someshell
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set default shell to '/bin/someshell', again.
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      defaultshell: /bin/someshell
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set default group
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      defaultgroup: somedefaultgroup
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set default group, again
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      defaultgroup: somedefaultgroup
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set default home directory
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      homedirectory: /Users
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set default home directory, again
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      homedirectory: /Users
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set pac-type
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      pac_type: "nfs:NONE"
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set pac-type, again.
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      pac_type: "nfs:NONE"
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set maxusername to 33
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      maxusername: 33
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set maxusername to 33, again.
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      maxusername: 33
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set maxhostname to 77
-    block:
-      - ipaconfig:
+      # setup environment.
+      - name: create test group
+        ipagroup:
           ipaadmin_password: SomeADMINpassword
-          maxhostname: 77
+          name: somedefaultgroup
+
+      - name: Ensure the default e-mail domain is ipa.test.
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          emaildomain: ipa.test
+
+      - name: set default shell to '/bin/sh'
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          defaultshell: /bin/sh
+
+      - name: set default group
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          defaultgroup: ipausers
+
+      - name: set default home directory
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          homedirectory: /home
+
+      - name: clear pac-type
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          pac_type: ""
+
+      - name: set maxhostname to 255
+        block:
+          - ipaconfig:
+              ipaadmin_password: SomeADMINpassword
+              maxhostname: 255
+        when: ipa_version is version('4.8.0', '>=')
+
+      - name: set maxusername to 45
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxusername: 45
+
+      - name: set pwdexpnotify to 0
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          pwdexpnotify: 0
+
+      - name: set searchrecordslimit to 10
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          searchrecordslimit: 10
+
+      - name: set searchtimelimit to 1
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          searchtimelimit: 1
+
+      - name: clear configstring
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          configstring: ""
+
+      - name: set configstring to AllowNThash
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          configstring: 'KDC:Disable Lockout'
+
+      - name: set selinuxusermapdefault
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          selinuxusermapdefault: "staff_u:s0-s0:c0.c1023"
+
+      - name: set selinuxusermaporder
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          selinuxusermaporder: 'user_u:s0$staff_u:s0-s0:c0.c1023'
+
+      - name: set usersearch to `uid`
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          usersearch: uid
+
+      - name: set groupsearch to `cn`
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          groupsearch: cn
+
+      # tests
+      - name: Ensure the default e-mail domain is somedomain.test.
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          emaildomain: somedomain.test
         register: result
         failed_when: not result.changed or result.failed
 
-      - ipaconfig:
+      - name: Ensure the default e-mail domain is somedomain.test, again.
+        ipaconfig:
           ipaadmin_password: SomeADMINpassword
-          maxhostname: 77
+          emaildomain: somedomain.test
         register: result
         failed_when: result.changed or result.failed
-    when: ipa_version is version('4.8.0', '>=')
 
-  - name: set pwdexpnotify to 17
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      pwdexpnotify: 17
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set pwdexpnotify to 17, again
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      pwdexpnotify: 17
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set searchrecordslimit to -1
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      searchrecordslimit: -1
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set searchrecordslimit to -1, again.
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      searchrecordslimit: -1
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set searchtimelimit to 12345
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      searchtimelimit: 12345
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set searchtimelimit to 12345, again.
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      searchtimelimit: 12345
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: change enable_migration
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      enable_migration: '{{ not previousconfig.config.enable_migration }}'
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: change enable_migration, again
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      enable_migration: '{{ not previousconfig.config.enable_migration }}'
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set configstring to AllowNThash
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      configstring: AllowNThash
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set configstring to AllowNThash, again.
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      configstring: AllowNThash
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set selinuxusermaporder
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      selinuxusermaporder: 'user_u:s0$staff_u:s0-s0:c0.c1023$sysadm_u:s0-s0:c0.c1023$unconfined_u:s0-s0:c0.c1023'
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set selinuxusermaporder, again
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      selinuxusermaporder: 'user_u:s0$staff_u:s0-s0:c0.c1023$sysadm_u:s0-s0:c0.c1023$unconfined_u:s0-s0:c0.c1023'
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set selinuxusermapdefault
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      selinuxusermapdefault: 'user_u:s0'
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set selinuxusermapdefault, again
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      selinuxusermapdefault: 'user_u:s0'
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set groupsearch to `description`
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      groupsearch: description
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set groupsearch to `gidNumber`, again
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      groupsearch: description
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: set usersearch to `uidNumber`
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      usersearch: uidNumber
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: set usersearch to `uidNumber`, again
-    ipaconfig:
-      ipaadmin_password: SomeADMINpassword
-      usersearch: uidNumber
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: reset changed fields
-    ipaconfig:
-      ipaadmin_password: 'SomeADMINpassword'
-      maxusername: '{{previousconfig.config.maxusername | default(omit)}}'
-      homedirectory: '{{previousconfig.config.homedirectory | default(omit)}}'
-      defaultshell: '{{previousconfig.config.defaultshell | default(omit)}}'
-      defaultgroup: '{{previousconfig.config.defaultgroup | default(omit)}}'
-      emaildomain: '{{previousconfig.config.emaildomain | default(omit)}}'
-      searchtimelimit: '{{previousconfig.config.searchtimelimit | default(omit)}}'
-      searchrecordslimit: '{{previousconfig.config.searchrecordslimit | default(omit)}}'
-      usersearch: '{{previousconfig.config.usersearch | default(omit)}}'
-      groupsearch: '{{previousconfig.config.groupsearch | default(omit)}}'
-      enable_migration: '{{previousconfig.config.enable_migration | default(omit)}}'
-      groupobjectclasses: '{{previousconfig.config.groupobjectclasses | default(omit)}}'
-      userobjectclasses: '{{previousconfig.config.userobjectclasses | default(omit)}}'
-      pwdexpnotify: '{{previousconfig.config.pwdexpnotify | default(omit)}}'
-      configstring: '{{previousconfig.config.configstring | default(omit)}}'
-      selinuxusermapdefault: '{{previousconfig.config.selinuxusermapdefault | default(omit)}}'
-      selinuxusermaporder: '{{previousconfig.config.selinuxusermaporder | default(omit)}}'
-      pac_type: '{{previousconfig.config.pac_type | default(omit)}}'
-      user_auth_type: '{{previousconfig.config.user_auth_type | default(omit)}}'
-      domain_resolution_order: '{{previousconfig.config.domain_resolution_order | default(omit)}}'
-      ca_renewal_master_server: '{{previousconfig.config.ca_renewal_master_server | default(omit)}}'
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: reset maxhostname
-    block:
-      - ipaconfig:
+      - name: set default shell to '/bin/someshell'
+        ipaconfig:
           ipaadmin_password: SomeADMINpassword
-          maxhostname: '{{previousconfig.config.maxhostname | default(omit)}}'
-    when: ipa_version is version('4.8.0', '>=')
+          defaultshell: /bin/someshell
+        register: result
+        failed_when: not result.changed or result.failed
 
-  - name: reset changed fields, again
-    ipaconfig:
-      ipaadmin_password: 'SomeADMINpassword'
-      maxusername: '{{previousconfig.config.maxusername | default(omit)}}'
-      homedirectory: '{{previousconfig.config.homedirectory | default(omit)}}'
-      defaultshell: '{{previousconfig.config.defaultshell | default(omit)}}'
-      defaultgroup: '{{previousconfig.config.defaultgroup | default(omit)}}'
-      emaildomain: '{{previousconfig.config.emaildomain | default(omit)}}'
-      searchtimelimit: '{{previousconfig.config.searchtimelimit | default(omit)}}'
-      searchrecordslimit: '{{previousconfig.config.searchrecordslimit | default(omit)}}'
-      usersearch: '{{previousconfig.config.usersearch | default(omit)}}'
-      groupsearch: '{{previousconfig.config.groupsearch | default(omit)}}'
-      enable_migration: '{{previousconfig.config.enable_migration | default(omit)}}'
-      groupobjectclasses: '{{previousconfig.config.groupobjectclasses | default(omit)}}'
-      userobjectclasses: '{{previousconfig.config.userobjectclasses | default(omit)}}'
-      pwdexpnotify: '{{previousconfig.config.pwdexpnotify | default(omit)}}'
-      configstring: '{{previousconfig.config.configstring | default(omit)}}'
-      selinuxusermapdefault: '{{previousconfig.config.selinuxusermapdefault | default(omit)}}'
-      selinuxusermaporder: '{{previousconfig.config.selinuxusermaporder | default(omit)}}'
-      pac_type: '{{previousconfig.config.pac_type | default(omit)}}'
-      user_auth_type: '{{previousconfig.config.user_auth_type | default(omit)}}'
-      domain_resolution_order: '{{previousconfig.config.domain_resolution_order | default(omit)}}'
-      ca_renewal_master_server: '{{previousconfig.config.ca_renewal_master_server | default(omit)}}'
-    register: result
-    failed_when: result.changed or result.failed
-
-  - name: reset maxhostname
-    block:
-      - ipaconfig:
+      - name: set default shell to '/bin/someshell', again.
+        ipaconfig:
           ipaadmin_password: SomeADMINpassword
-          maxhostname: '{{previousconfig.config.maxhostname | default(omit)}}'
-    when: ipa_version is version('4.8.0', '>=')
+          defaultshell: /bin/someshell
+        register: result
+        failed_when: result.changed or result.failed
 
-  # cleanup
+      - name: set default group
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          defaultgroup: somedefaultgroup
+        register: result
+        failed_when: not result.changed or result.failed
 
-  - name: cleanup test group
-    ipagroup:
-      ipaadmin_password: 'SomeADMINpassword'
-      name: somedefaultgroup
-      state: absent
+      - name: set default group, again
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          defaultgroup: somedefaultgroup
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set default home directory
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          homedirectory: /Users
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set default home directory, again
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          homedirectory: /Users
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set pac-type
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          pac_type: "nfs:NONE"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set pac-type, again.
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          pac_type: "nfs:NONE"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set maxusername to 33
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxusername: 33
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set maxusername to 33, again.
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxusername: 33
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set maxhostname to 77
+        block:
+          - ipaconfig:
+              ipaadmin_password: SomeADMINpassword
+              maxhostname: 77
+            register: result
+            failed_when: not result.changed or result.failed
+
+          - ipaconfig:
+              ipaadmin_password: SomeADMINpassword
+              maxhostname: 77
+            register: result
+            failed_when: result.changed or result.failed
+        when: ipa_version is version('4.8.0', '>=')
+
+      - name: set pwdexpnotify to 17
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          pwdexpnotify: 17
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set pwdexpnotify to 17, again
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          pwdexpnotify: 17
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set searchrecordslimit to -1
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          searchrecordslimit: -1
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set searchrecordslimit to -1, again.
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          searchrecordslimit: -1
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set searchtimelimit to 12345
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          searchtimelimit: 12345
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set searchtimelimit to 12345, again.
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          searchtimelimit: 12345
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: change enable_migration
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          enable_migration: '{{ not (previousconfig.config.enable_migration | bool) }}'
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: change enable_migration, again
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          enable_migration: '{{ not (previousconfig.config.enable_migration | bool) }}'
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set configstring to AllowNThash
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          configstring: AllowNThash
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set configstring to AllowNThash, again.
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          configstring: AllowNThash
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set selinuxusermaporder
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          selinuxusermaporder: 'user_u:s0$staff_u:s0-s0:c0.c1023$sysadm_u:s0-s0:c0.c1023$unconfined_u:s0-s0:c0.c1023'
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set selinuxusermaporder, again
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          selinuxusermaporder: 'user_u:s0$staff_u:s0-s0:c0.c1023$sysadm_u:s0-s0:c0.c1023$unconfined_u:s0-s0:c0.c1023'
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set selinuxusermapdefault
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          selinuxusermapdefault: 'user_u:s0'
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set selinuxusermapdefault, again
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          selinuxusermapdefault: 'user_u:s0'
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set groupsearch to `description`
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          groupsearch: description
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set groupsearch to `gidNumber`, again
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          groupsearch: description
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: set usersearch to `uidNumber`
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          usersearch: uidNumber
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: set usersearch to `uidNumber`, again
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          usersearch: uidNumber
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: reset changed fields
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxusername: '{{ previousconfig.config.maxusername | default(32) | int }}'
+          homedirectory: '{{ previousconfig.config.homedirectory | default(omit) }}'
+          defaultshell: '{{ previousconfig.config.defaultshell | default(omit) }}'
+          defaultgroup: '{{ previousconfig.config.defaultgroup | default(omit) }}'
+          emaildomain: '{{ previousconfig.config.emaildomain | default(omit) }}'
+          searchtimelimit: '{{ previousconfig.config.searchtimelimit | default(2) | int }}'
+          searchrecordslimit: '{{ previousconfig.config.searchrecordslimit | default(100) | int }}'
+          usersearch: '{{ previousconfig.config.usersearch | default(omit) }}'
+          groupsearch: '{{ previousconfig.config.groupsearch | default(omit) }}'
+          enable_migration: '{{ previousconfig.config.enable_migration | default(False) | bool }}'
+          groupobjectclasses: '{{ previousconfig.config.groupobjectclasses | default(omit) }}'
+          userobjectclasses: '{{ previousconfig.config.userobjectclasses | default(omit) }}'
+          pwdexpnotify: '{{ previousconfig.config.pwdexpnotify | default(4) | int }}'
+          configstring: '{{ previousconfig.config.configstring | default(omit) }}'
+          selinuxusermapdefault: '{{ previousconfig.config.selinuxusermapdefault | default(omit) }}'
+          selinuxusermaporder: '{{ previousconfig.config.selinuxusermaporder | default(omit) }}'
+          pac_type: '{{ previousconfig.config.pac_type | default(omit) }}'
+          user_auth_type: '{{ previousconfig.config.user_auth_type | default(omit) }}'
+          domain_resolution_order: '{{ previousconfig.config.domain_resolution_order | default(omit) }}'
+          ca_renewal_master_server: '{{ previousconfig.config.ca_renewal_master_server | default(omit) }}'
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: reset maxhostname
+        block:
+          - ipaconfig:
+              ipaadmin_password: SomeADMINpassword
+              maxhostname: '{{ previousconfig.config.maxhostname | default(omit) }}'
+        when: ipa_version is version('4.8.0', '>=')
+
+      - name: reset changed fields, again
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxusername: '{{ previousconfig.config.maxusername | default(omit) | int }}'
+          homedirectory: '{{ previousconfig.config.homedirectory | default(omit) }}'
+          defaultshell: '{{ previousconfig.config.defaultshell | default(omit) }}'
+          defaultgroup: '{{ previousconfig.config.defaultgroup | default(omit) }}'
+          emaildomain: '{{ previousconfig.config.emaildomain | default(omit) }}'
+          searchtimelimit: '{{ previousconfig.config.searchtimelimit | default(omit) | int }}'
+          searchrecordslimit: '{{ previousconfig.config.searchrecordslimit | default(omit) | int }}'
+          usersearch: '{{ previousconfig.config.usersearch | default(omit) }}'
+          groupsearch: '{{ previousconfig.config.groupsearch | default(omit) }}'
+          enable_migration: '{{ previousconfig.config.enable_migration | default(omit) | bool }}'
+          groupobjectclasses: '{{ previousconfig.config.groupobjectclasses | default(omit) }}'
+          userobjectclasses: '{{ previousconfig.config.userobjectclasses | default(omit) }}'
+          pwdexpnotify: '{{ previousconfig.config.pwdexpnotify | default(omit) | int }}'
+          configstring: '{{ previousconfig.config.configstring | default(omit) }}'
+          selinuxusermapdefault: '{{ previousconfig.config.selinuxusermapdefault | default(omit) }}'
+          selinuxusermaporder: '{{ previousconfig.config.selinuxusermaporder | default(omit) }}'
+          pac_type: '{{ previousconfig.config.pac_type | default(omit) }}'
+          user_auth_type: '{{ previousconfig.config.user_auth_type | default(omit) }}'
+          domain_resolution_order: '{{ previousconfig.config.domain_resolution_order | default(omit) }}'
+          ca_renewal_master_server: '{{ previousconfig.config.ca_renewal_master_server | default(omit) }}'
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: reset maxhostname
+        block:
+          - ipaconfig:
+              ipaadmin_password: SomeADMINpassword
+              maxhostname: '{{ previousconfig.config.maxhostname | default(omit) }}'
+        when: ipa_version is version('4.8.0', '>=')
+
+    rescue:
+      - name: Set fields to IPA default, due to error
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          maxusername: '{{ previousconfig.config.maxusername | default(omit) | int }}'
+          homedirectory: '{{ previousconfig.config.homedirectory | default(omit) }}'
+          defaultshell: '{{ previousconfig.config.defaultshell | default(omit) }}'
+          defaultgroup: '{{ previousconfig.config.defaultgroup | default(omit) }}'
+          emaildomain: '{{ previousconfig.config.emaildomain | default(omit) }}'
+          searchtimelimit: '{{ previousconfig.config.searchtimelimit | default(omit) | int }}'
+          searchrecordslimit: '{{ previousconfig.config.searchrecordslimit | default(omit) | int }}'
+          usersearch: '{{ previousconfig.config.usersearch | default(omit) }}'
+          groupsearch: '{{ previousconfig.config.groupsearch | default(omit) }}'
+          enable_migration: '{{ previousconfig.config.enable_migration | default(omit) | bool }}'
+          groupobjectclasses: '{{ previousconfig.config.groupobjectclasses | default(omit) }}'
+          userobjectclasses: '{{ previousconfig.config.userobjectclasses | default(omit) }}'
+          pwdexpnotify: '{{ previousconfig.config.pwdexpnotify | default(omit) | int }}'
+          configstring: '{{ previousconfig.config.configstring | default(omit) }}'
+          selinuxusermapdefault: '{{ previousconfig.config.selinuxusermapdefault | default(omit) }}'
+          selinuxusermaporder: '{{ previousconfig.config.selinuxusermaporder | default(omit) }}'
+          pac_type: '{{ previousconfig.config.pac_type | default(omit) }}'
+          user_auth_type: '{{ previousconfig.config.user_auth_type | default(omit) }}'
+          domain_resolution_order: '{{ previousconfig.config.domain_resolution_order | default(omit) }}'
+          ca_renewal_master_server: '{{ previousconfig.config.ca_renewal_master_server | default(omit) }}'
+        register: result
+
+      - debug:
+          msg: "Due to a test failure, IPA CA-Renewal Server might not be correctly be set. Check your configuration."
+
+    always:
+      # cleanup
+      - name: cleanup test group
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: somedefaultgroup
+          state: absent
