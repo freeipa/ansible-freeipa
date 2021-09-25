@@ -186,6 +186,10 @@ ipa_python_version:
   returned: always
   type: int
   sample: 040400
+nosssd_files:
+  description: >
+    The dist of nss_ldap or nss-pam-ldapd files if sssd is disabled
+  type: list
 '''
 
 import os
@@ -248,7 +252,7 @@ def get_ipa_conf():
     """
     parser = RawConfigParser()
     parser.read(paths.IPA_DEFAULT_CONF)
-    result = dict()
+    result = {}
     for item in ['basedn', 'realm', 'domain', 'server', 'host', 'xmlrpc_uri']:
         if parser.has_option('global', item):
             value = parser.get('global', item)
@@ -336,6 +340,7 @@ def main():
             validate_domain_name(options.domain_name)
 
         if options.realm_name:
+            # pylint: disable=deprecated-method
             argspec = inspect.getargspec(validate_domain_name)
             if "entity" in argspec.args:
                 # NUM_VERSION >= 40690:
@@ -457,7 +462,7 @@ def main():
         # global variables
         hostname = None
         hostname_source = None
-        nosssd_files = None
+        nosssd_files = {}
         dnsok = False
         cli_domain = None
         cli_server = None
@@ -573,7 +578,6 @@ def main():
                     rval=CLIENT_INSTALL_ERROR)
 
             (nssldap_installed, nosssd_files) = nssldap_exists()
-            (nssldap_installed, __temp) = nssldap_exists()
             if not nssldap_installed:
                 raise ScriptError(
                     "One of these packages must be installed: nss_ldap or "
@@ -617,6 +621,7 @@ def main():
                 rval=CLIENT_INSTALL_ERROR)
 
         # Create the discovery instance
+        # pylint: disable=invalid-name
         ds = ipadiscovery.IPADiscovery()
 
         ret = ds.search(
@@ -926,7 +931,8 @@ def main():
                      ntp_servers=options.ntp_servers,
                      ntp_pool=options.ntp_pool,
                      client_already_configured=client_already_configured,
-                     ipa_python_version=IPA_PYTHON_VERSION)
+                     ipa_python_version=IPA_PYTHON_VERSION,
+                     nosssd_files=nosssd_files)
 
 
 if __name__ == '__main__':

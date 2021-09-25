@@ -40,7 +40,7 @@ __all__ = ["gssapi", "version", "ipadiscovery", "api", "errors", "x509",
            "configure_openldap_conf", "hardcode_ldap_server",
            "get_certs_from_ldap", "save_state", "create_ipa_nssdb",
            "configure_nisdomain", "configure_ldap_conf",
-           "configure_nslcd_conf", "nosssd_files", "configure_ssh_config",
+           "configure_nslcd_conf", "configure_ssh_config",
            "configure_sshd_config", "configure_automount",
            "configure_firefox", "sync_time", "check_ldap_conf",
            "sssd_enable_ifp"]
@@ -64,12 +64,14 @@ else:
     else:
         IPA_PYTHON_VERSION = NUM_VERSION
 
+    # pylint: disable=invalid-name,useless-object-inheritance
     class installer_obj(object):
         def __init__(self):
             pass
 
-        def set_logger(self, logger):
-            self.logger = logger
+        # pylint: disable=attribute-defined-outside-init
+        def set_logger(self, _logger):
+            self.logger = _logger
 
         # def __getattribute__(self, attr):
         #    value = super(installer_obj, self).__getattribute__(attr)
@@ -97,13 +99,14 @@ else:
     installer = installer_obj()
     # Create options
     options = installer
+    # pylint: disable=attribute-defined-outside-init
     options.interactive = False
     options.unattended = not options.interactive
 
     if NUM_VERSION >= 40400:
         # IPA version >= 4.4
 
-        import sys
+        # import sys
         import inspect
         import gssapi
         import logging
@@ -166,7 +169,7 @@ else:
                 CLIENT_ALREADY_CONFIGURED, nssldap_exists, remove_file, \
                 check_ip_addresses, print_port_conf_info, configure_ipa_conf, \
                 purge_host_keytab, configure_sssd_conf, configure_ldap_conf, \
-                configure_nslcd_conf, nosssd_files
+                configure_nslcd_conf
             get_ca_cert = None
         except ImportError:
             # Create temporary copy of ipa-client-install script (as
@@ -193,6 +196,7 @@ else:
             shutil.rmtree(temp_dir, ignore_errors=True)
             sys.path.remove(temp_dir)
 
+            # pylint: disable=deprecated-method
             argspec = inspect.getargspec(
                 ipa_client_install.configure_krb5_conf)
             if argspec.keywords is None:
@@ -200,6 +204,7 @@ else:
                         cli_realm, cli_domain, cli_server, cli_kdc, dnsok,
                         filename, client_domain, client_hostname, force=False,
                         configure_sssd=True):
+                    # pylint: disable=global-statement
                     global options
                     options.force = force
                     options.sssd = configure_sssd
@@ -236,13 +241,12 @@ else:
             if len(argspec.args) == 3:
                 configure_nisdomain = ipa_client_install.configure_nisdomain
             else:
-                def configure_nisdomain(options, domain, statestore=None):
-                    return ipa_client_install.configure_nisdomain(options,
+                def configure_nisdomain(_options, domain, _statestore=None):
+                    return ipa_client_install.configure_nisdomain(_options,
                                                                   domain)
 
             configure_ldap_conf = ipa_client_install.configure_ldap_conf
             configure_nslcd_conf = ipa_client_install.configure_nslcd_conf
-            nosssd_files = ipa_client_install.nosssd_files
 
             configure_ssh_config = ipa_client_install.configure_ssh_config
             configure_sshd_config = ipa_client_install.configure_sshd_config
