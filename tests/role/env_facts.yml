@@ -1,13 +1,19 @@
 ---
-- name: Get Domain from server name
-  set_fact:
-    ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+- block:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+    when: "'fqdn' in ansible_facts"
+  - name: Set Domain to 'ipa.test' if FQDN could not be retrieved.
+    set_fact:
+      ipaserver_domain: "ipa.test"
+    when: "'fqdn' not in ansible_facts"
   when: ipaserver_domain is not defined
 
-- name: Set fact for realm name
+- name: Set ipaserver_realm.
   set_fact:
-    ipaserver_realm: "{{ ipaserver_domain }}  | upper"
-  when: ipaserver_domain is not defined
+    ipaserver_realm: "{{ ipaserver_domain | upper }}"
+  when: ipaserver_realm is not defined
 
 - name: Create FQDN for host01
   set_fact:
