@@ -39,7 +39,7 @@ ipaserver.test.local
 ```
 
 
-Example playbook to make sure server "server.example.com" is present:
+Example playbook to make sure server "server.example.com" is already present in the topology:
 
 ```yaml
 ---
@@ -53,8 +53,10 @@ Example playbook to make sure server "server.example.com" is present:
       name: server.example.com
 ```
 
+This task is not deploying a new server, it is only checking if the server eists. It will therefore fail if the server does not exist.
 
-Example playbook to make sure server "server.example.com" is present with location mylocation:
+
+Example playbook to make sure server "server.example.com" has location mylocation:
 
 ```yaml
 ---
@@ -70,7 +72,7 @@ Example playbook to make sure server "server.example.com" is present with locati
 ```
 
 
-Example playbook to make sure server "server.example.com" is present without a location:
+Example playbook to make sure server "server.example.com" does not have a location:
 
 ```yaml
 ---
@@ -86,7 +88,7 @@ Example playbook to make sure server "server.example.com" is present without a l
 ```
 
 
-Example playbook to make sure server "server.example.com" is present with service weight 1:
+Example playbook to make sure server "server.example.com" has service weight 1:
 
 ```yaml
 ---
@@ -102,7 +104,7 @@ Example playbook to make sure server "server.example.com" is present with servic
 ```
 
 
-Example playbook to make sure server "server.example.com" is present without service weight:
+Example playbook to make sure server "server.example.com" does not have a service weight:
 
 ```yaml
 ---
@@ -118,7 +120,7 @@ Example playbook to make sure server "server.example.com" is present without ser
 ```
 
 
-Example playbook to make sure server "server.example.com" is present and hidden:
+Example playbook to make sure server "server.example.com" is hidden:
 
 ```yaml
 ---
@@ -134,7 +136,7 @@ Example playbook to make sure server "server.example.com" is present and hidden:
 ```
 
 
-Example playbook to make sure server "server.example.com" is present and not hidden:
+Example playbook to make sure server "server.example.com" is not hidden:
 
 ```yaml
 ---
@@ -150,7 +152,7 @@ Example playbook to make sure server "server.example.com" is present and not hid
 ```
 
 
-Example playbook to make sure server "server.example.com" is absent:
+Example playbook to make sure server "server.example.com" is absent from the topology:
 
 ```yaml
 ---
@@ -166,7 +168,7 @@ Example playbook to make sure server "server.example.com" is absent:
 ```
 
 
-Example playbook to make sure server "server.example.com" is absent in continuous mode in error case:
+Example playbook to make sure server "server.example.com" is absent from the topology in continuous mode to ignore errors:
 
 ```yaml
 ---
@@ -183,7 +185,7 @@ Example playbook to make sure server "server.example.com" is absent in continuou
 ```
 
 
-Example playbook to make sure server "server.example.com" is absent with last of role check skip:
+Example playbook to make sure server "server.example.com" is absent from the topology with skipping the last of role check:
 
 ```yaml
 ---
@@ -200,7 +202,7 @@ Example playbook to make sure server "server.example.com" is absent with last of
 ```
 
 
-Example playbook to make sure server "server.example.com" is absent iwith topology disconnect check skip:
+Example playbook to make sure server "server.example.com" is absent from the topology with skipping the topology disconnect check:
 
 ```yaml
 ---
@@ -217,7 +219,24 @@ Example playbook to make sure server "server.example.com" is absent iwith topolo
 ```
 
 
-MORE EXAMPLE PLAYBOOKS HERE
+Example playbook to make sure server "server.example.com" is absent from the domain in force mode even if it does not exist:
+
+```yaml
+---
+- name: Playbook to manage IPA server.
+  hosts: ipaserver
+  become: yes
+
+  tasks:
+  - ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      name: server.example.com
+      force: yes
+      state: absent
+```
+
+This task will always report a change.
+
 
 
 Variables
