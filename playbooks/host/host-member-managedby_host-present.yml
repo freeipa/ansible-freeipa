@@ -6,6 +6,6 @@
   tasks:
   - ipahost:
       ipaadmin_password: SomeADMINpassword
-      name: host01.exmaple.com
-      managedby_host: server.exmaple.com
+      name: host01.example.com
+      managedby_host: server.example.com
       action: member

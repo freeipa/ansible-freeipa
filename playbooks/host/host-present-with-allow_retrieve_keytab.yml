@@ -7,7 +7,7 @@
   - name: Host host1.example.com present with allow_retrieve_keytab for users, groups, hosts and hostgroups
     ipahost:
       ipaadmin_password: SomeADMINpassword
-      name: host01.exmaple.com
+      name: host01.example.com
       allow_retrieve_keytab_user:
       - user01
       - user02
@@ -15,8 +15,8 @@
       - group01
       - group02
       allow_retrieve_keytab_host:
-      - host02.exmaple.com
-      - host03.exmaple.com
+      - host02.example.com
+      - host03.example.com
       allow_retrieve_keytab_hostgroup:
       - hostgroup01
       - hostgroup02

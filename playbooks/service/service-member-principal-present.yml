@@ -4,10 +4,10 @@
   become: true
 
   tasks:
-  - name: Service HTTP/www.exmaple.com member principals host/test.exmaple.com present
+  - name: Service HTTP/www.example.com member principals host/test.example.com present
     ipaservice:
       ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com
       principal:
-        - host/test.exmaple.com
+        - host/test.example.com
       action: member
