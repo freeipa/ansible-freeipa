@@ -1,6 +1,6 @@
 ---
 - name: Test dnsconfig
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: true
 
@@ -9,6 +9,7 @@
   - name: Ensure forwarders are absent.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.8.8
         - ip_address: 8.8.4.4
@@ -21,6 +22,7 @@
   - name: Set config to invalid IPv4.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 1.2.3.500
     register: result
@@ -29,6 +31,7 @@
   - name: Set config to invalid IP.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 1.in.va.lid
     register: result
@@ -37,6 +40,7 @@
   - name: Set config to invalid IPv6.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: fd00::invalid
     register: result
@@ -45,6 +49,7 @@
   - name: Set dnsconfig.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.8.8
         - ip_address: 8.8.4.4
@@ -58,6 +63,7 @@
   - name: Set dnsconfig, with the same values.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.8.8
         - ip_address: 8.8.4.4
@@ -71,6 +77,7 @@
   - name: Ensure forwarder is absent.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.8.8
       state: absent
@@ -80,6 +87,7 @@
   - name: Ensure forwarder is absent, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.8.8
       state: absent
@@ -89,6 +97,7 @@
   - name: Disable global forwarders.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forward_policy: none
     register: result
     failed_when: not result.changed or result.failed
@@ -96,6 +105,7 @@
   - name: Disable global forwarders, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forward_policy: none
     register: result
     failed_when: result.changed or result.failed
@@ -103,6 +113,7 @@
   - name: Re-enable global forwarders.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forward_policy: first
     register: result
     failed_when: not result.changed or result.failed
@@ -110,6 +121,7 @@
   - name: Re-enable global forwarders, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forward_policy: first
     register: result
     failed_when: result.changed or result.failed
@@ -117,6 +129,7 @@
   - name: Disable PTR record synchronization.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       allow_sync_ptr: no
     register: result
     failed_when: not result.changed or result.failed
@@ -124,6 +137,7 @@
   - name: Disable PTR record synchronization, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       allow_sync_ptr: no
     register: result
     failed_when: result.changed or result.failed
@@ -131,6 +145,7 @@
   - name: Re-enable PTR record synchronization.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       allow_sync_ptr: yes
     register: result
     failed_when: not result.changed or result.failed
@@ -138,6 +153,7 @@
   - name: Re-enable PTR record synchronization, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       allow_sync_ptr: yes
     register: result
     failed_when: result.changed or result.failed
@@ -145,6 +161,7 @@
   - name: Ensure all forwarders are absent.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.8.8
         - ip_address: 8.8.4.4
@@ -158,6 +175,7 @@
   - name: Ensure all forwarders are absent, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.8.8
         - ip_address: 8.8.4.4
@@ -171,6 +189,7 @@
   - name: Ensure forwarders are absent.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.8.8
         - ip_address: 8.8.4.4

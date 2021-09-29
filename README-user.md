@@ -365,6 +365,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `name` | The list of user name strings. `name` with *user variables* or `users` containing *user variables* need to be used. | no
 **User variables** | Only used with `name` variable in the first level. | no
 `users` | The list of user dicts. Each `users` dict entry can contain **user variables**.<br>There is one required option in the `users` dict:| no

@@ -88,7 +88,7 @@ Example playbook to ensure absence of an automount location:
   - name: ensure automount locations LOCATION1 and LOCATION2 do not exist
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
-      name: 
+      name:
         - LOCATION1
         - LOCATION2
       state: absent
@@ -104,6 +104,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
+`ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `name` \| `cn` \| `location` | List of one or more automountlocation names. | yes
 `state` | The state to ensure. It can be one of `present`, or `absent`, default: `present`. | no
 

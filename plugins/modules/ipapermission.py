@@ -371,6 +371,10 @@ def main():
                     for _member, _member_change in check_members.items():
                         if _member_change is not None:
                             _res_list = res_find[_member]
+                            # if running in a client context, data may be
+                            # returned as a tuple instead of a list.
+                            if isinstance(_res_list, tuple):
+                                _res_list = list(_res_list)
                             _new_set = set(_res_list + _member_change)
                             if _new_set != set(_res_list):
                                 member_attrs[_member] = list(_new_set)

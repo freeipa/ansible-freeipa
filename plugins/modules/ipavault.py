@@ -443,6 +443,11 @@ def check_parameters(  # pylint: disable=unused-argument
         password, password_file, public_key, public_key_file, private_key,
         private_key_file, vault_data, datafile_in, datafile_out, new_password,
         new_password_file):
+    if module.params_get("ipaapi_context") == "server":
+        module.fail_json(
+            msg="Context 'server' for ipavault not yet supported."
+        )
+
     invalid = []
     if state == "present":
         invalid = ['datafile_out']
@@ -718,7 +723,7 @@ def main():
     changed = False
     exit_args = {}
 
-    with ansible_module.ipa_connect(context='ansible-freeipa') as ccache_name:
+    with ansible_module.ipa_connect(context="client") as ccache_name:
         if ccache_name is not None:
             os.environ["KRB5CCNAME"] = ccache_name
 

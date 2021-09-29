@@ -10,6 +10,7 @@
   - name: Ensure DNS testing zones are present.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ item }}"
       skip_nameserver_check: yes
       skip_overlap_check: yes
@@ -25,6 +26,7 @@
   - name: Ensure DNSSEC zone '"{{ safezone }}"' is present.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ safezone }}"
       dnssec: yes
       skip_nameserver_check: yes

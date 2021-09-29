@@ -1,6 +1,6 @@
 ---
 - name: Test host
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
 
   tasks:
@@ -21,6 +21,7 @@
   - name: Host absent
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
@@ -39,6 +40,7 @@
   - name: Host "{{ host1_fqdn }}" present
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host1_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.201' }}"
       update_dns: yes
@@ -49,6 +51,7 @@
   - name: Host "{{ host1_fqdn }}" present again
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host1_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.201' }}"
       update_dns: yes
@@ -59,6 +62,7 @@
   - name: Host "{{ host2_fqdn }}" present
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host2_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.202' }}"
       update_dns: yes
@@ -69,6 +73,7 @@
   - name: Host "{{ host2_fqdn }}" present again
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host2_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.202' }}"
       update_dns: yes
@@ -79,6 +84,7 @@
   - name: Host "{{ host3_fqdn }}" present
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host3_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.203' }}"
       update_dns: yes
@@ -89,6 +95,7 @@
   - name: Host "{{ host3_fqdn }}" present again
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host3_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.203' }}"
       update_dns: yes
@@ -99,6 +106,7 @@
   - name: Host "{{ host4_fqdn }}" present
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host4_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.204' }}"
       update_dns: yes
@@ -109,6 +117,7 @@
   - name: Host "{{ host4_fqdn }}" present again
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host4_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.204' }}"
       update_dns: yes
@@ -119,6 +128,7 @@
   - name: Host "{{ host5_fqdn }}" present
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host5_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.205' }}"
       update_dns: yes
@@ -129,6 +139,7 @@
   - name: Host "{{ host5_fqdn }}" present again
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host5_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.205' }}"
       update_dns: yes
@@ -139,6 +150,7 @@
   - name: Host "{{ host6_fqdn }}" present
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host6_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.206' }}"
       update_dns: yes
@@ -149,6 +161,7 @@
   - name: Host "{{ host6_fqdn }}" present again
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host6_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.206' }}"
       update_dns: yes
@@ -161,6 +174,7 @@
   #- name: Hosts host1..host6 disabled
   #  ipahost:
   #    ipaadmin_password: SomeADMINpassword
+  #    ipaapi_context: "{{ ipa_context | default(omit) }}"
   #    name:
   #    - "{{ host1_fqdn }}"
   #    - "{{ host2_fqdn }}"
@@ -175,6 +189,7 @@
   #- name: Hosts host1..host6 disabled again
   #  ipahost:
   #    ipaadmin_password: SomeADMINpassword
+  #    ipaapi_context: "{{ ipa_context | default(omit) }}"
   #    name:
   #    - "{{ host1_fqdn }}"
   #    - "{{ host2_fqdn }}"
@@ -189,6 +204,7 @@
   - name: Hosts host1..host6 absent
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
@@ -204,6 +220,7 @@
   - name: Hosts host1..host6 absent again
     ipahost:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
@@ -215,4 +232,3 @@
       state: absent
     register: result
     failed_when: result.changed or result.failed
-

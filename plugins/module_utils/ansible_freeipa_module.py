@@ -107,6 +107,34 @@ else:
     except ImportError:
         from collections import Mapping  # pylint: disable=deprecated-class
 
+    # Try to import is_ipa_configured or use a fallback implementation.
+    try:
+        from ipalib.facts import is_ipa_configured
+    except ImportError:
+        try:
+            from ipaserver.install.installutils import is_ipa_configured
+        except ImportError:
+            from ipalib.install import sysrestore
+
+            def is_ipa_configured():
+                sstore = sysrestore.StateFile(paths.SYSRESTORE)
+
+                if sstore.has_state('installation'):
+                    return sstore.get_state('installation', 'complete')
+
+                fstore = sysrestore.FileStore(paths.SYSRESTORE)
+
+                IPA_MODULES = [  # pylint: disable=invalid-name
+                    'httpd', 'kadmin', 'dirsrv', 'pki-tomcatd', 'install',
+                    'krb5kdc', 'ntpd', 'named'
+                ]
+
+                for module in IPA_MODULES:
+                    if sstore.has_state(module):
+                        return True
+
+                return fstore.has_files()
+
     if six.PY3:
         unicode = str
 
@@ -179,18 +207,25 @@ else:
 
         `context` can be any of:
             * `server` (default)
-            * `ansible-freeipa`
-            * `cli_installer`
+            * `client`
         """
         env = Env()
         env._bootstrap()
         env._finalize_core(**dict(DEFAULT_CONFIG))
 
-        # available contexts are 'server', 'ansible-freeipa' and
-        # 'cli_installer'
-
+        # If not set, context will be based on current API context.
         if context is None:
-            context = 'server'
+            context = "server" if is_ipa_configured() else "client"
+
+        # Available contexts are 'server' and 'client'.
+        if context not in ["server", "client"]:
+            raise ValueError("Invalid execution context: %s" % (context))
+
+        # IPA uses 'cli' for a 'client' context, but 'client'
+        # provides a better user interface. Here we map the
+        # value if needed.
+        if context == "client":
+            context = "cli"
 
         api.bootstrap(context=context, debug=env.debug, log=None)
         api.finalize()
@@ -577,6 +612,9 @@ else:
         ipa_module_base_spec = dict(
             ipaadmin_principal=dict(type="str", default="admin"),
             ipaadmin_password=dict(type="str", required=False, no_log=True),
+            ipaapi_context=dict(
+                type="str", required=False, choices=["server", "client"],
+            ),
         )
 
         def __init__(self, *args, **kwargs):
@@ -604,6 +642,8 @@ else:
             # ipaadmin vars
             ipaadmin_principal = self.params_get("ipaadmin_principal")
             ipaadmin_password = self.params_get("ipaadmin_password")
+            if context is None:
+                context = self.params_get("ipaapi_context")
 
             ccache_dir = None
             ccache_name = None
@@ -1071,7 +1111,8 @@ else:
 
         def ipa_run(self):
             """Execute module actions."""
-            with self.ipa_connect():
+            ipaapi_context = self.ipa_params.get("ipaapi_context")
+            with self.ipa_connect(context=ipaapi_context):
                 self.check_ipa_params()
                 self.define_ipa_commands()
                 self._run_ipa_commands()

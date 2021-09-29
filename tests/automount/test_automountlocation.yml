@@ -1,6 +1,6 @@
 ---
 - name: Test automountlocation
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: false
 
@@ -8,6 +8,7 @@
   - name: ensure automountlocation TestLocations are absent before testing
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - TestLocation_01
       - TestLocation_02
@@ -16,6 +17,7 @@
   - name: ensure empty automountlocation does nothing
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: []
       state: present
     register: result
@@ -24,6 +26,7 @@
   - name: ensure empty automountlocation does nothing on absent
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: []
       state: absent
     register: result
@@ -32,6 +35,7 @@
   - name: ensure automountlocation TestLocation is present
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: TestLocation_01
       state: present
     register: result
@@ -40,6 +44,7 @@
   - name: ensure automountlocation TestLocation is present again
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: TestLocation_01
       state: present
     register: result
@@ -48,6 +53,7 @@
   - name: ensure automountlocation TestLocation is absent
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: TestLocation_01
       state: absent
     register: result
@@ -56,6 +62,7 @@
   - name: ensure automountlocation TestLocation is absent again
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: TestLocation_01
       state: absent
     register: result
@@ -64,6 +71,7 @@
   - name: ensure a list of automountlocations are present
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - TestLocation_01
       - TestLocation_02
@@ -74,6 +82,7 @@
   - name: ensure a list of automountlocations exist
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - TestLocation_01
       - TestLocation_02
@@ -84,6 +93,7 @@
   - name: ensure a list of automountlocations are absent
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - TestLocation_01
       - TestLocation_02
@@ -94,6 +104,7 @@
   - name: ensure multiple automountlocations are absent
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - TestLocation_01
       - TestLocation_02

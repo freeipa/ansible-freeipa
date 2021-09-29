@@ -5,6 +5,7 @@
 - name: Ensure test user is present.
   ipauser:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     users:
     - name: user01
       first: First
@@ -19,6 +20,7 @@
 - name: Ensure test group is present.
   ipagroup:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: "{{ item }}"
   with_items:
   - group01
@@ -27,6 +29,7 @@
 - name: Ensure test host is present.
   ipahost:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: "{{ item }}"
     force: yes
   with_items:
@@ -36,6 +39,7 @@
 - name: Ensure test hostgroup is present.
   ipahostgroup:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: "{{ item[0] }}"
     host:
       - "{{ item[1] }}"
@@ -46,6 +50,7 @@
 - name: Ensure test service is present.
   ipaservice:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: "{{ item }}"
     force: yes
   with_items:

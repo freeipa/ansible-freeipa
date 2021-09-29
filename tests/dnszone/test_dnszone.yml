@@ -1,6 +1,6 @@
 ---
 - name: Test dnszone
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: true
 
@@ -14,6 +14,7 @@
   - name: Check if zone is present, when in shouldn't be.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       state: present
     check_mode: yes
@@ -23,6 +24,7 @@
   - name: Check if zone is present again, when in shouldn't be.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       state: present
     check_mode: yes
@@ -32,6 +34,7 @@
   - name: Ensure zone is present.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       state: present
     register: result
@@ -40,6 +43,7 @@
   - name: Check if zone is present, when in should be.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       state: present
     check_mode: yes
@@ -49,6 +53,7 @@
   - name: Ensure zone is present, again.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       state: present
     register: result
@@ -57,6 +62,7 @@
   - name: Ensure zone is disabled.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       state: disabled
     register: result
@@ -65,6 +71,7 @@
   - name: Ensure zone is disabled, again.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       state: disabled
     register: result
@@ -73,6 +80,7 @@
   - name: Ensure zone is enabled.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       state: enabled
     register: result
@@ -81,6 +89,7 @@
   - name: Ensure zone is enabled, again.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       state: enabled
     register: result
@@ -89,6 +98,7 @@
   - name: Ensure forward_policy is none.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       forward_policy: none
     register: result
@@ -97,6 +107,7 @@
   - name: Ensure forward_policy is none, again.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       forward_policy: none
     register: result
@@ -105,6 +116,7 @@
   - name: Ensure forward_policy is first.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       forward_policy: first
     register: result
@@ -113,6 +125,7 @@
   - name: Ensure forward_policy is first, again.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       forward_policy: first
     register: result
@@ -121,6 +134,7 @@
   - name: Ensure first forwarder is set.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       forwarders:
         - ip_address: 8.8.8.8
@@ -131,6 +145,7 @@
   - name: Ensure first and second forwarder are set.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       forwarders:
         - ip_address: 8.8.8.8
@@ -142,6 +157,7 @@
   - name: Ensure first and second forwarder are set, again.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       forwarders:
         - ip_address: 8.8.8.8
@@ -153,6 +169,7 @@
   - name: Ensure only second forwarder is set.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       forwarders:
         - ip_address: 2001:4860:4860::8888
@@ -162,6 +179,7 @@
   - name: Nothing changes.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
     register: result
     failed_when: result.changed or result.failed
@@ -169,6 +187,7 @@
   - name: Ensure no forwarders are set.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: testzone.local
       forwarders: []
     register: result
@@ -177,6 +196,7 @@
   - name: Create zones test1
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test1.testzone.local
     register: result
     failed_when: not result.changed or result.failed
@@ -184,6 +204,7 @@
   - name: Create zones test1, again
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test1.testzone.local
     register: result
     failed_when: result.changed or result.failed
@@ -191,6 +212,7 @@
   - name: Create zones test2
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test2.testzone.local
     register: result
     failed_when: not result.changed or result.failed
@@ -198,6 +220,7 @@
   - name: Create zones test2, again
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test2.testzone.local
     register: result
     failed_when: result.changed or result.failed
@@ -205,6 +228,7 @@
   - name: Create zones test3
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test3.testzone.local
     register: result
     failed_when: not result.changed or result.failed
@@ -212,6 +236,7 @@
   - name: Create zones test3, again
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test3.testzone.local
     register: result
     failed_when: result.changed or result.failed
@@ -219,6 +244,7 @@
   - name: Ensure multiple zones are absent
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
         - test1.testzone.local
         - test2.testzone.local
@@ -230,6 +256,7 @@
   - name: Ensure multiple zones are absent, again
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
         - test1.testzone.local
         - test2.testzone.local

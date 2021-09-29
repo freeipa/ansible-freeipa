@@ -183,3 +183,4 @@ mkdir -p $dest
 src=test_module.yml.in
 [ $member == 1 ] && src=test_module+member.yml.in
 template $src $dest/test_$name.yml
+template test_module_client_context.yml.in $dest/test_${name}_client_context.yml

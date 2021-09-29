@@ -3,6 +3,7 @@
 - name: Ensure services are absent.
   ipaservice:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name:
       - "HTTP/{{ svc_fqdn }}"
       - "HTTP/{{ nohost_fqdn }}"
@@ -16,6 +17,7 @@
 - name: Ensure host "{{ svc_fqdn }}" is absent
   ipahost:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: "{{ svc_fqdn }}"
     update_dns: yes
     state: absent
@@ -23,6 +25,7 @@
 - name: Ensure host is absent
   ipahost:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name:
       - "{{ host1_fqdn }}"
       - "{{ host2_fqdn }}"
@@ -34,6 +37,7 @@
 - name: Ensure testing users are absent.
   ipauser:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name:
     - user01
     - user02
@@ -42,6 +46,7 @@
 - name: Ensure testing groups are absent.
   ipagroup:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name:
     - group01
     - group02
@@ -50,6 +55,7 @@
 - name: Ensure testing hostgroup hostgroup01 is absent.
   ipagroup:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name:
       - hostgroup01
     state: absent
@@ -57,6 +63,7 @@
 - name: Ensure testing hostgroup hostgroup02 is absent.
   ipagroup:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name:
       - hostgroup02
     state: absent
@@ -64,6 +71,7 @@
 - name: Remove IP address for "nohost" host.
   ipadnsrecord:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     zone_name: "{{ test_domain }}."
     name: nohost
     del_all: yes

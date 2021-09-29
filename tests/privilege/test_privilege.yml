@@ -1,6 +1,6 @@
 ---
 - name: Test privilege
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
 
   tasks:
@@ -10,6 +10,7 @@
   - name: Ensure privilege "Broad Privilege" is absent
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - Broad Privilege
       - DNS Privilege
@@ -22,6 +23,7 @@
   - name: Ensure privilege Broad Privilege is present
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       description: Broad Privilege
     register: result
@@ -30,6 +32,7 @@
   - name: Ensure privilege Broad Privilege is present again
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       description: Broad Privilege
     register: result
@@ -38,6 +41,7 @@
   - name: Change privilege Broad Privilege description
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       description: Broad Privilege description
     register: result
@@ -46,6 +50,7 @@
   - name: Ensure privilege Broad Privilege has permissions
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       permission:
       - "Write IPA Configuration"
@@ -58,6 +63,7 @@
   - name: Ensure privilege Broad Privilege has permissions, again
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       permission:
       - "Write IPA Configuration"
@@ -70,6 +76,7 @@
   - name: Ensure privilege Broad Privilege member permission "Write IPA Configuration" is absent
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       permission:
       - "Write IPA Configuration"
@@ -81,6 +88,7 @@
   - name: Ensure privilege Broad Privilege member permission "Write IPA Configuration" is absent again
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       permission:
       - "Write IPA Configuration"
@@ -92,6 +100,7 @@
   - name: Ensure privilege Broad Privilege is absent
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       state: absent
     register: result
@@ -100,6 +109,7 @@
   - name: Ensure privilege Broad Privilege is present
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
     register: result
     failed_when: not result.changed or result.failed
@@ -107,6 +117,7 @@
   - name: Ensure privilege Broad Privilege is renamed to "DNS Privilege"
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       rename: DNS Privilege
       state: renamed
@@ -116,6 +127,7 @@
   - name: Ensure privilege Broad Privilege cannot be renamed, because it does not exist.
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       rename: DNS Privilege
       state: renamed
@@ -125,6 +137,7 @@
   - name: Ensure privilege cannot be renamed to the same name.
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: DNS Privilege
       rename: DNS Privilege
       state: renamed
@@ -134,6 +147,7 @@
   - name: Ensure privilege cannot be renamed to the same name.
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: DNS Privilege
       rename: DNS Privilege
       state: renamed
@@ -143,12 +157,14 @@
   - name: Ensure "Broad Privilege" is absent.
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       state: absent
 
   - name: Ensure privilege Broad Privilege is created with permission. (issue 529)
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       permission:
       - "Write IPA Configuration"
@@ -158,6 +174,7 @@
   - name: Ensure privilege Broad Privilege is created with permission, again. (issue 529)
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: Broad Privilege
       permission:
       - "Write IPA Configuration"
@@ -169,6 +186,7 @@
   - name: Ensure privilege testing privileges are absent
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - Broad Privilege
       - DNS Privilege

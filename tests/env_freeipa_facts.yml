@@ -12,8 +12,20 @@
     cmd: 'ipa --version | sed -n "s/VERSION: \([^,]*\).*API_VERSION: \([^,]*\).*/\1\\n\2/p"'
   register: ipa_cmd_version
 
+- name: Verify if host is an IPA server or client.
+  shell:
+    cmd: |
+      echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
+      RESULT=$(KRB5CCNAME={{ KRB5CCNAME }} ipa server-show `hostname` && echo SERVER || echo CLIENT)
+      kdestroy -A -c {{ KRB5CCNAME }}
+      echo $RESULT
+  vars:
+    KRB5CCNAME: "__check_ipa_host_is_client_or_server__"
+  register: output
+
 - name: Set FreeIPA facts.
   set_fact:
     ipa_version: "{{ ipa_cmd_version.stdout_lines[0] }}"
     ipa_api_version: "{{ ipa_cmd_version.stdout_lines[1] }}"
+    ipa_host_is_client: "{{ (output.stdout_lines[-1] == 'CLIENT') | bool }}"
     trust_test_is_supported: no

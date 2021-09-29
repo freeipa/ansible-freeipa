@@ -12,7 +12,7 @@
 #
 ---
 - name: Test service
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: yes
 
   tasks:
@@ -28,6 +28,7 @@
       - name: Ensure service is present
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           pac_type:
             - MS-PAC
@@ -44,6 +45,7 @@
       - name: Ensure service is present, again
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           pac_type:
             - MS-PAC
@@ -60,6 +62,7 @@
       - name: Modify service.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           pac_type: NONE
           ok_as_delegate: yes
@@ -70,6 +73,7 @@
       - name: Modify service, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           pac_type: NONE
           ok_as_delegate: yes
@@ -80,6 +84,7 @@
       - name: Ensure service is present, without host object.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ nohost_fqdn }}"
           skip_host_check: yes
         register: result
@@ -88,6 +93,7 @@
       - name: Ensure service is present, without host object, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ nohost_fqdn }}"
           skip_host_check: yes
         register: result
@@ -96,6 +102,7 @@
       - name: Ensure service is present, with host not in DNS.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: HTTP/svc.ihavenodns.info
           skip_host_check: no
           force: yes
@@ -105,6 +112,7 @@
       - name: Ensure service is present, with host not in DNS, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: HTTP/svc.ihavenodns.info
           skip_host_check: no
           force: yes
@@ -114,6 +122,7 @@
       - name: Ensure service is present, whithout host object and with host not in DNS.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: HTTP/no.idontexist.info
           skip_host_check: yes
           force: yes
@@ -123,6 +132,7 @@
       - name: Ensure service is present, whithout host object and with host not in DNS, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: HTTP/no.idontexist.info
           skip_host_check: yes
           force: yes
@@ -132,6 +142,7 @@
       - name: Principal host/test.example.com present in service.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           principal:
             - host/test.example.com
@@ -142,6 +153,7 @@
       - name: Principal host/test.example.com present in service, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           principal:
             - host/test.example.com
@@ -153,6 +165,7 @@
       - name: Principal host/test.example.com absent in service.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           principal:
             - host/test.example.com
@@ -164,6 +177,7 @@
       - name: Principal host/test.example.com absent in service, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           principal:
             - host/test.example.com
@@ -176,6 +190,7 @@
       - name: Ensure host can manage service.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           host:
           - "{{ host1_fqdn }}"
@@ -187,6 +202,7 @@
       - name: Ensure host can manage service, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           host: "{{ host1_fqdn }}"
           action: member
@@ -196,6 +212,7 @@
       - name: Ensure host cannot manage service.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           host:
           - "{{ host1_fqdn }}"
@@ -208,6 +225,7 @@
       - name: Ensure host cannot manage service, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           host:
           - "{{ host1_fqdn }}"
@@ -220,6 +238,7 @@
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for users, groups, hosts and hostgroups.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           allow_create_keytab_user:
           - user01
@@ -240,6 +259,7 @@
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab present for users, groups, hosts and hostgroups, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           allow_create_keytab_user:
           - user01
@@ -260,6 +280,7 @@
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for users, groups, hosts and hostgroups.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           allow_create_keytab_user:
           - user01
@@ -281,6 +302,7 @@
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_create_keytab absent for users, groups, hosts and hostgroups, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           allow_create_keytab_user:
           - user01
@@ -302,6 +324,7 @@
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for users, groups, hosts and hostgroups
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           allow_retrieve_keytab_user:
           - user01
@@ -322,6 +345,7 @@
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab present for users, groups, hosts and hostgroups, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           allow_retrieve_keytab_user:
           - user01
@@ -342,6 +366,7 @@
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for users, groups, hosts and hostgroups.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           allow_retrieve_keytab_user:
           - user01
@@ -363,6 +388,7 @@
       - name: Service "HTTP/{{ svc_fqdn }}" members allow_retrieve_keytab absent for users, groups, hosts and hostgroups, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           allow_retrieve_keytab_user:
           - user01
@@ -384,6 +410,7 @@
       - name: Ensure service is absent
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           continue: yes
           state: absent
@@ -393,6 +420,7 @@
       - name: Ensure service is absent, again
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           continue: yes
           state: absent
@@ -402,6 +430,7 @@
       - name: Ensure service is present, with multiple auth_ind values.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           auth_ind: otp,radius
           skip_host_check: no
@@ -412,6 +441,7 @@
       - name: Ensure service is present, with multiple auth_ind values, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           auth_ind: otp,radius
           skip_host_check: no
@@ -422,6 +452,7 @@
       - name: Clear auth_ind.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           auth_ind: ""
           skip_host_check: no
@@ -432,6 +463,7 @@
       - name: Clear auth_ind, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "HTTP/{{ svc_fqdn }}"
           auth_ind: ""
           skip_host_check: no
@@ -442,6 +474,7 @@
       - name: Ensure services are absent.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name:
           - "HTTP/{{ svc_fqdn }}"
           - "HTTP/{{ nohost_fqdn }}"
@@ -455,6 +488,7 @@
       - name: Ensure services are absent.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name:
           - "HTTP/{{ svc_fqdn }}"
           - "HTTP/{{ nohost_fqdn }}"
@@ -468,6 +502,7 @@
       - name: Ensure SMB service is present.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "{{ host1_fqdn }}"
           pac_type: NONE
           smb: yes
@@ -478,6 +513,7 @@
       - name: Ensure SMB service is again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "{{ host1_fqdn }}"
           pac_type: NONE
           smb: yes
@@ -488,6 +524,7 @@
       - name: Modify SMB service.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "{{ host1_fqdn }}"
           smb: yes
           netbiosname: SAMBASVC
@@ -503,6 +540,7 @@
       - name: Modify SMB service, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "{{ host1_fqdn }}"
           smb: yes
           netbiosname: SAMBASVC
@@ -518,6 +556,7 @@
       - name: Ensure SMB service is absent.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "cifs/{{ host1_fqdn }}"
           continue: yes
           state: absent
@@ -527,6 +566,7 @@
       - name: Ensure SMB service is absent, again.
         ipaservice:
           ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: "cifs/{{ host1_fqdn }}"
           continue: yes
           state: absent

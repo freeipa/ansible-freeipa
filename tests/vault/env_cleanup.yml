@@ -26,6 +26,7 @@
   - name: Ensure test users do not exist.
     ipauser:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - user01
       - user02
@@ -35,6 +36,7 @@
   - name: Ensure test groups do not exist.
     ipagroup:
       ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: vaultgroup
       state: absent
 

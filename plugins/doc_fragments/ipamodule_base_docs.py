@@ -30,4 +30,11 @@ options:
   ipaadmin_password:
     description: The admin password.
     required: false
+  ipaapi_context:
+    description: |
+      The context in which the module will execute. Executing in a
+      server context is preferred. If not provided context will be
+      determined by the execution environment.
+    choices: ["server", "client"]
+    required: false
 """

@@ -160,6 +160,19 @@ def forwarder_list(forwarders):
     return fwd_list
 
 
+def fix_resource_data_types(resource):
+    """Fix resource data types."""
+    # When running in client context, some data might
+    # not come as a list, so we need to fix it before
+    # applying any modifications to it.
+    forwarders = resource["idnsforwarders"]
+    if isinstance(forwarders, str):
+        forwarders = [forwarders]
+    elif isinstance(forwarders, tuple):
+        forwarders = list(forwarders)
+    resource["idnsforwarders"] = forwarders
+
+
 def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
@@ -288,6 +301,7 @@ def main():
                     continue
 
             else:   # existing_resource is not None
+                fix_resource_data_types(existing_resource)
                 if state != "absent":
                     if forwarders:
                         forwarders = list(

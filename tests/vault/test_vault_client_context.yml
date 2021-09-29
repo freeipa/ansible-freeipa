@@ -1,0 +1,25 @@
+---
+- name: Test vault
+  hosts: ipaserver
+  become: no
+  # Need to gather facts for ansible_env.
+  gather_facts: yes
+
+  tasks:
+  - name: Setup testing environment.
+    import_tasks: env_setup.yml
+
+  # vault requires 'ipaapi_context: client', and uses this
+  # context by defoult, so we test only for the case where
+  # 'ipaapi_context: server' is explicitly set.
+  - name: Execute with server context.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: server
+      name: ThisShouldNotWork
+      vault_type: standard
+    register: result
+    failed_when: not (result.failed and result.msg is regex("Context 'server' for ipavault not yet supported."))
+
+  - name: Cleanup testing environment.
+    import_tasks: env_cleanup.yml

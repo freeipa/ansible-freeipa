@@ -10,6 +10,7 @@
 - name: Add IP address for "nohost" host.
   ipadnsrecord:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     zone_name: "{{ test_domain }}."
     name: nohost
     a_ip_address: "{{ ipv4_prefix + '.100' }}"
@@ -17,6 +18,7 @@
 - name: Add hosts for tests.
   ipahost:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     hosts:
       - name: "{{ host1_fqdn }}"
         ip_address: "{{ ipv4_prefix + '.101' }}"
@@ -31,6 +33,7 @@
 - name: Ensure testing user user01 is present.
   ipauser:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: user01
     first: user01
     last: last
@@ -38,6 +41,7 @@
 - name: Ensure testing user user02 is present.
   ipauser:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: user02
     first: user02
     last: last
@@ -45,19 +49,23 @@
 - name: Ensure testing group group01 is present.
   ipagroup:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: group01
 
 - name: Ensure testing group group02 is present.
   ipagroup:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: group02
 
 - name: Ensure testing hostgroup hostgroup01 is present.
   ipahostgroup:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: hostgroup01
 
 - name: Ensure testing hostgroup hostgroup02 is present.
   ipahostgroup:
     ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
     name: hostgroup02
