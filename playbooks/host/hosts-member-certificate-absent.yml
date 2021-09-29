@@ -4,7 +4,7 @@
   become: true
 
   tasks:
-  - name: Hosts host01.example.com and host01.exmaple.com member certificate absent
+  - name: Hosts host01.example.com and host01.example.com member certificate absent
     ipahost:
       ipaadmin_password: SomeADMINpassword
       hosts:

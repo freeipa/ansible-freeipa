@@ -4,11 +4,11 @@
   become: true
 
   tasks:
-  - name: Service HTTP/www.exmaple.com member principals host/test.exmaple.com absent
+  - name: Service HTTP/www.example.com member principals host/test.example.com absent
     ipaservice:
       ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com
       principal:
-        - host/test.exmaple.com
+        - host/test.example.com
       action: member
       state: absent
