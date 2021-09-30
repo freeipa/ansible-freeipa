@@ -35,3 +35,5 @@
 - name: Test permission using client context, in server host.
   import_playbook: test_permission.yml
   when: groups['ipaclients'] is not defined or not groups['ipaclients']
+  vars:
+    ipa_context: client
