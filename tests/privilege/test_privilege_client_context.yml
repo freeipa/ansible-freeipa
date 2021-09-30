@@ -35,4 +35,3 @@
 - name: Test privilege using client context, in server host.
   import_playbook: test_privilege.yml
   when: groups['ipaclients'] is not defined or not groups['ipaclients']
- 

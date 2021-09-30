@@ -5,7 +5,7 @@
   gather_facts: false
 
   tasks:
-  # Ensure DNS zone is present
-  - ipadnsforwardzone:
+  - name: Ensure DNS forward zone is absent
+    ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       state: absent

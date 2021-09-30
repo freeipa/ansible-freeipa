@@ -1,12 +1,12 @@
 ---
-- name: Test URI Record is present.
+- name: Playbook to manage DNS records.
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  # Ensure a URI record is absent
-  - ipadnsrecord:
+  - name: Ensure a URI record is present
+    ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       name: _ftp._tcp
       record_type: 'URI'

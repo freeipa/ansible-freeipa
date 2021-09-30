@@ -5,8 +5,8 @@
   gather_facts: false
 
   tasks:
-  # Ensure management host is absent.
-  - ipaservice:
+  - name: Ensure management host is absent.
+    ipaservice:
       ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com
       host: "{{ groups.ipaserver[0] }}"

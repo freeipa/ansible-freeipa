@@ -4,7 +4,8 @@
   become: true
 
   tasks:
-  - ipadnszone:
+  - name: Test adding a DNS zone with an invalid serial
+    ipadnszone:
       ipaadmin_password: SomeADMINpassword
       name: invalidserialzone.test
       serial: 429496729599

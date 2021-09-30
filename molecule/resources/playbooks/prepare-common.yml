@@ -1,3 +1,4 @@
+---
 # IPA depends on IPv6 and without it dirsrv service won't start.
 - name: Ensure IPv6 is ENABLED
   sysctl:
@@ -6,7 +7,7 @@
     sysctl_set: yes
     state: present
     reload: yes
-  with_items :
+  with_items:
     - name: net.ipv6.conf.all.disable_ipv6
       value: 0
     - name: net.ipv6.conf.lo.disable_ipv6
@@ -25,9 +26,8 @@
 - name: Ensure fs.protected_regular is disabled
   sysctl:
     name: fs.protected_regular
-    value: 0
+    value: '0'
     sysctl_set: yes
     state: present
     reload: yes
   when: result.stat.exists
-

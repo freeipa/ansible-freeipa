@@ -21,6 +21,7 @@ jobs:
             tests/*/*/*.yml
             playbooks/*.yml
             playbooks/*/*.yml
+            roles/*/*/*.yml
         env:
           ANSIBLE_MODULE_UTILS: plugins/module_utils
           ANSIBLE_LIBRARY: plugins/modules

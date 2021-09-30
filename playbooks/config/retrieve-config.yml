@@ -10,5 +10,6 @@
       ipaadmin_password: SomeADMINpassword
     register: serverconfig
 
-  - debug:
+  - name: Display current configuration.
+    debug:
       msg: "{{ serverconfig }}"

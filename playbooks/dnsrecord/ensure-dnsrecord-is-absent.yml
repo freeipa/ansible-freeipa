@@ -1,12 +1,12 @@
 ---
-- name: Test DNS Record is absent.
+- name: Playbook to manage DNS records.
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  # Ensure that dns record is absent
-  - ipadnsrecord:
+  - name: Ensure that dns localhost AAAA record is absent
+    ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       name: host01
       zone_name: example.com

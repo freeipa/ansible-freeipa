@@ -1,5 +1,5 @@
-# Tasks executed to clean up test environment for Vault module.
-
+---
+  # Tasks executed to clean up test environment for Vault module.
   - name: Ensure user vaults are absent
     ipavault:
       ipaadmin_password: SomeADMINpassword
@@ -7,7 +7,7 @@
       - stdvault
       - symvault
       - asymvault
-      username: "{{username}}"
+      username: "{{ username }}"
       state: absent
     loop:
       - admin

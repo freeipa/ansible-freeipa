@@ -1,12 +1,12 @@
 ---
-- name: Test TXT Record is present.
+- name: Playbook to manage DNS records.
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  # Ensure a TXT record is absent
-  - ipadnsrecord:
+  - name: Ensure a TXT record is present
+    ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       name: _kerberos
       record_type: 'TXT'

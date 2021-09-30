@@ -5,8 +5,8 @@
   gather_facts: false
 
   tasks:
-  # Ensure host server is absent in Sudo Rule
-  - ipasudorule:
+  - name: Ensure host 'server' is absent in sudorule
+    ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
       host: server

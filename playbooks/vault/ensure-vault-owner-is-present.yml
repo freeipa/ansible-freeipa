@@ -5,7 +5,8 @@
   gather_facts: false
 
   tasks:
-  - ipavault:
+  - name: Ensure vault owners and ownergroups are present.
+    ipavault:
       ipaadmin_password: SomeADMINpassword
       name: symvault
       username: admin

@@ -1,3 +1,4 @@
+---
 - name: Install - Initialize ipaserver_external_cert_files
   set_fact:
      ipaserver_external_cert_files: []
@@ -6,6 +7,7 @@
   copy:
     src: "{{ item }}"
     dest: "/root/{{ item | basename }}"
+    mode: preserve
     force: yes
 - name: Install - Extend ipaserver_external_cert_files with "/root/{{ item | basename }}"
   set_fact:

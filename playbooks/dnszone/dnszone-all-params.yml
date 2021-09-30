@@ -1,3 +1,4 @@
+---
 - name: dnszone present
   hosts: ipaserver
   become: true

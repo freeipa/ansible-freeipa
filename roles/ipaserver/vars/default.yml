@@ -1,5 +1,6 @@
 # defaults file for ipaserver
 # vars/default.yml
+---
 ipaserver_packages: [ "ipa-server", "python3-libselinux" ]
 ipaserver_packages_dns: [ "ipa-server-dns" ]
 ipaserver_packages_adtrust: [ "freeipa-server-trust-ad" ]

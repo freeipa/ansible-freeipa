@@ -1,12 +1,12 @@
 ---
-- name: Ensure MX Record is present.
+- name: Playbook to manage DNS records.
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  # Ensure an MX record is absent
-  - ipadnsrecord:
+  - name: Ensure an MX record is present
+    ipadnsrecord:
       ipaadmin_password: SomeADMINpassword
       name: '@'
       record_type: 'MX'

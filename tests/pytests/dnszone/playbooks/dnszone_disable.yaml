@@ -3,7 +3,8 @@
   hosts: ipaserver
 
   tasks:
-  - ipadnszone:
+  - name: Ensure DNS zone is disabled
+    ipadnszone:
       ipaadmin_password: SomeADMINpassword
       name: 26testzone.test
       state: disabled

@@ -1,2 +1,4 @@
+# defaults file for ipaclient
 # vars/Debian.yml
+---
 ipaclient_packages: [ "freeipa-client" ]

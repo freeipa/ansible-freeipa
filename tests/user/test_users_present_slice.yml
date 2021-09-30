@@ -12,8 +12,9 @@
   tasks:
   - name: Include users.json
     include_vars:
-      file: users.json
-  - debug:
+      file: users.json  # noqa 505
+  - name: Size of users slice.
+    debug:
       msg: "{{ users | length }}"
   - name: Users present
     ipauser:

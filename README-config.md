@@ -56,7 +56,7 @@ Example playbook to read config options:
       register: result
     - name: display default login shell
       debug:
-        msg: '{{result.config.defaultlogin }}'
+        msg: '{{ result.config.defaultlogin }}'
 
     - name: ensure defaultloginshell and maxusernamelength are set as required
       ipaconfig:

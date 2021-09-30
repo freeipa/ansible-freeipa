@@ -42,6 +42,7 @@
       src: "{{ groups.ipaserver[0] + '-chain.crt' }}"
       dest: "/root/chain.crt"
       force: yes
+      mode: preserve
 
   roles:
   - role: ipaserver

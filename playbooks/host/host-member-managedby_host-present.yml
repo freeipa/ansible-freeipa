@@ -4,7 +4,8 @@
   become: true
 
   tasks:
-  - ipahost:
+  - name: Ensure host member managedby_host 'server.example.com' is present
+    ipahost:
       ipaadmin_password: SomeADMINpassword
       name: host01.example.com
       managedby_host: server.example.com

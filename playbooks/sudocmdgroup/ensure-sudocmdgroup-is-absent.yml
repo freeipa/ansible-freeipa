@@ -4,9 +4,9 @@
   become: true
 
   tasks:
-  # Ensure sudocmdgroup is absent
-  - ipasudocmdgroup:
-     ipaadmin_password: pass1234
-     name: network
-     state: absent
-     action: sudocmdgroup
+  - name: Ensure sudocmdgroup is absent
+    ipasudocmdgroup:
+      ipaadmin_password: pass1234
+      name: network
+      state: absent
+      action: sudocmdgroup

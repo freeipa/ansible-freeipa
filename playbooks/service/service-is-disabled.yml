@@ -5,8 +5,8 @@
   gather_facts: false
 
   tasks:
-  # Ensure service is disabled
-  - ipaservice:
+  - name: Ensure service is disabled
+    ipaservice:
       ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com
       state: disabled

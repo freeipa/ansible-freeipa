@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  # Ensure sudorule command is present
-  - ipasudorule:
+  - name: Ensure sudorule command is present
+    ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
       description: A test sudo rule.

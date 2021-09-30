@@ -5,8 +5,8 @@
   gather_facts: false
 
   tasks:
-  # Ensure sudorule is present with the given order.
-  - ipasudorule:
+  - name: Ensure sudorule 'runasuser' member 'admin' is present.
+    ipasudorule:
       ipaadmin_password: SomeADMINpassword
       name: testrule1
       runasuser: admin

@@ -4,8 +4,8 @@
   become: true
 
   tasks:
-  # Ensure host-group databases is present
-  - ipahostgroup:
+  - name: Ensure host-group databases is present
+    ipahostgroup:
       ipaadmin_password: SomeADMINpassword
       name: databases
       host:
