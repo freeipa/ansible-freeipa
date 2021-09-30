@@ -40,6 +40,7 @@ Features
 * Modules for trust management
 * Modules for user management
 * Modules for vault management
+* Modules for vaultcontainer management
 
 Supported FreeIPA Versions
 --------------------------
@@ -452,5 +453,6 @@ Modules in plugin/modules
 * [ipatrust](README-trust.md)
 * [ipauser](README-user.md)
 * [ipavault](README-vault.md)
+* [ipavaultcontainer](README-vaultcontainer.md)
 
 If you want to write a new module please read [writing a new module](plugins/modules/README.md).

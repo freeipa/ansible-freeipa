@@ -1,0 +1,510 @@
+---
+- name: Test vault container.
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  tasks:
+  # Prepare environment
+
+  - block:
+      - name: Get server name from hostname
+        set_fact:
+          ipa_server_name: "{{ ansible_facts['fqdn'][0] }}"
+        when: "'fqdn' in ansible_facts"
+      - name: Fallback to 'ipaserver'
+        set_fact:
+          ipa_server_name: ipaserver
+        when: "'fqdn' not in ansible_facts"
+    when: ipa_server_name is not defined
+
+  - block:
+      - name: Get Domain from server name
+        set_fact:
+          ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+        when: "'fqdn' in ansible_facts"
+      - name: Set Domain to 'ipa.test' if FQDN could not be retrieved.
+        set_fact:
+          ipaserver_domain: "ipa.test"
+        when: "'fqdn' not in ansible_facts"
+    when: ipaserver_domain is not defined
+
+  - name: Ensure service is present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      force: yes
+
+  - name: Ensure test group is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testusers
+
+  - name: Ensure test users are present.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      users:
+      - name: user01
+        first: User
+        last: One
+      - name: user02
+        first: User
+        last: Two
+      - name: user03
+        first: User
+        last: Three
+
+  - name: Ensure test vaultcontainer is absent.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+      state: absent
+
+  # Run Tests for "user" vault container.
+  - name: Run tests for 'user' vault container.
+    debug:
+      msg: "Start test tasks for 'user' vault container."
+      verbosity: 3
+
+  - name: Check vaultcontainer is not present.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+    register: result
+    failed_when: result.failed and "Vaultcontainer for 'user01' not found." in result.msg
+
+  - name: Ensure vaultcontainer for user01 is present.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: user01_stdvault
+      username: user01
+      vault_type: standard
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Check vaultcontainer is present.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure users, groups and services are members of the vaultcontainer.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure users, groups and services are members of the vaultcontainer, again.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure users, groups and services are not members of the vaultcontainer.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure users, groups and services are not members of the vaultcontainer, again.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure service for 'unknown' host is not member of the vaultcontainer.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+      services:
+      - "HTTP/unknown.{{ ipaserver_domain }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure vaultcontainer contains no vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: user01_stdvault
+      username: user01
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure vaultcontainer is absent.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure vaultcontainer is absent, again.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # Run Tests for "service" vault container.
+  - name: Run tests for 'service' vault container.
+    debug:
+      msg: "Start test tasks for 'service' vault container."
+      verbosity: 3
+
+  - name: Check vaultcontainer is not present.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+    register: result
+    failed_when: result.failed and "Vaultcontainer for 'user01' not found." in result.msg
+
+  - name: Ensure vaultcontainer for user01 is present.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: user01_stdvault
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      vault_type: standard
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Check vaultcontainer is present.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure users, groups and services are members of the vaultcontainer.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure users, groups and services are members of the vaultcontainer, again.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure users, groups and services are not members of the vaultcontainer.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure users, groups and services are not members of the vaultcontainer, again.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure service for 'unknown' host is not member of the vaultcontainer.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      services:
+      - "HTTP/unknown.{{ ipaserver_domain }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure vaultcontainer contains no vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: user01_stdvault
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure vaultcontainer is absent.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure vaultcontainer is absent, again.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # Run Tests for "shared" vault container.
+  - name: Run tests for 'shared' vault container.
+    debug:
+      msg: "Start test tasks for 'shared' vault container."
+      verbosity: 3
+
+  - name: Check vaultcontainer is not present.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      shared: true
+    register: result
+    failed_when: result.failed and "Vaultcontainer for 'user01' not found." in result.msg
+
+  - name: Ensure vaultcontainer for user01 is present.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: user01_stdvault
+      shared: true
+      vault_type: standard
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Check vaultcontainer is present.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      shared: true
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure users, groups and services are members of the vaultcontainer.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      shared: true
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure users, groups and services are members of the vaultcontainer, again.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      shared: true
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure users, groups and services are not members of the vaultcontainer.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      shared: true
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure users, groups and services are not members of the vaultcontainer, again.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      shared: true
+      users:
+      - user01
+      - user02
+      groups:
+      - testusers
+      services:
+      - "HTTP/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure service for 'unknown' host is not member of the vaultcontainer.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      shared: true
+      services:
+      - "HTTP/unknown.{{ ipaserver_domain }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure vaultcontainer contains no vault.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: user01_stdvault
+      shared: true
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure vaultcontainer is absent.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      shared: true
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure vaultcontainer is absent, again.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      shared: true
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # cleanup
+  - name: Ensure test user vaultcontainer is absent.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      username: user01
+      state: absent
+
+  - name: Ensure test service vaultcontainer is absent.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      service: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      state: absent
+
+  - name: Ensure test users are absent.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: user01, user02, user03
+      state: absent
+
+  - name: Ensure test group is absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testusers
+      state: absent
+
+  - name: Ensure service is absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "service01/{{ ipa_server_name }}.{{ ipaserver_domain }}"
+      continue: yes
+      state: absent

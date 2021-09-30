@@ -100,7 +100,7 @@ EXAMPLES = """
 # pylint: disable=no-name-in-module
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, gen_add_del_lists, compare_args_ipa
+    IPAAnsibleModule, gen_add_del_lists, compare_args_ipa, filter_service
 import six
 
 
@@ -204,8 +204,11 @@ def ensure_absent_state(module, name, action, res_find):
             if items:
                 member_args[key] = items
 
-        _services = filter_service(module, res_find,
-                                   lambda res, svc: res.startswith(svc))
+        _services = filter_service(
+            module.params_get('service'),
+            res_find.get("member_service"),
+            lambda svc, svc_list: svc in svc_list
+        )
         if _services:
             member_args['service'] = _services
 
@@ -214,27 +217,6 @@ def ensure_absent_state(module, name, action, res_find):
             commands.append([name, "role_remove_member", member_args])
 
     return commands
-
-
-def filter_service(module, res_find, predicate):
-    """
-    Filter service based on predicate.
-
-    Compare service name with existing ones matching
-    at least until `@` from principal name.
-
-    Predicate is a callable that accepts the existing service, and the
-    modified service to be compared to.
-    """
-    _services = []
-    service = module.params_get('service')
-    if service:
-        existing = [to_text(x) for x in res_find.get('member_service', [])]
-        for svc in service:
-            svc = svc if '@' in svc else ('%s@' % svc)
-            found = [x for x in existing if predicate(x, svc)]
-            _services.extend(found)
-    return _services
 
 
 def ensure_role_with_members_is_present(module, name, res_find, action):
@@ -272,6 +254,7 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
     ]
     existing = [str(svc) for svc in res_find.get('member_service', [])]
     add_list, del_list = gen_add_del_lists(service, existing)
+
     if add_list:
         add_members['service'] = add_list
     if del_list:
@@ -303,8 +286,11 @@ def ensure_members_are_present(module, name, res_find):
         if items:
             member_args[key] = items
 
-    _services = filter_service(module, res_find,
-                               lambda res, svc: not res.startswith(svc))
+    _services = filter_service(
+            module.params_get('service'),
+            res_find.get("member_service"),
+            lambda svc, svc_list: svc not in svc_list
+    )
     if _services:
         member_args['service'] = _services
 

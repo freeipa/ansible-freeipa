@@ -1,0 +1,12 @@
+---
+- name: Playbook to manage vault container.
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Ensure shared vault container is absent.
+    ipavaultcontainer:
+      ipaadmin_password: SomeADMINpassword
+      shared: yes
+      state: absent
