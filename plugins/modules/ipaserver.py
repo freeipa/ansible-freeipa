@@ -99,69 +99,71 @@ options:
 """
 
 EXAMPLES = """
-# Ensure server server.example.com is present
+# Ensure server server.example.com is already present in the topology
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
 
-# Ensure server server.example.com is absent
+# Ensure server server.example.com is absent from the topology
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
     state: absent
 
-# Ensure server server.example.com is present with location mylocation
+# Ensure server server.example.com has location mylocation
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
     location: mylocation
 
-# Ensure server server.example.com is present without a location
+# Ensure server server.example.com does not have a location
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
     location: ""
 
-# Ensure server server.example.com is present with service weight 1
+# Ensure server server.example.com has service weight 1
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
     service_weight: 1
 
-# Ensure server server.example.com is present without service weight
+# Ensure server server.example.com does not have a service weight
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
     service_weight: -1
 
-# Ensure server server.example.com is present and hidden
+# Ensure server server.example.com is hidden
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
     hidden: yes
 
-# Ensure server server.example.com is present and not hidden
+# Ensure server server.example.com is not hidden
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
     hidden: no
 
-# Ensure server server.example.com is absent in continuous mode in error case
+# Ensure server server.example.com is absent from the topology in continuous
+# mode to ignore errors
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
     continue: yes
     state: absent
 
-# Ensure server server.example.com is absent with last of role check skip
+# Ensure server "server.example.com" is absent from the topology with skipping
+# the last of role check
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
     ignore_last_of_role: yes
     state: absent
 
-# Ensure server server.example.com is absent with topology disconnect check
-# skip
+# Ensure server server "server.example.com" is absent from the topology with
+# skipping the topology disconnect check
 - ipaserver:
     ipaadmin_password: SomeADMINpassword
     name: server.example.com
