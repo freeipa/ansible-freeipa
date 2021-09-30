@@ -394,6 +394,45 @@ else:
     def api_get_realm():
         return api.env.realm
 
+    def filter_service(mod_services, res_services, predicate):
+        """
+        Filter services based on a predicate.
+
+        Services may be defined in playbooks without the realm, but this may
+        cause comparision to fail, since IPA stores them with '@<REALM>'.
+
+        Parameters
+        ----------
+        mod_services:
+            The service list provided by the user in a playbook.
+        res_services:
+            The service list retrieved from IPA database.
+        predicate:
+            A callable with two arguments a service name (str) and
+            a list of strings with the existing services.
+
+        Return
+        ------
+        The list of services where the predicate evaluated to True.
+
+        """
+        realm = api_get_realm()
+        _services = []
+        if mod_services and res_services:
+            mod_services = [
+                str(m_svc) if '@' in str(m_svc) else ('%s@%s' % (m_svc, realm))
+                for m_svc in mod_services
+            ]
+            res_services = [
+                str(r_svc) if '@' in str(r_svc) else ('%s@%s' % (r_svc, realm))
+                for r_svc in res_services
+            ]
+            _services = [
+                m_svc for m_svc in mod_services
+                if predicate(m_svc, res_services)
+            ]
+        return _services
+
     def gen_add_del_lists(user_list, res_list):
         """
         Generate the lists for the addition and removal of members.
