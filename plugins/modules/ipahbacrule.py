@@ -247,6 +247,8 @@ def main():
 
     # Check parameters
 
+    invalid = []
+
     if state == "present":
         if len(names) != 1:
             ansible_module.fail_json(
@@ -254,11 +256,6 @@ def main():
         if action == "member":
             invalid = ["description", "usercategory", "hostcategory",
                        "servicecategory", "nomembers"]
-            for x in invalid:
-                if vars()[x] is not None:
-                    ansible_module.fail_json(
-                        msg="Argument '%s' can not be used with action "
-                        "'%s'" % (x, action))
         else:
             if hostcategory == 'all' and any([host, hostgroup]):
                 ansible_module.fail_json(
@@ -278,11 +275,6 @@ def main():
         if action == "hbacrule":
             invalid.extend(["host", "hostgroup", "hbacsvc", "hbacsvcgroup",
                             "user", "group"])
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" %
-                    (x, state))
 
     elif state in ["enabled", "disabled"]:
         if len(names) < 1:
@@ -294,13 +286,10 @@ def main():
         invalid = ["description", "usercategory", "hostcategory",
                    "servicecategory", "nomembers", "host", "hostgroup",
                    "hbacsvc", "hbacsvcgroup", "user", "group"]
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" %
-                    (x, state))
     else:
         ansible_module.fail_json(msg="Invalid state '%s'" % state)
+
+    ansible_module.params_fail_used_invalid(invalid, state, action)
 
     # Init
 
