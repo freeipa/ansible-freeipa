@@ -124,13 +124,11 @@ def main():
     state = ansible_module.params_get("state")
 
     # Check parameters
+    invalid = []
     if state == "absent":
         invalid = ["description"]
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" %
-                    (x, state))
+
+    ansible_module.params_fail_used_invalid(invalid, state)
 
     # Init
 
