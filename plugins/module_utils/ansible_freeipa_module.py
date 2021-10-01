@@ -674,6 +674,30 @@ else:
             """
             return module_params_get(self, name)
 
+        def params_fail_used_invalid(self, invalid_params, state, action=None):
+            """
+            Fail module execution if one of the invalid parameters is not None.
+
+            Parameters
+            ----------
+            invalid_params:
+                List of parameters that must value 'None'.
+            state:
+                State being tested.
+            action:
+                Action being tested (optional).
+
+            """
+            if action is None:
+                msg = "Argument '{0}' can not be used with state '{1}'"
+            else:
+                msg = "Argument '{0}' can not be used with action "\
+                      "'{2}' and state '{1}'"
+
+            for param in invalid_params:
+                if self.params.get(param) is not None:
+                    self.fail_json(msg=msg.format(param, state, action))
+
         def ipa_command(self, command, name, args):
             """
             Execute an IPA API command with a required `name` argument.
