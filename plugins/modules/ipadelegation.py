@@ -176,17 +176,14 @@ def main():
 
     # Check parameters
 
+    invalid = []
+
     if state == "present":
         if len(names) != 1:
             ansible_module.fail_json(
                 msg="Only one delegation be added at a time.")
         if action == "member":
             invalid = ["permission", "membergroup", "group"]
-            for x in invalid:
-                if vars()[x] is not None:
-                    ansible_module.fail_json(
-                        msg="Argument '%s' can not be used with action "
-                        "'%s' and state '%s'" % (x, action, state))
 
     if state == "absent":
         if len(names) < 1:
@@ -194,11 +191,8 @@ def main():
         invalid = ["permission", "membergroup", "group"]
         if action == "delegation":
             invalid.append("attribute")
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with action "
-                    "'%s' and state '%s'" % (x, action, state))
+
+    ansible_module.params_fail_used_invalid(invalid, state, action)
 
     if permission is not None:
         perm = [p for p in permission if p not in ("read", "write")]
