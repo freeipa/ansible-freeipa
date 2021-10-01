@@ -187,17 +187,14 @@ def main():
 
     # Check parameters
 
+    invalid = []
+
     if state == "present":
         if len(names) != 1:
             ansible_module.fail_json(
                 msg="Only one hbacsvcgroup can be added at a time.")
         if action == "member":
             invalid = ["description", "nomembers"]
-            for x in invalid:
-                if vars()[x] is not None:
-                    ansible_module.fail_json(
-                        msg="Argument '%s' can not be used with action "
-                        "'%s'" % (x, action))
 
     if state == "absent":
         if len(names) < 1:
@@ -206,11 +203,8 @@ def main():
         invalid = ["description", "nomembers"]
         if action == "hbacsvcgroup":
             invalid.extend(["hbacsvc"])
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" %
-                    (x, state))
+
+    ansible_module.params_fail_used_invalid(invalid, state, action)
 
     # Init
 
