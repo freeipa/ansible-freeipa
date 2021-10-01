@@ -229,6 +229,7 @@ def main():
     else:
         operation = "add"
 
+    invalid = []
     if state in ["enabled", "disabled"]:
         if action == "member":
             ansible_module.fail_json(
@@ -237,22 +238,14 @@ def main():
         invalid = [
             "forwarders", "forwardpolicy", "skip_overlap_check", "permission"
         ]
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with action "
-                    "'%s', state `%s`" % (x, action, state))
         wants_enable = (state == "enabled")
 
     if operation == "del":
         invalid = [
             "forwarders", "forwardpolicy", "skip_overlap_check", "permission"
         ]
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with action "
-                    "'%s', state `%s`" % (x, action, state))
+
+    ansible_module.params_fail_used_invalid(invalid, state, action)
 
     changed = False
     exit_args = {}
