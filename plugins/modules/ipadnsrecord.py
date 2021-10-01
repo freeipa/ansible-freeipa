@@ -1201,11 +1201,7 @@ def check_parameters(module, state, zone_name, record):
         invalid = list(_PART_MAP.keys())
         invalid.extend(['create_reverse', 'dns_ttl'])
 
-    for x in invalid:
-        if x in record:
-            module.fail_json(
-                msg="Variable `%s` cannot be used in state `%s`" %
-                    (x, state))
+    module.params_fail_used_invalid(invalid, state)
 
 
 def get_entry_from_module(module, name):
