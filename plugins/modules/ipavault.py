@@ -483,11 +483,7 @@ def check_parameters(  # pylint: disable=unused-argument
             module.fail_json(
                 msg="State `retrieved` do not support action `member`.")
 
-    for arg in invalid:
-        if vars()[arg] is not None:
-            module.fail_json(
-                msg="Argument '%s' can not be used with state '%s', "
-                    "action '%s'" % (arg, state, action))
+    module.params_fail_used_invalid(invalid, state, action)
 
 
 def check_encryption_params(  # pylint: disable=unused-argument
