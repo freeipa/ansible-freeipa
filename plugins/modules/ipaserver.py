@@ -313,11 +313,7 @@ def main():
             ansible_module.fail_json(msg="No name given.")
         invalid = ["location", "service_weight", "hidden", "no_members"]
 
-    for x in invalid:
-        if vars()[x] is not None:
-            ansible_module.fail_json(
-                msg="Argument '%s' can not be used with state '%s'" %
-                (x, state))
+    ansible_module.params_fail_used_invalid(invalid, state)
 
     # Init
 
