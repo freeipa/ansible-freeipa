@@ -151,11 +151,7 @@ def check_parameters(module):
         if action != "member":
             invalid.extend(['privilege'])
 
-    for arg in invalid:
-        if module.params_get(arg) is not None:
-            module.fail_json(
-                msg="Argument '%s' can not be used with action '%s'" %
-                (arg, state))
+    module.params_fail_used_invalid(invalid, state, action)
 
 
 def member_intersect(module, attr, memberof, res_find):
