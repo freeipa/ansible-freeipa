@@ -210,6 +210,7 @@ def main():
     state = ansible_module.params_get("state")
 
     # Check parameters
+    invalid = []
 
     if names is None:
         names = [u"global_policy"]
@@ -228,11 +229,8 @@ def main():
         invalid = ["maxlife", "minlife", "history", "minclasses",
                    "minlength", "priority", "maxfail", "failinterval",
                    "lockouttime"]
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" %
-                    (x, state))
+
+    ansible_module.params_fail_used_invalid(invalid, state)
 
     # Init
 
