@@ -35,3 +35,5 @@
 - name: Test user using client context, in server host.
   import_playbook: test_user.yml
   when: groups['ipaclients'] is not defined or not groups['ipaclients']
+  vars:
+    ipa_context: client
