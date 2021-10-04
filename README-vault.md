@@ -218,6 +218,7 @@ Variable | Description | Required
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `ipaapi_context` | The context in which the module will execute. Currently only `client` is supported by this module, and use of `server` will raise a failure. | no
+`ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
 `name` \| `cn` | The list of vault name strings. | yes
 `description` | The vault description string. | no
 `password` \| `vault_password` \| `ipavaultpassword` \| `old_password`| Vault password. | no

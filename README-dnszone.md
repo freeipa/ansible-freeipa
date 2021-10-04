@@ -203,6 +203,7 @@ Variable | Description | Required
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
+`ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
 `name` \| `zone_name` | The zone name string or list of strings. | no
 `name_from_ip` | Derive zone name from reverse of IP (PTR). Can only be used with `state: present`. | no
 `forwarders` | The list of forwarders dicts. Each `forwarders` dict entry has:| no
