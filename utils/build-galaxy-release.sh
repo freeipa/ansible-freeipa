@@ -28,6 +28,12 @@ sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.${c
     ln -sf ../../roles/*/action_plugins/*.py .
 })
 
+echo "Fixing doc fragments in plugins/modules..."
+for file in plugins/modules/*.py; do
+    sed -i -e "s/- ipamodule_base_docs/- ${collection_prefix}.ipamodule_base_docs/" "$file"
+done
+echo -e "\033[AFixing doc framents in plugins/modules... \033[32;1mDONE\033[0m"
+
 echo "Fixing examples in plugins/modules..."
 find plugins/modules -name "*.py" -print0 |
     while IFS= read -d '' -r line; do
