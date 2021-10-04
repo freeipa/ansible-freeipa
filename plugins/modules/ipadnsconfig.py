@@ -196,11 +196,7 @@ def main():
     if state == 'absent':
         invalid = ['forward_policy', 'allow_sync_ptr']
 
-    for x in invalid:
-        if vars()[x] is not None:
-            ansible_module.fail_json(
-                msg="Argument '%s' can not be used with state '%s'" %
-                (x, state))
+    ansible_module.params_fail_used_invalid(invalid, state)
 
     # Init
 

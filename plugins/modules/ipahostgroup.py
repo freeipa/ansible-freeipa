@@ -224,6 +224,7 @@ def main():
 
     # Check parameters
 
+    invalid = []
     if state == "present":
         if len(names) != 1:
             ansible_module.fail_json(
@@ -231,11 +232,6 @@ def main():
         invalid = ["rename"]
         if action == "member":
             invalid.extend(["description", "nomembers"])
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with action "
-                    "'%s'" % (x, action))
 
     if state == "renamed":
         if len(names) != 1:
@@ -249,11 +245,6 @@ def main():
             "description", "nomembers", "host", "hostgroup",
             "membermanager_user", "membermanager_group"
         ]
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" %
-                    (x, state))
 
     if state == "absent":
         if len(names) < 1:
@@ -262,11 +253,8 @@ def main():
         invalid = ["description", "nomembers", "rename"]
         if action == "hostgroup":
             invalid.extend(["host", "hostgroup"])
-        for x in invalid:
-            if vars()[x] is not None:
-                ansible_module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" %
-                    (x, state))
+
+    ansible_module.params_fail_used_invalid(invalid, state, action)
 
     # Init
 

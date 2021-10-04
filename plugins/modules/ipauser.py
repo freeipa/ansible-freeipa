@@ -597,6 +597,7 @@ def check_parameters(  # pylint: disable=unused-argument
         userauthtype, userclass, radius, radiususer, departmentnumber,
         employeenumber, employeetype, preferredlanguage, certificate,
         certmapdata, noprivate, nomembers, preserve, update_password):
+    invalid = []
     if state == "present":
         if action == "member":
             invalid = ["first", "last", "fullname", "displayname", "initials",
@@ -608,11 +609,6 @@ def check_parameters(  # pylint: disable=unused-argument
                        "departmentnumber", "employeenumber", "employeetype",
                        "preferredlanguage", "noprivate", "nomembers",
                        "preserve", "update_password"]
-            for x in invalid:
-                if vars()[x] is not None:
-                    module.fail_json(
-                        msg="Argument '%s' can not be used with action "
-                        "'%s'" % (x, action))
 
     else:
         invalid = ["first", "last", "fullname", "displayname", "initials",
@@ -628,15 +624,12 @@ def check_parameters(  # pylint: disable=unused-argument
             invalid.extend(["principal", "manager",
                             "certificate", "certmapdata",
                             ])
-        for x in invalid:
-            if vars()[x] is not None:
-                module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" %
-                    (x, state))
 
         if state != "absent" and preserve is not None:
             module.fail_json(
                 msg="Preserve is only possible for state=absent")
+
+    module.params_fail_used_invalid(invalid, state, action)
 
     if certmapdata is not None:
         for x in certmapdata:

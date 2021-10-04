@@ -245,12 +245,17 @@ def main():
     rebuild_users = ansible_module.params_get("users")
     rebuild_hosts = ansible_module.params_get("hosts")
 
-    if (rebuild_hosts or rebuild_users) and state != "rebuild":
-        ansible_module.fail_json(
-            msg="'hosts' and 'users' are only valid with state: rebuild")
-    if not automember_type and state != "rebuild":
-        ansible_module.fail_json(
-            msg="'automember_type' is required unless state: rebuild")
+    # Check parameters
+    invalid = []
+
+    if state != "rebuild":
+        invalid = ["rebuild_hosts", "rebuild_users"]
+
+        if not automember_type and state != "rebuild":
+            ansible_module.fail_json(
+                msg="'automember_type' is required unless state: rebuild")
+
+    ansible_module.params_fail_used_invalid(invalid, state, action)
 
     # Init
     changed = False

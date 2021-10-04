@@ -530,6 +530,7 @@ def check_parameters(   # pylint: disable=unused-argument
         userclass, auth_ind, requires_pre_auth, ok_as_delegate,
         ok_to_auth_as_delegate, force, reverse, ip_address, update_dns,
         update_password):
+    invalid = []
     if state == "present":
         if action == "member":
             # certificate, managedby_host, principal,
@@ -539,11 +540,6 @@ def check_parameters(   # pylint: disable=unused-argument
                        "userclass", "auth_ind", "requires_pre_auth",
                        "ok_as_delegate", "ok_to_auth_as_delegate", "force",
                        "reverse", "update_dns", "update_password"]
-            for x in invalid:
-                if vars()[x] is not None:
-                    module.fail_json(
-                        msg="Argument '%s' can not be used with action "
-                        "'%s'" % (x, action))
 
     if state == "absent":
         invalid = ["description", "locality", "location", "platform", "os",
@@ -551,11 +547,6 @@ def check_parameters(   # pylint: disable=unused-argument
                    "userclass", "auth_ind", "requires_pre_auth",
                    "ok_as_delegate", "ok_to_auth_as_delegate", "force",
                    "reverse", "update_password"]
-        for x in invalid:
-            if vars()[x] is not None:
-                module.fail_json(
-                    msg="Argument '%s' can not be used with state '%s'" %
-                    (x, state))
         if action == "host":
             invalid = [
                 "certificate", "managedby_host", "principal",
@@ -565,11 +556,8 @@ def check_parameters(   # pylint: disable=unused-argument
                 "allow_retrieve_keytab_host",
                 "allow_retrieve_keytab_hostgroup"
             ]
-            for x in invalid:
-                if vars()[x] is not None:
-                    module.fail_json(
-                        msg="Argument '%s' can only be used with action "
-                        "'member' for state '%s'" % (x, state))
+
+    module.params_fail_used_invalid(invalid, state, action)
 
 
 # pylint: disable=unused-argument

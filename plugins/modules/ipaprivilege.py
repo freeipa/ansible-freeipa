@@ -205,11 +205,7 @@ def main():
                 msg="Action '%s' can not be used with state '%s'"
                     % (action, state))
 
-    for x in invalid:
-        if vars()[x] is not None:
-            ansible_module.fail_json(
-                msg="Argument '%s' can not be used with action "
-                "'%s' and state '%s'" % (x, action, state))
+    ansible_module.params_fail_used_invalid(invalid, state, action)
 
     # Init
 

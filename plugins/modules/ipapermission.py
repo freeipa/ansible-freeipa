@@ -304,11 +304,7 @@ def main():
             invalid += ["right", "attrs", "memberof",
                         "extra_target_filter", "rawfilter"]
 
-    for x in invalid:
-        if vars()[x] is not None:
-            ansible_module.fail_json(
-                msg="Argument '%s' can not be used with action "
-                "'%s' and state '%s'" % (x, action, state))
+    ansible_module.params_fail_used_invalid(invalid, state, action)
 
     if bindtype == "self" and ansible_module.ipa_check_version("<", "4.8.7"):
         ansible_module.fail_json(

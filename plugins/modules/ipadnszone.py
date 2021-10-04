@@ -429,13 +429,10 @@ class DNSZoneModule(FreeIPABaseModule):
             self.fail_json(
                 msg="Either `name` or `name_from_ip` must be provided."
             )
-        if self.ipa_params.state != "present" and self.ipa_params.name_from_ip:
-            self.fail_json(
-                msg=(
-                    "Cannot use argument `name_from_ip` with state `%s`."
-                    % self.ipa_params.state
-                )
-            )
+        if self.ipa_params.state != "present":
+            invalid = ["name_from_ip"]
+
+            self.params_fail_used_invalid(invalid, self.ipa_params.state)
 
     def define_ipa_commands(self):
         for zone_name in self.get_zone_names():
