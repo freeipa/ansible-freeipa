@@ -35,6 +35,7 @@ description:
 - Add and delete an IPA automount location
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamodule_parameters.delete_continue
 options:
   name:
     description: The automount location to be managed
@@ -87,6 +88,12 @@ class AutomountLocation(FreeIPABaseModule):
         if len(self.ipa_params.name) == 0:
             self.fail_json(msg="At least one location must be provided.")
 
+        invalid = []
+        if self.ipa_params.state != "absent":
+            invalid = ["delete_continue"]
+
+        self.params_fail_used_invalid(invalid, self.ipa_params.state)
+
     def define_ipa_commands(self):
 
         for location_name in self.ipa_params.name:
@@ -100,11 +107,16 @@ class AutomountLocation(FreeIPABaseModule):
                     args=None,
                 )
             elif location and self.ipa_params.state == "absent":
+                args = (
+                    {"continue": self.ipa_params.delete_continue}
+                    if self.ipa_params.delete_continue is not None
+                    else None
+                )
                 # exists and is not wanted
                 self.add_ipa_command(
                     "automountlocation_del",
                     name=location_name,
-                    args=None,
+                    args=args
                 )
 
 
@@ -128,6 +140,7 @@ def main():
                       required=True
                       ),
         ),
+        ipa_parameters=["delete_continue"],
     )
     ipa_module.ipa_run()
 
