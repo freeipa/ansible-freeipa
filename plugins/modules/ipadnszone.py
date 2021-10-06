@@ -33,6 +33,7 @@ short description: Manage FreeIPA dnszone
 description: Manage FreeIPA dnszone
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamodule_parameters.delete_continue
 options:
   name:
     description: The zone name string.
@@ -238,6 +239,7 @@ class DNSZoneModule(FreeIPABaseModule):
         "skip_nameserver_check": "get_ipa_skip_nameserver_check",
         "skip_overlap_check": "get_ipa_skip_overlap_check",
         "nsec3paramrecord": "get_ipa_nsec3paramrecord",
+        "continue": "delete_continue",
     }
 
     def validate_ips(self, ips, error_msg):
@@ -429,10 +431,14 @@ class DNSZoneModule(FreeIPABaseModule):
             self.fail_json(
                 msg="Either `name` or `name_from_ip` must be provided."
             )
+
+        invalid = []
         if self.ipa_params.state != "present":
             invalid = ["name_from_ip"]
+        if self.ipa_params.state != "absent":
+            invalid = ["delete_continue"]
 
-            self.params_fail_used_invalid(invalid, self.ipa_params.state)
+        self.params_fail_used_invalid(invalid, self.ipa_params.state)
 
     def define_ipa_commands(self):
         for zone_name in self.get_zone_names():
@@ -441,6 +447,8 @@ class DNSZoneModule(FreeIPABaseModule):
             args = self.get_ipa_command_args(zone=zone)
 
             if self.ipa_params.state in ["present", "enabled", "disabled"]:
+                if "continue" in args:
+                    del args["continue"]
                 if not zone:
                     # Since the zone doesn't exist we just create it
                     #   with given args
@@ -461,7 +469,12 @@ class DNSZoneModule(FreeIPABaseModule):
                 self.add_ipa_command("dnszone_disable", zone_name)
 
             if self.ipa_params.state == "absent" and zone is not None:
-                self.add_ipa_command("dnszone_del", zone_name)
+                args = (
+                    {"continue": self.ipa_params.delete_continue}
+                    if self.ipa_params.delete_continue is not None
+                    else None
+                )
+                self.add_ipa_command("dnszone_del", zone_name, args)
 
     def process_command_result(self, name, command, args, result):
         # pylint: disable=super-with-arguments
@@ -534,6 +547,7 @@ def main():
         mutually_exclusive=[["name", "name_from_ip"]],
         required_one_of=[["name", "name_from_ip"]],
         supports_check_mode=True,
+        ipa_parameters=["delete_continue"]
     ).ipa_run()
 
 

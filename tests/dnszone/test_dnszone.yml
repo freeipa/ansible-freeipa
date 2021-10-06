@@ -265,6 +265,39 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure zone is present.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: test1.testzone.local
+      state: present
+
+  - name: Ensure zone is present, with wrong `continue` parameter.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: test1.testzone.local
+      continue: yes
+      state: present
+    register: result
+    failed_when: not result.failed or "Argument 'delete_continue' can not be used with state 'present'" not in result.msg
+
+  - name: Ensure zone is absent, with delete_continue.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: test1.testzone.local
+      continue: yes
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure zone is absent, with delete_continue, again.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: test1.testzone.local
+      continue: yes
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
   # Teardown
   - name: Teardown testing environment
     include_tasks: env_teardown.yml
