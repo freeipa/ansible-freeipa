@@ -20,6 +20,16 @@
   - include_tasks: ../env_freeipa_facts.yml
 
   # tests
+  - name: Ensure service is present, with wrong 'continue' parameter.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ThisShouldFail
+      continue: yes
+      state: present
+    register: result
+    failed_when: not result.failed or "Argument 'delete_continue' can not be used with" not in result.msg
+
   - name: Tests with skip_host_check, require IPA version 4.8.0+.
     block:
       - name: Setup test environment
