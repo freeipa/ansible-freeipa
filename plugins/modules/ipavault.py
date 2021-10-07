@@ -33,6 +33,7 @@ short description: Manage vaults and secret vaults.
 description: Manage vaults and secret vaults. KRA service must be enabled.
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamodule_parameters.delete_continue
 options:
   name:
     description: The vault name
@@ -344,11 +345,14 @@ def find_vault(module, name, username, service, shared):
 
 def gen_args(
         description, username, service, shared, vault_type, salt,
-        public_key, public_key_file):
+        public_key, public_key_file, delete_continue):
     _args = {}
     vault_type = vault_type or to_text("symmetric")
+    _args["ipavaulttype"] = vault_type
 
-    _args['ipavaulttype'] = vault_type
+    if delete_continue is not None:
+        _args["continue"] = delete_continue
+
     if description is not None:
         _args['description'] = description
     if username is not None:
@@ -450,7 +454,7 @@ def check_parameters(  # pylint: disable=unused-argument
 
     invalid = []
     if state == "present":
-        invalid = ['datafile_out']
+        invalid = ['datafile_out', 'delete_continue']
 
         if all([password, password_file]) \
            or all([new_password, new_password_file]):
@@ -478,7 +482,8 @@ def check_parameters(  # pylint: disable=unused-argument
     elif state == "retrieved":
         invalid = ['description', 'salt', 'datafile_in', 'users', 'groups',
                    'owners', 'ownergroups', 'public_key', 'public_key_file',
-                   'vault_data', 'new_password', 'new_password_file']
+                   'vault_data', 'new_password', 'new_password_file',
+                   'delete_continue']
         if action == 'member':
             module.fail_json(
                 msg="State `retrieved` do not support action `member`.")
@@ -649,6 +654,7 @@ def main():
                             ['new_password', 'new_password_file'],
                             ['vault_password', 'vault_password_file'],
                             ['vault_public_key', 'vault_public_key_file']],
+        ipa_parameters=["delete_continue"],
     )
 
     ansible_module._ansible_debug = True
@@ -685,6 +691,8 @@ def main():
 
     datafile_in = ansible_module.params_get("datafile_in")
     datafile_out = ansible_module.params_get("datafile_out")
+
+    delete_continue = ansible_module.params_get("delete_continue")
 
     action = ansible_module.params_get("action")
     state = ansible_module.params_get("state")
@@ -737,7 +745,7 @@ def main():
 
             # Generate args
             args = gen_args(description, username, service, shared, vault_type,
-                            salt, public_key, public_key_file)
+                            salt, public_key, public_key_file, delete_continue)
             pwdargs = None
 
             # Create command

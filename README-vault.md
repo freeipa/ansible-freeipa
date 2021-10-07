@@ -243,6 +243,7 @@ Variable | Description | Required
 `data` \|`vault_data` \| `ipavaultdata` | Data to be stored in the vault. | no
 `in` \| `datafile_in` | Path to file with data to be stored in the vault. | no
 `out` \| `datafile_out` | Path to file to store data retrieved from the vault. | no
+`delete_continue` \| `continue` | Continuous mode: don't stop on errors. Valid only if `state` is `absent`. Default: `yes` (bool) | no
 `action` | Work on vault or member level. It can be on of `member` or `vault` and defaults to `vault`. | no
 `state` | The state to ensure. It can be one of `present`, `absent` or `retrieved`, default: `present`. | no
 

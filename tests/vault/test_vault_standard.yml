@@ -137,5 +137,40 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure vault is present.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+      state: present
+
+  - name: Ensure vault is present, with wrong `continue` parameter.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      vault_type: standard
+      continue: yes
+      state: present
+    register: result
+    failed_when: not result.failed or "Argument 'delete_continue' can not be used with" not in result.msg
+
+  - name: Ensure vault is absent, with delete_continue.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      continue: yes
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure vault is absent, with delete_continue, again.
+    ipavault:
+      ipaadmin_password: SomeADMINpassword
+      name: stdvault
+      continue: yes
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: Cleanup testing environment.
     import_tasks: env_cleanup.yml
