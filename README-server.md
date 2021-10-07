@@ -256,7 +256,7 @@ Variable | Description | Required
 `service_weight` \| `ipaserviceweight` | Weight for server services. Type Values 0 to 65535, -1 for weight reset. Only in state: present. (int) | no
 `hidden` | Set hidden state of a server. Only in state: present. (bool) | no
 `no_members` | Suppress processing of membership attributes. Only in state: present. (bool) | no
-`delete_continue` \| `continue` | Continuous mode: Don't stop on errors. Only in state: absent. (bool) | no
+`delete_continue` \| `continue` | Continuous mode: don't stop on errors. Valid only if `state` is `absent`. Default: `yes` (bool) | no
 `ignore_last_of_role` | Skip a check whether the last CA master or DNS server is removed. Only in state: absent. (bool) | no
 `ignore_topology_disconnect` | Ignore topology connectivity problems after removal. Only in state: absent. (bool) | no
 `force` | Force server removal even if it does not exist. Will always result in changed. Only in state: absent. (bool) | no
