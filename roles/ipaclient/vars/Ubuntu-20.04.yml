@@ -1,0 +1,4 @@
+# defaults file for ipaclient
+# vars/Ubuntu-20.04.yml
+---
+ipaclient_packages: [ "freeipa-client" ]
