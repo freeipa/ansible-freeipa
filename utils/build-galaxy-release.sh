@@ -23,8 +23,8 @@ sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.${c
     ln -sf ../../roles/*/library/*.py .
 })
 
-[ ! -x plugins/action_plugins ] && mkdir plugins/action_plugins
-(cd plugins/action_plugins && {
+[ ! -x plugins/action ] && mkdir plugins/action
+(cd plugins/action && {
     ln -sf ../../roles/*/action_plugins/*.py .
 })
 
@@ -85,5 +85,6 @@ rm plugins/module_utils/ansible_ipa_*
 rm plugins/modules/ipaserver_*
 rm plugins/modules/ipareplica_*
 rm plugins/modules/ipaclient_*
-rm plugins/action_plugins/ipaclient_*
+rm plugins/action/ipaclient_*
+rmdir plugins/action
 git reset --hard
