@@ -24,8 +24,8 @@ import re
 
 
 def galaxyfy_playbook(project_prefix, collection_prefix, lines):
-    p1 = re.compile('(%s.*:)$' % project_prefix)
-    p2 = re.compile('(.*:) (%s.*)$' % project_prefix)
+    po1 = re.compile('(%s.*:)$' % project_prefix)
+    po2 = re.compile('(.*:) (%s.*)$' % project_prefix)
     out_lines = []
 
     pattern1 = r'%s.\1' % collection_prefix
@@ -35,30 +35,34 @@ def galaxyfy_playbook(project_prefix, collection_prefix, lines):
     changeable = False
     include_role = False
     for line in lines:
-        stripped = line.strip()
+        line = line.rstrip()
+        stripped = line.lstrip()
         if stripped.startswith("- name:") or \
            stripped.startswith("- block:"):
             changeable = True
         elif stripped in ["set_fact:", "vars:"]:
             changeable = False
             include_role = False
+        elif stripped == "roles:":
+            changeable = True
+            include_role = False
         elif stripped.startswith("include_role:"):
             include_role = True
         elif include_role and stripped.startswith("name:"):
-            line = p2.sub(pattern2, line)
+            line = po2.sub(pattern2, line)
             changed = True
         elif changeable and stripped.startswith("- role:"):
-            line = p2.sub(pattern2, line)
+            line = po2.sub(pattern2, line)
             changed = True
-        elif (changeable and stripped.startswith(project_prefix) and
-              not stripped.startswith(collection_prefix) and
-              stripped.endswith(":")):
-            line = p1.sub(pattern1, line)
+        elif (changeable and stripped.startswith(project_prefix)
+              and not stripped.startswith(collection_prefix)  # noqa
+              and stripped.endswith(":")):  # noqa
+            line = po1.sub(pattern1, line)
             changed = True
             changeable = False  # Only change first line in task
-        elif (stripped.startswith("- %s" % project_prefix) and
-              stripped.endswith(":")):
-            line = p1.sub(pattern1, line)
+        elif (stripped.startswith("- %s" % project_prefix)
+              and stripped.endswith(":")):  # noqa
+            line = po1.sub(pattern1, line)
             changed = True
 
         out_lines.append(line)
