@@ -35,8 +35,7 @@ def galaxyfy_playbook(project_prefix, collection_prefix, lines):
     changeable = False
     include_role = False
     for line in lines:
-        line = line.rstrip()
-        stripped = line.lstrip()
+        stripped = line.strip()
         if stripped.startswith("- name:") or \
            stripped.startswith("- block:"):
             changeable = True
