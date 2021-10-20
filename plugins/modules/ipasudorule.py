@@ -456,11 +456,31 @@ def main():
                     sudooption_add, sudooption_del = gen_add_del_lists(
                         sudooption, res_find.get('ipasudoopt', []))
 
+                    # runasuser attribute can be used with both IPA and
+                    # non-IPA (external) users. IPA will handle the correct
+                    # attribute to properly store data, so we need to compare
+                    # the provided list against both users and external
+                    # users list.
                     runasuser_add, runasuser_del = gen_add_del_lists(
-                        runasuser, res_find.get('ipasudorunas_user', []))
+                        runasuser,
+                        (
+                            res_find.get('ipasudorunas_user', [])
+                            + res_find.get('ipasudorunasextuser', [])
+                        )
+                    )
 
+                    # runasgroup attribute can be used with both IPA and
+                    # non-IPA (external) groups. IPA will handle the correct
+                    # attribute to properly store data, so we need to compare
+                    # the provided list against both groups and external
+                    # groups list.
                     runasgroup_add, runasgroup_del = gen_add_del_lists(
-                        runasgroup, res_find.get('ipasudorunas_group', []))
+                        runasgroup,
+                        (
+                            res_find.get('ipasudorunas_group', [])
+                            + res_find.get('ipasudorunasextgroup', [])
+                        )
+                    )
 
                     # Add hosts and hostgroups
                     if len(host_add) > 0 or len(hostgroup_add) > 0:
@@ -593,14 +613,38 @@ def main():
                        "ipasudoopt" in res_find:
                         sudooption = gen_add_list(
                             sudooption, res_find["ipasudoopt"])
-                    if runasuser is not None and \
-                       "ipasudorunas_user" in res_find:
+                    # runasuser attribute can be used with both IPA and
+                    # non-IPA (external) users, so we need to compare
+                    # the provided list against both users and external
+                    # users list.
+                    if (
+                        runasuser is not None
+                        and (
+                            "ipasudorunas_user" in res_find
+                            or "ipasudorunasextuser" in res_find
+                        )
+                    ):
                         runasuser = gen_add_list(
-                            runasuser, res_find["ipasudorunas_user"])
-                    if runasgroup is not None and \
-                       "ipasudorunasgroup_group" in res_find:
+                            runasuser,
+                            (list(res_find.get('ipasudorunas_user', []))
+                             + list(res_find.get('ipasudorunasextuser', [])))
+                        )
+                    # runasgroup attribute can be used with both IPA and
+                    # non-IPA (external) groups, so we need to compare
+                    # the provided list against both users and external
+                    # groups list.
+                    if (
+                        runasgroup is not None
+                        and (
+                            "ipasudorunasgroup_group" in res_find
+                            or "ipasudorunasextgroup" in res_find
+                        )
+                    ):
                         runasgroup = gen_add_list(
-                            runasgroup, res_find["ipasudorunasgroup_group"])
+                            runasgroup,
+                            (list(res_find.get("ipasudorunasgroup_group", []))
+                             + list(res_find.get("ipasudorunasextgroup", [])))
+                        )
 
                     # Add hosts and hostgroups
                     if host is not None or hostgroup is not None:
@@ -724,17 +768,43 @@ def main():
                                 sudooption, res_find["ipasudoopt"])
                         else:
                             sudooption = None
+                    # runasuser attribute can be used with both IPA and
+                    # non-IPA (external) users, so we need to compare
+                    # the provided list against both users and external
+                    # users list.
                     if runasuser is not None:
-                        if "ipasudorunas_user" in res_find:
+                        if (
+                            "ipasudorunas_user" in res_find
+                            or "ipasudorunasextuser" in res_find
+                        ):
                             runasuser = gen_intersection_list(
-                                runasuser, res_find["ipasudorunas_user"])
+                                runasuser,
+                                (
+                                    list(res_find.get('ipasudorunas_user', []))
+                                    + list(res_find.get(
+                                        'ipasudorunasextuser', []))
+                                )
+                            )
                         else:
                             runasuser = None
+                    # runasgroup attribute can be used with both IPA and
+                    # non-IPA (external) groups, so we need to compare
+                    # the provided list against both groups and external
+                    # groups list.
                     if runasgroup is not None:
-                        if "ipasudorunasgroup_group" in res_find:
+                        if (
+                            "ipasudorunasgroup_group" in res_find
+                            or "ipasudorunasextgroup" in res_find
+                        ):
                             runasgroup = gen_intersection_list(
                                 runasgroup,
-                                res_find["ipasudorunasgroup_group"])
+                                (
+                                    list(res_find.get(
+                                        "ipasudorunasgroup_group", []))
+                                    + list(res_find.get(
+                                        "ipasudorunasextgroup", []))
+                                )
+                            )
                         else:
                             runasgroup = None
 
