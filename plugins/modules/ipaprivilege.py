@@ -108,7 +108,8 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
+    gen_intersection_list
 import six
 
 if six.PY3:
@@ -124,22 +125,6 @@ def find_privilege(module, name):
         return None
     else:
         return _result["result"]
-
-
-# pylint: disable=unused-argument
-def result_handler(module, result, command, name, args, errors):
-    # Get all errors
-    # All "already a member" and "not a member" failures in the
-    # result are ignored. All others are reported.
-    for failed_item in result.get("failed", []):
-        failed = result["failed"][failed_item]
-        for member_type in failed:
-            for member, failure in failed[member_type]:
-                if "already a member" in failure \
-                   or "not a member" in failure:
-                    continue
-                errors.append("%s: %s %s: %s" % (
-                    command, member_type, member, failure))
 
 
 def main():
@@ -230,48 +215,31 @@ def main():
                 if action == "privilege":
                     # Found the privilege
                     if res_find is not None:
-                        res_cmp = {
-                            k: v for k, v in res_find.items()
-                            if k not in [
-                                "objectclass", "cn", "dn",
-                                "memberof_permisssion"
-                            ]
-                        }
-                        # For all settings is args, check if there are
-                        # different settings in the find result.
-                        # If yes: modify
-                        if args and not compare_args_ipa(ansible_module, args,
-                                                         res_cmp):
+                        cmp = {"description": res_find.get("description")}
+                        if not compare_args_ipa(ansible_module, args, cmp):
                             commands.append([name, "privilege_mod", args])
                     else:
                         commands.append([name, "privilege_add", args])
                         res_find = {}
 
-                    member_args = {}
-                    if permission:
-                        member_args['permission'] = permission
+                    # Generate addition and removal lists
+                    permission_add, permission_del = gen_add_del_lists(
+                        permission, res_find.get("memberof_permission")
+                    )
 
-                    if not compare_args_ipa(ansible_module, member_args,
-                                            res_find):
-
-                        # Generate addition and removal lists
-                        permission_add, permission_del = gen_add_del_lists(
-                            permission, res_find.get("memberof_permission")
-                        )
-
-                        # Add members
-                        if len(permission_add) > 0:
-                            commands.append([name, "privilege_add_permission",
-                                             {
-                                                 "permission": permission_add,
-                                             }])
-                        # Remove members
-                        if len(permission_del) > 0:
-                            commands.append([
-                                name,
-                                "privilege_remove_permission",
-                                {"permission": permission_del}
-                            ])
+                    # Add members
+                    if len(permission_add) > 0:
+                        commands.append([name, "privilege_add_permission",
+                                         {
+                                             "permission": permission_add,
+                                         }])
+                    # Remove members
+                    if len(permission_del) > 0:
+                        commands.append([
+                            name,
+                            "privilege_remove_permission",
+                            {"permission": permission_del}
+                        ])
 
                 elif action == "member":
                     if res_find is None:
@@ -281,8 +249,11 @@ def main():
                     if permission is None:
                         ansible_module.fail_json(msg="No permission given")
 
-                    commands.append([name, "privilege_add_permission",
-                                     {"permission": permission}])
+                    permission = gen_add_list(
+                        permission, res_find.get("memberof_permission"))
+                    if permission:
+                        commands.append([name, "privilege_add_permission",
+                                         {"permission": permission}])
 
             elif state == "absent":
                 if action == "privilege":
@@ -297,10 +268,11 @@ def main():
                     if permission is None:
                         ansible_module.fail_json(msg="No permission given")
 
-                    commands.append([name, "privilege_remove_permission",
-                                     {
-                                         "permission": permission,
-                                     }])
+                    permission = gen_intersection_list(
+                        permission, res_find.get("memberof_permission"))
+                    if permission:
+                        commands.append([name, "privilege_remove_permission",
+                                         {"permission": permission}])
 
             elif state == "renamed":
                 if not rename:
@@ -319,7 +291,8 @@ def main():
 
         # Execute commands
 
-        changed = ansible_module.execute_ipa_commands(commands, result_handler)
+        changed = ansible_module.execute_ipa_commands(
+            commands, fail_on_member_errors=True)
 
     # Done
 
