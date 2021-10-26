@@ -256,7 +256,8 @@ def main():
 
                         # Generate addition and removal lists
                         permission_add, permission_del = gen_add_del_lists(
-                                permission, res_find.get("member_permission"))
+                            permission, res_find.get("memberof_permission")
+                        )
 
                         # Add members
                         if len(permission_add) > 0:
