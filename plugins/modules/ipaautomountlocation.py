@@ -65,13 +65,16 @@ RETURN = '''
 '''
 
 from ansible.module_utils.ansible_freeipa_module import (
-    FreeIPABaseModule, ipalib_errors
+    IPAAnsibleModule, ipalib_errors
 )
 
 
-class AutomountLocation(FreeIPABaseModule):
+class AutomountLocation(IPAAnsibleModule):
 
-    ipa_param_mapping = {}
+    def __init__(self, *args, **kwargs):
+        # pylint: disable=super-with-arguments
+        super(AutomountLocation, self).__init__(*args, **kwargs)
+        self.commands = []
 
     def get_location(self, location):
         try:
@@ -84,40 +87,28 @@ class AutomountLocation(FreeIPABaseModule):
             return response.get("result", None)
 
     def check_ipa_params(self):
-        if len(self.ipa_params.name) == 0:
+        if len(self.params_get("name")) == 0:
             self.fail_json(msg="At least one location must be provided.")
 
     def define_ipa_commands(self):
+        state = self.params_get("state")
 
-        for location_name in self.ipa_params.name:
+        for location_name in self.params_get("name"):
             location = self.get_location(location_name)
 
-            if not location and self.ipa_params.state == "present":
+            if not location and state == "present":
                 # does not exist and is wanted
-                self.add_ipa_command(
-                    "automountlocation_add",
-                    name=location_name,
-                    args=None,
-                )
-            elif location and self.ipa_params.state == "absent":
+                self.commands.append(
+                    (location_name, "automountlocation_add", {}))
+            elif location and state == "absent":
                 # exists and is not wanted
-                self.add_ipa_command(
-                    "automountlocation_del",
-                    name=location_name,
-                    args=None,
-                )
+                self.commands.append(
+                    (location_name, "automountlocation_del", {}))
 
 
 def main():
     ipa_module = AutomountLocation(
         argument_spec=dict(
-            ipaadmin_principal=dict(type="str",
-                                    default="admin"
-                                    ),
-            ipaadmin_password=dict(type="str",
-                                   required=False,
-                                   no_log=True
-                                   ),
             state=dict(type='str',
                        default='present',
                        choices=['present', 'absent']
@@ -129,7 +120,12 @@ def main():
                       ),
         ),
     )
-    ipa_module.ipa_run()
+    ipaapi_context = ipa_module.params_get("ipaapi_context")
+    with ipa_module.ipa_connect(context=ipaapi_context):
+        ipa_module.check_ipa_params()
+        ipa_module.define_ipa_commands()
+        changed = ipa_module.execute_ipa_commands(ipa_module.commands)
+    ipa_module.exit_json(changed=changed)
 
 
 if __name__ == "__main__":
