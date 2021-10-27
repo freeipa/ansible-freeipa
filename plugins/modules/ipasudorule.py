@@ -188,7 +188,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list
+    gen_intersection_list, api_get_domain, ensure_fqdn
 
 
 def find_sudorule(module, name):
@@ -374,6 +374,13 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
+        default_domain = api_get_domain()
+
+        # Ensure host is not short hostname.
+        if host:
+            host = list(
+                {ensure_fqdn(value.lower(), default_domain) for value in host}
+            )
 
         commands = []
 
