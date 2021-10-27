@@ -293,18 +293,18 @@ def main():
                                            "runasgroupcategory")
     hostcategory = ansible_module.params_get("hostcategory")  # noqa
     nomembers = ansible_module.params_get("nomembers")  # noqa
-    host = ansible_module.params_get("host")
-    hostgroup = ansible_module.params_get("hostgroup")
-    user = ansible_module.params_get("user")
-    group = ansible_module.params_get("group")
+    host = ansible_module.params_get_lowercase("host")
+    hostgroup = ansible_module.params_get_lowercase("hostgroup")
+    user = ansible_module.params_get_lowercase("user")
+    group = ansible_module.params_get_lowercase("group")
     allow_sudocmd = ansible_module.params_get('allow_sudocmd')
     allow_sudocmdgroup = ansible_module.params_get('allow_sudocmdgroup')
     deny_sudocmd = ansible_module.params_get('deny_sudocmd')
     deny_sudocmdgroup = ansible_module.params_get('deny_sudocmdgroup')
     sudooption = ansible_module.params_get("sudooption")
     order = ansible_module.params_get("order")
-    runasuser = ansible_module.params_get("runasuser")
-    runasgroup = ansible_module.params_get("runasgroup")
+    runasuser = ansible_module.params_get_lowercase("runasuser")
+    runasgroup = ansible_module.params_get_lowercase("runasgroup")
     action = ansible_module.params_get("action")
 
     # state
@@ -371,7 +371,6 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
-
         commands = []
 
         for name in names:
@@ -425,17 +424,29 @@ def main():
                         res_find = {}
 
                     # Generate addition and removal lists
-                    host_add, host_del = gen_add_del_lists(
-                        host, res_find.get('memberhost_host', []))
+                    if host is not None:
+                        host_add, host_del = gen_add_del_lists(
+                            host , res_find.get('memberhost_host'))
+                    else:
+                        host_add, host_del = [], []
 
-                    hostgroup_add, hostgroup_del = gen_add_del_lists(
-                        hostgroup, res_find.get('memberhost_hostgroup', []))
+                    if hostgroup is not None:
+                        hostgroup_add, hostgroup_del = gen_add_del_lists(
+                            hostgroup, res_find.get('memberhost_hostgroup'))
+                    else:
+                        hostgroup_add, hostgroup_del = [], []
 
-                    user_add, user_del = gen_add_del_lists(
-                        user, res_find.get('memberuser_user', []))
+                    if user is not None:
+                        user_add, user_del = gen_add_del_lists(
+                            user, res_find.get('memberuser_user'))
+                    else:
+                        user_add, user_del = [], []
 
-                    group_add, group_del = gen_add_del_lists(
-                        group, res_find.get('memberuser_group', []))
+                    if group is not None:
+                        group_add, group_del = gen_add_del_lists(
+                            group, res_find.get('memberuser_group'))
+                    else:
+                        group_add, group_del = [], []
 
                     allow_cmd_add, allow_cmd_del = gen_add_del_lists(
                         allow_sudocmd,
@@ -456,11 +467,18 @@ def main():
                     sudooption_add, sudooption_del = gen_add_del_lists(
                         sudooption, res_find.get('ipasudoopt', []))
 
-                    runasuser_add, runasuser_del = gen_add_del_lists(
-                        runasuser, res_find.get('ipasudorunas_user', []))
+                    if runasuser is not None:
+                        runasuser_add, runasuser_del = gen_add_del_lists(
+                            runasuser, res_find.get('ipasudorunas_user'))
+                    else:
+                        runasuser_add, runasuser_del = [], []
 
-                    runasgroup_add, runasgroup_del = gen_add_del_lists(
-                        runasgroup, res_find.get('ipasudorunas_group', []))
+                    if runasgroup is not None:
+                        runasgroup_add, runasgroup_del = gen_add_del_lists(
+                            runasgroup, res_find.get('ipasudorunasgroup_group')
+                        )
+                    else:
+                        runasgroup_add, runasgroup_del = [], []
 
                     # Add hosts and hostgroups
                     if len(host_add) > 0 or len(hostgroup_add) > 0:
@@ -675,19 +693,19 @@ def main():
                     if hostgroup is not None:
                         if "memberhost_hostgroup" in res_find:
                             hostgroup = gen_intersection_list(
-                                hostgroup, res_find["memberhost_hostgroup"])
+                                hostgroup, res_find['memberhost_hostgroup'])
                         else:
                             hostgroup = None
                     if user is not None:
                         if "memberuser_user" in res_find:
                             user = gen_intersection_list(
-                                user, res_find["memberuser_user"])
+                                user, res_find['memberuser_user'])
                         else:
                             user = None
                     if group is not None:
                         if "memberuser_group" in res_find:
                             group = gen_intersection_list(
-                                group, res_find["memberuser_group"])
+                                group, res_find['memberuser_group'])
                         else:
                             group = None
                     if allow_sudocmd is not None:
@@ -727,7 +745,7 @@ def main():
                     if runasuser is not None:
                         if "ipasudorunas_user" in res_find:
                             runasuser = gen_intersection_list(
-                                runasuser, res_find["ipasudorunas_user"])
+                                runasuser, res_find['ipasudorunas_user'])
                         else:
                             runasuser = None
                     if runasgroup is not None:
