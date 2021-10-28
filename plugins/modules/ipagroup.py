@@ -303,11 +303,13 @@ def main():
     external = ansible_module.params_get("external")
     posix = ansible_module.params_get("posix")
     nomembers = ansible_module.params_get("nomembers")
-    user = ansible_module.params_get("user")
-    group = ansible_module.params_get("group")
+    user = ansible_module.params_get_lowercase("user")
+    group = ansible_module.params_get_lowercase("group")
     service = ansible_module.params_get("service")
-    membermanager_user = ansible_module.params_get("membermanager_user")
-    membermanager_group = ansible_module.params_get("membermanager_group")
+    membermanager_user = \
+        ansible_module.params_get_lowercase("membermanager_user")
+    membermanager_group = \
+        ansible_module.params_get_lowercase("membermanager_group")
     externalmember = ansible_module.params_get("externalmember")
     action = ansible_module.params_get("action")
     # state
@@ -424,18 +426,31 @@ def main():
                     if not compare_args_ipa(ansible_module, member_args,
                                             res_find):
                         # Generate addition and removal lists
-                        user_add, user_del = gen_add_del_lists(
-                            user, res_find.get("member_user"))
+                        if user is not None:
+                            user_add, user_del = gen_add_del_lists(
+                                user, res_find.get("member_user"))
+                        else:
+                            user_add, user_del = [], []
 
-                        group_add, group_del = gen_add_del_lists(
-                            group, res_find.get("member_group"))
+                        if group is not None:
+                            group_add, group_del = gen_add_del_lists(
+                                group, res_find.get("member_group"))
+                        else:
+                            group_add, group_del = [], []
 
-                        service_add, service_del = gen_add_del_lists(
-                            service, res_find.get("member_service"))
+                        if service is not None:
+                            service_add, service_del = gen_add_del_lists(
+                                service, res_find.get("member_service"))
+                        else:
+                            service_add, service_del = [], []
 
-                        (externalmember_add,
-                         externalmember_del) = gen_add_del_lists(
-                            externalmember, res_find.get("member_external"))
+                        if externalmember is not None:
+                            (externalmember_add,
+                             externalmember_del) = gen_add_del_lists(
+                                externalmember, res_find.get("member_external")
+                            )
+                        else:
+                            externalmember_add, externalmember_del = [], []
 
                         # setup member args for add/remove members.
                         add_member_args = {
@@ -476,17 +491,25 @@ def main():
                                 [name, "group_remove_member", del_member_args]
                             )
 
-                    membermanager_user_add, membermanager_user_del = \
-                        gen_add_del_lists(
-                            membermanager_user,
-                            res_find.get("membermanager_user")
-                        )
+                    if membermanager_user is not None:
+                        membermanager_user_add, membermanager_user_del = \
+                            gen_add_del_lists(
+                                membermanager_user,
+                                res_find.get("membermanager_user")
+                            )
+                    else:
+                        membermanager_user_add = []
+                        membermanager_user_del = []
 
-                    membermanager_group_add, membermanager_group_del = \
-                        gen_add_del_lists(
-                            membermanager_group,
-                            res_find.get("membermanager_group")
-                        )
+                    if membermanager_group is not None:
+                        membermanager_group_add, membermanager_group_del = \
+                            gen_add_del_lists(
+                                membermanager_group,
+                                res_find.get("membermanager_group")
+                            )
+                    else:
+                        membermanager_group_add = []
+                        membermanager_group_del = []
 
                     if has_add_membermanager:
                         # Add membermanager users and groups

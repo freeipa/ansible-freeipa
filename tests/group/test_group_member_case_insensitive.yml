@@ -1,0 +1,273 @@
+---
+- name: Test group
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  vars:
+    user_list:
+      - User1
+      - uSer2
+      - usEr3
+    group_list:
+      - Group1
+      - gRoup2
+      - grOup3
+
+  tasks:
+  - include_tasks: ../env_freeipa_facts.yml
+
+  - block:
+      - name: Ensure test users are present
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          users:
+          - name: "{{ item }}"
+            first: First
+            last: Last
+        with_items: "{{ user_list }}"
+
+      - name: Ensure test groups are present
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ item }}"
+        with_items: "{{ group_list }}"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure group "{{ group_list[0] }}" is present with "{{ group_list[1] }}" and "{{ group_list[2] }}"  as members, mixed case
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          group:
+          - "{{ group_list[1] }}"
+          - "{{ group_list[2] }}"
+          action: member
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure group "{{ group_list[0] }}" is present with "{{ group_list[1] | lower }}" and "{{ group_list[2] | lower }}"  as members, lowercase
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          group:
+          - "{{ group_list[1] | lower }}"
+          - "{{ group_list[2] | lower }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure group "{{ group_list[0] }}" is present with "{{ group_list[1] | upper }}" and "{{ group_list[2] | upper }}"  as members, uppercase
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          group:
+          - "{{ group_list[1] | upper }}"
+          - "{{ group_list[2] | upper }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure group "{{ group_list[0] }}" is present with no members.
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          group: []
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure groups "{{ group_list[1] }}" and "{{ group_list[2] }}"  are present in group "{{ group_list[0] }}", mixed case
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          group:
+          - "{{ group_list[1] }}"
+          - "{{ group_list[2] }}"
+          action: member
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure groups "{{ group_list[1] | lower }}" and "{{ group_list[2] | lower }}"  are present in group "{{ group_list[0] }}", lowercase
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          group:
+          - "{{ group_list[1] | lower }}"
+          - "{{ group_list[2] | lower }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure groups "{{ group_list[1] | upper }}" and "{{ group_list[2] | upper }}"  are present in group "{{ group_list[0] }}", uppercase
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          group:
+          - "{{ group_list[1] | upper }}"
+          - "{{ group_list[2] | upper }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure groups "{{ group_list[1] | upper }}" and "{{ group_list[2] | upper }}"  are absent in group "{{ group_list[0] }}", uppercase
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          group:
+          - "{{ group_list[1] | upper }}"
+          - "{{ group_list[2] | upper }}"
+          state: absent
+          action: member
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure groups "{{ group_list[1] | lower }}" and "{{ group_list[2] | lower }}"  are absent in group "{{ group_list[0] }}", lowercase
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          group:
+          - "{{ group_list[1] | lower }}"
+          - "{{ group_list[2] | lower }}"
+          state: absent
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure groups "{{ group_list[1] }}" and "{{ group_list[2] }}"  are absent in group "{{ group_list[0] }}", mixed case
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          group:
+          - "{{ group_list[1] }}"
+          - "{{ group_list[2] }}"
+          state: absent
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure users "{{ ', '.join(user_list) }}" are present in group "{{ group_list[0] }}", mixed case
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          user: "{{ user_list }}"
+          action: member
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure users "{{ ', '.join(user_list) | lower }}" are present in group "{{ group_list[0] }}", lowercase
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          user: "{{ item | lower }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+        with_items: "{{ user_list }}"
+
+      - name: Ensure users "{{ ', '.join(user_list) | lower }}" are present in group "{{ group_list[0] }}", uppercase
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          user: "{{ item | upper }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+        with_items: "{{ user_list }}"
+
+      - name: Ensure users "{{ ', '.join(user_list) | lower }}" are present in group "{{ group_list[0] }}", uppercase
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          user: "{{ item | upper }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: not result.changed or result.failed
+        with_items: "{{ user_list }}"
+
+      - name: Ensure users "{{ ', '.join(user_list) | lower }}" are present in group "{{ group_list[0] }}", lowercase
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          user: "{{ item | lower }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.changed or result.failed
+        with_items: "{{ user_list }}"
+
+      - name: Ensure users "{{ ', '.join(user_list) }}" are present in group "{{ group_list[0] }}", mixed case
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list[0] }}"
+          user: "{{ user_list }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Tests requiring IPA version 4.8.4+
+        block:
+          - name: Ensure membermanager "{{ user_list[0] }}" is membermanager_user for "{{ group_list[0] }}", mixed case
+            ipagroup:
+              ipaadmin_password: SomeADMINpassword
+              name: "{{ group_list[0] }}"
+              membermanager_user: "{{ user_list[0] }}"
+            register: result
+            failed_when: not result.changed or result.failed
+
+          - name: Ensure membermanager "{{ user_list[0] | lower }}" is membermanager_user for "{{ group_list[0] }}", lowercase
+            ipagroup:
+              ipaadmin_password: SomeADMINpassword
+              name: "{{ group_list[0] }}"
+              membermanager_user: "{{ user_list[0] | lower }}"
+            register: result
+            failed_when: result.changed or result.failed
+
+          - name: Ensure membermanager "{{ user_list[0] | upper }}" is membermanager_user for "{{ group_list[0] }}", uppercase
+            ipagroup:
+              ipaadmin_password: SomeADMINpassword
+              name: "{{ group_list[0] }}"
+              membermanager_user: "{{ user_list[0] | upper }}"
+            register: result
+            failed_when: result.changed or result.failed
+
+        when: ipa_version is version('4.8.4', '>=')
+
+    always:
+
+      - name: Ensure test groups are absent
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ group_list }}"
+          state: absent
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure test users absent
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ user_list }}"
+          state: absent
+        register: result
+        failed_when: not result.changed or result.failed
