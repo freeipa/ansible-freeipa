@@ -1,0 +1,121 @@
+---
+- name: Test delegation
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  tasks:
+  - block:
+      # CLEANUP TEST ITEMS
+
+      - name: Ensure test groups are absent
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: managers,employees
+          state: absent
+
+      - name: Ensure delegation "basic manager attributes" is absent
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          state: absent
+
+      # CREATE TEST ITEMS
+
+      - name: Ensure test group managers is present
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: managers
+
+      - name: Ensure test group employees is present
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: employees
+
+      # TESTS
+
+      - name: Ensure delegation "basic manager attributes" is present, group/membergroup mixed case
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: read
+          attribute:
+          - businesscategory
+          group: Managers
+          membergroup: Employees
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, group lowercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: read
+          attribute:
+          - businesscategory
+          group: "{{ 'Managers' | lower }}"
+          membergroup: employees
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, group uppercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: read
+          attribute:
+          - businesscategory
+          group: "{{ 'Managers' | upper }}"
+          membergroup: employees
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, membergroup lowercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: read
+          attribute:
+          - businesscategory
+          group: managers
+          membergroup: "{{ 'Employees' | lower }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, membergroup uppercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: read
+          attribute:
+          - businesscategory
+          group: Managers
+          membergroup: "{{ 'Employees' | upper }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+    always:
+      # CLEANUP TEST ITEMS
+
+      - name: Ensure delegation "basic manager attributes" is absent
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          state: absent
+
+      - name: Ensure test groups are absent
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: managers,employees
+          state: absent

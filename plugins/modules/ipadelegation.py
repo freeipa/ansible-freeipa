@@ -168,8 +168,8 @@ def main():
     # present
     permission = ansible_module.params_get("permission")
     attribute = ansible_module.params_get("attribute")
-    membergroup = ansible_module.params_get("membergroup")
-    group = ansible_module.params_get("group")
+    membergroup = ansible_module.params_get_lowercase("membergroup")
+    group = ansible_module.params_get_lowercase("group")
     action = ansible_module.params_get("action")
     # state
     state = ansible_module.params_get("state")
@@ -221,6 +221,17 @@ def main():
         for name in names:
             # Make sure delegation exists
             res_find = find_delegation(ansible_module, name)
+
+            # As CLI delegation commands are "case preserving", data
+            # from groups and membergroups need to be transformed so
+            # comparison work properly.
+            if res_find:
+                for _member in ["group", "memberof"]:
+                    if _member in res_find:
+                        _data = res_find[_member]
+                        if not isinstance(_data, (list, tuple)):
+                            _data = [_data]
+                        res_find[_member] = [v.lower() for v in _data]
 
             # Create command
             if state == "present":
