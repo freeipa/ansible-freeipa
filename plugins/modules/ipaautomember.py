@@ -307,15 +307,21 @@ def main():
                         commands.append([name, 'automember_add', args])
                         res_find = {}
 
-                    inclusive_add, inclusive_del = gen_add_del_lists(
-                        transform_conditions(inclusive or []),
-                        res_find.get("automemberinclusiveregex", [])
-                    )
+                    if inclusive is not None:
+                        inclusive_add, inclusive_del = gen_add_del_lists(
+                            transform_conditions(inclusive),
+                            res_find.get("automemberinclusiveregex", [])
+                        )
+                    else:
+                        inclusive_add, inclusive_del = [], []
 
-                    exclusive_add, exclusive_del = gen_add_del_lists(
-                        transform_conditions(exclusive or []),
-                        res_find.get("automemberexclusiveregex", [])
-                    )
+                    if exclusive is not None:
+                        exclusive_add, exclusive_del = gen_add_del_lists(
+                            transform_conditions(exclusive),
+                            res_find.get("automemberexclusiveregex", [])
+                        )
+                    else:
+                        exclusive_add, exclusive_del = [], []
 
                 elif action == "member":
                     if res_find is None:

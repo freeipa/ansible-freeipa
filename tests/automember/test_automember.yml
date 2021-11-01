@@ -367,6 +367,83 @@
     failed_when: result.changed or not result.failed or
                  "Invalid automember condition key 'cns'" not in result.msg
 
+  # Tests for issue https://bugzilla.redhat.com/show_bug.cgi?id=1976922
+  - name: Ensure group testgroup is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      state: absent
+      automember_type: group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group testgroup is present
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      description: Automember rule.
+      automember_type: group
+      inclusive:
+      - key: cn
+        expression: "@1"
+      exclusive:
+      - key: cn
+        expression: s
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group testgroup is present with updated description
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      description: New automember rule.
+      automember_type: group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group testgroup is present with updated description, again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      description: New automember rule.
+      automember_type: group
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Verify inclusive and exclusive rules have not changed
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      automember_type: group
+      inclusive:
+      - key: cn
+        expression: "@1"
+      exclusive:
+      - key: cn
+        expression: s
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Verify no other rules existed.
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      automember_type: group
+      inclusive: []
+      exclusive: []
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # End of ests for issue https://bugzilla.redhat.com/show_bug.cgi?id=1976922
+
   # CLEANUP TEST ITEMS
 
   - name: Ensure group testgroup is absent
