@@ -347,6 +347,118 @@
     register: result
     failed_when: result.changed or result.failed
 
+  # tests for upstream issue #663
+  - name: Ensure service is present with principal alias.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      principal: "asvc/{{ host1_fqdn }}"
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure service is present with principal alias, again.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      principal: "asvc/{{ host1_fqdn }}"
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure service is present with different principal alias.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      principal: "HTTP/{{ host1_fqdn }}"
+      force: yes
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure service is presennt with different principal alias, again.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      principal: "HTTP/{{ host1_fqdn }}"
+      force: yes
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure service member principal alias is present.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      principal: "asvc/{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure service member principal alias is present, again.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      principal: "asvc/{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure service member principal alias is absent.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      principal: "asvc/{{ host1_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure service member principal alias is absent, again.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      principal: "asvc/{{ host1_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure service is present with multiple principal aliases.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      principal:
+        - "HTTP/{{ host1_fqdn }}"
+        - "asvc/{{ host1_fqdn }}"
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure service is present with multiple principal aliases, again.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      principal:
+        - "HTTP/{{ host1_fqdn }}"
+        - "asvc/{{ host1_fqdn }}"
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure service is with multiple principal aliases is absent.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      continue: yes
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure service is with multiple principal aliases is absent, again.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "mysvc/{{ host1_fqdn }}"
+      continue: yes
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed
+  # end of tests for upstream issue #663
+
   # cleanup
   - name: Cleanup test environment
     include_tasks: env_cleanup.yml

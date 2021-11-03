@@ -224,7 +224,8 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, encode_certificate, \
-    gen_add_del_lists, ipalib_errors
+    gen_add_del_lists, gen_add_list, gen_intersection_list, ipalib_errors, \
+    api_get_realm, to_text
 
 
 def find_service(module, name):
@@ -492,6 +493,30 @@ def main():
 
         for name in names:
             res_find = find_service(ansible_module, name)
+            res_principals = []
+
+            if principal and res_find:
+                # When comparing principals to the existing ones,
+                # the REALM is needded, and are added here for those
+                # that do not have it.
+                principal = [
+                    p if "@" in p
+                    else "%s@%s" % (p, api_get_realm())
+                    for p in principal
+                ]
+                principal = list(set(principal))
+
+                # Create list of existing principal aliases as strings
+                # to compare with provided ones.
+                canonicalname = {
+                    to_text(p)
+                    for p in res_find.get("krbcanonicalname", [])
+                }
+                res_principals = [
+                    to_text(elem)
+                    for elem in res_find.get("krbprincipalname", [])
+                ]
+                res_principals = list(set(res_principals) - canonicalname)
 
             if state == "present":
                 if action == "service":
@@ -576,8 +601,8 @@ def main():
                         host_add, host_del = gen_add_del_lists(
                             host, res_find.get('managedby_host', []))
 
-                        principal_add, principal_del = gen_add_del_lists(
-                            principal, res_find.get("principal"))
+                        principal_add, principal_del = \
+                            gen_add_del_lists(principal, res_principals)
 
                         (allow_create_keytab_user_add,
                          allow_create_keytab_user_del) = \
@@ -646,7 +671,7 @@ def main():
                     certificate_del = []
                     host_add = host or []
                     host_del = []
-                    principal_add = principal or []
+                    principal_add = gen_add_list(principal, res_principals)
                     principal_del = []
 
                     allow_create_keytab_user_add = \
@@ -674,21 +699,12 @@ def main():
                         allow_retrieve_keytab_hostgroup or []
                     allow_retrieve_keytab_hostgroup_del = []
 
-                # Add principals
-                for _principal in principal_add:
+                if principal_add:
                     commands.append([name, "service_add_principal",
-                                     {
-                                         "krbprincipalname":
-                                         _principal,
-                                     }])
-
-                # Remove principals
-                for _principal in principal_del:
+                                     {"krbprincipalname": principal_add}])
+                if principal_del:
                     commands.append([name, "service_remove_principal",
-                                     {
-                                         "krbprincipalname":
-                                         _principal,
-                                     }])
+                                     {"krbprincipalname": principal_del}])
 
                 for _certificate in certificate_add:
                     commands.append([name, "service_add_cert",
@@ -776,13 +792,12 @@ def main():
                         ansible_module.fail_json(msg="No service '%s'" % name)
 
                     # Remove principals
-                    if principal is not None:
-                        for _principal in principal:
-                            commands.append([name, "service_remove_principal",
-                                             {
-                                                 "krbprincipalname":
-                                                 _principal,
-                                             }])
+                    principal_del = gen_intersection_list(
+                        principal, res_principals)
+                    if principal_del:
+                        commands.append([name, "service_remove_principal",
+                                         {"krbprincipalname": principal_del}])
+
                     # Remove certificates
                     if certificate is not None:
                         existing = res_find.get('usercertificate', [])
