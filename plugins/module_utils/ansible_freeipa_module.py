@@ -579,6 +579,14 @@ else:
         def __getattr__(self, name):
             return self.get(name)
 
+    IPAParameters = dict(  # pylint: disable=invalid-name
+        # 'continue' may be used with `state: absent`. As `continue` is a
+        # Python keyword, variable preferred name is 'delete_continue'.
+        delete_continue=dict(
+            type="bool", required=False, aliases=['continue'],
+        ),
+    )
+
     class IPAAnsibleModule(AnsibleModule):
         """
         IPA Ansible Module.
@@ -620,6 +628,13 @@ else:
         if __name__ == "__main__":
             main()
 
+        Parameters
+        ----------
+        ipa_parameters: list of strings
+           Common module parameters that should follow the same configuration.
+           Currently available parameters are:
+               - delete_continue
+
         """
 
         # IPAAnsibleModule argument specs used for all modules
@@ -638,6 +653,14 @@ else:
                 _spec = kwargs["argument_spec"]
                 _spec.update(self.ipa_module_base_spec)
                 kwargs["argument_spec"] = _spec
+
+                # Extend argument_spec with ipa_commands
+                if "ipa_parameters" in kwargs:
+                    for cmd in kwargs["ipa_parameters"]:
+                        if cmd not in IPAParameters:
+                            raise ValueError("Invalid Parameter: '%s'" % cmd)
+                        _spec[cmd] = IPAParameters[cmd]
+                    del kwargs["ipa_parameters"]
 
             # pylint: disable=super-with-arguments
             super(IPAAnsibleModule, self).__init__(*args, **kwargs)

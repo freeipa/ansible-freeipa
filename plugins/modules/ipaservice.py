@@ -34,6 +34,7 @@ short description: Manage FreeIPA service
 description: Manage FreeIPA service
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamodule_parameters.delete_continue
 options:
   name:
     description: The service to manage
@@ -139,12 +140,6 @@ options:
     required: false
     type: list
     aliases: ["ipaallowedtoperform_read_keys_hostgroup"]
-  continue:
-    description:
-      Continuous mode. Don't stop on errors. Valid only if `state` is `absent`.
-    required: false
-    default: True
-    type: bool
   action:
     description: Work on service or member level
     default: service
@@ -389,8 +384,6 @@ def init_ansible_module():
             allow_retrieve_keytab_hostgroup=dict(
                 type="list", required=False,
                 aliases=['ipaallowedtoperform_read_keys_hostgroup']),
-            delete_continue=dict(type="bool", required=False,
-                                 aliases=['continue']),
             # action
             action=dict(type="str", default="service",
                         choices=["member", "service"]),
@@ -399,6 +392,7 @@ def init_ansible_module():
                        choices=["present", "absent", "disabled"]),
         ),
         supports_check_mode=True,
+        ipa_parameters=["delete_continue"],
     )
 
     ansible_module._ansible_debug = True

@@ -140,6 +140,16 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" is present, with wrong `continue` parameter.
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ ipa_server_name + '.' + ipaserver_domain }}"
+      continue: yes
+      state: present
+    register: result
+    failed_when: not result.failed or "Argument 'delete_continue' can not be used with" not in result.msg
+
   # hidden requires an additional server, not tested
 
   # absent requires an additional server, only sanity test with absent server
@@ -152,6 +162,17 @@
       state: absent
     register: result
     failed_when: result.changed or result.failed
+
+  - name: Ensure server "{{ 'absent.' + ipaserver_domain }}" is absent, with delete_continue.
+    ipaserver:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'absent.' + ipaserver_domain }}"
+      continue: yes
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
 
   # ignore_last_of_role requires an additional server, not tested
 

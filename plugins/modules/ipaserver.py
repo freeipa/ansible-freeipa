@@ -33,6 +33,7 @@ short description: Manage FreeIPA server
 description: Manage FreeIPA server
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamodule_parameters.delete_continue
 options:
   name:
     description: The list of server name strings.
@@ -65,13 +66,6 @@ options:
       Only in state: present.
     required: false
     type: bool
-  delete_continue:
-    description: |
-      Continuous mode: Don't stop on errors.
-      Only in state: absent.
-    required: false
-    type: bool
-    aliases: ["continue"]
   ignore_last_of_role:
     description: |
       Skip a check whether the last CA master or DNS server is removed.
@@ -251,8 +245,6 @@ def main():
             hidden=dict(required=False, type='bool', default=None),
             no_members=dict(required=False, type='bool', default=None),
             # absent
-            delete_continue=dict(required=False, type='bool',
-                                 aliases=["continue"], default=None),
             ignore_topology_disconnect=dict(required=False, type='bool',
                                             default=None),
             ignore_last_of_role=dict(required=False, type='bool',
@@ -264,6 +256,7 @@ def main():
                        choices=["present", "absent"]),
         ),
         supports_check_mode=True,
+        ipa_parameters=["delete_continue"],
     )
 
     ansible_module._ansible_debug = True

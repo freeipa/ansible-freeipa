@@ -107,6 +107,7 @@ Variable | Description | Required
 `ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
 `name` \| `cn` \| `location` | List of one or more automountlocation names. | yes
+`delete_continue` \| `continue` | Continuous mode: don't stop on errors. Valid only if `state` is `absent`. Default: `yes` (bool) | no
 `state` | The state to ensure. It can be one of `present`, or `absent`, default: `present`. | no
 
 

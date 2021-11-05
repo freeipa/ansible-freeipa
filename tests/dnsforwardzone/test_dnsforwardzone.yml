@@ -366,6 +366,48 @@
     register: result
     failed_when: not result.failed or "No forwarders specified" not in result.msg
 
+  - name: Ensure forwardzone is present.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: example.com
+      forwarders:
+        - ip_address: 1.1.1.1
+      skip_overlap_check: true
+      state: present
+
+  - name: Ensure forwardzone is present, with wrong 'continue' parameter.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: example.com
+      forwarders:
+        - ip_address: 1.1.1.1
+      continue: yes
+      state: present
+    register: result
+    failed_when: not result.failed or "Argument 'delete_continue' can not be used with" not in result.msg
+
+  - name: Ensure forwardzone is absent, with 'continue'.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: example.com
+      continue: yes
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure forwardzone is absent, with continue, again.
+    ipadnsforwardzone:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: example.com
+      continue: yes
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: ensure forwardzone example.com is absent - tidy up
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
