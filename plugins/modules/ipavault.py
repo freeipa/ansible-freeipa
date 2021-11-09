@@ -782,8 +782,11 @@ def main():
                     if res_find is not None:
                         arg_type = args.get("ipavaulttype")
 
+                        cmp_args = {
+                            k: v for k, v in args.items() if v is not None
+                        }
                         modified = not compare_args_ipa(ansible_module,
-                                                        args, res_find)
+                                                        cmp_args, res_find)
 
                         if arg_type != res_type or change_passwd:
                             stargs = data_storage_args(

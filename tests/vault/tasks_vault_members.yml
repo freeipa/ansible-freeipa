@@ -7,6 +7,23 @@
   # At the end of the test, the vault is created with no members
   # to be used later by the tests with 'action: membrer'.
   - block:
+      - name: Check if task will make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          vault_type: "{{ vault.vault_type }}"
+          users:
+          - user02
+          groups:
+          - vaultgroup
+          owners:
+          - user03
+          ownergroups:
+          - vaultgroup
+        check_mode: true
+        register: result
+        failed_when: not result.changed or result.failed
+
       - name: Ensure vault is present with members.
         ipavault:
           ipaadmin_password: SomeADMINpassword
@@ -22,6 +39,23 @@
           - vaultgroup
         register: result
         failed_when: not result.changed or result.failed
+
+      - name: Check if task will not make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          vault_type: "{{ vault.vault_type }}"
+          users:
+          - user02
+          groups:
+          - vaultgroup
+          owners:
+          - user03
+          ownergroups:
+          - vaultgroup
+        check_mode: true
+        register: result
+        failed_when: result.changed or result.failed
 
       - name: Ensure vault is present with members, again.
         ipavault:
@@ -39,6 +73,15 @@
         register: result
         failed_when: result.changed or result.failed
 
+      - name: Check if task with state set to absent will make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          state: absent
+        check_mode: true
+        register: result
+        failed_when: not result.changed or result.failed
+
       - name: Ensure vault is absent.
         ipavault:
           ipaadmin_password: SomeADMINpassword
@@ -46,6 +89,15 @@
           state: absent
         register: result
         failed_when: not result.changed or result.failed
+
+      - name: Check if task with state set to absent will not make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          state: absent
+        check_mode: true
+        register: result
+        failed_when: result.changed or result.failed
 
       - name: Ensure vault is present for member testing.
         ipavault:
@@ -57,6 +109,24 @@
     when: vault.vault_type == 'standard'
 
   - block:
+      - name: Check if task will make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          vault_type: "{{ vault.vault_type }}"
+          vault_password: SomeVAULTpassword
+          users:
+          - user02
+          groups:
+          - vaultgroup
+          owners:
+          - user03
+          ownergroups:
+          - vaultgroup
+        check_mode: true
+        register: result
+        failed_when: not result.changed or result.failed
+
       - name: Ensure vault is present with members.
         ipavault:
           ipaadmin_password: SomeADMINpassword
@@ -73,6 +143,24 @@
           - vaultgroup
         register: result
         failed_when: not result.changed or result.failed
+
+      - name: Check if task will not make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          vault_type: "{{ vault.vault_type }}"
+          vault_password: SomeVAULTpassword
+          users:
+          - user02
+          groups:
+          - vaultgroup
+          owners:
+          - user03
+          ownergroups:
+          - vaultgroup
+        check_mode: true
+        register: result
+        failed_when: result.changed or result.failed
 
       - name: Ensure vault is present with members, again.
         ipavault:
@@ -91,6 +179,15 @@
         register: result
         failed_when: result.changed or result.failed
 
+      - name: Check if task with state set to absent will make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          state: absent
+        check_mode: true
+        register: result
+        failed_when: not result.changed or result.failed
+
       - name: Ensure vault is absent
         ipavault:
           ipaadmin_password: SomeADMINpassword
@@ -98,6 +195,15 @@
           state: absent
         register: result
         failed_when: not result.changed or result.failed
+
+      - name: Check if task with state set to absent will make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          state: absent
+        check_mode: true
+        register: result
+        failed_when: result.changed or result.failed
 
       - name: Ensure vault is present
         ipavault:
@@ -110,6 +216,24 @@
     when: vault.vault_type == 'symmetric'
 
   - block:
+      - name: Check if task will make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          vault_type: "{{ vault.vault_type }}"
+          public_key: "{{ lookup('file', 'A_private.b64') }}"
+          users:
+          - user02
+          groups:
+          - vaultgroup
+          owners:
+          - user03
+          ownergroups:
+          - vaultgroup
+        check_mode: true
+        register: result
+        failed_when: not result.changed or result.failed
+
       - name: Ensure vault is present with members.
         ipavault:
           ipaadmin_password: SomeADMINpassword
@@ -126,6 +250,24 @@
           - vaultgroup
         register: result
         failed_when: not result.changed or result.failed
+
+      - name: Check if task will not make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          vault_type: "{{ vault.vault_type }}"
+          public_key: "{{ lookup('file', 'A_private.b64') }}"
+          users:
+          - user02
+          groups:
+          - vaultgroup
+          owners:
+          - user03
+          ownergroups:
+          - vaultgroup
+        check_mode: true
+        register: result
+        failed_when: result.changed or result.failed
 
       - name: Ensure vault is present with members, again.
         ipavault:
@@ -144,6 +286,15 @@
         register: result
         failed_when: result.changed or result.failed
 
+      - name: Check if task with state set to absent will make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          state: absent
+        check_mode: true
+        register: result
+        failed_when: not result.changed or result.failed
+
       - name: Ensure vault is absent
         ipavault:
           ipaadmin_password: SomeADMINpassword
@@ -151,6 +302,15 @@
           state: absent
         register: result
         failed_when: not result.changed or result.failed
+
+      - name: Check if task with state set to absent will not make any change.
+        ipavault:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ vault.name }}"
+          state: absent
+        check_mode: true
+        register: result
+        failed_when: result.changed or result.failed
 
       - name: Ensure vault is present
         ipavault:
