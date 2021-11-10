@@ -371,6 +371,7 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
+
         commands = []
 
         for name in names:
@@ -693,19 +694,19 @@ def main():
                     if hostgroup is not None:
                         if "memberhost_hostgroup" in res_find:
                             hostgroup = gen_intersection_list(
-                                hostgroup, res_find['memberhost_hostgroup'])
+                                hostgroup, res_find["memberhost_hostgroup"])
                         else:
                             hostgroup = None
                     if user is not None:
                         if "memberuser_user" in res_find:
                             user = gen_intersection_list(
-                                user, res_find['memberuser_user'])
+                                user, res_find["memberuser_user"])
                         else:
                             user = None
                     if group is not None:
                         if "memberuser_group" in res_find:
                             group = gen_intersection_list(
-                                group, res_find['memberuser_group'])
+                                group, res_find["memberuser_group"])
                         else:
                             group = None
                     if allow_sudocmd is not None:
@@ -745,7 +746,7 @@ def main():
                     if runasuser is not None:
                         if "ipasudorunas_user" in res_find:
                             runasuser = gen_intersection_list(
-                                runasuser, res_find['ipasudorunas_user'])
+                                runasuser, res_find["ipasudorunas_user"])
                         else:
                             runasuser = None
                     if runasgroup is not None:

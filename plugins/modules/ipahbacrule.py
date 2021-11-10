@@ -235,12 +235,12 @@ def main():
     hostcategory = ansible_module.params_get("hostcategory")
     servicecategory = ansible_module.params_get("servicecategory")
     nomembers = ansible_module.params_get("nomembers")
-    host = ansible_module.params_get("host")
-    hostgroup = ansible_module.params_get("hostgroup")
-    hbacsvc = ansible_module.params_get("hbacsvc")
-    hbacsvcgroup = ansible_module.params_get("hbacsvcgroup")
-    user = ansible_module.params_get("user")
-    group = ansible_module.params_get("group")
+    host = ansible_module.params_get_lowercase("host")
+    hostgroup = ansible_module.params_get_lowercase("hostgroup")
+    hbacsvc = ansible_module.params_get_lowercase("hbacsvc")
+    hbacsvcgroup = ansible_module.params_get_lowercase("hbacsvcgroup")
+    user = ansible_module.params_get_lowercase("user")
+    group = ansible_module.params_get_lowercase("group")
     action = ansible_module.params_get("action")
     # state
     state = ansible_module.params_get("state")
@@ -304,7 +304,7 @@ def main():
 
         # Ensure fqdn host names, use default domain for simple names
         if host is not None:
-            _host = [ensure_fqdn(x, default_domain) for x in host]
+            _host = [ensure_fqdn(x, default_domain).lower() for x in host]
             host = _host
 
         commands = []
@@ -350,24 +350,42 @@ def main():
                         res_find = {}
 
                     # Generate addition and removal lists
-                    host_add, host_del = gen_add_del_lists(
-                        host, res_find.get("memberhost_host"))
+                    if host:
+                        host_add, host_del = gen_add_del_lists(
+                            host, res_find.get("memberhost_host"))
+                    else:
+                        host_add, host_del = [], []
 
-                    hostgroup_add, hostgroup_del = gen_add_del_lists(
-                        hostgroup, res_find.get("memberhost_hostgroup"))
+                    if hostgroup:
+                        hostgroup_add, hostgroup_del = gen_add_del_lists(
+                            hostgroup, res_find.get("memberhost_hostgroup"))
+                    else:
+                        hostgroup_add, hostgroup_del = [], []
 
-                    hbacsvc_add, hbacsvc_del = gen_add_del_lists(
-                        hbacsvc, res_find.get("memberservice_hbacsvc"))
+                    if hbacsvc:
+                        hbacsvc_add, hbacsvc_del = gen_add_del_lists(
+                            hbacsvc, res_find.get("memberservice_hbacsvc"))
+                    else:
+                        hbacsvc_add, hbacsvc_del = [], []
 
-                    hbacsvcgroup_add, hbacsvcgroup_del = gen_add_del_lists(
-                        hbacsvcgroup,
-                        res_find.get("memberservice_hbacsvcgroup"))
+                    if hbacsvcgroup:
+                        hbacsvcgroup_add, hbacsvcgroup_del = gen_add_del_lists(
+                            hbacsvcgroup,
+                            res_find.get("memberservice_hbacsvcgroup"))
+                    else:
+                        hbacsvcgroup_add, hbacsvcgroup_del = [], []
 
-                    user_add, user_del = gen_add_del_lists(
-                        user, res_find.get("memberuser_user"))
+                    if user:
+                        user_add, user_del = gen_add_del_lists(
+                            user, res_find.get("memberuser_user"))
+                    else:
+                        user_add, user_del = [], []
 
-                    group_add, group_del = gen_add_del_lists(
-                        group, res_find.get("memberuser_group"))
+                    if group:
+                        group_add, group_del = gen_add_del_lists(
+                            group, res_find.get("memberuser_group"))
+                    else:
+                        group_add, group_del = [], []
 
                     # Add hosts and hostgroups
                     if len(host_add) > 0 or len(hostgroup_add) > 0:
