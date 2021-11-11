@@ -196,10 +196,12 @@ def ensure_absent_state(module, name, action, res_find):
             if items:
                 member_args[key] = items
 
-        _services = filter_service(module, res_find,
-                                   lambda res, svc: res.startswith(svc))
+        _services = get_service_param(module, "service")
         if _services:
-            member_args['service'] = _services
+            _existing = get_lowercase(res_find, "member_service")
+            items = gen_intersection_list(_services.keys(), _existing)
+            if items:
+                member_args["service"] = [_services[key] for key in items]
 
         # Only add remove command if there's at least one member no manage.
         if member_args:
@@ -208,25 +210,57 @@ def ensure_absent_state(module, name, action, res_find):
     return commands
 
 
-def filter_service(module, res_find, predicate):
+def get_service_param(module, key):
     """
-    Filter service based on predicate.
+    Retrieve dict of services, with realm, from the module parameters.
 
-    Compare service name with existing ones matching
-    at least until `@` from principal name.
-
-    Predicate is a callable that accepts the existing service, and the
-    modified service to be compared to.
+    As the services are compared in a case insensitive manner, but
+    are recorded in a case preserving way, a dict mapping the services
+    in lowercase to the provided module parameter is generated, so
+    that dict keys can be used for comparison and the values are used
+    with IPA API.
     """
-    _services = []
-    service = module.params_get('service')
-    if service:
-        existing = [to_text(x) for x in res_find.get('member_service', [])]
-        for svc in service:
-            svc = svc if '@' in svc else ('%s@' % svc)
-            found = [x for x in existing if predicate(x, svc)]
-            _services.extend(found)
+    _services = module.params_get(key)
+    if _services is not None:
+        ipa_realm = module.ipa_get_realm()
+        _services = [
+            to_text(svc) if '@' in svc else ('%s@%s' % (svc, ipa_realm))
+            for svc in _services
+        ]
+        if _services:
+            _services = {svc.lower(): svc for svc in _services}
     return _services
+
+
+def get_lowercase(res_find, key, default=None):
+    """
+    Retrieve a member of a dictionary converted to lowercase.
+
+    If 'key' is not found in the dictionary, return 'default'.
+    """
+    existing = res_find.get(key)
+    if existing is not None:
+        if isinstance(existing, (list, tuple)):
+            existing = [to_text(item).lower() for item in existing]
+        if isinstance(existing, (str, unicode)):
+            existing = existing.lower()
+    else:
+        existing = default
+    return existing
+
+
+def gen_services_add_del_lists(module, mod_member, res_find, res_member):
+    """Generate add/del lists for service principals."""
+    add_list, del_list = None, None
+    _services = get_service_param(module, mod_member)
+    if _services is not None:
+        _existing = result_get_value_lowercase(res_find, res_member)
+        add_list, del_list = gen_add_del_lists(_services.keys(), _existing)
+        if add_list:
+            add_list = [_services[key] for key in add_list]
+        if del_list:
+            del_list = [to_text(item) for item in del_list]
+    return add_list, del_list
 
 
 def ensure_role_with_members_is_present(module, name, res_find, action):
@@ -256,18 +290,12 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
         if del_list:
             del_members[key] = [to_text(item) for item in del_list]
 
-    service = [
-        to_text(svc)
-        if '@' in svc
-        else ('%s@%s' % (svc, module.ipa_get_realm()))
-        for svc in (module.params_get('service') or [])
-    ]
-    existing = [str(svc) for svc in res_find.get('member_service', [])]
-    add_list, del_list = gen_add_del_lists(service, existing)
-    if add_list:
-        add_members['service'] = add_list
-    if del_list:
-        del_members['service'] = [to_text(item) for item in del_list]
+    (add_services, del_services) = gen_services_add_del_lists(
+        module, "service", res_find, "member_service")
+    if add_services:
+        add_members["service"] = add_services
+    if del_services:
+        del_members["service"] = del_services
 
     if add_members:
         commands.append([name, "role_add_member", add_members])
