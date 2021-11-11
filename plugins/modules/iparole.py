@@ -170,6 +170,17 @@ def check_parameters(module):
     module.params_fail_used_invalid(invalid, state, action)
 
 
+def get_member_host_with_fqdn_lowercase(module, mod_member):
+    """Retrieve host members from module, as FQDN, lowercase."""
+    default_domain = module.ipa_get_domain()
+    hosts = module.params_get(mod_member)
+    return (
+        [ensure_fqdn(host, default_domain).lower() for host in hosts]
+        if hosts
+        else hosts
+    )
+
+
 def ensure_absent_state(module, name, action, res_find):
     """Define commands to ensure absent state."""
     commands = []
@@ -188,13 +199,21 @@ def ensure_absent_state(module, name, action, res_find):
                              {"privilege": members}])
 
         member_args = {}
-        for key in ['user', 'group', 'host', 'hostgroup']:
+        for key in ['user', 'group', 'hostgroup']:
             items = gen_intersection_list(
                 module.params_get(key),
                 res_find.get("member_%s" % key)
             )
             if items:
                 member_args[key] = items
+
+        # ensure hosts are FQDN.
+        _members = get_member_host_with_fqdn_lowercase(module, "host")
+        if _members:
+            del_list = gen_intersection_list(
+                _members, res_find.get('member_host'))
+            if del_list:
+                member_args["host"] = del_list
 
         _services = get_service_param(module, "service")
         if _services:
@@ -280,7 +299,7 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
     add_members = {}
     del_members = {}
 
-    for key in ["user", "group", "host", "hostgroup"]:
+    for key in ["user", "group", "hostgroup"]:
         add_list, del_list = gen_add_del_lists(
             module.params_get(key),
             res_find.get('member_%s' % key, [])
@@ -289,6 +308,16 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
             add_members[key] = add_list
         if del_list:
             del_members[key] = [to_text(item) for item in del_list]
+
+    # ensure hosts are FQDN.
+    _members = get_member_host_with_fqdn_lowercase(module, "host")
+    if _members:
+        add_list, del_list = gen_add_del_lists(
+            _members, res_find.get('member_host'))
+        if add_list:
+            add_members["host"] = add_list
+        if del_list:
+            del_members["host"] = del_list
 
     (add_services, del_services) = gen_services_add_del_lists(
         module, "service", res_find, "member_service")
