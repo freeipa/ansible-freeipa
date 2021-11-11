@@ -103,9 +103,9 @@ EXAMPLES = """
 # pylint: disable=no-name-in-module
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, gen_add_del_lists, compare_args_ipa
+    IPAAnsibleModule, gen_add_del_lists, compare_args_ipa, \
+    gen_intersection_list, ensure_fqdn
 from ansible.module_utils import six
-
 
 if six.PY3:
     unicode = str
@@ -170,30 +170,6 @@ def check_parameters(module):
     module.params_fail_used_invalid(invalid, state, action)
 
 
-def member_intersect(module, attr, memberof, res_find):
-    """Filter member arguments from role found by intersection."""
-    params = module.params_get(attr)
-    if not res_find:
-        return params
-    filtered = []
-    if params:
-        existing = res_find.get(memberof, [])
-        filtered = list(set(params) & set(existing))
-    return filtered
-
-
-def member_difference(module, attr, memberof, res_find):
-    """Filter member arguments from role found by difference."""
-    params = module.params_get(attr)
-    if not res_find:
-        return params
-    filtered = []
-    if params:
-        existing = res_find.get(memberof, [])
-        filtered = list(set(params) - set(existing))
-    return filtered
-
-
 def ensure_absent_state(module, name, action, res_find):
     """Define commands to ensure absent state."""
     commands = []
@@ -203,16 +179,20 @@ def ensure_absent_state(module, name, action, res_find):
 
     if action == "member":
 
-        members = member_intersect(
-            module, 'privilege', 'memberof_privilege', res_find)
+        members = gen_intersection_list(
+            module.params_get("privilege"),
+            res_find.get("memberof_privilege")
+        )
         if members:
             commands.append([name, "role_remove_privilege",
                              {"privilege": members}])
 
         member_args = {}
         for key in ['user', 'group', 'host', 'hostgroup']:
-            items = member_intersect(
-                module, key, 'member_%s' % key, res_find)
+            items = gen_intersection_list(
+                module.params_get(key),
+                res_find.get("member_%s" % key)
+            )
             if items:
                 member_args[key] = items
 
@@ -296,24 +276,6 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
         commands.append([name, "role_remove_member", del_members])
 
     return commands
-
-
-# pylint: disable=unused-argument
-def result_handler(module, result, command, name, args, errors):
-    """Process the result of a command, looking for errors."""
-    # Get all errors
-    # All "already a member" and "not a member" failures in the
-    # result are ignored. All others are reported.
-    if "failed" in result and len(result["failed"]) > 0:
-        for item in result["failed"]:
-            failed_item = result["failed"][item]
-            for member_type in failed_item:
-                for member, failure in failed_item[member_type]:
-                    if "already a member" in failure \
-                       or "not a member" in failure:
-                        continue
-                    errors.append("%s: %s %s: %s" % (
-                        command, member_type, member, failure))
 
 
 def role_commands_for_name(module, state, action, name):
@@ -414,7 +376,8 @@ def main():
 
         # Execute commands
 
-        changed = ansible_module.execute_ipa_commands(commands, result_handler)
+        changed = ansible_module.execute_ipa_commands(
+            commands, fail_on_member_errors=True)
 
     # Done
     ansible_module.exit_json(changed=changed, **exit_args)
