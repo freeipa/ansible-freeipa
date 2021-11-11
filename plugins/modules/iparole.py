@@ -190,22 +190,22 @@ def ensure_absent_state(module, name, action, res_find):
 
     if action == "member":
 
-        members = gen_intersection_list(
-            module.params_get("privilege"),
-            res_find.get("memberof_privilege")
-        )
-        if members:
-            commands.append([name, "role_remove_privilege",
-                             {"privilege": members}])
+        _members = module.params_get_lowercase("privilege")
+        if _members is not None:
+            del_list = gen_intersection_list(
+                _members, get_lowercase(res_find, "memberof_privilege"))
+            if del_list:
+                commands.append([name, "role_remove_privilege",
+                                 {"privilege": del_list}])
 
         member_args = {}
         for key in ['user', 'group', 'hostgroup']:
-            items = gen_intersection_list(
-                module.params_get(key),
-                res_find.get("member_%s" % key)
-            )
-            if items:
-                member_args[key] = items
+            _members = module.params_get_lowercase(key)
+            if _members:
+                del_list = gen_intersection_list(
+                    _members, get_lowercase(res_find, "member_%s" % key))
+                if del_list:
+                    member_args[key] = del_list
 
         # ensure hosts are FQDN.
         _members = get_member_host_with_fqdn_lowercase(module, "host")
@@ -285,29 +285,31 @@ def gen_services_add_del_lists(module, mod_member, res_find, res_member):
 def ensure_role_with_members_is_present(module, name, res_find, action):
     """Define commands to ensure member are present for action `role`."""
     commands = []
-    privilege_add, privilege_del = gen_add_del_lists(
-        module.params_get("privilege"),
-        res_find.get('memberof_privilege', []))
 
-    if privilege_add:
-        commands.append([name, "role_add_privilege",
-                         {"privilege": privilege_add}])
-    if action == "role" and privilege_del:
-        commands.append([name, "role_remove_privilege",
-                         {"privilege": privilege_del}])
+    _members = module.params_get_lowercase("privilege")
+    if _members:
+        add_list, del_list = gen_add_del_lists(
+            _members, get_lowercase(res_find, "memberof_privilege"))
+
+        if add_list:
+            commands.append([name, "role_add_privilege",
+                             {"privilege": add_list}])
+        if action == "role" and del_list:
+            commands.append([name, "role_remove_privilege",
+                             {"privilege": del_list}])
 
     add_members = {}
     del_members = {}
 
     for key in ["user", "group", "hostgroup"]:
-        add_list, del_list = gen_add_del_lists(
-            module.params_get(key),
-            res_find.get('member_%s' % key, [])
-        )
-        if add_list:
-            add_members[key] = add_list
-        if del_list:
-            del_members[key] = [to_text(item) for item in del_list]
+        _members = module.params_get_lowercase(key)
+        if _members is not None:
+            add_list, del_list = gen_add_del_lists(
+                _members, get_lowercase(res_find, "member_%s" % key))
+            if add_list:
+                add_members[key] = add_list
+            if del_list:
+                del_members[key] = del_list
 
     # ensure hosts are FQDN.
     _members = get_member_host_with_fqdn_lowercase(module, "host")
