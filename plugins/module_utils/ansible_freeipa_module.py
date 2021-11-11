@@ -397,6 +397,14 @@ else:
     def module_params_get(module, name):
         return _afm_convert(module.params.get(name))
 
+    def module_params_get_lowercase(module, name):
+        value = _afm_convert(module.params.get(name))
+        if isinstance(value, list):
+            value = [v.lower() for v in value]
+        if isinstance(value, (str, unicode)):
+            value = value.lower()
+        return value
+
     def api_get_domain():
         return api.env.domain
 
@@ -698,6 +706,18 @@ else:
 
             """
             return module_params_get(self, name)
+
+        def params_get_lowercase(self, name):
+            """
+            Retrieve value set for module parameter as lowercase, if not None.
+
+            Parameters
+            ----------
+            name: string
+                The name of the parameter to retrieve.
+
+            """
+            return module_params_get_lowercase(self, name)
 
         def params_fail_used_invalid(self, invalid_params, state, action=None):
             """
