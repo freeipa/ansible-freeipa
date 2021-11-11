@@ -298,34 +298,6 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
     return commands
 
 
-def ensure_members_are_present(module, name, res_find):
-    """Define commands to ensure members are present for action `member`."""
-    commands = []
-
-    members = member_difference(
-        module, 'privilege', 'memberof_privilege', res_find)
-    if members:
-        commands.append([name, "role_add_privilege",
-                         {"privilege": members}])
-
-    member_args = {}
-    for key in ['user', 'group', 'host', 'hostgroup']:
-        items = member_difference(
-            module, key, 'member_%s' % key, res_find)
-        if items:
-            member_args[key] = items
-
-    _services = filter_service(module, res_find,
-                               lambda res, svc: not res.startswith(svc))
-    if _services:
-        member_args['service'] = _services
-
-    if member_args:
-        commands.append([name, "role_add_member", member_args])
-
-    return commands
-
-
 # pylint: disable=unused-argument
 def result_handler(module, result, command, name, args, errors):
     """Process the result of a command, looking for errors."""
