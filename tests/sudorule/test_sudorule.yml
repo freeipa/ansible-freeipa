@@ -73,6 +73,7 @@
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
+      - test_upstream_issue_664
       - testrule1
       - allusers
       - allhosts
@@ -755,6 +756,134 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure sudorule with external user in 'runasuser' is present
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasuser:
+        - apache
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule with external user in 'runasuser' is present, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasuser:
+        - apache
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure sudorule member external user in 'runasuser' is absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasuser:
+        - apache
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule member external user in 'runasuser' is absent, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasuser:
+        - apache
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure sudorule member external user in 'runasuser' is present
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasuser:
+        - apache
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule member external user in 'runasuser' is present, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasuser:
+        - apache
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure sudorule with external group in 'runasgroup' is present
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasgroup:
+        - wheel
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule with external group in 'runasgroup' user is present, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasgroup:
+        - wheel
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure sudorule member external group in 'runasgroup' is absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasgroup:
+        - wheel
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule member external group in 'runasgroup' is absent, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasgroup:
+        - wheel
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure sudorule member external group in 'runasgroup' is present
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasgroup:
+        - wheel
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule member external group in 'runasgroup' is present, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      runasgroup:
+        - wheel
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure sudorule 'test_upstream_issue_664' is absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: test_upstream_issue_664
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
   # cleanup
   - name: Ensure sudocmdgroup is absent
     ipasudocmdgroup:
@@ -777,6 +906,7 @@
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
+      - test_upstream_issue_664
       - testrule1
       - allusers
       - allhosts
