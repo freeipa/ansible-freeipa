@@ -238,12 +238,12 @@ def main():
     hostcategory = ansible_module.params_get("hostcategory")
     servicecategory = ansible_module.params_get("servicecategory")
     nomembers = ansible_module.params_get("nomembers")
-    host = ansible_module.params_get("host")
-    hostgroup = ansible_module.params_get("hostgroup")
-    hbacsvc = ansible_module.params_get("hbacsvc")
-    hbacsvcgroup = ansible_module.params_get("hbacsvcgroup")
-    user = ansible_module.params_get("user")
-    group = ansible_module.params_get("group")
+    host = ansible_module.params_get_lowercase("host")
+    hostgroup = ansible_module.params_get_lowercase("hostgroup")
+    hbacsvc = ansible_module.params_get_lowercase("hbacsvc")
+    hbacsvcgroup = ansible_module.params_get_lowercase("hbacsvcgroup")
+    user = ansible_module.params_get_lowercase("user")
+    group = ansible_module.params_get_lowercase("group")
     action = ansible_module.params_get("action")
     # state
     state = ansible_module.params_get("state")
@@ -307,7 +307,7 @@ def main():
 
         # Ensure fqdn host names, use default domain for simple names
         if host is not None:
-            _host = [ensure_fqdn(x, default_domain) for x in host]
+            _host = [ensure_fqdn(x, default_domain).lower() for x in host]
             host = _host
 
         commands = []
@@ -315,6 +315,13 @@ def main():
         for name in names:
             # Make sure hbacrule exists
             res_find = find_hbacrule(ansible_module, name)
+
+            host_add, host_del = [], []
+            hostgroup_add, hostgroup_del = [], []
+            hbacsvc_add, hbacsvc_del = [], []
+            hbacsvcgroup_add, hbacsvcgroup_del = [], []
+            user_add, user_del = [], []
+            group_add, group_del = [], []
 
             # Create command
             if state == "present":
@@ -353,69 +360,30 @@ def main():
                         res_find = {}
 
                     # Generate addition and removal lists
-                    host_add, host_del = gen_add_del_lists(
-                        host, res_find.get("memberhost_host"))
+                    if host:
+                        host_add, host_del = gen_add_del_lists(
+                            host, res_find.get("memberhost_host"))
 
-                    hostgroup_add, hostgroup_del = gen_add_del_lists(
-                        hostgroup, res_find.get("memberhost_hostgroup"))
+                    if hostgroup:
+                        hostgroup_add, hostgroup_del = gen_add_del_lists(
+                            hostgroup, res_find.get("memberhost_hostgroup"))
 
-                    hbacsvc_add, hbacsvc_del = gen_add_del_lists(
-                        hbacsvc, res_find.get("memberservice_hbacsvc"))
+                    if hbacsvc:
+                        hbacsvc_add, hbacsvc_del = gen_add_del_lists(
+                            hbacsvc, res_find.get("memberservice_hbacsvc"))
 
-                    hbacsvcgroup_add, hbacsvcgroup_del = gen_add_del_lists(
-                        hbacsvcgroup,
-                        res_find.get("memberservice_hbacsvcgroup"))
+                    if hbacsvcgroup:
+                        hbacsvcgroup_add, hbacsvcgroup_del = gen_add_del_lists(
+                            hbacsvcgroup,
+                            res_find.get("memberservice_hbacsvcgroup"))
 
-                    user_add, user_del = gen_add_del_lists(
-                        user, res_find.get("memberuser_user"))
+                    if user:
+                        user_add, user_del = gen_add_del_lists(
+                            user, res_find.get("memberuser_user"))
 
-                    group_add, group_del = gen_add_del_lists(
-                        group, res_find.get("memberuser_group"))
-
-                    # Add hosts and hostgroups
-                    if len(host_add) > 0 or len(hostgroup_add) > 0:
-                        commands.append([name, "hbacrule_add_host",
-                                         {
-                                             "host": host_add,
-                                             "hostgroup": hostgroup_add,
-                                         }])
-                    # Remove hosts and hostgroups
-                    if len(host_del) > 0 or len(hostgroup_del) > 0:
-                        commands.append([name, "hbacrule_remove_host",
-                                         {
-                                             "host": host_del,
-                                             "hostgroup": hostgroup_del,
-                                         }])
-
-                    # Add hbacsvcs and hbacsvcgroups
-                    if len(hbacsvc_add) > 0 or len(hbacsvcgroup_add) > 0:
-                        commands.append([name, "hbacrule_add_service",
-                                         {
-                                             "hbacsvc": hbacsvc_add,
-                                             "hbacsvcgroup": hbacsvcgroup_add,
-                                         }])
-                    # Remove hbacsvcs and hbacsvcgroups
-                    if len(hbacsvc_del) > 0 or len(hbacsvcgroup_del) > 0:
-                        commands.append([name, "hbacrule_remove_service",
-                                         {
-                                             "hbacsvc": hbacsvc_del,
-                                             "hbacsvcgroup": hbacsvcgroup_del,
-                                         }])
-
-                    # Add users and groups
-                    if len(user_add) > 0 or len(group_add) > 0:
-                        commands.append([name, "hbacrule_add_user",
-                                         {
-                                             "user": user_add,
-                                             "group": group_add,
-                                         }])
-                    # Remove users and groups
-                    if len(user_del) > 0 or len(group_del) > 0:
-                        commands.append([name, "hbacrule_remove_user",
-                                         {
-                                             "user": user_del,
-                                             "group": group_del,
-                                         }])
+                    if group:
+                        group_add, group_del = gen_add_del_lists(
+                            group, res_find.get("memberuser_group"))
 
                 elif action == "member":
                     if res_find is None:
@@ -424,63 +392,33 @@ def main():
                     # Generate add lists for host, hostgroup and
                     # res_find to only try to add hosts and hostgroups
                     # that not in hbacrule already
-                    if host is not None and \
-                       "memberhost_host" in res_find:
-                        host = gen_add_list(
-                            host, res_find["memberhost_host"])
-                    if hostgroup is not None and \
-                       "memberhost_hostgroup" in res_find:
-                        hostgroup = gen_add_list(
-                            hostgroup, res_find["memberhost_hostgroup"])
-
-                    # Add hosts and hostgroups
-                    if host is not None or hostgroup is not None:
-                        commands.append([name, "hbacrule_add_host",
-                                         {
-                                             "host": host,
-                                             "hostgroup": hostgroup,
-                                         }])
+                    if host:
+                        host_add = gen_add_list(
+                            host, res_find.get("memberhost_host"))
+                    if hostgroup is not None:
+                        hostgroup_add = gen_add_list(
+                            hostgroup, res_find.get("memberhost_hostgroup"))
 
                     # Generate add lists for hbacsvc, hbacsvcgroup and
                     # res_find to only try to add hbacsvcs and hbacsvcgroups
                     # that not in hbacrule already
-                    if hbacsvc is not None and \
-                       "memberservice_hbacsvc" in res_find:
-                        hbacsvc = gen_add_list(
-                            hbacsvc, res_find["memberservice_hbacsvc"])
-                    if hbacsvcgroup is not None and \
-                       "memberservice_hbacsvcgroup" in res_find:
-                        hbacsvcgroup = gen_add_list(
+                    if hbacsvc:
+                        hbacsvc_add = gen_add_list(
+                            hbacsvc, res_find.get("memberservice_hbacsvc"))
+                    if hbacsvcgroup:
+                        hbacsvcgroup_add = gen_add_list(
                             hbacsvcgroup,
-                            res_find["memberservice_hbacsvcgroup"])
-
-                    # Add hbacsvcs and hbacsvcgroups
-                    if hbacsvc is not None or hbacsvcgroup is not None:
-                        commands.append([name, "hbacrule_add_service",
-                                         {
-                                             "hbacsvc": hbacsvc,
-                                             "hbacsvcgroup": hbacsvcgroup,
-                                         }])
+                            res_find.get("memberservice_hbacsvcgroup"))
 
                     # Generate add lists for user, group and
                     # res_find to only try to add users and groups
                     # that not in hbacrule already
-                    if user is not None and \
-                       "memberuser_user" in res_find:
-                        user = gen_add_list(
-                            user, res_find["memberuser_user"])
-                    if group is not None and \
-                       "memberuser_group" in res_find:
-                        group = gen_add_list(
-                            group, res_find["memberuser_group"])
-
-                    # Add users and groups
-                    if user is not None or group is not None:
-                        commands.append([name, "hbacrule_add_user",
-                                         {
-                                             "user": user,
-                                             "group": group,
-                                         }])
+                    if user:
+                        user_add = gen_add_list(
+                            user, res_find.get("memberuser_user"))
+                    if group:
+                        group_add = gen_add_list(
+                            group, res_find.get("memberuser_group"))
 
             elif state == "absent":
                 if action == "hbacrule":
@@ -494,75 +432,39 @@ def main():
                     # Generate intersection lists for host, hostgroup and
                     # res_find to only try to remove hosts and hostgroups
                     # that are in hbacrule
-                    if host is not None:
+                    if host:
                         if "memberhost_host" in res_find:
-                            host = gen_intersection_list(
+                            host_del = gen_intersection_list(
                                 host, res_find["memberhost_host"])
-                        else:
-                            host = None
-                    if hostgroup is not None:
+                    if hostgroup:
                         if "memberhost_hostgroup" in res_find:
-                            hostgroup = gen_intersection_list(
+                            hostgroup_del = gen_intersection_list(
                                 hostgroup, res_find["memberhost_hostgroup"])
-                        else:
-                            hostgroup = None
-
-                    # Remove hosts and hostgroups
-                    if host is not None or hostgroup is not None:
-                        commands.append([name, "hbacrule_remove_host",
-                                         {
-                                             "host": host,
-                                             "hostgroup": hostgroup,
-                                         }])
 
                     # Generate intersection lists for hbacsvc, hbacsvcgroup
                     # and res_find to only try to remove hbacsvcs and
                     # hbacsvcgroups that are in hbacrule
-                    if hbacsvc is not None:
+                    if hbacsvc:
                         if "memberservice_hbacsvc" in res_find:
-                            hbacsvc = gen_intersection_list(
+                            hbacsvc_del = gen_intersection_list(
                                 hbacsvc, res_find["memberservice_hbacsvc"])
-                        else:
-                            hbacsvc = None
-                    if hbacsvcgroup is not None:
+                    if hbacsvcgroup:
                         if "memberservice_hbacsvcgroup" in res_find:
-                            hbacsvcgroup = gen_intersection_list(
+                            hbacsvcgroup_del = gen_intersection_list(
                                 hbacsvcgroup,
                                 res_find["memberservice_hbacsvcgroup"])
-                        else:
-                            hbacsvcgroup = None
-
-                    # Remove hbacsvcs and hbacsvcgroups
-                    if hbacsvc is not None or hbacsvcgroup is not None:
-                        commands.append([name, "hbacrule_remove_service",
-                                         {
-                                             "hbacsvc": hbacsvc,
-                                             "hbacsvcgroup": hbacsvcgroup,
-                                         }])
 
                     # Generate intersection lists for user, group and
                     # res_find to only try to remove users and groups
                     # that are in hbacrule
-                    if user is not None:
+                    if user:
                         if "memberuser_user" in res_find:
-                            user = gen_intersection_list(
+                            user_del = gen_intersection_list(
                                 user, res_find["memberuser_user"])
-                        else:
-                            user = None
-                    if group is not None:
+                    if group:
                         if "memberuser_group" in res_find:
-                            group = gen_intersection_list(
+                            group_del = gen_intersection_list(
                                 group, res_find["memberuser_group"])
-                        else:
-                            group = None
-
-                    # Remove users and groups
-                    if user is not None or group is not None:
-                        commands.append([name, "hbacrule_remove_user",
-                                         {
-                                             "user": user,
-                                             "group": group,
-                                         }])
 
             elif state == "enabled":
                 if res_find is None:
@@ -586,6 +488,53 @@ def main():
 
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+            # Manage HBAC rule members.
+
+            # Add hosts and hostgroups
+            if len(host_add) > 0 or len(hostgroup_add) > 0:
+                commands.append([name, "hbacrule_add_host",
+                                 {
+                                     "host": host_add,
+                                     "hostgroup": hostgroup_add,
+                                 }])
+            # Remove hosts and hostgroups
+            if len(host_del) > 0 or len(hostgroup_del) > 0:
+                commands.append([name, "hbacrule_remove_host",
+                                 {
+                                     "host": host_del,
+                                     "hostgroup": hostgroup_del,
+                                 }])
+
+            # Add hbacsvcs and hbacsvcgroups
+            if len(hbacsvc_add) > 0 or len(hbacsvcgroup_add) > 0:
+                commands.append([name, "hbacrule_add_service",
+                                 {
+                                     "hbacsvc": hbacsvc_add,
+                                     "hbacsvcgroup": hbacsvcgroup_add,
+                                 }])
+            # Remove hbacsvcs and hbacsvcgroups
+            if len(hbacsvc_del) > 0 or len(hbacsvcgroup_del) > 0:
+                commands.append([name, "hbacrule_remove_service",
+                                 {
+                                     "hbacsvc": hbacsvc_del,
+                                     "hbacsvcgroup": hbacsvcgroup_del,
+                                 }])
+
+            # Add users and groups
+            if len(user_add) > 0 or len(group_add) > 0:
+                commands.append([name, "hbacrule_add_user",
+                                 {
+                                     "user": user_add,
+                                     "group": group_add,
+                                 }])
+            # Remove users and groups
+            if len(user_del) > 0 or len(group_del) > 0:
+                commands.append([name, "hbacrule_remove_user",
+                                 {
+                                     "user": user_del,
+                                     "group": group_del,
+                                 }])
 
         # Execute commands
 
