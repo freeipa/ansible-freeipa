@@ -47,6 +47,20 @@
     register: result
     failed_when: not result.changed or result.failed
 
+  - name: Check if adding member permissions would cause a change (issue 669).
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: Broad Privilege
+      permission:
+      - "Write IPA Configuration"
+      - "System: Write DNS Configuration"
+      - "System: Update DNS Entries"
+      action: member
+    check_mode: yes
+    register: result
+    failed_when: not result.changed or result.failed
+
   - name: Ensure privilege Broad Privilege has permissions
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
@@ -70,6 +84,20 @@
       - "System: Write DNS Configuration"
       - "System: Update DNS Entries"
       action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Check if existing member permissions would not cause a change (issue 669).
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: Broad Privilege
+      permission:
+      - "Write IPA Configuration"
+      - "System: Write DNS Configuration"
+      - "System: Update DNS Entries"
+      action: member
+    check_mode: yes
     register: result
     failed_when: result.changed or result.failed
 
@@ -161,6 +189,17 @@
       name: Broad Privilege
       state: absent
 
+  - name: Check if creating privilege Broad Privilege with permission would issue a change. (issue 669)
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: Broad Privilege
+      permission:
+      - "Write IPA Configuration"
+    check_mode: yes
+    register: result
+    failed_when: not result.changed or result.failed
+
   - name: Ensure privilege Broad Privilege is created with permission. (issue 529)
     ipaprivilege:
       ipaadmin_password: SomeADMINpassword
@@ -178,6 +217,17 @@
       name: Broad Privilege
       permission:
       - "Write IPA Configuration"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Check if exisintg privilege Broad Privilege with permission would not issue a change. (issue 669)
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: Broad Privilege
+      permission:
+      - "Write IPA Configuration"
+    check_mode: yes
     register: result
     failed_when: result.changed or result.failed
 
