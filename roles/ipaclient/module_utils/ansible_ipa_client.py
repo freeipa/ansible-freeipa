@@ -22,6 +22,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
+
 __all__ = ["gssapi", "version", "ipadiscovery", "api", "errors", "x509",
            "constants", "sysrestore", "certmonger", "certstore",
            "delete_persistent_client_session_data", "ScriptError",
