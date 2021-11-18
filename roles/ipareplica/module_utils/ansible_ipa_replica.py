@@ -22,6 +22,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
+
 __all__ = ["contextlib", "dnsexception", "dnsresolver", "dnsreversename",
            "parse_version", "IPAChangeConf",
            "certstore", "sysrestore", "ipa_generate_password", "kinit_keytab",
