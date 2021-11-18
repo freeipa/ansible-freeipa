@@ -1,0 +1,214 @@
+---
+- name: Test host certificate requests
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipacert:
+      ipaadmin_password: SomeADMINpassword
+      # ipacert only supports client context
+      ipaapi_context: "client"
+
+  tasks:
+
+  # SETUP
+
+  - name: Ensure test files do not exist
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "/root/retrieved.pem"
+      - "/root/cert_1.pem"
+      - "/root/host.csr"
+
+  # Ensure test items exist
+
+  - name: Ensure domain name is set
+    ansible.builtin.set_fact:
+      ipa_domain: ipa.test
+    when: ipa_domain is not defined
+
+  - name: Ensure test host exists
+    ipahost:
+      name: "certhost.{{ ipa_domain }}"
+      state: present
+      force: true
+
+  - name: Create CSR
+    ansible.builtin.shell:
+      cmd: "openssl req -newkey rsa:1024 -keyout /dev/null -nodes -subj /CN=certhost.{{ ipa_domain }}"
+    register: host_req
+
+  - name: Create CSR file
+    ansible.builtin.copy:
+      dest: "/root/host.csr"
+      content: "{{ host_req.stdout }}"
+      mode: 0644
+
+  # TESTS
+
+  - name: Request certificate for host
+    ipacert:
+      csr: '{{ host_req.stdout }}'
+      principal: "host/certhost.{{ ipa_domain }}"
+      state: requested
+    register: host_cert
+    failed_when: not host_cert.changed or host_cert.failed
+
+  - name: Display data from the requested certificate.
+    ansible.builtin.debug:
+      var: host_cert
+
+  - name: Retrieve certificate for host
+    ipacert:
+      serial_number: "{{ host_cert.certificate.serial_number }}"
+      state: retrieved
+    register: retrieved
+    failed_when: retrieved.certificate.serial_number != host_cert.certificate.serial_number
+
+  - name: Display data from the retrieved certificate.
+    ansible.builtin.debug:
+      var: retrieved
+
+  - name: Place certificate on hold
+    ipacert:
+      serial_number: '{{ host_cert.certificate.serial_number }}'
+      state: held
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Place certificate on hold, again
+    ipacert:
+      serial_number: '{{ host_cert.certificate.serial_number }}'
+      state: held
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Release hold on certificate
+    ipacert:
+      serial_number: '{{ host_cert.certificate.serial_number }}'
+      state: released
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Release hold on certificate, again
+    ipacert:
+      serial_number: '{{ host_cert.certificate.serial_number }}'
+      state: released
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Revoke certificate
+    ipacert:
+      serial_number: '{{ host_cert.certificate.serial_number }}'
+      state: revoked
+      reason: keyCompromise
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Revoke certificate, again
+    ipacert:
+      serial_number: '{{ host_cert.certificate.serial_number }}'
+      state: revoked
+      reason: keyCompromise
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Try to revoke inexistent certificate
+    ipacert:
+      serial_number: 0x123456789
+      reason: 9
+      state: revoked
+    register: result
+    failed_when: not (result.failed and ("Request failed with status 404" in result.msg or "Certificate serial number 0x123456789 not found" in result.msg))
+
+  - name: Try to release revoked certificate
+    ipacert:
+      serial_number: '{{ host_cert.certificate.serial_number }}'
+      state: released
+    register: result
+    failed_when: not result.failed or "Cannot release hold on certificate revoked with reason" not in result.msg
+
+  - name: Request certificate for host and save to file
+    ipacert:
+      csr: '{{ host_req.stdout }}'
+      principal: "host/certhost.{{ ipa_domain }}"
+      certificate_out: "/root/cert_1.pem"
+      state: requested
+    register: result
+    failed_when: not result.changed or result.failed or result.certificate
+
+  - name: Check requested certificate file
+    ansible.builtin.file:
+      path: "/root/cert_1.pem"
+    check_mode: true
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Retrieve certificate for host to a file
+    ipacert:
+      serial_number: "{{ host_cert.certificate.serial_number }}"
+      certificate_out: "/root/retrieved.pem"
+      state: retrieved
+    register: result
+    failed_when: result.changed or result.failed or result.certificate
+
+  - name: Check retrieved certificate file
+    ansible.builtin.file:
+      path: "/root/retrieved.pem"
+    check_mode: true
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Request with invalid CSR.
+    ipacert:
+      csr: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        BNxXqLcHylNEyg8SH0u63bWyxtgoDBfdZwdGAhYuJ+g4ev79J5eYoB0CAwEAAaAr
+        MCkGCSqGSIb3DQEJDjEcMBowGAYHKoZIzlYIAQQNDAtoZWxsbyB3b3JsZDANBgkq
+        hkiG9w0BAQsFAAOBgQADCi5BHDv1mrBFDWqYytFpQ1mrvr/mdax3AYXxNL2UEV8j
+        AqZAFTEnJXL/u1eVQtI1yotqxakyUBN4XZBP2CBgJRO93Mtry8cgvU1sPdU8Mavx
+        5gSnlP74Hio2ziscWWydlxpYxFx0gkKvu+0nyIpz954SVYwQ2wwk5FRqZnxI5w==
+        -----END CERTIFICATE REQUEST-----
+      principal: "host/certhost.{{ ipa_domain }}"
+      state: requested
+    register: result
+    failed_when: not (result.failed and "Failure decoding Certificate Signing Request" in result.msg)
+
+  - name: Request certificate using a file
+    ipacert:
+      csr_file: "/root/host.csr"
+      principal: "host/certhost.{{ ipa_domain }}"
+      state: requested
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Request certificate using an invalid profile
+    ipacert:
+      csr_file: "/root/host.csr"
+      principal: "host/certhost.{{ ipa_domain }}"
+      profile: invalid_profile
+      state: requested
+    register: result
+    failed_when: not (result.failed and "Request failed with status 400" in result.msg)
+
+
+  # CLEANUP TEST ITEMS
+
+  - name: Removet test host
+    ipahost:
+      name: "certhost.{{ ipa_domain }}"
+      state: absent
+
+  - name: Ensure test files do not exist
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "/root/retrieved.pem"
+      - "/root/cert_1.pem"
+      - "/root/host.csr"

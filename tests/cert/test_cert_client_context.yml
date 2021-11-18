@@ -1,0 +1,60 @@
+---
+- name: Test cert
+  hosts: ipaclients, ipaserver
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipacert:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_contetx: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+  - name: Include FreeIPA facts.
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  # Test will only be executed if host is not a server.
+  - name: Execute with server context in the client.
+    ipacert:
+      ipaapi_context: server
+      name: ThisShouldNotWork
+    register: result
+    failed_when: not (result.failed and result.msg is regex("No module named '*ipaserver'*"))
+    when: ipa_host_is_client
+
+# Import basic module tests, and execute with ipa_context set to 'client'.
+# If ipaclients is set, it will be executed using the client, if not,
+# ipaserver will be used.
+#
+# With this setup, tests can be executed against an IPA client, against
+# an IPA server using "client" context, and ensure that tests are executed
+# in upstream CI.
+
+- name: Test host certs using client context, in client host.
+  ansible.builtin.import_playbook: test_cert_host.yml
+  when: groups['ipaclients']
+  vars:
+    ipa_test_host: ipaclients
+
+- name: Test service certs using client context, in client host.
+  ansible.builtin.import_playbook: test_cert_service.yml
+  when: groups['ipaclients']
+  vars:
+    ipa_test_host: ipaclients
+
+- name: Test user certs using client context, in client host.
+  ansible.builtin.import_playbook: test_cert_user.yml
+  when: groups['ipaclients']
+  vars:
+    ipa_test_host: ipaclients
+
+- name: Test host certs using client context, in server host.
+  ansible.builtin.import_playbook: test_cert_host.yml
+  when: groups['ipaclients'] is not defined or not groups['ipaclients']
+
+- name: Test service certs using client context, in server host.
+  ansible.builtin.import_playbook: test_cert_service.yml
+  when: groups['ipaclients'] is not defined or not groups['ipaclients']
+
+- name: Test user certs using client context, in server host.
+  ansible.builtin.import_playbook: test_cert_user.yml
+  when: groups['ipaclients'] is not defined or not groups['ipaclients']

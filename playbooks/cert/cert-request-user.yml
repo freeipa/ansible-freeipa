@@ -1,0 +1,27 @@
+---
+- name: Certificate manage example
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipacert:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: client
+
+  tasks:
+  - name: Request a certificate for a user with a specific profile
+    ipacert:
+      csr: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIBejCB5AIBADAQMQ4wDAYDVQQDDAVwaW5reTCBnzANBgkqhkiG9w0BAQEFAAOB
+        jQAwgYkCgYEA7uChccy1Is1FTM0SF23WPYW472E3ozeLh2kzhKR9Ni6FLmeEGgu7
+        /hicR1VwvXHYkNwI1tpW9LqxRVvgr6vheqHySljrBcoRfshfYvKejp03l2327Bfq
+        BNxXqLcHylNEyg8SH0u63bWyxtgoDBfdZwdGAhYuJ+g4ev79J5eYoB0CAwEAAaAr
+        MCkGCSqGSIb3DQEJDjEcMBowGAYHKoZIzlYIAQQNDAtoZWxsbyB3b3JsZDANBgkq
+        hkiG9w0BAQsFAAOBgQADCi5BHDv1mrBFDWqYytFpQ1mrvr/mdax3AYXxNL2UEV8j
+        AqZAFTEnJXL/u1eVQtI1yotqxakyUBN4XZBP2CBgJRO93Mtry8cgvU1sPdU8Mavx
+        5gSnlP74Hio2ziscWWydlxpYxFx0gkKvu+0nyIpz954SVYwQ2wwk5FRqZnxI5w==
+        -----END CERTIFICATE REQUEST-----
+      principal: pinky
+      profile: IECUserRoles
+      state: requested

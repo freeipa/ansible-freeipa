@@ -1,0 +1,18 @@
+---
+- name: Certificate manage example
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipacert:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: client
+
+  tasks:
+  - name: Permanently revoke a certificate issued by a lightweight sub-CA
+    ipacert:
+      serial_number: 12345
+      ca: vpn-ca
+      # reason: keyCompromise (1)
+      reason: 1
+      state: revoked

@@ -1,0 +1,16 @@
+---
+- name: Certificate manage example
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipacert:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: client
+
+  tasks:
+  - name: Retrieve a certificate
+    ipacert:
+      serial_number: 12345
+      state: retrieved
+    register: cert_retrieved

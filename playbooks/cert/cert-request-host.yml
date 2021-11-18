@@ -1,0 +1,26 @@
+---
+- name: Certificate manage example
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipacert:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: client
+
+  tasks:
+  - name: Request a certificate for a host
+    ipacert:
+      csr: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIBWjCBxAIBADAbMRkwFwYDVQQDDBBob3N0LmV4YW1wbGUuY29tMIGfMA0GCSqG
+        SIb3DQEBAQUAA4GNADCBiQKBgQCzR3Vd4Cwl0uVgwB3+wxz+4JldFk3x526bPeuK
+        g8EEc+rEHILzJWeXC8ywCYPOgK9n7hrdMfVQiIx3yHYrY+0IYuLehWow4o1iJEf5
+        urPNAP9K9C4Y7MMXzzoQmoWR3IFQQpOYwvWOtiZfvrhmtflnYEGLE2tgz53gOQHD
+        NnbCCwIDAQABoAAwDQYJKoZIhvcNAQELBQADgYEAgF+6YC39WhnvmFgNz7pjAh5E
+        2ea3CgG+zrzAyiSBGG6WpXEjqMRnAQxciQNGxQacxjwWrscZidZzqg8URJPugewq
+        tslYB1+RkZn+9UWtfnWvz89+xnOgco7JlytnbH10Nfxt5fXXx13rY0tl54jBtk2W
+        422eYZ12wb4gjNcQy3A=
+        -----END CERTIFICATE REQUEST-----
+      principal: host/host.example.com
+      state: requested
