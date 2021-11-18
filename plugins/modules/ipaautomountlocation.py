@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # Authors:
 #   Chris Procter <cprocter@redhat.com>
