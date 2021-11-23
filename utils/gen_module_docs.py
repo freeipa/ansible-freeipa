@@ -206,7 +206,7 @@ def gen_module_docs(module_in):
             #     print("%s: Bad argument dict line '%s'" % (module_in,
             #                                                stripped))
             while ")," not in stripped and i < len(in_lines) - 1:
-                next_stripped = in_lines[i+1].strip()
+                next_stripped = in_lines[i + 1].strip()
                 if not next_stripped.startswith("# "):
                     stripped += next_stripped
                 i += 1

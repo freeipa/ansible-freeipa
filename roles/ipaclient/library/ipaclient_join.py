@@ -182,7 +182,7 @@ def main():
     if password is None and admin_keytab is None:
         module.fail_json(msg="Password or admin_keytab is needed")
 
-    client_domain = hostname[hostname.find(".")+1:]
+    client_domain = hostname[hostname.find(".") + 1:]
     nolog = tuple()
     env = {'PATH': SECURE_PATH}
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)

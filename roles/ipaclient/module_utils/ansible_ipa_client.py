@@ -63,7 +63,7 @@ else:
         # See ipapython/version.py
         IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in
                                              VERSION.split(".", 2)]
-        IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
+        IPA_PYTHON_VERSION = IPA_MAJOR * 10000 + IPA_MINOR * 100 + IPA_RELEASE
     else:
         IPA_PYTHON_VERSION = NUM_VERSION
 

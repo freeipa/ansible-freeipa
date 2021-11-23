@@ -159,7 +159,7 @@ def main():
     options.krb5_offline_passwords = not options.no_krb5_offline_passwords
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
-    client_domain = hostname[hostname.find(".")+1:]
+    client_domain = hostname[hostname.find(".") + 1:]
 
     if configure_sssd_conf(fstore, cli_realm, cli_domain, cli_server,
                            options, client_domain, hostname):

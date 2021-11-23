@@ -699,8 +699,8 @@ def check_certmapdata(data):
 
     i = data.find("<I>", 4)
     s = data.find("<S>", i)   # pylint: disable=invalid-name
-    issuer = data[i+3:s]
-    subject = data[s+3:]
+    issuer = data[i + 3:s]
+    subject = data[s + 3:]
 
     if i < 0 or s < 0 or "CN" not in issuer or "CN" not in subject:
         return False

@@ -252,7 +252,8 @@ def main():
 
     # If not defined, set domain from server name
     if installer.domain_name is None and installer.server is not None:
-        installer.domain_name = installer.server[installer.server.find(".")+1:]
+        installer.domain_name = \
+            installer.server[installer.server.find(".") + 1:]
     # If not defined, set realm from domain name
     if installer.realm_name is None and installer.domain_name is not None:
         installer.realm_name = installer.domain_name.upper()

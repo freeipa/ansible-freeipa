@@ -322,7 +322,7 @@ def main():
     if options.domain_name is None and options.servers is not None:
         if len(options.servers) > 0:
             options.domain_name = options.servers[0][
-                options.servers[0].find(".")+1:]
+                options.servers[0].find(".") + 1:]
 
     try:
         self = options
@@ -704,7 +704,7 @@ def main():
                 cli_domain_source = ds.domain_source
                 logger.debug("will use discovered domain: %s", cli_domain)
 
-        client_domain = hostname[hostname.find(".")+1:]
+        client_domain = hostname[hostname.find(".") + 1:]
 
         if ret in (ipadiscovery.NO_LDAP_SERVER, ipadiscovery.NOT_IPA_SERVER) \
                 or not ds.server:
