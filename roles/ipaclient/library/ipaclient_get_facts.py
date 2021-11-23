@@ -124,7 +124,7 @@ def get_ipa_conf():
         basedn=basedn,
         realm=realm,
         domain=domain
-        )
+    )
 
 
 def get_ipa_version():
@@ -151,7 +151,7 @@ def get_ipa_version():
             vendor_version=version.VENDOR_VERSION,
             version=version.VERSION,
             version_info=version_info
-            )
+        )
 
 
 def main():
@@ -197,7 +197,7 @@ def main():
     module.exit_json(
         changed=False,
         ansible_facts=dict(ipa=facts)
-        )
+    )
 
 
 if __name__ == '__main__':
