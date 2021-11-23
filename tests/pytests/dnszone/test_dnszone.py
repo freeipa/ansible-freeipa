@@ -112,7 +112,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
             self.check_notexists([error], "dnszone-show", [add_zone])
 
     def test_dnszone_invalid_ip(self):
-        """TC-07: Update with invalid IP’s in allow_transfer. Bug#1845051."""
+        """TC-07: Update with invalid IPs in allow_transfer. Bug#1845051."""
         invalid_zone_name = "invalidzone.test"
         invalid_zone_ip = "in.va.li.d"
         expected_error = "Invalid IP for DNS forwarder"
