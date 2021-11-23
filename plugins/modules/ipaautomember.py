@@ -102,7 +102,7 @@ EXAMPLES = """
     state: present
     inclusive:
     - key: "mail"
-      expression: "example.com$
+      expression: "example.com"
 
 # Delete an automember rule
 - ipaautomember:
