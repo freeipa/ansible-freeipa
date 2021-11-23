@@ -1,5 +1,5 @@
 ---
-- name: Playbook to with invalid IP’s in allow_transfer.
+- name: Playbook to with invalid IPs in allow_transfer.
   hosts: ipaserver
   become: true
 
