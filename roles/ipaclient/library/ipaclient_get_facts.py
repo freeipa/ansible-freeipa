@@ -84,7 +84,8 @@ def is_dogtag_configured(subsystem):
     # ca / kra is configured when the directory
     # /var/lib/pki/pki-tomcat/[ca|kra] # exists
     available_subsystems = {'ca', 'kra'}
-    assert subsystem in available_subsystems
+    if subsystem not in available_subsystems:
+        raise AssertionError("Subsystem '%s' not available" % subsystem)
 
     return os.path.isdir(os.path.join(VAR_LIB_PKI_TOMCAT, subsystem))
 
