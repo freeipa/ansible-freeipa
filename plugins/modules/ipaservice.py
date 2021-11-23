@@ -288,7 +288,8 @@ def gen_args_smb(netbiosname, ok_as_delegate, ok_to_auth_as_delegate):
 
 
 def check_parameters(module, state, action, names, parameters):
-    assert isinstance(parameters, dict)
+    if not isinstance(parameters, dict):
+        raise AssertionError("parameters is not a dict")
 
     # invalid parameters for everything but state 'present', action 'service'.
     invalid = ['pac_type', 'auth_ind', 'skip_host_check',
