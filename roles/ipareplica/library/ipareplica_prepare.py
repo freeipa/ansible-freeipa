@@ -195,7 +195,6 @@ RETURN = '''
 import os
 import tempfile
 import traceback
-import six
 from shutil import copyfile
 
 from ansible.module_utils.basic import AnsibleModule
@@ -210,6 +209,7 @@ from ansible.module_utils.ansible_ipa_replica import (
     dns, no_matching_interface_for_ip_address_warning, adtrust,
     constants, api, redirect_stdout, replica_conn_check, tasks
 )
+from ansible.module_utils import six
 
 if six.PY3:
     unicode = str

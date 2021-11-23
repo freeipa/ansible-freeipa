@@ -212,7 +212,6 @@ RETURN = '''
 
 import os
 import sys
-import six
 import inspect
 import random
 from shutil import copyfile
@@ -229,6 +228,7 @@ from ansible.module_utils.ansible_ipa_server import (
     validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION,
     encode_certificate, check_available_memory
 )
+from ansible.module_utils import six
 
 if six.PY3:
     unicode = str

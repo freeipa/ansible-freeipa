@@ -200,7 +200,7 @@ import socket
 import inspect
 
 try:
-    from six.moves.configparser import RawConfigParser
+    from ansible.module_utils.six.moves.configparser import RawConfigParser
 except ImportError:
     from ConfigParser import RawConfigParser
 

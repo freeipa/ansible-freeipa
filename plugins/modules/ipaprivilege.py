@@ -112,7 +112,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists
-import six
+from ansible.module_utils import six
 
 if six.PY3:
     unicode = str

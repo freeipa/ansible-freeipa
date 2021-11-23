@@ -104,7 +104,7 @@ EXAMPLES = """
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, gen_add_del_lists, compare_args_ipa
-import six
+from ansible.module_utils import six
 
 
 if six.PY3:
