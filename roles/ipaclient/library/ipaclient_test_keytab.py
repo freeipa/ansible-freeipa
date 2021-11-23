@@ -134,7 +134,7 @@ def main():
     kdc = module.params.get('kdc')
     kinit_attempts = module.params.get('kinit_attempts')
 
-    client_domain = hostname[hostname.find(".")+1:]
+    client_domain = hostname[hostname.find(".") + 1:]
     host_principal = 'host/%s@%s' % (hostname, realm)
     sssd = True
 

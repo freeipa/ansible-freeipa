@@ -926,7 +926,7 @@ def main():
     host_name = host_name.lower()
 
     if not options.domain_name:
-        domain_name = host_name[host_name.find(".")+1:]
+        domain_name = host_name[host_name.find(".") + 1:]
         try:
             validate_domain_name(domain_name)
         except ValueError as e:

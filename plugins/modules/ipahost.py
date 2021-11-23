@@ -439,7 +439,7 @@ def find_dnsrecord(module, name):
     This function may raise ipalib_errors.NotFound in some cases,
     and it should be handled by the caller.
     """
-    domain_name = name[name.find(".")+1:]
+    domain_name = name[name.find(".") + 1:]
     host_name = name[:name.find(".")]
 
     _args = {
@@ -1231,7 +1231,7 @@ def main():
                          }])
 
                 if len(dnsrecord_a_add) > 0 or len(dnsrecord_aaaa_add) > 0:
-                    domain_name = name[name.find(".")+1:]
+                    domain_name = name[name.find(".") + 1:]
                     host_name = name[:name.find(".")]
 
                     _args = {"idnsname": host_name}
@@ -1248,7 +1248,7 @@ def main():
                                      "dnsrecord_add", _args])
 
                 if len(dnsrecord_a_del) > 0 or len(dnsrecord_aaaa_del) > 0:
-                    domain_name = name[name.find(".")+1:]
+                    domain_name = name[name.find(".") + 1:]
                     host_name = name[:name.find(".")]
 
                     # There seems to be an issue with dnsrecord_del (not
@@ -1364,7 +1364,7 @@ def main():
 
                     if "arecord" in dnsrecord_args or \
                        "aaaarecord" in dnsrecord_args:
-                        domain_name = name[name.find(".")+1:]
+                        domain_name = name[name.find(".") + 1:]
                         host_name = name[:name.find(".")]
                         dnsrecord_args["idnsname"] = host_name
 
