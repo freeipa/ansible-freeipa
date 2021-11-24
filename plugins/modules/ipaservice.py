@@ -412,23 +412,6 @@ def init_ansible_module():
     return ansible_module
 
 
-# pylint: disable=unused-argument
-def result_handler(module, result, command, name, args, errors):
-    # Get all errors
-    # All "already a member" and "not a member" failures in the
-    # result are ignored. All others are reported.
-    if "failed" in result and len(result["failed"]) > 0:
-        for item in result["failed"]:
-            failed_item = result["failed"][item]
-            for member_type in failed_item:
-                for member, failure in failed_item[member_type]:
-                    if "already a member" in failure \
-                       or "not a member" in failure:
-                        continue
-                    errors.append("%s: %s %s: %s" % (
-                        command, member_type, member, failure))
-
-
 def main():
     ansible_module = init_ansible_module()
 
@@ -918,13 +901,9 @@ def main():
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
-        # Check mode exit
-        if ansible_module.check_mode:
-            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
-
         # Execute commands
-
-        changed = ansible_module.execute_ipa_commands(commands, result_handler)
+        changed = ansible_module.execute_ipa_commands(
+            commands, fail_on_member_errors=True)
 
     # Done
     ansible_module.exit_json(changed=changed, **exit_args)
