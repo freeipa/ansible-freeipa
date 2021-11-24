@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -19,6 +18,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 """ansible-freeipa module to manage FreeIPA privileges."""
 
@@ -110,7 +113,7 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
     gen_intersection_list
-import six
+from ansible.module_utils import six
 
 if six.PY3:
     unicode = str

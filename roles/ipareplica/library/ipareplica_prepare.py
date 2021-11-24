@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -22,7 +21,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -194,7 +195,6 @@ RETURN = '''
 import os
 import tempfile
 import traceback
-import six
 from shutil import copyfile
 
 from ansible.module_utils.basic import AnsibleModule
@@ -209,6 +209,7 @@ from ansible.module_utils.ansible_ipa_replica import (
     dns, no_matching_interface_for_ip_address_warning, adtrust,
     constants, api, redirect_stdout, replica_conn_check, tasks
 )
+from ansible.module_utils import six
 
 if six.PY3:
     unicode = str

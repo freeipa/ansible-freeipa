@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -21,6 +20,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "DEFAULT_CONFIG", "LDAP_GENERALIZED_TIME_FORMAT",
@@ -100,7 +103,7 @@ else:
 
     import socket
     import base64
-    import six
+    from ansible.module_utils import six
 
     try:
         from collections.abc import Mapping  # noqa

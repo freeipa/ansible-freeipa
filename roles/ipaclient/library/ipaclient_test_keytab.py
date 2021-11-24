@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -21,6 +20,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -131,7 +134,7 @@ def main():
     kdc = module.params.get('kdc')
     kinit_attempts = module.params.get('kinit_attempts')
 
-    client_domain = hostname[hostname.find(".")+1:]
+    client_domain = hostname[hostname.find(".") + 1:]
     host_principal = 'host/%s@%s' % (hostname, realm)
     sssd = True
 

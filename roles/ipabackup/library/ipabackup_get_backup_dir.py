@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -20,6 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
+
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
     'supported_by': 'community',
@@ -40,7 +43,8 @@ author:
 
 EXAMPLES = '''
 # Get IPA_BACKUP_DIR from ipaplatform
-- name: ipabackup_get_backup_dir:
+- name: Get IPA_BACKUP_DIR from ipaplatform
+  ipabackup_get_backup_dir:
   register result
 '''
 

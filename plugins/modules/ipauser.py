@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -19,6 +18,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 ANSIBLE_METADATA = {
     "metadata_version": "1.0",
@@ -472,7 +475,7 @@ user:
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, date_format, \
     encode_certificate, load_cert_from_str, DN_x500_text, to_text
-import six
+from ansible.module_utils import six
 if six.PY3:
     unicode = str
 
@@ -696,8 +699,8 @@ def check_certmapdata(data):
 
     i = data.find("<I>", 4)
     s = data.find("<S>", i)   # pylint: disable=invalid-name
-    issuer = data[i+3:s]
-    subject = data[s+3:]
+    issuer = data[i + 3:s]
+    subject = data[s + 3:]
 
     if i < 0 or s < 0 or "CN" not in issuer or "CN" not in subject:
         return False

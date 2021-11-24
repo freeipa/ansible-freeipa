@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -21,6 +20,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -249,7 +252,8 @@ def main():
 
     # If not defined, set domain from server name
     if installer.domain_name is None and installer.server is not None:
-        installer.domain_name = installer.server[installer.server.find(".")+1:]
+        installer.domain_name = \
+            installer.server[installer.server.find(".") + 1:]
     # If not defined, set realm from domain name
     if installer.realm_name is None and installer.domain_name is not None:
         installer.realm_name = installer.domain_name.upper()

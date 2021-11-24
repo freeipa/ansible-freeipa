@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -19,6 +18,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 ANSIBLE_METADATA = {
     "metadata_version": "1.0",
@@ -183,21 +186,23 @@ EXAMPLES = """
       ipaadmin_password: SomeADMINpassword
       name: HTTP/www.example.com
       certificate:
-        - MIIC/zCCAeegAwIBAgIUMNHIbn+hhrOVew/2WbkteisV29QwDQYJKoZIhvcNAQELBQAw
-        DzENMAsGA1UEAwwEdGVzdDAeFw0yMDAyMDQxNDQxMDhaFw0zMDAyMDExNDQxMDhaMA8xDT
-        ALBgNVBAMMBHRlc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC+XVVGFYpH
-        VkcDfVnNInE1Y/pFciegdzqTjMwUWlRL4Zt3u96GhaMLRbtk+OfEkzLUAhWBOwEraELJzM
-        LJOMvjYF3C+TiGO7dStFLikZmccuSsSIXjnzIPwBXa8KvgRVRyGLoVvGbLJvmjfMXp0nIT
-        oTx/i74KF9S++WEes9H5ErJ99CDhLKFgq0amnvsgparYXhypHaRLnikn0vQINt55YoEd1s
-        4KrvEcD2VdZkIMPbLRu2zFvMprF3cjQQG4LT9ggfEXNIPZ1nQWAnAsu7OJEkNF+E4Mkmpc
-        xj9aGUVt5bsq1D+Tzj3GsidSX0nSNcZ2JltXRnL/5v63g5cZyE+nAgMBAAGjUzBRMB0GA1
-        UdDgQWBBRV0j7JYukuH/r/t9+QeNlRLXDlEDAfBgNVHSMEGDAWgBRV0j7JYukuH/r/t9+Q
-        eNlRLXDlEDAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQCgVy1+1kNwHs
-        5y1Zp0WjMWGCJC6/zw7FDG4OW5r2GJiCXZYdJ0UonY9ZtoVLJPrp2/DAv1m5DtnDhBYqic
-        uPgLzEkOS1KdTi20Otm/J4yxLLrZC5W4x0XOeSVPXOJuQWfwQ5pPvKkn6WxYUYkGwIt1OH
-        2nSMngkbami3CbSmKZOCpgQIiSlQeDJ8oGjWFMLDymYSHoVOIXHwNoooyEiaio3693l6no
-        obyGv49zyCVLVR1DC7i6RJ186ql0av+D4vPoiF5mX7+sKC2E8xEj9uKQ5GTWRh59VnRBVC
-        /SiMJ/H78tJnBAvoBwXxSEvj8Z3Kjm/BQqZfv4IBsA5yqV7MVq
+        - >
+          MIIC/zCCAeegAwIBAgIUMNHIbn+hhrOVew/2WbkteisV29QwDQYJKoZIhvcNAQELBQAw
+          DzENMAsGA1UEAwwEdGVzdDAeFw0yMDAyMDQxNDQxMDhaFw0zMDAyMDExNDQxMDhaMA8x
+          DTALBgNVBAMMBHRlc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC+XVVG
+          FYpHVkcDfVnNInE1Y/pFciegdzqTjMwUWlRL4Zt3u96GhaMLRbtk+OfEkzLUAhWBOwEr
+          aELJzMLJOMvjYF3C+TiGO7dStFLikZmccuSsSIXjnzIPwBXa8KvgRVRyGLoVvGbLJvmj
+          fMXp0nIToTx/i74KF9S++WEes9H5ErJ99CDhLKFgq0amnvsgparYXhypHaRLnikn0vQI
+          Nt55YoEd1s4KrvEcD2VdZkIMPbLRu2zFvMprF3cjQQG4LT9ggfEXNIPZ1nQWAnAsu7OJ
+          EkNF+E4Mkmpcxj9aGUVt5bsq1D+Tzj3GsidSX0nSNcZ2JltXRnL/5v63g5cZyE+nAgMB
+          AAGjUzBRMB0GA1UdDgQWBBRV0j7JYukuH/r/t9+QeNlRLXDlEDAfBgNVHSMEGDAWgBRV
+          0j7JYukuH/r/t9+QeNlRLXDlEDAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUA
+          A4IBAQCgVy1+1kNwHs5y1Zp0WjMWGCJC6/zw7FDG4OW5r2GJiCXZYdJ0UonY9ZtoVLJP
+          rp2/DAv1m5DtnDhBYqicuPgLzEkOS1KdTi20Otm/J4yxLLrZC5W4x0XOeSVPXOJuQWfw
+          Q5pPvKkn6WxYUYkGwIt1OH2nSMngkbami3CbSmKZOCpgQIiSlQeDJ8oGjWFMLDymYSHo
+          VOIXHwNoooyEiaio3693l6noobyGv49zyCVLVR1DC7i6RJ186ql0av+D4vPoiF5mX7+s
+          KC2E8xEj9uKQ5GTWRh59VnRBVC/SiMJ/H78tJnBAvoBwXxSEvj8Z3Kjm/BQqZfv4IBsA
+          5yqV7MVq
       action: member
       state: present
 
@@ -285,7 +290,8 @@ def gen_args_smb(netbiosname, ok_as_delegate, ok_to_auth_as_delegate):
 
 
 def check_parameters(module, state, action, names, parameters):
-    assert isinstance(parameters, dict)
+    if not isinstance(parameters, dict):
+        raise AssertionError("parameters is not a dict")
 
     # invalid parameters for everything but state 'present', action 'service'.
     invalid = ['pac_type', 'auth_ind', 'skip_host_check',

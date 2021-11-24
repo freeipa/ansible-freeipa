@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -21,6 +20,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -156,7 +159,7 @@ def main():
     options.krb5_offline_passwords = not options.no_krb5_offline_passwords
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
-    client_domain = hostname[hostname.find(".")+1:]
+    client_domain = hostname[hostname.find(".") + 1:]
 
     if configure_sssd_conf(fstore, cli_realm, cli_domain, cli_server,
                            options, client_domain, hostname):

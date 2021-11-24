@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -21,6 +20,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -209,7 +212,6 @@ RETURN = '''
 
 import os
 import sys
-import six
 import inspect
 import random
 from shutil import copyfile
@@ -226,6 +228,7 @@ from ansible.module_utils.ansible_ipa_server import (
     validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION,
     encode_certificate, check_available_memory
 )
+from ansible.module_utils import six
 
 if six.PY3:
     unicode = str
@@ -923,7 +926,7 @@ def main():
     host_name = host_name.lower()
 
     if not options.domain_name:
-        domain_name = host_name[host_name.find(".")+1:]
+        domain_name = host_name[host_name.find(".") + 1:]
         try:
             validate_domain_name(domain_name)
         except ValueError as e:

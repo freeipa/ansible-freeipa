@@ -1,5 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 DOCUMENTATION = """
 ---
@@ -12,9 +15,9 @@ author:
 
 import os
 import re
-import six
+from ansible.module_utils import six
 try:
-    from six.moves.configparser import RawConfigParser
+    from ansible.module_utils.six.moves.configparser import RawConfigParser
 except ImportError:
     from ConfigParser import RawConfigParser
 
@@ -81,7 +84,8 @@ def is_dogtag_configured(subsystem):
     # ca / kra is configured when the directory
     # /var/lib/pki/pki-tomcat/[ca|kra] # exists
     available_subsystems = {'ca', 'kra'}
-    assert subsystem in available_subsystems
+    if subsystem not in available_subsystems:
+        raise AssertionError("Subsystem '%s' not available" % subsystem)
 
     return os.path.isdir(os.path.join(VAR_LIB_PKI_TOMCAT, subsystem))
 
@@ -120,7 +124,7 @@ def get_ipa_conf():
         basedn=basedn,
         realm=realm,
         domain=domain
-        )
+    )
 
 
 def get_ipa_version():
@@ -147,7 +151,7 @@ def get_ipa_version():
             vendor_version=version.VENDOR_VERSION,
             version=version.VERSION,
             version_info=version_info
-            )
+        )
 
 
 def main():
@@ -193,7 +197,7 @@ def main():
     module.exit_json(
         changed=False,
         ansible_facts=dict(ipa=facts)
-        )
+    )
 
 
 if __name__ == '__main__':

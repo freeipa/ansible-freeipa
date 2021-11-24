@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -19,6 +18,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 ANSIBLE_METADATA = {
     "metadata_version": "1.0",
@@ -403,7 +406,7 @@ host:
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
     encode_certificate, is_ipv4_addr, is_ipv6_addr, ipalib_errors
-import six
+from ansible.module_utils import six
 if six.PY3:
     unicode = str
 
@@ -436,7 +439,7 @@ def find_dnsrecord(module, name):
     This function may raise ipalib_errors.NotFound in some cases,
     and it should be handled by the caller.
     """
-    domain_name = name[name.find(".")+1:]
+    domain_name = name[name.find(".") + 1:]
     host_name = name[:name.find(".")]
 
     _args = {
@@ -1228,7 +1231,7 @@ def main():
                          }])
 
                 if len(dnsrecord_a_add) > 0 or len(dnsrecord_aaaa_add) > 0:
-                    domain_name = name[name.find(".")+1:]
+                    domain_name = name[name.find(".") + 1:]
                     host_name = name[:name.find(".")]
 
                     _args = {"idnsname": host_name}
@@ -1245,7 +1248,7 @@ def main():
                                      "dnsrecord_add", _args])
 
                 if len(dnsrecord_a_del) > 0 or len(dnsrecord_aaaa_del) > 0:
-                    domain_name = name[name.find(".")+1:]
+                    domain_name = name[name.find(".") + 1:]
                     host_name = name[:name.find(".")]
 
                     # There seems to be an issue with dnsrecord_del (not
@@ -1361,7 +1364,7 @@ def main():
 
                     if "arecord" in dnsrecord_args or \
                        "aaaarecord" in dnsrecord_args:
-                        domain_name = name[name.find(".")+1:]
+                        domain_name = name[name.find(".") + 1:]
                         host_name = name[:name.find(".")]
                         dnsrecord_args["idnsname"] = host_name
 

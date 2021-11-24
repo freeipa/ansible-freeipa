@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -21,6 +20,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
 
 __all__ = ["contextlib", "dnsexception", "dnsresolver", "dnsreversename",
            "parse_version", "IPAChangeConf",
@@ -62,7 +65,7 @@ else:
         # See ipapython/version.py
         IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in
                                              VERSION.split(".", 2)]
-        IPA_PYTHON_VERSION = IPA_MAJOR*10000 + IPA_MINOR*100 + IPA_RELEASE
+        IPA_PYTHON_VERSION = IPA_MAJOR * 10000 + IPA_MINOR * 100 + IPA_RELEASE
     else:
         IPA_PYTHON_VERSION = NUM_VERSION
 
