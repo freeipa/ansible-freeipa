@@ -1,6 +1,6 @@
 ---
 schedules:
-- cron: "0 19 * * *"
+- cron: "0 23 * * *"
   displayName: Nightly Builds
   branches:
     include:
