@@ -3,5 +3,4 @@ pytest>=2.7
 pytest-sourceorder>=0.5
 pytest-split-tests>=1.0.3
 pytest-testinfra>=5.0
-jmespath>=0.9  # needed for the `json_query` filter
 pyyaml>=3

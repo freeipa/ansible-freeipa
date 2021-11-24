@@ -5,6 +5,9 @@ parameters:
     default: centos-8
   - name: build_number
     type: string
+  - name: ansible_version
+    type: string
+    default: ""
 
 jobs:
 - template: playbook_tests.yml
@@ -13,6 +16,7 @@ jobs:
     number_of_groups: 3
     build_number: ${{ parameters.build_number }}
     scenario: ${{ parameters.scenario }}
+    ansible_version: ${{ parameters.ansible_version }}
 
 - template: playbook_tests.yml
   parameters:
@@ -20,6 +24,7 @@ jobs:
     number_of_groups: 3
     build_number: ${{ parameters.build_number }}
     scenario: ${{ parameters.scenario }}
+    ansible_version: ${{ parameters.ansible_version }}
 
 - template: playbook_tests.yml
   parameters:
@@ -27,6 +32,7 @@ jobs:
     number_of_groups: 3
     build_number: ${{ parameters.build_number }}
     scenario: ${{ parameters.scenario }}
+    ansible_version: ${{ parameters.ansible_version }}
 
 - template: pytest_tests.yml
   parameters:
