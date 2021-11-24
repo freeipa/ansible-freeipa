@@ -86,5 +86,6 @@ rm plugins/modules/ipaserver_*
 rm plugins/modules/ipareplica_*
 rm plugins/modules/ipaclient_*
 rm plugins/action/ipaclient_*
+rm plugins/action/ipabackup_*
 rmdir plugins/action
 git reset --hard
