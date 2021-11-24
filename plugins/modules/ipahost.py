@@ -406,7 +406,7 @@ host:
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
     encode_certificate, is_ipv4_addr, is_ipv6_addr, ipalib_errors
-import six
+from ansible.module_utils import six
 if six.PY3:
     unicode = str
 

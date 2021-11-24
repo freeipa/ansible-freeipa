@@ -103,7 +103,7 @@ else:
 
     import socket
     import base64
-    import six
+    from ansible.module_utils import six
 
     try:
         from collections.abc import Mapping  # noqa

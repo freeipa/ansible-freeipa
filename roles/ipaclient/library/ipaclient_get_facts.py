@@ -15,9 +15,9 @@ author:
 
 import os
 import re
-import six
+from ansible.module_utils import six
 try:
-    from six.moves.configparser import RawConfigParser
+    from ansible.module_utils.six.moves.configparser import RawConfigParser
 except ImportError:
     from ConfigParser import RawConfigParser
 

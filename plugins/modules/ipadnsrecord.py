@@ -869,8 +869,7 @@ from ansible.module_utils.ansible_freeipa_module import \
 import dns.reversename
 import dns.resolver
 
-import six
-
+from ansible.module_utils import six
 
 if six.PY3:
     unicode = str

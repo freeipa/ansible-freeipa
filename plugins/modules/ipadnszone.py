@@ -210,7 +210,7 @@ from ansible.module_utils.ansible_freeipa_module import (
     ipalib_errors
 )  # noqa: E402
 import netaddr
-import six
+from ansible.module_utils import six
 
 
 if six.PY3:

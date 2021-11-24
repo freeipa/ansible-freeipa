@@ -124,9 +124,9 @@ host:
 '''
 
 import os
-import six
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils import six
 
 from ipalib import api, errors
 from ipaplatform.paths import paths

@@ -55,7 +55,7 @@ else:
 
     import logging
     from contextlib import contextmanager as contextlib_contextmanager
-    import six
+    from ansible.module_utils import six
     import base64
 
     from ipapython.version import NUM_VERSION, VERSION
