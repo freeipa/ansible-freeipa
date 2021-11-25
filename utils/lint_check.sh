@@ -4,14 +4,16 @@ INFO="\033[37;1m"
 WARN="\033[33;1m"
 RST="\033[0m"
 
-pushd "`dirname $0`/.." >/dev/null 2>&1
+topdir=$(dirname "$0")
+
+pushd "${topdir}/.." >/dev/null 2>&1  || exit 1
 
 echo -e "${INFO}Running 'flake8'...${RST}"
-flake8 plugins utils roles *.py
+flake8 plugins utils roles setup.py
 echo -e "${INFO}Running 'pydocstyle'...${RST}"
-pydocstyle plugins utils roles *.py
+pydocstyle plugins utils roles setup.py
 echo -e "${INFO}Running 'pylint'...${RST}"
-pylint plugins *.py
+pylint plugins setup.py
 
 ANSIBLE_LIBRARY="${ANSIBLE_LIBRARY:-plugins/modules}"
 ANSIBLE_MODULE_UTILS="${ANSIBLE_MODULE_UTILS:-plugins/module_utils}"
@@ -27,7 +29,7 @@ playbook_dirs=(
 ansible-lint --force-color "${playbook_dirs[@]}"
 
 echo -e "${INFO}Running 'ansible-doc-test'...${RST}"
-python "`dirname $0`/ansible-doc-test" -v roles plugins
+python "${topdir}/ansible-doc-test" -v roles plugins
 
 echo -e "${INFO}Running 'yamllint'...${RST}"
 yaml_dirs=(
@@ -38,4 +40,4 @@ yaml_dirs=(
 )
 yamllint -f colored "${yaml_dirs[@]}"
 
-popd >/dev/null 2>&1
+popd >/dev/null 2>&1 || exit 1
