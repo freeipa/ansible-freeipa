@@ -1,0 +1,7 @@
+---
+# vars/Debian.yml
+ipaclient_packages: [ "freeipa-client" ]
+# Debian Buster must use python2 as Python interpreter due
+# to the way freeipa-client package is defined.
+# You must install package python2.7 before executing this role.
+ansible_python_interpreter: '/usr/bin/python2'
