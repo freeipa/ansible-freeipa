@@ -174,6 +174,7 @@ def _run_playbook(playbook):
             inventory_file.name,
             playbook,
         ]
+        # pylint: disable=subprocess-run-check
         process = subprocess.run(
             cmd, cwd=SCRIPT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
@@ -300,11 +301,13 @@ class AnsibleFreeIPATestCase(TestCase):
             host_connection_info, ssh_identity_file=ssh_identity_file,
         )
 
-    def run_playbook(self, playbook, allow_failures=False):
+    @staticmethod
+    def run_playbook(playbook, allow_failures=False):
         return run_playbook(playbook, allow_failures)
 
-    def run_playbook_with_exp_msg(self, playbook, expected_msg):
-        result = self.run_playbook(playbook, allow_failures=True)
+    @staticmethod
+    def run_playbook_with_exp_msg(playbook, expected_msg):
+        result = run_playbook(playbook, allow_failures=True)
         assert (
             expected_msg in result.stdout.decode("utf8")
             or
