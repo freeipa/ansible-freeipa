@@ -22,3 +22,7 @@ tags:
   - "freeipa"
   - "cluster"
   - "collection"
+build_ignore:
+# https://docs.ansible.com/ansible/devel/dev_guide/developing_collections.html#ignoring-files-and-folders
+  - .gitignore
+  - changelogs/.plugin-cache.yaml

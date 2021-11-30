@@ -18,7 +18,7 @@ on:
     - cron: '0 6 * * *'
 env:
   NAMESPACE: freeipa
-  COLLECTION_NAME: ansible_freeipa 
+  COLLECTION_NAME: ansible_freeipa
 
 jobs:
 
@@ -60,6 +60,10 @@ jobs:
       # Install the head of the given branch (devel, stable-2.10)
       - name: Install ansible-base (${{ matrix.ansible }})
         run: pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz --disable-pip-version-check
+
+      # Update Python imports
+      - name: Convert to collection
+        run: bash utils/build-galaxy-release.sh
 
       # run ansible-test sanity inside of Docker.
       # The docker container has all the pinned dependencies that are required
@@ -109,6 +113,10 @@ jobs:
           # it is just required to run that once as "ansible-test units" in the docker image
           # will run on all python versions it supports.
           python-version: 3.8
+
+      # Update Python imports
+      - name: Convert to collection
+        run: bash utils/build-galaxy-release.sh
 
       - name: Install ansible-base (${{ matrix.ansible }})
         run: pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz --disable-pip-version-check
@@ -180,6 +188,10 @@ jobs:
           # it is just required to run that once as "ansible-test integration" in the docker image
           # will run on all python versions it supports.
           python-version: 3.8
+
+      # Update Python imports
+      - name: Convert to collection
+        run: bash utils/build-galaxy-release.sh
 
       - name: Install ansible-base (${{ matrix.ansible }})
         run: pip install https://github.com/ansible/ansible/archive/${{ matrix.ansible }}.tar.gz --disable-pip-version-check
