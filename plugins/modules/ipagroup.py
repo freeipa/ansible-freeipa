@@ -395,11 +395,11 @@ def main():
                         # or nonposix to external.
                         if not compare_args_ipa(ansible_module, args,
                                                 res_find) or \
-                           (
+                            (
                                not is_posix_group(res_find) and
                                not is_external_group(res_find) and
                                (posix or external)
-                           ):
+                            ):
                             if posix:
                                 args['posix'] = True
                             if external:

@@ -108,7 +108,9 @@ else:
     try:
         from collections.abc import Mapping  # noqa
     except ImportError:
+        #pylint: disable=wrong-import-position
         from collections import Mapping  # pylint: disable=deprecated-class
+        #pylint: enable=wrong-import-position
 
     # Try to import is_ipa_configured or use a fallback implementation.
     try:

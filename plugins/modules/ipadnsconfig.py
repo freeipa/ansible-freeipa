@@ -165,12 +165,12 @@ def gen_args(module, state, dnsconfig, forwarders, forward_policy,
 
 def main():
     forwarder_spec = dict(
-       ip_address=dict(type=str, required=True),
-       port=dict(type=int, required=False, default=None)
+        ip_address=dict(type=str, required=True),
+        port=dict(type=int, required=False, default=None)
     )
 
     ansible_module = IPAAnsibleModule(
-       argument_spec=dict(
+        argument_spec=dict(
            # dnsconfig
            forwarders=dict(type='list', default=None, required=False,
                            options=dict(**forwarder_spec)),

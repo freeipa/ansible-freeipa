@@ -1110,7 +1110,7 @@ def configure_module():
 
             records=dict(type="list", default=None,
                          options=dict(
-                            # Here name is a simple string
+                            #  Here name is a simple string
                             name=dict(type='str', required=True,
                                       aliases=['record_name']),
                             **record_spec),

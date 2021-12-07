@@ -632,10 +632,10 @@ def main():
                                 aliases=['ipavaultpassword', 'password',
                                          "old_password"]),
             vault_password_file=dict(type="str", required=False, default=None,
-                                     no_log=False,
-                                     aliases=[
-                                        'password_file', "old_password_file"
-                                     ]),
+                                    no_log=False,
+                                    aliases=[
+                                    'password_file', "old_password_file"
+                                    ]),
             new_password=dict(type="str", required=False, default=None,
                               no_log=True),
             new_password_file=dict(type="str", required=False, default=None,

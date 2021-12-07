@@ -830,8 +830,8 @@ def main():
                            name=dict(type="str", required=True),
                            # Add user specific parameters
                            **user_spec
-                       ),
-                       elements='dict', required=False),
+                        ),
+                        elements='dict', required=False),
 
             # deleted
             preserve=dict(required=False, type='bool', default=None),

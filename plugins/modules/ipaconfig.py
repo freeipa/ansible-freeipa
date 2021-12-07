@@ -299,7 +299,7 @@ def main():
                                        "KDC:Disable Last Success",
                                        "KDC:Disable Lockout",
                                        "KDC:Disable Default Preauth for SPNs",
-                                       ""]), # noqa E128
+                                       ""]),  # noqa E128
             selinuxusermaporder=dict(type="list", required=False,
                                      aliases=['ipaselinuxusermaporder']),
             selinuxusermapdefault=dict(type="str", required=False,
@@ -365,15 +365,15 @@ def main():
 
     if params.get("ipadomainresolutionorder", None):
         params["ipadomainresolutionorder"] = \
-             ":".join(params["ipadomainresolutionorder"])
+            ":".join(params["ipadomainresolutionorder"])
 
     if params.get("ipausersearchfields", None):
         params["ipausersearchfields"] = \
-             ",".join(params["ipausersearchfields"])
+            ",".join(params["ipausersearchfields"])
 
     if params.get("ipagroupsearchfields", None):
         params["ipagroupsearchfields"] = \
-             ",".join(params["ipagroupsearchfields"])
+            ",".join(params["ipagroupsearchfields"])
 
     # verify limits on INT values.
     args_with_limits = [
@@ -418,12 +418,12 @@ def main():
                 if ansible_module.argument_spec.get(k):
                     arg_type = ansible_module.argument_spec[k]['type']
                     if k in (
-                           'ipaselinuxusermaporder', 'domain_resolution_order'
-                       ):
+                        'ipaselinuxusermaporder', 'domain_resolution_order'
+                        ):
                         exit_args[k] = result.get(key)[0].split('$')
                     elif k in (
-                           'usersearch', 'groupsearch'
-                       ):
+                        'usersearch', 'groupsearch'
+                        ):
                         exit_args[k] = result.get(key)[0].split(',')
                     elif isinstance(value, str) and arg_type == "list":
                         exit_args[k] = [value]
