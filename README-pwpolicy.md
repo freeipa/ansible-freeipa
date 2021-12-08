@@ -81,7 +81,7 @@ Example playbook to ensure maxlife is set to 49 in global policy:
   become: true
 
   tasks:
-  # Ensure absence of pwpolicies for group ops
+  # Ensure maxlife is set to 49 in global policy
   - ipapwpolicy:
       ipaadmin_password: SomeADMINpassword
       maxlife: 49
