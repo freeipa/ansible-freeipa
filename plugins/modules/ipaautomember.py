@@ -153,7 +153,7 @@ def gen_condition_args(grouping,
     _args = {}
     if grouping is not None:
         _args['type'] = grouping
-    if key is not None:2.12
+    if key is not None:
         _args['key'] = key
     if inclusiveregex is not None:
         _args['automemberinclusiveregex'] = inclusiveregex
