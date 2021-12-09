@@ -1,0 +1,18 @@
+---
+driver:
+  name: docker
+platforms:
+  - name: centos-9-build
+    image: "quay.io/centos/centos:stream9"
+    dockerfile: Dockerfile
+    hostname: ipaserver.test.local
+    dns_servers:
+      - 8.8.8.8
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /usr/sbin/init
+    privileged: true
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: ../resources/playbooks/prepare-build.yml
