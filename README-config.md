@@ -56,12 +56,12 @@ Example playbook to read config options:
       register: result
     - name: display default login shell
       debug:
-        msg: '{{ result.config.defaultlogin }}'
+        msg: '{{ result.config.defaultshell }}'
 
     - name: ensure defaultloginshell and maxusernamelength are set as required
       ipaconfig:
         ipaadmin_password: password
-        defaultlogin: /bin/bash
+        defaultshell: /bin/bash
         maxusername: 64
 ```
 
