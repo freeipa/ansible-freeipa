@@ -12,9 +12,11 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-      - name: Run ansible-doc-test
+      - name: Install Ansible 2.9
         run: |
           python -m pip install "ansible < 2.10"
+      - name: Run ansible-doc-test
+        run: |
           ANSIBLE_LIBRARY="." ANSIBLE_DOC_FRAGMENT_PLUGINS="." python utils/ansible-doc-test -v roles plugins
 
   check_docs_2_11:
@@ -25,9 +27,27 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-      - name: Run ansible-doc-test
+      - name: Install Ansible 2.11
         run: |
           python -m pip install "ansible-core >=2.11,<2.12"
+      - name: Run ansible-doc-test
+        run: |
+          ANSIBLE_LIBRARY="." ANSIBLE_DOC_FRAGMENT_PLUGINS="." python utils/ansible-doc-test -v roles plugins
+
+  check_docs_2_12:
+    name: Check Ansible Documentation with ansible-core 2.12.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Ansible 2.12
+        run: |
+          python -m pip install "ansible-core >=2.12,<2.13"
+      - name: Run ansible-doc-test
+        run: |
+          python -m pip install "ansible-core >=2.12,<2.13"
           ANSIBLE_LIBRARY="." ANSIBLE_DOC_FRAGMENT_PLUGINS="." python utils/ansible-doc-test -v roles plugins
 
   check_docs_latest:
@@ -38,7 +58,9 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-      - name: Run ansible-doc-test
+      - name: Install Ansible-latest
         run: |
           python -m pip install ansible
+      - name: Run ansible-doc-test
+        run: |
           ANSIBLE_LIBRARY="." ANSIBLE_DOC_FRAGMENT_PLUGINS="." python utils/ansible-doc-test -v roles plugins
