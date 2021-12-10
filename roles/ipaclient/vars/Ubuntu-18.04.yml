@@ -1,4 +1,5 @@
 # vars/Ubuntu-18.04.yml
+---
 ipaclient_packages: [ "freeipa-client" ]
 # Ubuntu Bionic Beaver must use python2 as Python interpreter due
 # to the way python-ipalib package is defined.
