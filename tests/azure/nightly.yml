@@ -34,6 +34,15 @@ stages:
       scenario: fedora-latest
       ansible_version: "-core >=2.11,<2.12"
 
+- stage: FedoraLatest_Ansible_Core_2_12
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-latest
+      ansible_version: "-core >=2.12,<2.13"
+
 - stage: FedoraLatest_Ansible_latest
   dependsOn: []
   jobs:
@@ -63,6 +72,15 @@ stages:
       scenario: centos-8
       ansible_version: "-core >=2.11,<2.12"
 
+- stage: CentOS8_Ansible_Core_2_12
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: centos-8
+      ansible_version: "-core >=2.12,<2.13"
+
 - stage: CentOS8_Ansible_latest
   dependsOn: []
   jobs:
@@ -91,6 +109,15 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: centos-7
       ansible_version: "-core >=2.11,<2.12"
+
+- stage: CentOS7_Ansible_Core_2_12
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: centos-7
+      ansible_version: "-core >=2.12,<2.13"
 
 - stage: CentOS7_Ansible_latest
   dependsOn: []
