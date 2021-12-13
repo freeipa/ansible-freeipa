@@ -566,10 +566,76 @@ else:
         print(jsonify(kwargs))
         sys.exit(0)
 
-    class AnsibleFreeIPAParams(Mapping):
-        def __init__(self, ansible_module):
+    class IPAParamMapping(Mapping):
+        """
+        Provides IPA API mapping to playbook parameters or computed values.
+
+        It can be used to define a mapping of playbook parameters
+        or methods that provide computed values to IPA API arguments.
+
+        Playbook parameters can be retrieved as properties,
+        and the set of IPA arguments for a command can be
+        retrived with ``get_ipa_command_args()``. The keys for
+        ``param_mapping`` are also the keys of the argument set.
+
+        The values of ``param_mapping`` can be either:
+            * a str representing a key of ``AnsibleModule.params``.
+            * a callable.
+
+        In case of an ``AnsibleModule.param`` the value of the playbook
+        param will be used for that argument. If it is a ``callable``,
+        the value returned by the execution of it will be used.
+
+        Example:
+        -------
+            def check_params(ipa_params):
+                # Module parameters can be accessed as properties.
+                if len(ipa_params.name) == 0:
+                    ipa_params.ansible_module.fail_json(msg="No given name.")
+
+
+            def define_ipa_commands(self):
+                # Create the argument dict from the defined mapping.
+                args = self.get_ipa_command_args()
+
+                _commands = [("obj-name", "some_ipa_command", args)]
+                return _commands
+
+
+            def a_method_for_a_computed_param():
+                return "Some computed value"
+
+
+            def main():
+                ansible_module = SomeIPAModule(argument_spec=dict(
+                    name=dict(type="list", aliases=["cn"], required=True),
+                    state=dict(type="str", default="present",
+                               choices=["present", "absent"]),
+                    module_param=(type="str", required=False),
+                    )
+                )
+
+                # Define the playbook to IPA API mapping
+                ipa_param_mapping = {
+                    "arg_to_be_passed_to_ipa_command": "module_param",
+                    "another_arg": a_method_for_a_computed_param,
+                }
+                ipa_params = IPAParamMapping(
+                    ansible_module,
+                    param_mapping=ipa_param_mapping
+                )
+
+                check_params(ipa_params)
+                comands = define_ipa_commands(ipa_params)
+
+                ansible_module.execute_ipa_commands(commands)
+
+        """
+
+        def __init__(self, ansible_module, param_mapping=None):
             self.mapping = ansible_module.params
             self.ansible_module = ansible_module
+            self.param_mapping = param_mapping or {}
 
         def __getitem__(self, key):
             param = self.mapping[key]
@@ -589,6 +655,36 @@ else:
 
         def __getattr__(self, name):
             return self.get(name)
+
+        def get_ipa_command_args(self, **kwargs):
+            """Return a dict to be passed to an IPA command."""
+            args = {}
+            for ipa_param_name, param_name in self.param_mapping.items():
+
+                # Check if param_name is actually a param
+                if param_name in self.ansible_module.params:
+                    value = self.ansible_module.params_get(param_name)
+                    if isinstance(value, bool):
+                        value = "TRUE" if value else "FALSE"
+
+                # Since param wasn't a param check if it's a method name
+                elif callable(param_name):
+                    value = param_name(**kwargs)
+
+                # We don't have a way to guess the value so fail.
+                else:
+                    self.ansible_module.fail_json(
+                        msg=(
+                            "Couldn't get a value for '%s'. Option '%s' is "
+                            "not a module argument neither a defined method."
+                        )
+                        % (ipa_param_name, param_name)
+                    )
+
+                if value is not None:
+                    args[ipa_param_name] = value
+
+            return args
 
     class IPAAnsibleModule(AnsibleModule):
         """
@@ -1034,6 +1130,10 @@ else:
             # pylint: disable=super-with-arguments
             super(FreeIPABaseModule, self).__init__(*args, **kwargs)
 
+            self.deprecate(
+                msg="FreeIPABaseModule is deprecated. Use IPAAnsibleModule.",
+            )
+
             # Status of an execution. Will be changed to True
             #   if something is actually peformed.
             self.changed = False
@@ -1048,11 +1148,6 @@ else:
 
             # Module exit arguments.
             self.exit_args = {}
-
-            # Wrapper around the AnsibleModule.params.
-            # Return the actual params but performing transformations
-            #   when needed.
-            self.ipa_params = AnsibleFreeIPAParams(self)
 
         def get_ipa_command_args(self, **kwargs):
             """
@@ -1074,66 +1169,28 @@ else:
             server).
 
             """
-            args = {}
-            for ipa_param_name, param_name in self.ipa_param_mapping.items():
-
-                # Check if param_name is actually a param
-                if param_name in self.ipa_params:
-                    value = self.ipa_params.get(param_name)
-                    if isinstance(value, bool):
-                        value = "TRUE" if value else "FALSE"
-
-                # Since param wasn't a param check if it's a method name
-                elif hasattr(self, param_name):
-                    method = getattr(self, param_name)
-                    if callable(method):
-                        value = method(**kwargs)
-
-                # We don't have a way to guess the value so fail.
-                else:
-                    self.fail_json(
-                        msg=(
-                            "Couldn't get a value for '%s'. Option '%s' is "
-                            "not a module argument neither a defined method."
-                        )
-                        % (ipa_param_name, param_name)
-                    )
-
-                if value is not None:
-                    args[ipa_param_name] = value
-
-            return args
+            self.deprecate(
+                msg=(
+                    "FreeIPABaseModule is deprecated. Use IPAAnsibleModule. "
+                    "Use 'AnsibleFreeIPAParams.get_ipa_command_args()', "
+                    "Instantiate it using the class 'ipa_params_mapping'."
+                )
+            )
+            mapping = IPAParamMapping(self, self.ipa_param_mapping)
+            return mapping.get_ipa_command_args(**kwargs)
 
         def check_ipa_params(self):
             """Validate ipa_params before command is called."""
+            self.deprecate(
+                msg=(
+                    "FreeIPABaseModule is deprecated. Use IPAAnsibleModule. "
+                ),
+            )
             pass  # pylint: disable=unnecessary-pass
 
         def define_ipa_commands(self):
             """Define commands that will be run in IPA server."""
             raise NotImplementedError
-
-        def get_command_errors(self, command, result):
-            """Look for erros into command results."""
-            # Get all errors
-            # All "already a member" and "not a member" failures in the
-            # result are ignored. All others are reported.
-            errors = []
-            for item in result.get("failed", tuple()):
-                failed_item = result["failed"][item]
-                for member_type in failed_item:
-                    for member, failure in failed_item[member_type]:
-                        if (
-                            "already a member" in failure
-                            or "not a member" in failure
-                        ):
-                            continue
-                        errors.append(
-                            "%s: %s %s: %s"
-                            % (command, member_type, member, failure)
-                        )
-
-            if len(errors) > 0:
-                self.fail_json(", ".join("errors"))  # pylint: disable=E1121
 
         def add_ipa_command(self, command, name=None, args=None):
             """Add a command to the list of commands to be executed."""
@@ -1141,30 +1198,44 @@ else:
 
         def _run_ipa_commands(self):
             """Execute commands in self.ipa_commands."""
-            if self.check_mode:
-                self.changed = len(self.ipa_commands) > 0
-                return
+            self.changed = self.execute_ipa_commands(
+                self.ipa_commands,
+                result_handler=self.process_results.__func__,
+                exit_args=self.exit_args
+            )
 
-            result = None
+        def process_results(
+            self, result, command, name, args, exit_args
+        ):  # pylint: disable=unused-argument
+            """
+            Process an API command result.
 
-            for name, command, args in self.ipa_commands:
-                try:
-                    result = self.ipa_command(command, name, args)
-                except Exception as excpt:
-                    self.fail_json(msg="%s: %s: %s" % (command, name,
-                                                       str(excpt)))
-                else:
-                    self.process_command_result(name, command, args, result)
-                self.get_command_errors(command, result)
+            This method must be overriden in subclasses if 'exit_args'
+            is to be modified.
+            """
+            self.deprecate(
+                msg=(
+                    "FreeIPABaseModule is deprecated. Use IPAAnsibleModule. "
+                ),
+            )
+            self.process_command_result(name, command, args, result)
 
         def process_command_result(self, _name, _command, _args, result):
             """
             Process an API command result.
 
             This method can be overriden in subclasses, and
-            change self.exit_values
-            to return data in the result for the controller.
+            change self.exit_values to return data in the
+            result for the controller.
             """
+            self.deprecate(
+                msg=(
+                    "FreeIPABaseModule is deprecated. Use IPAAnsibleModule. "
+                    "To aid in porting to IPAAnsibleModule, change to "
+                    "'FreeIPABaseModule.process_results'."
+                ),
+            )
+
             if "completed" in result:
                 if result["completed"] > 0:
                     self.changed = True
@@ -1178,12 +1249,24 @@ else:
             Returns True in case current IPA object attributes differ from
             args passed to the module.
             """
+            self.deprecate(
+                msg=(
+                    "FreeIPABaseModule is deprecated. Use IPAAnsibleModule. "
+                    "FreeIPABaseModule require_ipa_attrs_change() is "
+                    "deprecated. Use ansible_freeipa_module.compare_args()."
+                ),
+            )
             equal = compare_args_ipa(self, command_args, ipa_attrs)
             return not equal
 
         def ipa_run(self):
             """Execute module actions."""
-            ipaapi_context = self.ipa_params.get("ipaapi_context")
+            self.deprecate(
+                msg=(
+                    "FreeIPABaseModule is deprecated. Use IPAAnsibleModule."
+                ),
+            )
+            ipaapi_context = self.params_get("ipaapi_context")
             with self.ipa_connect(context=ipaapi_context):
                 self.check_ipa_params()
                 self.define_ipa_commands()

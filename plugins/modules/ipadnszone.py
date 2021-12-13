@@ -203,11 +203,13 @@ dnszone:
 
 from ipapython.dnsutil import DNSName  # noqa: E402
 from ansible.module_utils.ansible_freeipa_module import (
-    FreeIPABaseModule,
+    IPAAnsibleModule,
     is_ip_address,
     is_ip_network_address,
     is_valid_port,
-    ipalib_errors
+    ipalib_errors,
+    compare_args_ipa,
+    IPAParamMapping,
 )  # noqa: E402
 import netaddr
 from ansible.module_utils import six
@@ -217,31 +219,39 @@ if six.PY3:
     unicode = str
 
 
-class DNSZoneModule(FreeIPABaseModule):
+class DNSZoneModule(IPAAnsibleModule):
 
-    ipa_param_mapping = {
-        # Direct Mapping
-        "idnsforwardpolicy": "forward_policy",
-        "idnssoarefresh": "refresh",
-        "idnssoaretry": "retry",
-        "idnssoaexpire": "expire",
-        "idnssoaminimum": "minimum",
-        "dnsttl": "ttl",
-        "dnsdefaultttl": "default_ttl",
-        "idnsallowsyncptr": "allow_sync_ptr",
-        "idnsallowdynupdate": "dynamic_update",
-        "idnssecinlinesigning": "dnssec",
-        "idnsupdatepolicy": "update_policy",
-        # Mapping by method
-        "idnsforwarders": "get_ipa_idnsforwarders",
-        "idnsallowtransfer": "get_ipa_idnsallowtransfer",
-        "idnsallowquery": "get_ipa_idnsallowquery",
-        "idnssoamname": "get_ipa_idnssoamname",
-        "idnssoarname": "get_ipa_idnssoarname",
-        "skip_nameserver_check": "get_ipa_skip_nameserver_check",
-        "skip_overlap_check": "get_ipa_skip_overlap_check",
-        "nsec3paramrecord": "get_ipa_nsec3paramrecord",
-    }
+    def __init__(self, *args, **kwargs):
+        # pylint: disable=super-with-arguments
+        super(DNSZoneModule, self).__init__(*args, **kwargs)
+
+        ipa_param_mapping = {
+            # Direct Mapping
+            "idnsforwardpolicy": "forward_policy",
+            "idnssoarefresh": "refresh",
+            "idnssoaretry": "retry",
+            "idnssoaexpire": "expire",
+            "idnssoaminimum": "minimum",
+            "dnsttl": "ttl",
+            "dnsdefaultttl": "default_ttl",
+            "idnsallowsyncptr": "allow_sync_ptr",
+            "idnsallowdynupdate": "dynamic_update",
+            "idnssecinlinesigning": "dnssec",
+            "idnsupdatepolicy": "update_policy",
+            # Mapping by method
+            "idnsforwarders": self.get_ipa_idnsforwarders,
+            "idnsallowtransfer": self.get_ipa_idnsallowtransfer,
+            "idnsallowquery": self.get_ipa_idnsallowquery,
+            "idnssoamname": self.get_ipa_idnssoamname,
+            "idnssoarname": self.get_ipa_idnssoarname,
+            "skip_nameserver_check": self.get_ipa_skip_nameserver_check,
+            "skip_overlap_check": self.get_ipa_skip_overlap_check,
+            "nsec3paramrecord": self.get_ipa_nsec3paramrecord,
+        }
+
+        self.commands = []
+        self.ipa_params = IPAParamMapping(self, ipa_param_mapping)
+        self.exit_args = {}
 
     def validate_ips(self, ips, error_msg):
         invalid_ips = [
@@ -441,39 +451,34 @@ class DNSZoneModule(FreeIPABaseModule):
         for zone_name in self.get_zone_names():
             # Look for existing zone in IPA
             zone, is_zone_active = self.get_zone(zone_name)
-            args = self.get_ipa_command_args(zone=zone)
+            args = self.ipa_params.get_ipa_command_args(zone=zone)
 
             if self.ipa_params.state in ["present", "enabled", "disabled"]:
                 if not zone:
                     # Since the zone doesn't exist we just create it
                     #   with given args
-                    self.add_ipa_command("dnszone_add", zone_name, args)
+                    self.commands.append((zone_name, "dnszone_add", args))
                     is_zone_active = True
                     # just_added = True
 
                 else:
                     # Zone already exist so we need to verify if given args
                     #   matches the current config. If not we updated it.
-                    if self.require_ipa_attrs_change(args, zone):
-                        self.add_ipa_command("dnszone_mod", zone_name, args)
+                    if not compare_args_ipa(self, args, zone):
+                        self.commands.append((zone_name, "dnszone_mod", args))
 
             if self.ipa_params.state == "enabled" and not is_zone_active:
-                self.add_ipa_command("dnszone_enable", zone_name)
+                self.commands.append((zone_name, "dnszone_enable", {}))
 
             if self.ipa_params.state == "disabled" and is_zone_active:
-                self.add_ipa_command("dnszone_disable", zone_name)
+                self.commands.append((zone_name, "dnszone_disable", {}))
 
             if self.ipa_params.state == "absent" and zone is not None:
-                self.add_ipa_command("dnszone_del", zone_name)
+                self.commands.append((zone_name, "dnszone_del", {}))
 
-    def process_command_result(self, name, command, args, result):
-        # pylint: disable=super-with-arguments
-        super(DNSZoneModule, self).process_command_result(
-            name, command, args, result
-        )
+    def process_results(self, _result, command, name, _args, exit_args):
         if command == "dnszone_add" and self.ipa_params.name_from_ip:
-            dnszone_exit_args = self.exit_args.setdefault('dnszone', {})
-            dnszone_exit_args['name'] = name
+            exit_args.setdefault('dnszone', {})["name"] = name
 
 
 def get_argument_spec():
@@ -532,12 +537,24 @@ def get_argument_spec():
 
 
 def main():
-    DNSZoneModule(
+    ansible_module = DNSZoneModule(
         argument_spec=get_argument_spec(),
         mutually_exclusive=[["name", "name_from_ip"]],
         required_one_of=[["name", "name_from_ip"]],
         supports_check_mode=True,
-    ).ipa_run()
+    )
+
+    exit_args = {}
+    ipaapi_context = ansible_module.params_get("ipaapi_context")
+    with ansible_module.ipa_connect(context=ipaapi_context):
+        ansible_module.check_ipa_params()
+        ansible_module.define_ipa_commands()
+        changed = ansible_module.execute_ipa_commands(
+                    ansible_module.commands,
+                    result_handler=DNSZoneModule.process_results,
+                    exit_args=exit_args
+                )
+    ansible_module.exit_json(changed=changed, **exit_args)
 
 
 if __name__ == "__main__":
