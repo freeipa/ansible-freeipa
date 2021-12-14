@@ -13,7 +13,7 @@ flake8 plugins utils roles setup.py
 echo -e "${INFO}Running 'pydocstyle'...${RST}"
 pydocstyle plugins utils roles setup.py
 echo -e "${INFO}Running 'pylint'...${RST}"
-pylint plugins setup.py
+pylint plugins roles setup.py
 
 ANSIBLE_LIBRARY="${ANSIBLE_LIBRARY:-plugins/modules}"
 ANSIBLE_MODULE_UTILS="${ANSIBLE_MODULE_UTILS:-plugins/module_utils}"
