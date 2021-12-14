@@ -55,7 +55,6 @@ param_docs = {
     "no_pkinit": "Disable pkinit setup steps",
     "no_ui_redirect": "Do not automatically redirect to the Web UI",
     "external_ca": "External ca setting",
-    "setup_adtrust": "Configure AD trust capability",
     "external_cert_files": [
       "File containing the IPA CA certificate and the external CA certificate",
       "chain"
