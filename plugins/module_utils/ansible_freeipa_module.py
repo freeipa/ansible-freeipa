@@ -1132,6 +1132,7 @@ else:
 
             self.deprecate(
                 msg="FreeIPABaseModule is deprecated. Use IPAAnsibleModule.",
+                version="1.5.0"
             )
 
             # Status of an execution. Will be changed to True
@@ -1174,7 +1175,8 @@ else:
                     "FreeIPABaseModule is deprecated. Use IPAAnsibleModule. "
                     "Use 'AnsibleFreeIPAParams.get_ipa_command_args()', "
                     "Instantiate it using the class 'ipa_params_mapping'."
-                )
+                ),
+                version="1.5.0"
             )
             mapping = IPAParamMapping(self, self.ipa_param_mapping)
             return mapping.get_ipa_command_args(**kwargs)
@@ -1185,6 +1187,7 @@ else:
                 msg=(
                     "FreeIPABaseModule is deprecated. Use IPAAnsibleModule. "
                 ),
+                version="1.5.0"
             )
             pass  # pylint: disable=unnecessary-pass
 
@@ -1217,6 +1220,7 @@ else:
                 msg=(
                     "FreeIPABaseModule is deprecated. Use IPAAnsibleModule. "
                 ),
+                version="1.5.0"
             )
             self.process_command_result(name, command, args, result)
 
@@ -1234,6 +1238,7 @@ else:
                     "To aid in porting to IPAAnsibleModule, change to "
                     "'FreeIPABaseModule.process_results'."
                 ),
+                version="1.5.0"
             )
 
             if "completed" in result:
@@ -1255,6 +1260,7 @@ else:
                     "FreeIPABaseModule require_ipa_attrs_change() is "
                     "deprecated. Use ansible_freeipa_module.compare_args()."
                 ),
+                version="1.5.0"
             )
             equal = compare_args_ipa(self, command_args, ipa_attrs)
             return not equal
@@ -1265,6 +1271,7 @@ else:
                 msg=(
                     "FreeIPABaseModule is deprecated. Use IPAAnsibleModule."
                 ),
+                version="1.5.0"
             )
             ipaapi_context = self.params_get("ipaapi_context")
             with self.ipa_connect(context=ipaapi_context):
