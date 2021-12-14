@@ -26,7 +26,7 @@ param_docs = {
     "sssd": "The installer sssd setting",
     "dnsok": "The installer dnsok setting",
 
-    "dm_password":  "Directory Manager password",
+    "dm_password": "Directory Manager password",
     "password": "Admin user kerberos password",
     "ip_addresses": "List of Master Server IP Addresses",
     "domain": "Primary DNS domain of the IPA deployment",
@@ -55,10 +55,9 @@ param_docs = {
     "no_pkinit": "Disable pkinit setup steps",
     "no_ui_redirect": "Do not automatically redirect to the Web UI",
     "external_ca": "External ca setting",
-    "setup_adtrust": "Configure AD trust capability",
     "external_cert_files": [
-      "File containing the IPA CA certificate and the external CA certificate",
-      "chain"
+        "File containing the IPA CA certificate and the external CA "
+        "certificate chain"
     ],
     "reverse_zones": "The reverse DNS zones to use",
     "no_reverse": "Do not create new reverse DNS zone",
@@ -132,8 +131,8 @@ param_docs = {
     "debug": "Turn on extra debugging",
     "basedn": "The basedn of the IPA server (of the form dc=example,dc=com)",
     "allow_repair": [
-      "Allow repair of already joined hosts. Contrary to ipaclient_force_join",
-      "the host entry will not be changed on the server"
+        "Allow repair of already joined hosts. Contrary to "
+        "ipaclient_force_join the host entry will not be changed on the server"
     ],
     "backup": "File to backup",
     "fqdn": [

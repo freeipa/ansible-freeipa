@@ -199,7 +199,7 @@ def ensure_absent_state(module, name, action, res_find):
         member_args = {}
         for key in ['user', 'group', 'host', 'hostgroup']:
             items = member_intersect(
-                        module, key, 'member_%s' % key, res_find)
+                module, key, 'member_%s' % key, res_find)
             if items:
                 member_args[key] = items
 
@@ -298,7 +298,7 @@ def ensure_members_are_present(module, name, res_find):
     member_args = {}
     for key in ['user', 'group', 'host', 'hostgroup']:
         items = member_difference(
-                    module, key, 'member_%s' % key, res_find)
+            module, key, 'member_%s' % key, res_find)
         if items:
             member_args[key] = items
 

@@ -550,10 +550,10 @@ def main():
         ansible_module.check_ipa_params()
         ansible_module.define_ipa_commands()
         changed = ansible_module.execute_ipa_commands(
-                    ansible_module.commands,
-                    result_handler=DNSZoneModule.process_results,
-                    exit_args=exit_args
-                )
+            ansible_module.commands,
+            result_handler=DNSZoneModule.process_results,
+            exit_args=exit_args
+        )
     ansible_module.exit_json(changed=changed, **exit_args)
 
 

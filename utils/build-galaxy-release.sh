@@ -84,7 +84,7 @@ rm plugins/module_utils/ansible_ipa_*
 rm plugins/modules/ipaserver_*
 rm plugins/modules/ipareplica_*
 rm plugins/modules/ipaclient_*
+rm plugins/modules/ipabackup_*
 rm plugins/action/ipaclient_*
-rm plugins/action/ipabackup_*
 rmdir plugins/action
 git reset --hard
