@@ -165,24 +165,23 @@ def gen_args(module, state, dnsconfig, forwarders, forward_policy,
 
 def main():
     forwarder_spec = dict(
-       ip_address=dict(type=str, required=True),
-       port=dict(type=int, required=False, default=None)
+        ip_address=dict(type=str, required=True),
+        port=dict(type=int, required=False, default=None)
     )
 
     ansible_module = IPAAnsibleModule(
-       argument_spec=dict(
-           # dnsconfig
-           forwarders=dict(type='list', default=None, required=False,
-                           options=dict(**forwarder_spec)),
-           forward_policy=dict(type='str', required=False, default=None,
-                               choices=['only', 'first', 'none']),
-           allow_sync_ptr=dict(type='bool', required=False, default=None),
+        argument_spec=dict(
+            # dnsconfig
+            forwarders=dict(type='list', default=None, required=False,
+                            options=dict(**forwarder_spec)),
+            forward_policy=dict(type='str', required=False, default=None,
+                                choices=['only', 'first', 'none']),
+            allow_sync_ptr=dict(type='bool', required=False, default=None),
 
-           # general
-           state=dict(type="str", default="present",
-                      choices=["present", "absent"]),
-
-       )
+            # general
+            state=dict(type="str", default="present",
+                       choices=["present", "absent"]),
+        )
     )
 
     ansible_module._ansible_debug = True

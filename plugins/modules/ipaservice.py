@@ -577,7 +577,7 @@ def main():
                                 args.get("krbprincipalauthind", [""]) ==
                                 res_find.get("krbprincipalauthind", [""])
                             )
-                          ):
+                        ):
                             del args["krbprincipalauthind"]
 
                         if not compare_args_ipa(ansible_module, args,

@@ -194,19 +194,23 @@ def main():
         argument_spec=dict(
             # general
             inclusive=dict(type="list",
-                           aliases=["automemberinclusiveregex"], default=None,
+                           aliases=["automemberinclusiveregex"],
+                           default=None,
                            options=dict(
                                key=dict(type="str", required=True),
                                expression=dict(type="str", required=True)
                            ),
-                           elements="dict", required=False),
-            exclusive=dict(type="list", aliases=[
-                           "automemberexclusiveregex"], default=None,
+                           elements="dict",
+                           required=False),
+            exclusive=dict(type="list",
+                           aliases=["automemberexclusiveregex"],
+                           default=None,
                            options=dict(
                                key=dict(type="str", required=True),
                                expression=dict(type="str", required=True)
                            ),
-                           elements="dict", required=False),
+                           elements="dict",
+                           required=False),
             name=dict(type="list", aliases=["cn"],
                       default=None, required=True),
             description=dict(type="str", default=None),

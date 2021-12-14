@@ -1108,12 +1108,13 @@ def configure_module():
             name=dict(type="list", aliases=["record_name"], default=None,
                       required=False),
 
-            records=dict(type="list", default=None,
+            records=dict(type="list",
+                         default=None,
                          options=dict(
-                            # Here name is a simple string
-                            name=dict(type='str', required=True,
-                                      aliases=['record_name']),
-                            **record_spec),
+                             # Here name is a simple string
+                             name=dict(type='str', required=True,
+                                       aliases=['record_name']),
+                             **record_spec),
                          ),
 
             # general
