@@ -86,5 +86,5 @@ rm plugins/modules/ipareplica_*
 rm plugins/modules/ipaclient_*
 rm plugins/action/ipaclient_*
 rm plugins/action/ipabackup_*
-rmdir plugins/action
+if [ -d plugins/action ]; then rm -Rf plugins/action; fi
 git reset --hard
