@@ -133,7 +133,9 @@ def main():
 
         # Add CA certs to a temporary NSS database
         try:
+            # pylint: disable=deprecated-method
             argspec = inspect.getargspec(tmp_db.create_db)
+            # pylint: enable=deprecated-method
             if "password_filename" not in argspec.args:
                 tmp_db.create_db()
             else:
@@ -181,7 +183,7 @@ def main():
                 module.warn(
                     "Some capabilities including the ipa command capability "
                     "may not be available")
-            except errors.PublicError as e2:
+            except errors.PublicError as e2:  # pylint: disable=invalid-name
                 module.fail_json(
                     msg="Cannot connect to the IPA server RPC interface: "
                     "%s" % e2)

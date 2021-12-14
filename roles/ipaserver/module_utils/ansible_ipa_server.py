@@ -105,23 +105,23 @@ else:
         try:
             from ipaclient.install import timeconf
             from ipaclient.install.client import sync_time
-            time_service = "chronyd"
-            ntpinstance = None
+            time_service = "chronyd"  # pylint: disable=invalid-name
+            ntpinstance = None  # pylint: disable=invalid-name
         except ImportError:
             try:
                 from ipaclient.install import ntpconf as timeconf
             except ImportError:
                 from ipaclient import ntpconf as timeconf
             from ipaserver.install import ntpinstance
-            time_service = "ntpd"
-            sync_time = None
+            time_service = "ntpd"  # pylint: disable=invalid-name
+            sync_time = None  # pylint: disable=invalid-name
         from ipaserver.install import (
             adtrust, bindinstance, ca, dns, dsinstance,
             httpinstance, installutils, kra, krbinstance,
             otpdinstance, custodiainstance, replication, service,
             sysupgrade)
-        adtrust_imported = True
-        kra_imported = True
+        adtrust_imported = True  # pylint: disable=invalid-name
+        kra_imported = True  # pylint: disable=invalid-name
         from ipaserver.install.installutils import (
             BadHostError, get_fqdn, get_server_ip_address,
             load_pkcs12, read_password, verify_fqdn,
@@ -158,9 +158,9 @@ else:
 
         try:
             from ipaserver.install import adtrustinstance
-            _server_trust_ad_installed = True
+            _server_trust_ad_installed = True  # pylint: disable=invalid-name
         except ImportError:
-            _server_trust_ad_installed = False
+            _server_trust_ad_installed = False  # pylint: disable=invalid-name
 
         try:
             from ipaclient.install.client import check_ldap_conf
@@ -192,10 +192,10 @@ else:
             filemode='a', console_format='%(message)s')
 
     @contextlib_contextmanager
-    def redirect_stdout(f):
-        sys.stdout = f
+    def redirect_stdout(stream):
+        sys.stdout = stream
         try:
-            yield f
+            yield stream
         finally:
             sys.stdout = sys.__stdout__
 
@@ -232,7 +232,9 @@ else:
             self.module.debug(msg)
             # self.module.warn(msg)
 
-    class options_obj(object):
+    # pylint: disable=too-few-public-methods, useless-object-inheritance
+    # pylint: disable=too-many-instance-attributes
+    class options_obj(object):  # pylint: disable=invalid-name
         def __init__(self):
             self._replica_install = False
             self.dnssec_master = False  # future unknown
@@ -255,8 +257,13 @@ else:
             for name in self.__dict__:
                 yield self, name
 
+    # pylint: enable=too-few-public-methods, useless-object-inheritance
+
+    # pylint: enable=too-many-instance-attributes
     options = options_obj()
     installer = options
+
+    # pylint: disable=attribute-defined-outside-init
 
     # ServerMasterInstall
     options.add_sids = True
@@ -299,6 +306,9 @@ else:
     options.ignore_topology_disconnect = False
     options.ignore_last_of_role = False
 
+    # pylint: enable=attribute-defined-outside-init
+
+    # pylint: disable=invalid-name
     def api_Backend_ldap2(host_name, setup_ca, connect=False):
         # we are sure we have the configuration file ready.
         cfg = dict(context='installer', confdir=paths.ETC_IPA, in_server=True,
@@ -312,10 +322,12 @@ else:
         if connect:
             api.Backend.ldap2.connect()
 
+    # pylint: enable=invalid-name
+
     def ds_init_info(ansible_log, fstore, domainlevel, dirsrv_config_file,
                      realm_name, host_name, domain_name, dm_password,
                      idstart, idmax, subject_base, ca_subject,
-                     no_hbac_allow, dirsrv_pkcs12_info, no_pkinit):
+                     _no_hbac_allow, dirsrv_pkcs12_info, no_pkinit):
 
         if not options.external_cert_files:
             ds = dsinstance.DsInstance(fstore=fstore, domainlevel=domainlevel,

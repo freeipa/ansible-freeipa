@@ -93,7 +93,9 @@ def main():
         # the ipa-server-install --uninstall
         ansible_module.log("Synchronizing time")
 
+        # pylint: disable=deprecated-method
         argspec = inspect.getargspec(sync_time)
+        # pylint: enable=deprecated-method
         if "options" not in argspec.args:
             synced_ntp = sync_time(options.ntp_servers, options.ntp_pool,
                                    fstore, sstore)

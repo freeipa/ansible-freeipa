@@ -202,7 +202,9 @@ def main():
         create_ipa_conf(fstore, config, ca_enabled,
                         master=config.master_host_name)
 
+        # pylint: disable=deprecated-method
         argspec = inspect.getargspec(install_http)
+        # pylint: enable=deprecated-method
         if "promote" in argspec.args:
             install_http(
                 config,

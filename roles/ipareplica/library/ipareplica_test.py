@@ -286,7 +286,9 @@ def main():
     # asks for HTTP certificate in newer ipa versions. In these versions
     # create_ipa_conf has the additional master argument.
     change_master_for_certmonger = False
+    # pylint: disable=deprecated-method
     argspec = inspect.getargspec(create_ipa_conf)
+    # pylint: enable=deprecated-method
     if "master" in argspec.args:
         change_master_for_certmonger = True
 
@@ -418,7 +420,9 @@ def main():
     # check selinux status, http and DS ports, NTP conflicting services
     try:
         with redirect_stdout(ansible_log):
+            # pylint: disable=deprecated-method
             argspec = inspect.getargspec(common_check)
+            # pylint: enable=deprecated-method
             if "skip_mem_check" in argspec.args:
                 common_check(options.no_ntp, options.skip_mem_check,
                              options.setup_ca)

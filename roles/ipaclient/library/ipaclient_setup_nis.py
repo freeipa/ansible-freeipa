@@ -82,7 +82,9 @@ def main():
 
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
 
+    # pylint: disable=deprecated-method
     argspec = inspect.getargspec(configure_nisdomain)
+    # pylint: enable=deprecated-method
     if "statestore" not in argspec.args:
         # NUM_VERSION < 40500:
         configure_nisdomain(options=options, domain=domain)

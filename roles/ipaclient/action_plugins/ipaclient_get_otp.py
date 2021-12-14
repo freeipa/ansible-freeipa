@@ -45,12 +45,14 @@ def run_cmd(args, stdin=None):
     if stdin:
         p_in = subprocess.PIPE
 
-    p = subprocess.Popen(args, stdin=p_in, stdout=p_out, stderr=p_err,
-                         close_fds=True)
-    __temp, stderr = p.communicate(stdin)
+    # pylint: disable=invalid-name
+    with subprocess.Popen(
+        args, stdin=p_in, stdout=p_out, stderr=p_err, close_fds=True
+    ) as p:
+        __temp, stderr = p.communicate(stdin)
 
-    if p.returncode != 0:
-        raise RuntimeError(stderr)
+        if p.returncode != 0:
+            raise RuntimeError(stderr)
 
 
 def kinit_password(principal, password, ccache_name, config):
@@ -128,8 +130,9 @@ KRB5CONF_TEMPLATE = """
 """
 
 
-class ActionModule(ActionBase):
+class ActionModule(ActionBase):  # pylint: disable=too-few-public-methods
 
+    # pylint: disable=too-many-return-statements
     def run(self, tmp=None, task_vars=None):
         """
         Handle credential cache transfer.
@@ -149,8 +152,9 @@ class ActionModule(ActionBase):
         Then the IPA commands can use this credential cache file.
         """
         if task_vars is None:
-            task_vars = dict()
+            task_vars = {}
 
+        # pylint: disable=super-with-arguments
         result = super(ActionModule, self).run(tmp, task_vars)
         principal = self._task.args.get('principal', None)
         keytab = self._task.args.get('keytab', None)
@@ -168,7 +172,7 @@ class ActionModule(ActionBase):
             return result
 
         data = self._execute_module(module_name='ipaclient_get_facts',
-                                    module_args=dict(), task_vars=task_vars)
+                                    module_args={}, task_vars=task_vars)
 
         try:
             domain = data['ansible_facts']['ipa']['domain']
@@ -195,7 +199,7 @@ class ActionModule(ActionBase):
             ipa_realm=realm,
             ipa_lifetime=lifetime))
 
-        with open(krb5conf_name, 'w') as f:
+        with open(krb5conf_name, 'w') as f:  # pylint: disable=invalid-name
             f.write(content)
 
         if password:
