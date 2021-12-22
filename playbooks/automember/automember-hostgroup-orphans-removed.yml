@@ -1,0 +1,10 @@
+---
+- name: Automember orphan hostgroup rules are removed example
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure orphan hostgroup rules are removed
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      automember_type: hostgroup
+      state: orphans_removed

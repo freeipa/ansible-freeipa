@@ -1,0 +1,250 @@
+---
+- name: Test automember orphans_removed
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: true
+
+  tasks:
+
+  # SET FACTS
+
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] |
+                            join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure user testuser is absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      state: absent
+
+  - name: Ensure group testgroup is absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      state: absent
+
+  - name: Ensure host testhost is absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'testhost.' + ipaserver_domain }}"
+      state: absent
+
+  - name: Ensure hostgroup testhostgroup is absent
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      state: absent
+
+  - name: Ensure automember group testgroup is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      automember_type: group
+      state: absent
+
+  - name: Ensure automember hostgroup testhostgroup is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      automember_type: hostgroup
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure user testuser is present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      first: Test
+      last: User
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host testhost is present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'testhost.' + ipaserver_domain }}"
+      force: yes
+      reverse: no
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group testgroup is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      state: present
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure hostgroup testhostgroup is present
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      state: present
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # TESTS
+
+  # GROUP TEST
+
+  - name: Ensure automember group testgroup exists
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      automember_type: group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure automember group condition exits for users
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      automember_type: group
+      action: member
+      inclusive:
+        - key: uid
+          expression: uid
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group testgroup is absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group orphans have been removed
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      automember_type: group
+      state: orphans_removed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group orphans have been removed again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      automember_type: group
+      state: orphans_removed
+    register: result
+    failed_when: result.changed or result.failed
+
+  # HOSTGROUP TEST
+
+  - name: Ensure automember hostgroup testhostgroup exists
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      automember_type: hostgroup
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure automember hostgroup condition exits for hosts
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      automember_type: hostgroup
+      action: member
+      inclusive:
+        - key: fqdn
+          expression: "{{ '.*.' + ipaserver_domain }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure hostgroup testhostgroup is absent
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure hostgroup orphans have been removed
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      automember_type: hostgroup
+      state: orphans_removed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure hostgroup orphans have been removed again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      automember_type: hostgroup
+      state: orphans_removed
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure user testuser is absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      state: absent
+
+  - name: Ensure group testgroup is absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      state: absent
+
+  - name: Ensure host testhost is absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'testhost.' + ipaserver_domain }}"
+      state: absent
+
+  - name: Ensure hostgroup testhostgroup is absent
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      state: absent
+
+  - name: Ensure automember group testgroup is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      automember_type: group
+      state: absent
+
+  - name: Ensure automember hostgroup testhostgroup is absent
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      automember_type: hostgroup
+      state: absent

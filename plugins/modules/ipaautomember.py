@@ -100,7 +100,7 @@ options:
   state:
     description: State to ensure
     default: present
-    choices: ["present", "absent", "rebuilt"]
+    choices: ["present", "absent", "rebuilt", "orphans_removed"]
 author:
     - Mark Hahl
     - Jake Reynolds
@@ -191,6 +191,18 @@ EXAMPLES = """
     automember_type: hostgroup
     default_group: ""
     state: absent
+
+# Example playbook to ensure all orphan automember group rules are removed:
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: group
+    state: orphans_removed
+
+# Example playbook to ensure all orphan automember hostgroup rules are removed:
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: hostgroup
+    state: orphans_removed
 """
 
 RETURN = """
@@ -213,6 +225,19 @@ def find_automember(module, name, automember_type):
     except ipalib_errors.NotFound:
         return None
     return _result["result"]
+
+
+def find_automember_orphans(module, automember_type):
+    _args = {
+        "all": True,
+        "type": automember_type
+    }
+
+    try:
+        _result = module.ipa_command_no_name("automember_find_orphans", _args)
+    except ipalib_errors.NotFound:
+        return None
+    return _result
 
 
 def find_automember_default_group(module, automember_type):
@@ -310,7 +335,8 @@ def main():
             action=dict(type="str", default="automember",
                         choices=["member", "automember"]),
             state=dict(type="str", default="present",
-                       choices=["present", "absent", "rebuilt"]),
+                       choices=["present", "absent", "rebuilt",
+                                "orphans_removed"]),
             users=dict(type="list", default=None),
             hosts=dict(type="list", default=None),
         ),
@@ -353,7 +379,7 @@ def main():
     # Check parameters
     invalid = []
 
-    if state in ["rebuilt"]:
+    if state in ["rebuilt", "orphans_removed"]:
         invalid = ["name", "description", "exclusive", "inclusive",
                    "default_group"]
 
@@ -370,6 +396,13 @@ def main():
                 ansible_module.fail_json(
                     msg="state %s: users can not be set when type is '%s'" %
                     (state, automember_type))
+
+        elif state == "orphans_removed":
+            invalid.extend(["users", "hosts"])
+
+            if not automember_type:
+                ansible_module.fail_json(
+                    msg="'automember_type' is required unless state: rebuilt")
 
     else:
         if default_group is not None:
@@ -532,6 +565,14 @@ def main():
                 args = gen_rebuild_args(automember_type, rebuild_users,
                                         rebuild_hosts, no_wait)
                 commands.append([None, 'automember_rebuild', args])
+
+            elif state == "orphans_removed":
+                res_find = find_automember_orphans(ansible_module,
+                                                   automember_type)
+                if res_find["count"] > 0:
+                    commands.append([None, 'automember_find_orphans',
+                                     {'type': automember_type,
+                                      'remove': True}])
 
             elif default_group is not None and state == "present":
                 res_find = find_automember_default_group(ansible_module,

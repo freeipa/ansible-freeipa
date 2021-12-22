@@ -230,6 +230,34 @@ Example playbook to ensure default hostgroup for all unmatched group entries is 
         state: absent
 ```
 
+Example playbook to ensure all orphan automember group rules are removed:
+
+```yaml
+- name: Playbook to ensure all orphan automember group rules are removed
+  hosts: ipaserver
+  become: yes
+  gather_facts: no
+  tasks:
+    - ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        automember_type: group
+        state: orphans_removed
+```
+
+Example playbook to ensure all orphan automember hostgroup rules are removed:
+
+```yaml
+- name: Playbook to ensure all orphan automember hostgroup rules are removed
+  hosts: ipaserver
+  become: yes
+  gather_facts: no
+  tasks:
+    - ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        automember_type: hostgroup
+        state: orphans_removed
+```
+
 
 Variables
 ---------
@@ -253,7 +281,7 @@ Variable | Description | Required
 `no_wait` | Don't wait for rebuilding membership. | no
 `default_group` | Default (fallback) group for all unmatched entries. Use the empty string "" for ensuring the default group is not set. | no
 `action` | Work on automember or member level. It can be one of `member` or `automember` and defaults to `automember`. | no
-`state` | The state to ensure. It can be one of `present`, `absent`, 'rebuilt'. default: `present`. | no
+`state` | The state to ensure. It can be one of `present`, `absent`, 'rebuilt'. 'orphans_removed' default: `present`. | no
 
 
 Authors
