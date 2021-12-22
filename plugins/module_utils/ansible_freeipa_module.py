@@ -419,6 +419,9 @@ else:
     def api_get_realm():
         return api.env.realm
 
+    def api_get_basedn():
+        return api.env.basedn
+
     def gen_add_del_lists(user_list, res_list):
         """
         Generate the lists for the addition and removal of members.
@@ -881,6 +884,11 @@ else:
         def ipa_get_realm():
             """Retrieve IPA API realm."""
             return api_get_realm()
+
+        @staticmethod
+        def ipa_get_basedn():
+            """Retrieve IPA API basedn."""
+            return api_get_basedn()
 
         @staticmethod
         def ipa_command_exists(command):
