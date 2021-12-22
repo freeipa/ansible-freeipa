@@ -1,0 +1,166 @@
+---
+- name: Test automember default groups
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: true
+
+  tasks:
+
+  # SET FACTS
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure group testgroup is absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      state: absent
+
+  - name: Ensure hostgroup testhostgroup is absent
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      state: absent
+
+  - name: Ensure automember default group is unset
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: ""
+      automember_type: group
+
+  - name: Ensure automember default hostgroup is unset
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: ""
+      automember_type: hostgroup
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure group testgroup is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      state: present
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure hostgroup testhostgroup is present
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      state: present
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # TESTS
+
+  # GROUP TEST
+
+  - name: Ensure automember default group is set to testgroup
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: testgroup
+      automember_type: group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure automember default group is set to testgroup, again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: testgroup
+      automember_type: group
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure automember default group is unset
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: ""
+      automember_type: group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure automember default group is unset, again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: ""
+      automember_type: group
+    register: result
+    failed_when: result.changed or result.failed
+
+  # HOSTGROUP TEST
+
+  - name: Ensure automember default hostgroup is set to testhostgroup
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: testhostgroup
+      automember_type: hostgroup
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure automember default hostgroup is set to testhostgroup, again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: testhostgroup
+      automember_type: hostgroup
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure automember default hostgroup is unset
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: ""
+      automember_type: hostgroup
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure automember default hostgroup is unset, again
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: ""
+      automember_type: hostgroup
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure group testgroup is absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testgroup
+      state: absent
+
+  - name: Ensure hostgroup testhostgroup is absent
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testhostgroup
+      state: absent
+
+  - name: Ensure automember default group is unset
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: ""
+      automember_type: group
+
+  - name: Ensure automember default hostgroup is unset
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      default_group: ""
+      automember_type: hostgroup

@@ -1,0 +1,10 @@
+---
+- name: Automember default group set
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure automember default group is set
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      automember_type: group
+      default_group: fallback_group

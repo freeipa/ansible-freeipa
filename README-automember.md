@@ -172,6 +172,64 @@ Example playbook to ensure hostgroup membership for given hosts has been rebuilt
         state: rebuilt
 ```
 
+Example playbook to ensure default group fallback_group for all unmatched group entries is set
+
+```yaml
+- name: Playbook to ensure default group fallback_group for all unmatched group entries is set
+  hosts: ipaserver
+  become: yes
+  gather_facts: no
+  tasks:
+    - ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        automember_type: group
+        default_group: fallback_group
+```
+
+Example playbook to ensure default group for all unmatched group entries is not set
+
+```yaml
+- name: Playbook to ensure default group for all unmatched group entries is not set
+  hosts: ipaserver
+  become: yes
+  gather_facts: no
+  tasks:
+    - ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        default_group: ""
+        automember_type: group
+        state: absent
+```
+
+Example playbook to ensure default hostgroup fallback_hostgroup for all unmatched group entries
+
+```yaml
+- name: Playbook to ensure default hostgroup fallback_hostgroup for all unmatched group entries
+  hosts: ipaserver
+  become: yes
+  gather_facts: no
+  tasks:
+    - ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        automember_type: hostgroup
+        default_group: fallback_hostgroup
+```
+
+Example playbook to ensure default hostgroup for all unmatched group entries is not set
+
+```yaml
+- name: Playbook to ensure default hostgroup for all unmatched group entries is not set
+  hosts: ipaserver
+  become: yes
+  gather_facts: no
+  tasks:
+    - ipaautomember:
+        ipaadmin_password: SomeADMINpassword
+        automember_type: hostgroup
+        default_group: ""
+        state: absent
+```
+
 
 Variables
 ---------
@@ -193,6 +251,7 @@ Variable | Description | Required
 `users` | Users to rebuild membership for. | no
 `hosts` | Hosts to rebuild membership for. | no
 `no_wait` | Don't wait for rebuilding membership. | no
+`default_group` | Default (fallback) group for all unmatched entries. Use the empty string "" for ensuring the default group is not set. | no
 `action` | Work on automember or member level. It can be one of `member` or `automember` and defaults to `automember`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, 'rebuilt'. default: `present`. | no
 

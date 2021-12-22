@@ -90,6 +90,9 @@ options:
   no_wait:
     description: Don't wait for rebuilding membership.
     type: bool
+  default_group:
+    description: Default (fallback) group for all unmatched entries.
+    type: str
   action:
     description: Work on automember or member level
     default: automember
@@ -161,6 +164,33 @@ EXAMPLES = """
     - host1.mydomain.com
     - host2.mydomain.com
     state: rebuilt
+
+# Ensure default group fallback_group for all unmatched group entries is set
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: group
+    default_group: fallback_group
+
+# Ensure default group for all unmatched group entries is not set
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    default_group: ""
+    automember_type: group
+    state: absent
+
+# Ensure default hostgroup fallback_hostgroup for all unmatched group entries
+# is set
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: hostgroup
+    default_group: fallback_hostgroup
+
+# Ensure default hostgroup for all unmatched group entries is not set
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: hostgroup
+    default_group: ""
+    state: absent
 """
 
 RETURN = """
@@ -168,7 +198,7 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import (
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, ipalib_errors
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, ipalib_errors, DN
 )
 
 
@@ -180,6 +210,20 @@ def find_automember(module, name, automember_type):
 
     try:
         _result = module.ipa_command("automember_show", name, _args)
+    except ipalib_errors.NotFound:
+        return None
+    return _result["result"]
+
+
+def find_automember_default_group(module, automember_type):
+    _args = {
+        "all": True,
+        "type": automember_type
+    }
+
+    try:
+        _result = module.ipa_command_no_name("automember_default_group_show",
+                                             _args)
     except ipalib_errors.NotFound:
         return None
     return _result["result"]
@@ -262,6 +306,7 @@ def main():
             automember_type=dict(type='str', required=False,
                                  choices=['group', 'hostgroup']),
             no_wait=dict(type="bool", default=None),
+            default_group=dict(type="str", default=None),
             action=dict(type="str", default="automember",
                         choices=["member", "automember"]),
             state=dict(type="str", default="present",
@@ -291,6 +336,9 @@ def main():
     # no_wait for rebuilt
     no_wait = ansible_module.params_get("no_wait")
 
+    # default_group
+    default_group = ansible_module.params_get("default_group")
+
     # action
     action = ansible_module.params_get("action")
     # state
@@ -306,7 +354,8 @@ def main():
     invalid = []
 
     if state in ["rebuilt"]:
-        invalid = ["name", "description", "exclusive", "inclusive"]
+        invalid = ["name", "description", "exclusive", "inclusive",
+                   "default_group"]
 
         if action == "member":
             ansible_module.fail_json(
@@ -323,7 +372,21 @@ def main():
                     (state, automember_type))
 
     else:
-        invalid = ["users", "hosts", "no_wait"]
+        if default_group is not None:
+            for param in ["name", "exclusive", "inclusive", "users", "hosts"
+                          "no_wait"]:
+                if ansible_module.params.get(param) is not None:
+                    msg = "Cannot use {0} together with default_group"
+                    ansible_module.fail_json(msg=msg.format(param))
+            if action == "member":
+                ansible_module.fail_json(
+                    msg="Cannot use default_group with action:member")
+            if state == "absent":
+                ansible_module.fail_json(
+                    msg="Cannot use default_group with state:absent")
+
+        else:
+            invalid = ["users", "hosts", "no_wait"]
 
         if not automember_type:
             ansible_module.fail_json(
@@ -469,6 +532,29 @@ def main():
                 args = gen_rebuild_args(automember_type, rebuild_users,
                                         rebuild_hosts, no_wait)
                 commands.append([None, 'automember_rebuild', args])
+
+            elif default_group is not None and state == "present":
+                res_find = find_automember_default_group(ansible_module,
+                                                         automember_type)
+
+                if default_group == "":
+                    if isinstance(res_find["automemberdefaultgroup"], list):
+                        commands.append([None,
+                                         'automember_default_group_remove',
+                                         {'type': automember_type}])
+                        ansible_module.warn("commands: %s" % repr(commands))
+
+                else:
+                    dn_default_group = [DN(('cn', default_group),
+                                           ('cn', '%ss' % automember_type),
+                                           ('cn', 'accounts'),
+                                           ansible_module.ipa_get_basedn())]
+                    if repr(res_find["automemberdefaultgroup"]) != \
+                       repr(dn_default_group):
+                        commands.append(
+                            [None, 'automember_default_group_set',
+                             {'type': automember_type,
+                              'automemberdefaultgroup': default_group}])
 
             else:
                 ansible_module.fail_json(msg="Invalid operation")
