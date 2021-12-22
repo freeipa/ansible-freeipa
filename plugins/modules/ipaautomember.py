@@ -79,6 +79,17 @@ options:
         description: The expression of the regex
         type: str
         required: true
+  users:
+    description: Users to rebuild membership for.
+    type: list
+    required: false
+  hosts:
+    description: Hosts to rebuild membership for.
+    type: list
+    required: false
+  no_wait:
+    description: Don't wait for rebuilding membership.
+    type: bool
   action:
     description: Work on automember or member level
     default: automember
@@ -86,10 +97,11 @@ options:
   state:
     description: State to ensure
     default: present
-    choices: ["present", "absent"]
+    choices: ["present", "absent", "rebuilt"]
 author:
     - Mark Hahl
     - Jake Reynolds
+    - Thomas Woerner
 """
 
 EXAMPLES = """
@@ -116,12 +128,39 @@ EXAMPLES = """
 - ipaautomember:
     ipaadmin_password: SomeADMINpassword
     name: "My domain hosts"
-    automember_tye: hostgroup
+    automember_type: hostgroup
     action: member
     inclusive:
       - key: fqdn
         expression: ".*.mydomain.com"
 
+# Ensure group membership for all users has been rebuilt
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: group
+    state: rebuilt
+
+# Ensure group membership for given users has been rebuilt
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    users:
+    - user1
+    - user2
+    state: rebuilt
+
+# Ensure hostgroup membership for all hosts has been rebuilt
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: hostgroup
+    state: rebuilt
+
+# Ensure hostgroup membership for given hosts has been rebuilt
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    hosts:
+    - host1.mydomain.com
+    - host2.mydomain.com
+    state: rebuilt
 """
 
 RETURN = """
@@ -133,10 +172,10 @@ from ansible.module_utils.ansible_freeipa_module import (
 )
 
 
-def find_automember(module, name, grouping):
+def find_automember(module, name, automember_type):
     _args = {
         "all": True,
-        "type": grouping
+        "type": automember_type
     }
 
     try:
@@ -146,13 +185,13 @@ def find_automember(module, name, grouping):
     return _result["result"]
 
 
-def gen_condition_args(grouping,
+def gen_condition_args(automember_type,
                        key,
                        inclusiveregex=None,
                        exclusiveregex=None):
     _args = {}
-    if grouping is not None:
-        _args['type'] = grouping
+    if automember_type is not None:
+        _args['type'] = automember_type
     if key is not None:
         _args['key'] = key
     if inclusiveregex is not None:
@@ -163,13 +202,23 @@ def gen_condition_args(grouping,
     return _args
 
 
-def gen_args(description, grouping):
+def gen_rebuild_args(automember_type, rebuild_users, rebuild_hosts, no_wait):
+    _args = {"no_wait": no_wait}
+    if automember_type is not None:
+        _args['type'] = automember_type
+    if rebuild_users is not None:
+        _args["users"] = rebuild_users
+    if rebuild_hosts is not None:
+        _args["hosts"] = rebuild_hosts
+    return _args
+
+
+def gen_args(description, automember_type):
     _args = {}
     if description is not None:
         _args["description"] = description
-    if grouping is not None:
-        _args['type'] = grouping
-
+    if automember_type is not None:
+        _args['type'] = automember_type
     return _args
 
 
@@ -208,14 +257,15 @@ def main():
                            ),
                            elements="dict", required=False),
             name=dict(type="list", aliases=["cn"],
-                      default=None, required=True),
+                      default=None, required=False),
             description=dict(type="str", default=None),
             automember_type=dict(type='str', required=False,
                                  choices=['group', 'hostgroup']),
+            no_wait=dict(type="bool", default=None),
             action=dict(type="str", default="automember",
                         choices=["member", "automember"]),
             state=dict(type="str", default="present",
-                       choices=["present", "absent", "rebuild"]),
+                       choices=["present", "absent", "rebuilt"]),
             users=dict(type="list", default=None),
             hosts=dict(type="list", default=None),
         ),
@@ -228,6 +278,8 @@ def main():
 
     # general
     names = ansible_module.params_get("name")
+    if names is None:
+        names = []
 
     # present
     description = ansible_module.params_get("description")
@@ -235,6 +287,9 @@ def main():
     # conditions
     inclusive = ansible_module.params_get("inclusive")
     exclusive = ansible_module.params_get("exclusive")
+
+    # no_wait for rebuilt
+    no_wait = ansible_module.params_get("no_wait")
 
     # action
     action = ansible_module.params_get("action")
@@ -250,12 +305,29 @@ def main():
     # Check parameters
     invalid = []
 
-    if state != "rebuild":
-        invalid = ["rebuild_hosts", "rebuild_users"]
+    if state in ["rebuilt"]:
+        invalid = ["name", "description", "exclusive", "inclusive"]
 
-        if not automember_type and state != "rebuild":
+        if action == "member":
             ansible_module.fail_json(
-                msg="'automember_type' is required unless state: rebuild")
+                msg="'action=member' is not usable with state '%s'" % state)
+
+        if state == "rebuilt":
+            if automember_type == "group" and rebuild_hosts is not None:
+                ansible_module.fail_json(
+                    msg="state %s: hosts can not be set when type is '%s'" %
+                    (state, automember_type))
+            if automember_type == "hostgroup" and rebuild_users is not None:
+                ansible_module.fail_json(
+                    msg="state %s: users can not be set when type is '%s'" %
+                    (state, automember_type))
+
+    else:
+        invalid = ["users", "hosts", "no_wait"]
+
+        if not automember_type:
+            ansible_module.fail_json(
+                msg="'automember_type' is required.")
 
     ansible_module.params_fail_used_invalid(invalid, state, action)
 
@@ -392,16 +464,14 @@ def main():
                                              'automember_remove_condition',
                                             condition_args])
 
-            elif state == "rebuild":
-                if automember_type:
-                    commands.append([None, 'automember_rebuild',
-                                     {"type": automember_type}])
-                if rebuild_users:
-                    commands.append([None, 'automember_rebuild',
-                                    {"users": rebuild_users}])
-                if rebuild_hosts:
-                    commands.append([None, 'automember_rebuild',
-                                    {"hosts": rebuild_hosts}])
+        if len(names) == 0:
+            if state == "rebuilt":
+                args = gen_rebuild_args(automember_type, rebuild_users,
+                                        rebuild_hosts, no_wait)
+                commands.append([None, 'automember_rebuild', args])
+
+            else:
+                ansible_module.fail_json(msg="Invalid operation")
 
         # Execute commands
 
