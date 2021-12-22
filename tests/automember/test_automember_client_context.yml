@@ -13,7 +13,6 @@
     ipaautomember:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: server
-      name: ThisShouldNotWork
       automember_type: group
       state: rebuilt
     register: result
