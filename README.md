@@ -13,6 +13,7 @@ Features
 * Repair mode for clients
 * Backup and restore, also to and from controller
 * Modules for automembership rule management
+* Modules for automount location management
 * Modules for config management
 * Modules for delegation management
 * Modules for dns config management
@@ -424,6 +425,7 @@ Modules in plugin/modules
 =========================
 
 * [ipaautomember](README-automember.md)
+* [ipaautomountlocation](README-automountlocation.md)
 * [ipaconfig](README-config.md)
 * [ipadelegation](README-delegation.md)
 * [ipadnsconfig](README-dnsconfig.md)
@@ -436,12 +438,12 @@ Modules in plugin/modules
 * [ipahbacsvcgroup](README-hbacsvc.md)
 * [ipahost](README-host.md)
 * [ipahostgroup](README-hostgroup.md)
-* [ipalocation](README-ipalocation.md)
-* [ipapermission](README-ipapermission.md)
-* [ipaprivilege](README-ipaprivilege.md)
+* [ipalocation](README-location.md)
+* [ipapermission](README-permission.md)
+* [ipaprivilege](README-privilege.md)
 * [ipapwpolicy](README-pwpolicy.md)
 * [iparole](README-role.md)
-* [ipaselfservice](README-ipaselfservice.md)
+* [ipaselfservice](README-selfservice.md)
 * [ipaserver](README-server.md)
 * [ipaservice](README-service.md)
 * [ipasudocmd](README-sudocmd.md)

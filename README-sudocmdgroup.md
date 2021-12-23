@@ -116,9 +116,6 @@ Example playbook to make sure sudocmdgroup is absent:
 Variables
 =========
 
-ipasudocmdgroup
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

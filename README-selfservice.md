@@ -131,9 +131,6 @@ Example playbook to make sure selfservice "Users can manage their own name detai
 Variables
 ---------
 
-ipaselfservice
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

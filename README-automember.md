@@ -262,9 +262,6 @@ Example playbook to ensure all orphan automember hostgroup rules are removed:
 Variables
 ---------
 
-ipaautomember
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

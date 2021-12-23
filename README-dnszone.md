@@ -195,9 +195,6 @@ Example playbook to create a zone for reverse DNS lookup, from an IP address, gi
 Variables
 =========
 
-ipadnszone
-----------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
@@ -232,9 +229,6 @@ Variable | Description | Required
 
 Return Values
 =============
-
-ipadnszone
-----------
 
 Variable | Description | Returned When
 -------- | ----------- | -------------

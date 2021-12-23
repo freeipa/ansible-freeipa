@@ -119,9 +119,6 @@ Example playbook to disallow synchronization of forward (A, AAAA) and reverse (P
 Variables
 =========
 
-ipadnsconfig
-------------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

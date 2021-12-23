@@ -126,9 +126,6 @@ Example playbook to make sure privilege "DNS Special Privilege" is absent:
 Variables
 ---------
 
-ipaprivilege
-------------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin`. | no

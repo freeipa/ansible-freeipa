@@ -113,9 +113,6 @@ Example playbook to make sure Sudo Rule is absent:
 Variables
 =========
 
-ipasudorule
----------------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

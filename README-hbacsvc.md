@@ -91,9 +91,6 @@ Example playbook to make sure HBAC Services for http and tftp are absent
 Variables
 =========
 
-ipahbacsvc
-----------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

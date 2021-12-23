@@ -129,9 +129,6 @@ Example playbook to make sure HBAC Rule login is absent:
 Variables
 =========
 
-ipahbacrule
----------------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

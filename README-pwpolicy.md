@@ -91,9 +91,6 @@ Example playbook to ensure maxlife is set to 49 in global policy:
 Variables
 =========
 
-ipapwpolicy
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

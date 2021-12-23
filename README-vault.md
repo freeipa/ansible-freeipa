@@ -210,9 +210,6 @@ Example playbook to make sure vault is absent:
 Variables
 =========
 
-ipavault
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
@@ -249,9 +246,6 @@ Variable | Description | Required
 
 Return Values
 =============
-
-ipavault
---------
 
 There is only a return value if `state` is `retrieved`.
 
