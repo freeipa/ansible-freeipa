@@ -100,9 +100,6 @@ Example playbook to ensure presence of a forwardzone to ipa DNS:
 Variables
 =========
 
-ipagroup
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

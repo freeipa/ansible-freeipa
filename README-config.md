@@ -82,9 +82,6 @@ Example playbook to read config options:
 Variables
 =========
 
-ipauser
--------
-
 **General Variables:**
 
 Variable | Description | Required

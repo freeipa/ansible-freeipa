@@ -94,9 +94,6 @@ This will only delete the ipa-side of the trust and it does NOT delete the id-ra
 Variables
 =========
 
-ipatrust
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

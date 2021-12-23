@@ -356,9 +356,6 @@ Example playbook to ensure users are absent:
 Variables
 =========
 
-ipauser
--------
-
 **General Variables:**
 
 Variable | Description | Required
@@ -431,9 +428,6 @@ Variable | Description | Required
 
 Return Values
 =============
-
-ipauser
--------
 
 There are only return values if one or more random passwords have been generated.
 

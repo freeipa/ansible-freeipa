@@ -129,9 +129,6 @@ Example playbook to make sure HBAC Service Group login is absent:
 Variables
 =========
 
-ipahbacsvcgroup
----------------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

@@ -242,9 +242,6 @@ This task will always report a change.
 Variables
 ---------
 
-ipaserver
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

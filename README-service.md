@@ -285,8 +285,6 @@ Example playbook to allow users, groups, hosts or hostgroups to retrieve a keyta
 Variables
 ---------
 
-ipaservice
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

@@ -313,9 +313,6 @@ Example playbook to ensure a host is absent:
 Variables
 =========
 
-ipahost
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
@@ -369,9 +366,6 @@ Variable | Description | Required
 
 Return Values
 =============
-
-ipahost
--------
 
 There are only return values if one or more random passwords have been generated.
 

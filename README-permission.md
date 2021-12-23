@@ -154,9 +154,6 @@ Example playbook to make sure permission "MyPermission" is renamed to "MyNewPerm
 Variables
 ---------
 
-ipapermission
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

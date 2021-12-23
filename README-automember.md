@@ -115,9 +115,6 @@ Example playbook to add an inclusive condition to an existing rule
 Variables
 ---------
 
-ipaautomember
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

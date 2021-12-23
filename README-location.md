@@ -74,9 +74,6 @@ Example playbook to make sure location "my_location1" is absent:
 Variables
 ---------
 
-ipalocation
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

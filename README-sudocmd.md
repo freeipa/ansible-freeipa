@@ -76,9 +76,6 @@ Example playbook to make sure sudocmd is absent:
 Variables
 =========
 
-ipasudocmd
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

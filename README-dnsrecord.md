@@ -242,9 +242,6 @@ Example playbook to ensure multiple DNS records are absent:
 Variables
 =========
 
-ipadnsrecord
-------------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no

@@ -238,9 +238,6 @@ Example playbook to ensure that different members are not associated with a role
 Variables
 ---------
 
-iparole
--------
-
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
