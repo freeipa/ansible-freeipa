@@ -79,6 +79,20 @@ options:
         description: The expression of the regex
         type: str
         required: true
+  users:
+    description: Users to rebuild membership for.
+    type: list
+    required: false
+  hosts:
+    description: Hosts to rebuild membership for.
+    type: list
+    required: false
+  no_wait:
+    description: Don't wait for rebuilding membership.
+    type: bool
+  default_group:
+    description: Default (fallback) group for all unmatched entries.
+    type: str
   action:
     description: Work on automember or member level
     default: automember
@@ -86,10 +100,11 @@ options:
   state:
     description: State to ensure
     default: present
-    choices: ["present", "absent"]
+    choices: ["present", "absent", "rebuilt", "orphans_removed"]
 author:
     - Mark Hahl
     - Jake Reynolds
+    - Thomas Woerner
 """
 
 EXAMPLES = """
@@ -116,12 +131,78 @@ EXAMPLES = """
 - ipaautomember:
     ipaadmin_password: SomeADMINpassword
     name: "My domain hosts"
-    automember_tye: hostgroup
+    automember_type: hostgroup
     action: member
     inclusive:
       - key: fqdn
         expression: ".*.mydomain.com"
 
+# Ensure group membership for all users has been rebuilt
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: group
+    state: rebuilt
+
+# Ensure group membership for given users has been rebuilt
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    users:
+    - user1
+    - user2
+    state: rebuilt
+
+# Ensure hostgroup membership for all hosts has been rebuilt
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: hostgroup
+    state: rebuilt
+
+# Ensure hostgroup membership for given hosts has been rebuilt
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    hosts:
+    - host1.mydomain.com
+    - host2.mydomain.com
+    state: rebuilt
+
+# Ensure default group fallback_group for all unmatched group entries is set
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: group
+    default_group: fallback_group
+
+# Ensure default group for all unmatched group entries is not set
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    default_group: ""
+    automember_type: group
+    state: absent
+
+# Ensure default hostgroup fallback_hostgroup for all unmatched group entries
+# is set
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: hostgroup
+    default_group: fallback_hostgroup
+
+# Ensure default hostgroup for all unmatched group entries is not set
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: hostgroup
+    default_group: ""
+    state: absent
+
+# Example playbook to ensure all orphan automember group rules are removed:
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: group
+    state: orphans_removed
+
+# Example playbook to ensure all orphan automember hostgroup rules are removed:
+- ipaautomember:
+    ipaadmin_password: SomeADMINpassword
+    automember_type: hostgroup
+    state: orphans_removed
 """
 
 RETURN = """
@@ -129,14 +210,14 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import (
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, ipalib_errors
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, ipalib_errors, DN
 )
 
 
-def find_automember(module, name, grouping):
+def find_automember(module, name, automember_type):
     _args = {
         "all": True,
-        "type": grouping
+        "type": automember_type
     }
 
     try:
@@ -146,13 +227,40 @@ def find_automember(module, name, grouping):
     return _result["result"]
 
 
-def gen_condition_args(grouping,
+def find_automember_orphans(module, automember_type):
+    _args = {
+        "all": True,
+        "type": automember_type
+    }
+
+    try:
+        _result = module.ipa_command_no_name("automember_find_orphans", _args)
+    except ipalib_errors.NotFound:
+        return None
+    return _result
+
+
+def find_automember_default_group(module, automember_type):
+    _args = {
+        "all": True,
+        "type": automember_type
+    }
+
+    try:
+        _result = module.ipa_command_no_name("automember_default_group_show",
+                                             _args)
+    except ipalib_errors.NotFound:
+        return None
+    return _result["result"]
+
+
+def gen_condition_args(automember_type,
                        key,
                        inclusiveregex=None,
                        exclusiveregex=None):
     _args = {}
-    if grouping is not None:
-        _args['type'] = grouping
+    if automember_type is not None:
+        _args['type'] = automember_type
     if key is not None:
         _args['key'] = key
     if inclusiveregex is not None:
@@ -163,13 +271,23 @@ def gen_condition_args(grouping,
     return _args
 
 
-def gen_args(description, grouping):
+def gen_rebuild_args(automember_type, rebuild_users, rebuild_hosts, no_wait):
+    _args = {"no_wait": no_wait}
+    if automember_type is not None:
+        _args['type'] = automember_type
+    if rebuild_users is not None:
+        _args["users"] = rebuild_users
+    if rebuild_hosts is not None:
+        _args["hosts"] = rebuild_hosts
+    return _args
+
+
+def gen_args(description, automember_type):
     _args = {}
     if description is not None:
         _args["description"] = description
-    if grouping is not None:
-        _args['type'] = grouping
-
+    if automember_type is not None:
+        _args['type'] = automember_type
     return _args
 
 
@@ -212,14 +330,17 @@ def main():
                            elements="dict",
                            required=False),
             name=dict(type="list", aliases=["cn"],
-                      default=None, required=True),
+                      default=None, required=False),
             description=dict(type="str", default=None),
             automember_type=dict(type='str', required=False,
                                  choices=['group', 'hostgroup']),
+            no_wait=dict(type="bool", default=None),
+            default_group=dict(type="str", default=None),
             action=dict(type="str", default="automember",
                         choices=["member", "automember"]),
             state=dict(type="str", default="present",
-                       choices=["present", "absent", "rebuild"]),
+                       choices=["present", "absent", "rebuilt",
+                                "orphans_removed"]),
             users=dict(type="list", default=None),
             hosts=dict(type="list", default=None),
         ),
@@ -232,6 +353,8 @@ def main():
 
     # general
     names = ansible_module.params_get("name")
+    if names is None:
+        names = []
 
     # present
     description = ansible_module.params_get("description")
@@ -239,6 +362,12 @@ def main():
     # conditions
     inclusive = ansible_module.params_get("inclusive")
     exclusive = ansible_module.params_get("exclusive")
+
+    # no_wait for rebuilt
+    no_wait = ansible_module.params_get("no_wait")
+
+    # default_group
+    default_group = ansible_module.params_get("default_group")
 
     # action
     action = ansible_module.params_get("action")
@@ -254,12 +383,51 @@ def main():
     # Check parameters
     invalid = []
 
-    if state != "rebuild":
-        invalid = ["rebuild_hosts", "rebuild_users"]
+    if state in ["rebuilt", "orphans_removed"]:
+        invalid = ["name", "description", "exclusive", "inclusive",
+                   "default_group"]
 
-        if not automember_type and state != "rebuild":
+        if action == "member":
             ansible_module.fail_json(
-                msg="'automember_type' is required unless state: rebuild")
+                msg="'action=member' is not usable with state '%s'" % state)
+
+        if state == "rebuilt":
+            if automember_type == "group" and rebuild_hosts is not None:
+                ansible_module.fail_json(
+                    msg="state %s: hosts can not be set when type is '%s'" %
+                    (state, automember_type))
+            if automember_type == "hostgroup" and rebuild_users is not None:
+                ansible_module.fail_json(
+                    msg="state %s: users can not be set when type is '%s'" %
+                    (state, automember_type))
+
+        elif state == "orphans_removed":
+            invalid.extend(["users", "hosts"])
+
+            if not automember_type:
+                ansible_module.fail_json(
+                    msg="'automember_type' is required unless state: rebuilt")
+
+    else:
+        if default_group is not None:
+            for param in ["name", "exclusive", "inclusive", "users", "hosts"
+                          "no_wait"]:
+                if ansible_module.params.get(param) is not None:
+                    msg = "Cannot use {0} together with default_group"
+                    ansible_module.fail_json(msg=msg.format(param))
+            if action == "member":
+                ansible_module.fail_json(
+                    msg="Cannot use default_group with action:member")
+            if state == "absent":
+                ansible_module.fail_json(
+                    msg="Cannot use default_group with state:absent")
+
+        else:
+            invalid = ["users", "hosts", "no_wait"]
+
+        if not automember_type:
+            ansible_module.fail_json(
+                msg="'automember_type' is required.")
 
     ansible_module.params_fail_used_invalid(invalid, state, action)
 
@@ -396,16 +564,45 @@ def main():
                                              'automember_remove_condition',
                                             condition_args])
 
-            elif state == "rebuild":
-                if automember_type:
-                    commands.append([None, 'automember_rebuild',
-                                     {"type": automember_type}])
-                if rebuild_users:
-                    commands.append([None, 'automember_rebuild',
-                                    {"users": rebuild_users}])
-                if rebuild_hosts:
-                    commands.append([None, 'automember_rebuild',
-                                    {"hosts": rebuild_hosts}])
+        if len(names) == 0:
+            if state == "rebuilt":
+                args = gen_rebuild_args(automember_type, rebuild_users,
+                                        rebuild_hosts, no_wait)
+                commands.append([None, 'automember_rebuild', args])
+
+            elif state == "orphans_removed":
+                res_find = find_automember_orphans(ansible_module,
+                                                   automember_type)
+                if res_find["count"] > 0:
+                    commands.append([None, 'automember_find_orphans',
+                                     {'type': automember_type,
+                                      'remove': True}])
+
+            elif default_group is not None and state == "present":
+                res_find = find_automember_default_group(ansible_module,
+                                                         automember_type)
+
+                if default_group == "":
+                    if isinstance(res_find["automemberdefaultgroup"], list):
+                        commands.append([None,
+                                         'automember_default_group_remove',
+                                         {'type': automember_type}])
+                        ansible_module.warn("commands: %s" % repr(commands))
+
+                else:
+                    dn_default_group = [DN(('cn', default_group),
+                                           ('cn', '%ss' % automember_type),
+                                           ('cn', 'accounts'),
+                                           ansible_module.ipa_get_basedn())]
+                    if repr(res_find["automemberdefaultgroup"]) != \
+                       repr(dn_default_group):
+                        commands.append(
+                            [None, 'automember_default_group_set',
+                             {'type': automember_type,
+                              'automemberdefaultgroup': default_group}])
+
+            else:
+                ansible_module.fail_json(msg="Invalid operation")
 
         # Execute commands
 

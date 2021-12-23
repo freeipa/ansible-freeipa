@@ -1,0 +1,155 @@
+---
+- name: Test automember rebuilt
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: true
+
+  tasks:
+
+  # SET FACTS
+
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] |
+                            join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure user testuser is absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      state: absent
+
+  - name: Ensure host testhost is absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'testhost.' + ipaserver_domain }}"
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure user testuser is present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      first: Test
+      last: User
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host testhost is present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'testhost.' + ipaserver_domain }}"
+      force: yes
+      reverse: no
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # TESTS
+
+  - name: Ensure group membership has been rebuilt
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      automember_type: group
+      state: rebuilt
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group membership has been rebuilt no_wait
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      automember_type: group
+      no_wait: yes
+      state: rebuilt
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group membership for given users has been rebuilt
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      users:
+      - testuser
+      state: rebuilt
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure hostgroup membership for given hosts has been rebuilt
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      hosts:
+      - "{{ 'testhost.' + ipaserver_domain }}"
+      state: rebuilt
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group membership for given users has been rebuilt with type group
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      automember_type: group
+      users:
+      - testuser
+      state: rebuilt
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure hostgroup membership for given hosts has been rebuilt with type hostgroup
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      automember_type: hostgroup
+      hosts:
+      - "{{ 'testhost.' + ipaserver_domain }}"
+      state: rebuilt
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group membership rebuild fails with hosts
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      automember_type: group
+      hosts:
+      - "{{ 'testhost.' + ipaserver_domain }}"
+      state: rebuilt
+    register: result
+    failed_when: not result.failed or
+                 "hosts can not be set when type is 'group'" not in result.msg
+
+  - name: Ensure hostgroup membership rebuild fails with users
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      automember_type: hostgroup
+      users:
+      - testuser
+      state: rebuilt
+    register: result
+    failed_when: not result.failed or
+                 "users can not be set when type is 'hostgroup'" not in result.msg
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure user testuser is absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      state: absent
+
+  - name: Ensure host testhost is absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'testhost.' + ipaserver_domain }}"
+      state: absent

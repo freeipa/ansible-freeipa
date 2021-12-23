@@ -1,0 +1,12 @@
+---
+- name: Automember hostgroup membership for given hosts rebuilt example
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure hostgroup membership for given hosts has been rebuilt
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - host1.mydomain.com
+      - host2.mydomain.com
+      state: rebuilt

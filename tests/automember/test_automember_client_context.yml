@@ -13,8 +13,8 @@
     ipaautomember:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: server
-      name: ThisShouldNotWork
-      state: rebuild
+      automember_type: group
+      state: rebuilt
     register: result
     failed_when: not (result.failed and result.msg is regex("No module named '*ipaserver'*"))
     when: ipa_host_is_client

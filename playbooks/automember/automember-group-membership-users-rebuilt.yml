@@ -1,0 +1,12 @@
+---
+- name: Automember group membership for given users rebuilt example
+  hosts: ipaserver
+  become: true
+  tasks:
+  - name: Ensure group membership for given users has been rebuilt
+    ipaautomember:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - user1
+      - user2
+      state: rebuilt
