@@ -16,6 +16,7 @@ readme: "README.md"
 license: "GPL-3.0-or-later"
 
 tags:
+  - "linux"
   - "system"
   - "identity"
   - "ipa"
