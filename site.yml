@@ -1,8 +1,0 @@
----
-- name: Playbook to install IPA clients
-  hosts: ipaclients
-  become: true
-
-  roles:
-  - role: ipaclient
-    state: present
