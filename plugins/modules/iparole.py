@@ -193,7 +193,9 @@ def ensure_absent_state(module, name, action, res_find):
         _members = module.params_get_lowercase("privilege")
         if _members is not None:
             del_list = gen_intersection_list(
-                _members, get_lowercase(res_find, "memberof_privilege"))
+                _members,
+                result_get_value_lowercase(res_find, "memberof_privilege")
+            )
             if del_list:
                 commands.append([name, "role_remove_privilege",
                                  {"privilege": del_list}])
@@ -203,7 +205,9 @@ def ensure_absent_state(module, name, action, res_find):
             _members = module.params_get_lowercase(key)
             if _members:
                 del_list = gen_intersection_list(
-                    _members, get_lowercase(res_find, "member_%s" % key))
+                    _members,
+                    result_get_value_lowercase(res_find, "member_%s" % key)
+                )
                 if del_list:
                     member_args[key] = del_list
 
@@ -217,7 +221,7 @@ def ensure_absent_state(module, name, action, res_find):
 
         _services = get_service_param(module, "service")
         if _services:
-            _existing = get_lowercase(res_find, "member_service")
+            _existing = result_get_value_lowercase(res_find, "member_service")
             items = gen_intersection_list(_services.keys(), _existing)
             if items:
                 member_args["service"] = [_services[key] for key in items]
@@ -251,11 +255,15 @@ def get_service_param(module, key):
     return _services
 
 
-def get_lowercase(res_find, key, default=None):
+def result_get_value_lowercase(res_find, key, default=None):
     """
     Retrieve a member of a dictionary converted to lowercase.
 
-    If 'key' is not found in the dictionary, return 'default'.
+    If field data is a string it is returned in lowercase. If
+    field data is a list or tuple, it is assumed that all values
+    are strings and the result is a list of strings in lowercase.
+
+    If 'key' is not found in the dictionary, returns 'default'.
     """
     existing = res_find.get(key)
     if existing is not None:
@@ -289,7 +297,9 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
     _members = module.params_get_lowercase("privilege")
     if _members:
         add_list, del_list = gen_add_del_lists(
-            _members, get_lowercase(res_find, "memberof_privilege"))
+            _members,
+            result_get_value_lowercase(res_find, "memberof_privilege")
+        )
 
         if add_list:
             commands.append([name, "role_add_privilege",
@@ -305,7 +315,9 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
         _members = module.params_get_lowercase(key)
         if _members is not None:
             add_list, del_list = gen_add_del_lists(
-                _members, get_lowercase(res_find, "member_%s" % key))
+                _members,
+                result_get_value_lowercase(res_find, "member_%s" % key)
+            )
             if add_list:
                 add_members[key] = add_list
             if del_list:
