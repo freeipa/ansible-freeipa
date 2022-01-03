@@ -62,15 +62,15 @@ password:
 
 import os
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
     check_imports,
-    setup_logging, options, paths, read_cache, ipa_generate_password
+    setup_logging, options, paths, read_cache, ipa_generate_password,
+    IPAAnsibleModule
 )
 
 
 def main():
-    module = AnsibleModule(
+    module = IPAAnsibleModule(
         argument_spec=dict(
             # basic
             dm_password=dict(required=True, type='str', no_log=True),
@@ -98,8 +98,10 @@ def main():
     if not options.master_password:
         options.master_password = ipa_generate_password()
 
-    module.exit_json(changed=True,
-                     password=options.master_password)
+    module.exit_raw_json(
+        changed=True,
+        password=options.master_password
+    )
 
 
 if __name__ == '__main__':

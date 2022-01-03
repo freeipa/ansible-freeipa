@@ -44,7 +44,7 @@ __all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
            "check_available_memory", "getargspec", "get_min_idstart",
            "paths", "api", "ipautil", "adtrust_imported", "NUM_VERSION",
            "time_service", "kra_imported", "dsinstance", "IPA_PYTHON_VERSION",
-           "NUM_VERSION"]
+           "NUM_VERSION", "IPAAnsibleModule"]
 
 import sys
 import logging
@@ -74,6 +74,8 @@ except ImportError:
 
 try:
     from contextlib import contextmanager as contextlib_contextmanager
+    from ansible.module_utils.basic import AnsibleModule
+    from ansible.module_utils.common.text.converters import jsonify
     from ansible.module_utils import six
     import base64
 
@@ -449,6 +451,28 @@ def decode_certificate(cert):
     else:
         cert = base64.b64decode(cert)
     return cert
+
+
+class IPAAnsibleModule(AnsibleModule):  # pylint: disable=R0903
+
+    def exit_raw_json(self, **kwargs):
+        """
+        Print the raw parameters in JSON format, without masking.
+
+        Due to Ansible filtering out values in the output that match values
+        in variables which has `no_log` set, if a module need to return
+        user defined dato to the controller, it cannot rely on
+        AnsibleModule.exit_json, as there is a chance that a partial match
+        may occur, masking the data returned.
+
+        This method is a replacement for AnsibleModule.exit_json. It has
+        nearly the same implementation as exit_json, but does not filter
+        data. Beware that this data will be logged by Ansible, and if it
+        contains sensible data, it will be appear in the logs.
+        """
+        self.do_cleanup_files()
+        print(jsonify(kwargs))
+        sys.exit(0)
 
 
 def check_imports(module):

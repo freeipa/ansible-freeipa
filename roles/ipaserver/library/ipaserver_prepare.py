@@ -219,19 +219,18 @@ RETURN = '''
 
 import os
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
     check_imports, AnsibleModuleLog, setup_logging, options, sysrestore,
     paths, ansible_module_get_parsed_ip_addresses,
     redirect_stdout, adtrust, api, default_subject_base,
     default_ca_subject_dn, ipautil, installutils, ca, kra, dns,
     get_server_ip_address, no_matching_interface_for_ip_address_warning,
-    services, logger, tasks, update_hosts_file, ScriptError
+    services, logger, tasks, update_hosts_file, ScriptError, IPAAnsibleModule
 )
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # basic
             force=dict(required=False, type='bool', default=False),
@@ -475,7 +474,7 @@ def main():
             ipautil.CalledProcessError) as err:
         ansible_module.fail_json(msg=str(err))
 
-    ansible_module.exit_json(
+    ansible_module.exit_raw_json(
         changed=True,
         # basic
         ip_addresses=[str(ip) for ip in ip_addresses],
