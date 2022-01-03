@@ -168,18 +168,17 @@ RETURN = '''
 
 import os
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
     check_imports, AnsibleModuleLog, setup_logging, installer, DN, paths,
     ansible_module_get_parsed_ip_addresses,
     gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
     gen_ReplicaConfig, gen_remote_api, api, redirect_stdout, ipaldap,
-    install_ca_cert
+    install_ca_cert, IPAAnsibleModule
 )
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # basic
             dm_password=dict(required=False, type='str', no_log=True),
@@ -333,9 +332,11 @@ def main():
 
     # done #
 
-    ansible_module.exit_json(changed=True,
-                             config_master_host_name=config.master_host_name,
-                             config_ca_host_name=config.ca_host_name)
+    ansible_module.exit_raw_json(
+        changed=True,
+        config_master_host_name=config.master_host_name,
+        config_ca_host_name=config.ca_host_name
+    )
 
 
 if __name__ == '__main__':
