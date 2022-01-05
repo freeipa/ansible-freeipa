@@ -36,6 +36,7 @@
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: renamerole
       rename: testrole
+      state: renamed
     register: result
     failed_when: not result.changed or result.failed
 
@@ -47,8 +48,9 @@
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: renamerole
       rename: testrole
+      state: renamed
     register: result
-    failed_when: result.changed
+    failed_when: result.changed or (not result.failed and "No role 'renamerole'" not in result.msg)
 
   - name: Ensure role has member has privileges.
     iparole:

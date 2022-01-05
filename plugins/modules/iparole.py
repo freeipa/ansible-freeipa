@@ -72,7 +72,7 @@ options:
     required: false
   state:
     description: The state to ensure.
-    choices: ["present", "absent"]
+    choices: ["present", "absent", "renamed"]
     default: present
     required: true
 """
@@ -145,9 +145,22 @@ def check_parameters(module):
 
     invalid = []
 
-    if state == "present":
+    if state == "renamed":
         if action == "member":
-            invalid.extend(['description', 'rename'])
+            module.fail_json(
+                msg="Invalid action 'member' with state 'renamed'.")
+        invalid = [
+            "description",
+            "user", "group",
+            "host", "hostgroup",
+            "service",
+            "privilege",
+        ]
+
+    if state == "present":
+        invalid = ["rename"]
+        if action == "member":
+            invalid.extend(['description'])
 
     if state == "absent":
         invalid.extend(['description', 'rename'])
@@ -335,17 +348,20 @@ def role_commands_for_name(module, state, action, name):
     """Define commands for the Role module."""
     commands = []
 
-    rename = module.params_get("rename")
-
     res_find = find_role(module, name)
+
+    if state == "renamed":
+        args = gen_args(module)
+        if res_find is None:
+            module.fail_json(msg="No role '%s'" % name)
+        else:
+            commands.append([name, 'role_mod', args])
 
     if state == "present":
         args = gen_args(module)
 
         if action == "role":
             if res_find is None:
-                if rename is not None:
-                    module.fail_json(msg="Cannot `rename` inexistent role.")
                 commands.append([name, 'role_add', args])
                 res_find = {}
             else:
@@ -391,7 +407,7 @@ def create_module():
             action=dict(type="str", default="role",
                         choices=["role", "member"]),
             state=dict(type="str", default="present",
-                       choices=["present", "absent"]),
+                       choices=["present", "absent", "renamed"]),
         ),
         supports_check_mode=True,
         mutually_exclusive=[],
