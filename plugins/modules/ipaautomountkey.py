@@ -20,6 +20,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
+
 ANSIBLE_METADATA = {
     "metadata_version": "1.0",
     "supported_by": "community",
@@ -54,18 +58,18 @@ options:
     required: True
     choices: ["name", "automountkey"]
   newkey:
-    description: key to change to if state=rename
+    description: key to change to if state is 'renamed'
     required: True
     choices: ["newname", "newautomountkey"]
   info:
     description: Mount information for the key
     required: True
-    choices: ["information", "newinfo", "automountinformation"]
+    choices: ["information", "automountinformation"]
   state:
     description: State to ensure
     required: False
     default: present
-    choices: ["present", "absent", "rename"]
+    choices: ["present", "absent", "renamed"]
 '''
 
 EXAMPLES = '''
@@ -91,126 +95,140 @@ RETURN = '''
 '''
 
 from ansible.module_utils.ansible_freeipa_module import (
-    FreeIPABaseModule, ipalib_errors
+    IPAAnsibleModule, ipalib_errors
 )
 
 
-class AutomountKey(FreeIPABaseModule):
+class AutomountKey(IPAAnsibleModule):
 
-    ipa_param_mapping = {
-        'automountkey': "key",
-        'automountmapautomountmapname': "mapname",
-    }
+    def __init__(self, *args, **kwargs):
+        # pylint: disable=super-with-arguments
+        super(AutomountKey, self).__init__(*args, **kwargs)
+        self.commands = []
 
-    def get_key(self, location, mapname, keyname):
-        resp = dict()
+    def get_key(self, location, mapname, key):
         try:
-            resp = self.api_command("automountkey_show",
-                                    location,
-                                    {"automountmapautomountmapname": mapname,
-                                     "automountkey": keyname})
+            args = {
+                "automountmapautomountmapname": mapname,
+                "automountkey": key,
+                "all": True,
+            }
+            resp = self.ipa_command("automountkey_show", location, args)
         except ipalib_errors.NotFound:
-            pass
-
-        return resp.get("result", None)
+            return None
+        else:
+            return resp.get("result")
 
     def check_ipa_params(self):
-        if not self.ipa_params.info and self.ipa_params.state == "present":
-            self.fail_json(msg="Value required for argument 'info'")
+        invalid = []
+        state = self.params_get("state")
+        if state == "present":
+            invalid = ["rename"]
+            if not self.params_get("info"):
+                self.fail_json(msg="Value required for argument 'info'")
 
-        if self.ipa_params.state == "rename" and \
-           self.ipa_params.newname is None:
-            self.fail_json(msg="newname is required if state = 'rename'")
+        if state == "rename":
+            invalid = ["info"]
+            if not self.params_get("rename"):
+                self.fail_json(msg="Value required for argument 'renamed'")
+
+        if state == "absent":
+            invalid = ["info", "rename"]
+
+        self.params_fail_used_invalid(invalid, state)
+
+    @staticmethod
+    def get_args(mapname, key, info, rename):
+        _args = {}
+        if mapname:
+            _args["automountmapautomountmapname"] = mapname
+        if key:
+            _args["automountkey"] = key
+        if info:
+            _args["automountinformation"] = info
+        if rename:
+            _args["rename"] = rename
+        return _args
 
     def define_ipa_commands(self):
-        args = self.get_ipa_command_args()
-        key = self.get_key(self.ipa_params.location,
-                           self.ipa_params.mapname,
-                           self.ipa_params.key)
+        state = self.params_get("state")
+        location = self.params_get("location")
+        mapname = self.params_get("mapname")
+        key = self.params_get("key")
+        info = self.params_get("info")
+        rename = self.params_get("rename")
 
-        if self.ipa_params.state == "present":
-            if key is None:
+        args = self.get_args(mapname, key, info, rename)
+
+        res_find = self.get_key(location, mapname, key)
+
+        if state == "present":
+            if res_find is None:
                 # does not exist and is wanted
-                args["automountinformation"] = self.ipa_params.info
-                self.add_ipa_command(
-                    "automountkey_add",
-                    name=self.ipa_params.location,
-                    args=args
-                )
-            elif key is not None:
+                self.commands.append([location, "automountkey_add", args])
+            else:
                 # exists and is wanted, check for changes
-                if self.ipa_params.info != \
-                        key.get('automountinformation', [None])[0]:
-                    args["newautomountinformation"] = self.ipa_params.info
-                    self.add_ipa_command(
-                        "automountkey_mod",
-                        name=self.ipa_params.location,
-                        args=args
-                    )
-        elif self.ipa_params.state == "rename":
-            if key is not None:
-                newkey = self.get_key(self.ipa_params.location,
-                                      self.ipa_params.mapname,
-                                      self.ipa_params.newname)
+                if info not in res_find.get("automountinformation"):
+                    self.commands.append([location, "automountkey_mod", args])
 
-                args["rename"] = self.ipa_params.newname
-                if newkey is None:
-                    self.add_ipa_command(
-                        "automountkey_mod",
-                        name=self.ipa_params.location,
-                        args=args
+        if state == "renamed":
+            if res_find is None:
+                self.fail_json(
+                    msg=(
+                        "Cannot rename inexistent key: '%s', '%s', '%s'"
+                        % (location, mapname, key)
                     )
-        else:
-            # if key exists and self.ipa_params.state == "absent":
-            if key is not None:
-                self.add_ipa_command(
-                    "automountkey_del",
-                    name=self.ipa_params.location,
-                    args=args
                 )
+            self.commands.append([location, "automountkey_mod", args])
+
+        if state == "absent":
+            # if key exists and self.ipa_params.state == "absent":
+            if res_find is not None:
+                self.commands.append([location, "automountkey_del", args])
 
 
 def main():
     ipa_module = AutomountKey(
         argument_spec=dict(
-            ipaadmin_principal=dict(type="str",
-                                    default="admin"
-                                    ),
-            ipaadmin_password=dict(type="str",
-                                   required=False,
-                                   no_log=True
-                                   ),
-            state=dict(type='str',
-                       default='present',
-                       choices=['present', 'absent', 'rename']
-                       ),
-            location=dict(type="str",
-                          aliases=["automountlocationcn", "automountlocation"],
-                          default=None,
-                          required=True
-                          ),
-            newname=dict(type="str",
-                         aliases=["newkey", "new_name",
-                                  "new_key", "newautomountkey"],
-                         default=None,
-                         required=False
-                         ),
-            mapname=dict(type="str",
-                         aliases=["map", "automountmapname", "automountmap"],
-                         default=None,
-                         required=True
-                         ),
-            key=dict(type="str",
-                     required=True,
-                     aliases=["name", "automountkey"]
-                     ),
-            info=dict(type="str",
-                      aliases=["information", "newinfo",
-                               "automountinformation"]
-                      ),
+            state=dict(
+                type='str',
+                choices=['present', 'absent', 'renamed'],
+                required=None,
+                default='present',
+            ),
+            location=dict(
+                type="str",
+                aliases=["automountlocationcn", "automountlocation"],
+                required=True,
+            ),
+            rename=dict(
+                type="str",
+                aliases=["new_name", "newautomountkey"],
+                required=False,
+            ),
+            mapname=dict(
+                type="str",
+                aliases=["map", "automountmapname", "automountmap"],
+                required=True,
+            ),
+            key=dict(
+                type="str",
+                aliases=["name", "automountkey"],
+                required=True,
+            ),
+            info=dict(
+                type="str",
+                aliases=["information", "automountinformation"],
+                required=False,
+            ),
         ),
     )
-    ipa_module.ipa_run()
+    ipaapi_context = ipa_module.params_get("ipaapi_context")
+    with ipa_module.ipa_connect(context=ipaapi_context):
+        ipa_module.check_ipa_params()
+        ipa_module.define_ipa_commands()
+        changed = ipa_module.execute_ipa_commands(ipa_module.commands)
+    ipa_module.exit_json(changed=changed)
 
 
 if __name__ == "__main__":

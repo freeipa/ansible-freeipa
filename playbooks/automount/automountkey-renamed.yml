@@ -1,0 +1,13 @@
+---
+- name: Playbook to manage an automount key
+  hosts: ipaserver
+
+  tasks:
+  - name: Ensure aumount key TestKey is renamed to NewKeyName
+    ipaautomountkey:
+      ipaadmin_password: password01
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: TestKey
+      newname: NewKeyName
+      state: renamed

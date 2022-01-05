@@ -4,7 +4,7 @@ Automountkey module
 Description
 -----------
 
-The automountkey module allows the addition and removal of keys within an automount map. 
+The automountkey module allows management of keys within an automount map.
 
 It is desgined to follow the IPA api as closely as possible while ensuring ease of use.
 
@@ -38,16 +38,15 @@ ipaserver.test.local
 ```
 
 
-Example playbook to ensure presence of an automount map:
+Example playbook to ensure presence of an automount key:
 
 ```yaml
 ---
-- name: Playbook to add an automount map
+- name: Playbook to manage automount key
   hosts: ipaserver
-  become: true
 
   tasks:
-  - name: create key TestKey
+  - name: ensure automount key TestKey is present
     ipaautomountkey:
       ipaadmin_password: SomeADMINpassword
       location: TestLocation
@@ -55,8 +54,35 @@ Example playbook to ensure presence of an automount map:
       key: TestKey
       info: 192.168.122.1:/exports
       state: present
+```
 
-  - name: ensure key TestKey is absent
+Example playbook to rename an automount map:
+
+```yaml
+---
+- name: Playbook to add an automount map
+  hosts: ipaserver
+
+  tasks:
+  - name: ensure aumount key TestKey is renamed to NewKeyName
+    ipaautomountkey:
+      ipaadmin_password: password01
+      automountlocationcn: TestLocation
+      automountmapname: TestMap
+      automountkey: TestKey
+      newname: NewKeyName
+      state: renamed
+```
+
+Example playbook to ensure an automount key is absent:
+
+```yaml
+---
+- name: Playbook to manage an automount key
+  hosts: ipaserver
+
+  tasks:
+  - name: ensure automount key TestKey is absent
     ipaautomountkey:
       ipaadmin_password: SomeADMINpassword
       location: TestLocation
@@ -65,38 +91,20 @@ Example playbook to ensure presence of an automount map:
       state: absent
 ```
 
-Example playbook to rename an automount map:
-
-```yaml
----
-- name: Playbook to add an automount map
-  - name: ensure key TestKey has been renamed to NewKeyName
-    ipaautomountkey:
-      ipaadmin_password: password01
-      automountlocationcn: TestLocation
-      automountmapname: TestMap
-      automountkey: TestKey
-      newname: NewKeyName
-      state: rename
-```
-
 
 Variables
 =========
-
-ipaautomountkey
--------
 
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
-`location` \| `automountlocationcn` \| `automountlocation` | Location name. | yes 
-`mapname` \|  `map` \| `automountmapname` \| `automountmap` | Map the key belongs to | yes 
-`key` \| `name` \| `automountkey` | Automount key to manage | yes 
-`newkey` \| newname` \| `newautomountkey` | the name to change the key to if state is `rename` | yes when state is `rename`
+`location` \| `automountlocationcn` \| `automountlocation` | Location name. | yes
+`mapname` \|  `map` \| `automountmapname` \| `automountmap` | Map the key belongs to | yes
+`key` \| `name` \| `automountkey` | Automount key to manage | yes
+`rename` \| `new_name` \| `newautomountkey` | the name to change the key to if state is `renamed` | yes when state is `renamed`
 `info` \| `information` \| `automountinformation` | Mount information for the key | yes when state is `present`
-`state` | The state to ensure. It can be one of `present`, or `absent`, default: `present`. | no
+`state` | The state to ensure. It can be one of `present`, `absent` or `renamed`, default: `present`. | no
 
 Authors
 =======
