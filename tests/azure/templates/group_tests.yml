@@ -38,3 +38,4 @@ jobs:
   parameters:
     build_number: ${{ parameters.build_number }}
     scenario: ${{ parameters.scenario }}
+    ansible_version: ${{ parameters.ansible_version }}
