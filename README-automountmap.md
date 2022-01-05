@@ -4,7 +4,7 @@ Automountmap module
 Description
 -----------
 
-The automountmap module allows the addition and removal of maps within automount locations. 
+The automountmap module allows the addition and removal of maps within automount locations.
 
 It is desgined to follow the IPA api as closely as possible while ensuring ease of use.
 
@@ -37,14 +37,13 @@ Example inventory file
 ipaserver.test.local
 ```
 
-
 Example playbook to ensure presence of an automount map:
 
 ```yaml
 ---
 - name: Playbook to add an automount map
   hosts: ipaserver
-  become: true
+  become: no
 
   tasks:
   - name: ensure map named auto.DMZ in location DMZ is created
@@ -55,29 +54,26 @@ Example playbook to ensure presence of an automount map:
       desc: "this is a map for servers in the DMZ"
 ```
 
+Example playbook to ensure auto.DMZi is absent:
 
-Example playbook to ensure auto.DMZi does not exist
 ```yaml
 ---
 - name: Playbook to remove an automount map
   hosts: ipaserver
-  become: true
+  become: no
 
   tasks:
   - name: ensure map auto.DMZ has been removed
     ipaautomountmap:
       ipaadmin_password: SomeADMINpassword
       name: auto.DMZ
-      location: DMX
+      location: DMZ
       state: absent
 ```
 
 
 Variables
 =========
-
-ipaautomountmap
--------
 
 Variable | Description | Required
 -------- | ----------- | --------
@@ -88,6 +84,11 @@ Variable | Description | Required
 `desc` \| `description` | Description of the map | yes
 `state` | The state to ensure. It can be one of `present`, or `absent`, default: `present`. | no
 
+
+Notes
+=====
+
+Creation of indirect mount points are not supported.
 
 Authors
 =======

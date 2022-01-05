@@ -19,6 +19,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import (absolute_import, division, print_function)
+
+__metaclass__ = type
+
 ANSIBLE_METADATA = {
     "metadata_version": "1.0",
     "supported_by": "community",
@@ -29,27 +33,27 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaautomountmap
-author: chris procter
+author: Chris Procter
 short_description: Manage FreeIPA autommount map
 description:
 - Add, delete, and modify an IPA automount map
 options:
   ipaadmin_principal:
-    description: The admin principal
+    description: The admin principal.
     default: admin
   ipaadmin_password:
-    description: The admin password
+    description: The admin password.
     required: false
   automountlocation:
     description: automount location map is anchored to
     choices: ["location", "automountlocationcn"]
     required: True
   name:
-    description: automount map to be managed
+    description: automount map to be managed.
     choices: ["mapname", "map", "automountmapname"]
     required: True
   desc:
-    description: description of automount map
+    description: description of automount map.
     choices: ["description"]
     required: false
   state:
@@ -78,84 +82,85 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-from ansible.module_utils.ansible_freeipa_module import FreeIPABaseModule
+from ansible.module_utils.ansible_freeipa_module import (
+    IPAAnsibleModule, compare_args_ipa
+)
 
 
-class AutomountMap(FreeIPABaseModule):
+class AutomountMap(IPAAnsibleModule):
 
-    ipa_param_mapping = {
-        "automountmapname": "name",
-    }
+    def __init__(self, *args, **kwargs):
+        # pylint: disable=super-with-arguments
+        super(AutomountMap, self).__init__(*args, **kwargs)
+        self.commands = []
 
-    def get_map(self, location, name):
-        response = dict()
+    def get_automountmap(self, location, name):
         try:
-            response = self.api_command("automountmap_show",
-                                        location,
-                                        {"automountmapname": name})
-        except Exception:
-            pass
-
-        return response.get("result", None)
+            response = self.ipa_command(
+                "automountmap_show",
+                location,
+                {"automountmapname": name, "all": True}
+            )
+        except Exception:  # pylint: disable=broad-except
+            return None
+        else:
+            return response["result"]
 
     def check_ipa_params(self):
-
-        if self.ipa_params.state == "present":
-            if len(self.ipa_params.name) != 1:
+        invalid = []
+        name = self.params_get("name")
+        state = self.params_get("state")
+        if state == "present":
+            if len(name) != 1:
                 self.fail_json(msg="Exactly one name must be provided \
                                 for state=present.")
-        else:
-            if len(self.ipa_params.name) == 0 :
-                self.fail_json(msg="At least one name must be provided \
-                                when state=absent.")
+        if state == "absent":
+            if len(name) == 0 :
+                self.fail_json(msg="Argument 'map_type' can not be used with "
+                                   "state 'absent'")
+            invalid = ["desc"]
+
+        self.params_fail_used_invalid(invalid, state)
+
+    def get_args(self, mapname, desc):  # pylint: disable=no-self-use
+        _args = {}
+        if mapname:
+            _args["automountmapname"] = mapname
+        if desc:
+            _args["description"] = desc
+        return _args
 
     def define_ipa_commands(self):
-        args = self.get_ipa_command_args()
+        name = self.params_get("name")
+        state = self.params_get("state")
+        location = self.params_get("location")
+        desc = self.params_get("desc")
 
-        if self.ipa_params.state == "present":
-            automountmap = self.get_map(self.ipa_params.location,
-                                        self.ipa_params.name[0])
-            args['automountmapname'] = self.ipa_params.name[0]
-            if automountmap is None:
-                # does not exist and is wanted
-                self.add_ipa_command(
-                    "automountmap_add",
-                    name=self.ipa_params.location,
-                    args=args
-                )
-            else:
-                # exists and is wanted, check for changes
-                if self.ipa_params.desc != \
-                        automountmap.get('description', [None])[0]:
-                    args['description'] = self.ipa_params.desc
-                    self.add_ipa_command(
-                        "automountmap_mod",
-                        name=self.ipa_params.location,
-                        args=args
-                    )
-        else:
-            # exists and is not wanted (i.e. self.ipa_params.state == "absent")
-            to_del = [x for x in self.ipa_params.name
-                      if self.get_map(self.ipa_params.location, x) is not None]
+        for mapname in name:
+            automountmap = self.get_automountmap(location, mapname)
 
-            if len(to_del) > 0:
-                self.add_ipa_command(
-                    "automountmap_del",
-                    name=self.ipa_params.location,
-                    args={"automountmapname": to_del}
-                )
+            if state == "present":
+                args = self.get_args(mapname, desc)
+                if automountmap is None:
+                    self.commands.append([location, "automountmap_add", args])
+                else:
+                    if not compare_args_ipa(self, args, automountmap):
+                        self.commands.append(
+                            [location, "automountmap_mod", args]
+                        )
+
+            if state == "absent":
+                if automountmap is not None:
+                    self.commands.append([
+                        location,
+                        "automountmap_del",
+                        {"automountmapname": [mapname]}
+                    ])
 
 
 def main():
     ipa_module = AutomountMap(
         argument_spec=dict(
-            ipaadmin_principal=dict(type="str",
-                                    default="admin"
-                                    ),
-            ipaadmin_password=dict(type="str",
-                                   required=False,
-                                   no_log=True
-                                   ),
             state=dict(type='str',
                        default='present',
                        choices=['present', 'absent']
@@ -177,7 +182,13 @@ def main():
                       ),
         ),
     )
-    ipa_module.ipa_run()
+    changed = False
+    ipaapi_context = ipa_module.params_get("ipaapi_context")
+    with ipa_module.ipa_connect(context=ipaapi_context):
+        ipa_module.check_ipa_params()
+        ipa_module.define_ipa_commands()
+        changed = ipa_module.execute_ipa_commands(ipa_module.commands)
+    ipa_module.exit_json(changed=changed)
 
 
 if __name__ == "__main__":

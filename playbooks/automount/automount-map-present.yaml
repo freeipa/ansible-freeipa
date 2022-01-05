@@ -1,7 +1,8 @@
 ---
 - name: Automount map present example
   hosts: ipaserver
-  become: true
+  become: no
+
   tasks:
   - name: ensure map TestMap is present
     ipaautomountmap:
@@ -9,4 +10,3 @@
       name: TestMap
       location: TestLocation
       desc: "this is a test map"
-
