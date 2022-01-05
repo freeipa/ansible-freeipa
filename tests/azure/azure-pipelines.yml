@@ -18,6 +18,17 @@ stages:
       scenario: fedora-latest
       ansible_version: ">=2.9,<2.10"
 
+# CentOS 9
+
+- stage: CentOS9_Ansible_2_9
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: centos-9
+      ansible_version: ">=2.9,<2.10"
+
 # CentOS 8
 
 - stage: CentOS8_Ansible_2_9
