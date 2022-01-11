@@ -1,0 +1,17 @@
+---
+name: ansible-test sanity
+on:
+  - push
+  - pull_request
+jobs:
+  ansible_test:
+    name: Verify ansible-test sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install virtualenv using pip
+        run: pip install virtualenv
+      - name: Run ansible-test
+        run: bash tests/sanity/sanity.sh
