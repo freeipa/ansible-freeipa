@@ -1,0 +1,12 @@
+---
+- name: Automount map present example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: ensure map TestMap is present
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: TestMap
+      location: TestLocation
+      desc: "this is a test map"
