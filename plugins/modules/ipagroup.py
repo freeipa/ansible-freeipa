@@ -376,6 +376,13 @@ def main():
             # Make sure group exists
             res_find = find_group(ansible_module, name)
 
+            user_add, user_del = [], []
+            group_add, group_del = [], []
+            service_add, service_del = [], []
+            externalmember_add, externalmember_del = [], []
+            membermanager_user_add, membermanager_user_del = [], []
+            membermanager_group_add, membermanager_group_del = [], []
+
             # Create command
             if state == "present":
                 # Can't change an existing posix group
@@ -440,45 +447,6 @@ def main():
                          externalmember_del) = gen_add_del_lists(
                             externalmember, res_find.get("member_external"))
 
-                        # setup member args for add/remove members.
-                        add_member_args = {
-                            "user": user_add,
-                            "group": group_add,
-                        }
-                        del_member_args = {
-                            "user": user_del,
-                            "group": group_del,
-                        }
-                        if has_add_member_service:
-                            add_member_args["service"] = service_add
-                            del_member_args["service"] = service_del
-
-                        if is_external_group(res_find):
-                            add_member_args["ipaexternalmember"] = \
-                                externalmember_add
-                            del_member_args["ipaexternalmember"] = \
-                                externalmember_del
-                        elif externalmember or external:
-                            ansible_module.fail_json(
-                                msg="Cannot add external members to a "
-                                    "non-external group."
-                            )
-
-                        # Add members
-                        add_members = any([user_add, group_add,
-                                           service_add, externalmember_add])
-                        if add_members:
-                            commands.append(
-                                [name, "group_add_member", add_member_args]
-                            )
-                        # Remove members
-                        remove_members = any([user_del, group_del,
-                                              service_del, externalmember_del])
-                        if remove_members:
-                            commands.append(
-                                [name, "group_remove_member", del_member_args]
-                            )
-
                     membermanager_user_add, membermanager_user_del = \
                         gen_add_del_lists(
                             membermanager_user,
@@ -491,93 +459,30 @@ def main():
                             res_find.get("membermanager_group")
                         )
 
-                    if has_add_membermanager:
-                        # Add membermanager users and groups
-                        if len(membermanager_user_add) > 0 or \
-                           len(membermanager_group_add) > 0:
-                            commands.append(
-                                [name, "group_add_member_manager",
-                                 {
-                                     "user": membermanager_user_add,
-                                     "group": membermanager_group_add,
-                                 }]
-                            )
-                        # Remove member manager
-                        if len(membermanager_user_del) > 0 or \
-                           len(membermanager_group_del) > 0:
-                            commands.append(
-                                [name, "group_remove_member_manager",
-                                 {
-                                     "user": membermanager_user_del,
-                                     "group": membermanager_group_del,
-                                 }]
-                            )
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(msg="No group '%s'" % name)
 
-                    add_member_args = {
-                        "user": user,
-                        "group": group,
-                    }
-                    if has_add_member_service:
-                        add_member_args["service"] = service
-                    if is_external_group(res_find):
-                        add_member_args["ipaexternalmember"] = externalmember
-                    elif externalmember:
-                        ansible_module.fail_json(
-                            msg="Cannot add external members to a "
-                                "non-external group."
-                        )
-
                     # Reduce add lists for member_user, member_group,
                     # member_service and member_external to new entries
                     # only that are not in res_find.
-                    if user is not None and "member_user" in res_find:
-                        user = gen_add_list(
-                            user, res_find["member_user"])
-                    if group is not None and "member_group" in res_find:
-                        group = gen_add_list(
-                            group, res_find["member_group"])
-                    if service is not None and "member_service" in res_find:
-                        service = gen_add_list(
-                            service, res_find["member_service"])
-                    if externalmember is not None \
-                       and "member_external" in res_find:
-                        externalmember = gen_add_list(
-                            externalmember, res_find["member_external"])
+                    user_add = gen_add_list(
+                        user, res_find.get("member_user"))
+                    group_add = gen_add_list(
+                        group, res_find.get("member_group"))
+                    service_add = gen_add_list(
+                        service, res_find.get("member_service"))
+                    externalmember_add = gen_add_list(
+                        externalmember, res_find.get("member_external"))
 
-                    if any([user, group, service, externalmember]):
-                        commands.append(
-                            [name, "group_add_member", add_member_args]
-                        )
-
-                    if has_add_membermanager:
-                        # Reduce add list for membermanager_user and
-                        # membermanager_group to new entries only that are
-                        # not in res_find.
-                        if membermanager_user is not None \
-                           and "membermanager_user" in res_find:
-                            membermanager_user = gen_add_list(
-                                membermanager_user,
-                                res_find["membermanager_user"])
-                        if membermanager_group is not None \
-                           and "membermanager_group" in res_find:
-                            membermanager_group = gen_add_list(
-                                membermanager_group,
-                                res_find["membermanager_group"])
-
-                        # Add membermanager users and groups
-                        if membermanager_user is not None or \
-                           membermanager_group is not None:
-                            commands.append(
-                                [name, "group_add_member_manager",
-                                 {
-                                     "user": membermanager_user,
-                                     "group": membermanager_group,
-                                 }]
-                            )
+                    membermanager_user_add = gen_add_list(
+                        membermanager_user,
+                        res_find.get("membermanager_user")
+                    )
+                    membermanager_group_add = gen_add_list(
+                        membermanager_group,
+                        res_find.get("membermanager_group")
+                    )
 
             elif state == "absent":
                 if action == "group":
@@ -588,70 +493,91 @@ def main():
                     if res_find is None:
                         ansible_module.fail_json(msg="No group '%s'" % name)
 
-                    del_member_args = {
-                        "user": user,
-                        "group": group,
-                    }
-                    if has_add_member_service:
-                        del_member_args["service"] = service
-                    if is_external_group(res_find):
-                        del_member_args["ipaexternalmember"] = externalmember
-                    elif externalmember:
+                    if not is_external_group(res_find) and externalmember:
                         ansible_module.fail_json(
                             msg="Cannot add external members to a "
                                 "non-external group."
                         )
 
-                    # Reduce del lists of member_user, member_group,
-                    # member_service and member_external to the entries only
-                    # that are in res_find.
-                    if user is not None:
-                        user = gen_intersection_list(
-                            user, res_find.get("member_user"))
-                    if group is not None:
-                        group = gen_intersection_list(
-                            group, res_find.get("member_group"))
-                    if service is not None:
-                        service = gen_intersection_list(
-                            service, res_find.get("member_service"))
-                    if externalmember is not None:
-                        externalmember = gen_intersection_list(
-                            externalmember, res_find.get("member_external"))
+                    user_del = gen_intersection_list(
+                        user, res_find.get("member_user"))
+                    group_del = gen_intersection_list(
+                        group, res_find.get("member_group"))
+                    service_del = gen_intersection_list(
+                        service, res_find.get("member_service"))
+                    externalmember_del = gen_intersection_list(
+                        externalmember, res_find.get("member_external"))
 
-                    if any([user, group, service, externalmember]):
-                        commands.append(
-                            [name, "group_remove_member", del_member_args]
-                        )
-
-                    if has_add_membermanager:
-                        # Reduce del lists of membermanager_user and
-                        # membermanager_group to the entries only that are
-                        # in res_find.
-                        if membermanager_user is not None:
-                            membermanager_user = gen_intersection_list(
-                                membermanager_user,
-                                res_find.get("membermanager_user"))
-                        if membermanager_group is not None:
-                            membermanager_group = gen_intersection_list(
-                                membermanager_group,
-                                res_find.get("membermanager_group"))
-
-                        # Remove membermanager users and groups
-                        if membermanager_user is not None or \
-                           membermanager_group is not None:
-                            commands.append(
-                                [name, "group_remove_member_manager",
-                                 {
-                                     "user": membermanager_user,
-                                     "group": membermanager_group,
-                                 }]
-                            )
-
+                    membermanager_user_del = gen_intersection_list(
+                        membermanager_user, res_find.get("membermanager_user"))
+                    membermanager_group_del = gen_intersection_list(
+                        membermanager_group,
+                        res_find.get("membermanager_group")
+                    )
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
-        # Execute commands
+            # manage members
+            # setup member args for add/remove members.
+            add_member_args = {
+                "user": user_add,
+                "group": group_add,
+            }
+            del_member_args = {
+                "user": user_del,
+                "group": group_del,
+            }
+            if has_add_member_service:
+                add_member_args["service"] = service_add
+                del_member_args["service"] = service_del
 
+            if is_external_group(res_find):
+                add_member_args["ipaexternalmember"] = \
+                    externalmember_add
+                del_member_args["ipaexternalmember"] = \
+                    externalmember_del
+            elif externalmember or external:
+                ansible_module.fail_json(
+                    msg="Cannot add external members to a "
+                        "non-external group."
+                )
+            # Add members
+            add_members = any([user_add, group_add,
+                               service_add, externalmember_add])
+            if add_members:
+                commands.append(
+                    [name, "group_add_member", add_member_args]
+                )
+            # Remove members
+            remove_members = any([user_del, group_del,
+                                  service_del, externalmember_del])
+            if remove_members:
+                commands.append(
+                    [name, "group_remove_member", del_member_args]
+                )
+
+            # manage membermanager members
+            if has_add_membermanager:
+                # Add membermanager users and groups
+                if any([membermanager_user_add, membermanager_group_add]):
+                    commands.append(
+                        [name, "group_add_member_manager",
+                         {
+                             "user": membermanager_user_add,
+                             "group": membermanager_group_add,
+                         }]
+                    )
+                # Remove member manager
+                if any([membermanager_user_del, membermanager_group_del]):
+                    commands.append(
+                        [name, "group_remove_member_manager",
+                         {
+                             "user": membermanager_user_del,
+                             "group": membermanager_group_del,
+                         }]
+                    )
+
+        # Execute commands
         changed = ansible_module.execute_ipa_commands(
             commands, fail_on_member_errors=True)
 
