@@ -35,6 +35,7 @@ roles/ipaserver/library/ipaserver_test.py pylint:ansible-format-automatic-specif
 roles/ipareplica/module_utils/ansible_ipa_replica.py pylint:ansible-format-automatic-specification
 tests/external-signed-ca-with-automatic-copy/external-ca.sh shebang!skip
 tests/pytests/conftest.py pylint:ansible-format-automatic-specification
+tests/sanity/sanity.sh shebang!skip
 tests/user/users.sh shebang!skip
 tests/user/users_absent.sh shebang!skip
 tests/utils.py pylint:ansible-format-automatic-specification
