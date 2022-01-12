@@ -875,10 +875,11 @@ else:
             """
             return api_command_no_name(self, command, args)
 
-        @staticmethod
-        def ipa_get_domain():
+        def ipa_get_domain(self):
             """Retrieve IPA API domain."""
-            return api_get_domain()
+            if not hasattr(self, "__ipa_api_domain"):
+                setattr(self, "__ipa_api_domain", api_get_domain())
+            return getattr(self, "__ipa_api_domain")
 
         @staticmethod
         def ipa_get_realm():
