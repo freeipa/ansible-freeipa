@@ -1,0 +1,12 @@
+---
+- name: Playbook to manage an automount key
+  hosts: ipaserver
+
+  tasks:
+  - name: Ensure autmount key is present
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      location: TestLocation
+      mapname: TestMap
+      key: TestKey
+      state: absent

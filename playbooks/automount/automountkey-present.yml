@@ -1,0 +1,13 @@
+---
+- name: Playbook to manage an automout key
+  hosts: ipaserver
+
+  tasks:
+  - name: Ensure autmount key is present
+    ipaautomountkey:
+      ipaadmin_password: SomeADMINpassword
+      location: TestLocation
+      mapname: TestMap
+      key: TestKey
+      info: 192.168.122.1:/exports
+      state: present
