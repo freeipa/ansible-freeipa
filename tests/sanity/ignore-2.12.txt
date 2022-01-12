@@ -23,6 +23,8 @@ plugins/modules/ipaserver_setup_ca.py import-2.6!skip
 plugins/modules/ipaserver_test.py pylint:ansible-format-automatic-specification
 plugins/modules/ipaservice.py compile-2.6!skip
 plugins/modules/ipaservice.py import-2.6!skip
+plugins/modules/ipasudorule.py compile-2.6!skip
+plugins/modules/ipasudorule.py import-2.6!skip
 plugins/modules/ipavault.py compile-2.6!skip
 plugins/modules/ipavault.py import-2.6!skip
 roles/ipaclient/library/ipaclient_api.py pylint:ansible-format-automatic-specification
