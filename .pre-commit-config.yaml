@@ -38,8 +38,10 @@ repos:
     entry: utils/ansible-doc-test
     # args: ['-v', 'roles', 'plugins']
     files: ^.*.py$
-- repo: https://github.com/koalaman/shellcheck-precommit
-  rev: v0.8.0
+- repo: local
   hooks:
   - id: shellcheck
-    args: ["--severity=warning"]  # Only show errors and warnings
+    name: ShellCheck
+    language: system
+    entry: shellcheck
+    files: \.sh$
