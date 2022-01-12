@@ -1,0 +1,151 @@
+---
+- name: Test sudorule with single hostnames.
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  tasks:
+  - block:
+    # setup test environment
+    - name: Get Domain from the server name
+      set_fact:
+        ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+      when: ipaserver_domain is not defined
+
+    - name: Ensure test sudo rule is absent
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        state: absent
+
+    - name: Ensure test host exist
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        hosts:
+          - name: "host01.{{ ipaserver_domain }}"
+            force: yes
+          - name: "host02.{{ ipaserver_domain }}"
+            force: yes
+
+    # start tests
+    - name: Ensure sudorule exist with host member using FQDN.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        host: "host01.{{ ipaserver_domain }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure sudorule host member using short hostname.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        host: host01
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule exist with another host using short name.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        host: host02
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure sudorule exist with another host member using FQDN.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        host: "host02.{{ ipaserver_domain }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule exist with another host member using FQDN.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        host: "host02.{{ ipaserver_domain }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    # cleanup for member tests.
+    - name: Ensure test sudo rule is absent
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        state: absent
+
+    - name: Ensure test sudo rule is absent
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        state: absent
+
+    # member tests
+    - name: Ensure test sudo rule is present
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+
+    - name: Ensure sudorule host member using FQDN.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        host: "host01.{{ ipaserver_domain }}"
+        action: member
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure sudorule host member using short hostname.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        host: host01
+        action: member
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure test sudo rule is absent
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        state: absent
+
+    - name: Ensure test sudo rule is present
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+
+    - name: Ensure sudorule host member using FQDN.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        host: "host01.{{ ipaserver_domain }}"
+        action: member
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure sudorule host member using short hostname.
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        host: host01
+        action: member
+      register: result
+      failed_when: result.failed or result.changed
+
+    always:
+    # cleanup
+    - name: Ensure test sudo rule is absent
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        name: sudorule_for_hosts
+        state: absent
+
+    - name: Ensure test host is absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        name:
+          - "host01.{{ ipaserver_domain }}"
+          - "host02.{{ ipaserver_domain }}"
+        state: absent
