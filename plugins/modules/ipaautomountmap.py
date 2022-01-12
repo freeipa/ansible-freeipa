@@ -115,7 +115,7 @@ class AutomountMap(IPAAnsibleModule):
                 self.fail_json(msg="Exactly one name must be provided \
                                 for state=present.")
         if state == "absent":
-            if len(name) == 0 :
+            if len(name) == 0:
                 self.fail_json(msg="Argument 'map_type' can not be used with "
                                    "state 'absent'")
             invalid = ["desc"]
