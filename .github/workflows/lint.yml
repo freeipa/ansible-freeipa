@@ -13,15 +13,9 @@ jobs:
         with:
           python-version: "3.x"
       - name: Run ansible-lint
-        uses: ansible/ansible-lint-action@master
-        with:
-          targets: |
-            tests/*.yml
-            tests/*/*.yml
-            tests/*/*/*.yml
-            playbooks/*.yml
-            playbooks/*/*.yml
-            roles/*/*/*.yml
+        run: |
+          pip install ansible-core==2.11.6 ansible-lint
+          find playbooks roles tests -name '*.yml' ! -name "env_*" ! -name "tasks_*" -exec ansible-lint --force-color {} \+
         env:
           ANSIBLE_MODULE_UTILS: plugins/module_utils
           ANSIBLE_LIBRARY: plugins/modules
