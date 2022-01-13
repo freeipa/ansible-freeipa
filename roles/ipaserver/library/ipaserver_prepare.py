@@ -393,8 +393,8 @@ def main():
                 ansible_log.info("Disabled p11-kit-proxy")
 
     except (RuntimeError, ValueError, ScriptError,
-            ipautil.CalledProcessError) as e:
-        ansible_module.fail_json(msg=str(e))
+            ipautil.CalledProcessError) as err:
+        ansible_module.fail_json(msg=str(err))
 
     ansible_module.exit_json(
         changed=True,
