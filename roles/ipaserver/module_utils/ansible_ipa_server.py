@@ -330,9 +330,9 @@ else:
                      _no_hbac_allow, dirsrv_pkcs12_info, no_pkinit):
 
         if not options.external_cert_files:
-            ds = dsinstance.DsInstance(fstore=fstore, domainlevel=domainlevel,
-                                       config_ldif=dirsrv_config_file)
-            ds.set_output(ansible_log)
+            _ds = dsinstance.DsInstance(fstore=fstore, domainlevel=domainlevel,
+                                        config_ldif=dirsrv_config_file)
+            _ds.set_output(ansible_log)
 
             if options.dirsrv_cert_files:
                 _dirsrv_pkcs12_info = dirsrv_pkcs12_info
@@ -340,30 +340,30 @@ else:
                 _dirsrv_pkcs12_info = None
 
             with redirect_stdout(ansible_log):
-                ds.init_info(realm_name, host_name, domain_name, dm_password,
-                             subject_base, ca_subject, idstart, idmax,
-                             # hbac_allow=not no_hbac_allow,
-                             _dirsrv_pkcs12_info, setup_pkinit=not no_pkinit)
+                _ds.init_info(realm_name, host_name, domain_name, dm_password,
+                              subject_base, ca_subject, idstart, idmax,
+                              # hbac_allow=not no_hbac_allow,
+                              _dirsrv_pkcs12_info, setup_pkinit=not no_pkinit)
         else:
-            ds = dsinstance.DsInstance(fstore=fstore, domainlevel=domainlevel)
-            ds.set_output(ansible_log)
+            _ds = dsinstance.DsInstance(fstore=fstore, domainlevel=domainlevel)
+            _ds.set_output(ansible_log)
 
             with redirect_stdout(ansible_log):
-                ds.init_info(realm_name, host_name, domain_name, dm_password,
-                             subject_base, ca_subject, 1101, 1100, None,
-                             setup_pkinit=not no_pkinit)
+                _ds.init_info(realm_name, host_name, domain_name, dm_password,
+                              subject_base, ca_subject, 1101, 1100, None,
+                              setup_pkinit=not no_pkinit)
 
-        return ds
+        return _ds
 
     def ansible_module_get_parsed_ip_addresses(ansible_module,
                                                param='ip_addresses'):
         ip_addrs = []
-        for ip in ansible_module.params.get(param):
+        for _ip in ansible_module.params.get(param):
             try:
-                ip_parsed = ipautil.CheckedIPAddress(ip)
-            except Exception as e:
+                ip_parsed = ipautil.CheckedIPAddress(_ip)
+            except Exception as err:
                 ansible_module.fail_json(
-                    msg="Invalid IP Address %s: %s" % (ip, e))
+                    msg="Invalid IP Address %s: %s" % (_ip, err))
             ip_addrs.append(ip_parsed)
         return ip_addrs
 
