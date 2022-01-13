@@ -1,0 +1,450 @@
+---
+- name: Test role members
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  vars:
+    user_list:
+      - User1
+      - uSer2
+      - usEr3
+    group_list:
+      - Group1
+      - gRoup2
+      - grOup3
+    host_list:
+      - HoSt01
+      - hOsT02
+    hostgroup_list:
+      - TestHostGroup
+    service_list:
+      - MySVC/host01
+
+  tasks:
+  - include_tasks: ../env_freeipa_facts.yml
+
+  - block:
+      # setup
+
+      - name: Ensure test role is absent
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrule
+          state: absent
+
+      - name: Ensure test users are present
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          users:
+          - name: "{{ item }}"
+            first: First
+            last: Last
+        with_items: "{{ user_list }}"
+
+      - name: Ensure test groups are present
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ item }}"
+        with_items: "{{ group_list }}"
+
+      - name: Ensure test hosts are present
+        ipahost:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ item }}.{{ ipaserver_domain }}"
+          ip_address: 192.168.122.101
+          force: yes
+        with_items: "{{ host_list }}"
+
+      - name: Ensure test hostgroups are present
+        ipahostgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ item }}"
+        with_items: "{{ hostgroup_list }}"
+
+      - name: Ensure test services are present
+        ipaservice:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ item }}.{{ ipaserver_domain }}"
+        with_items: "{{ service_list }}"
+
+      # Test with action: hbacrule
+
+      - name: Check role present with members would trigger a change, mixed case
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] }}"
+          - "{{ user_list[2] }}"
+          group:
+          - "{{ group_list[1] }}"
+          - "{{ group_list[2] }}"
+          host:
+          - "{{ host_list[0] }}"
+          - "{{ host_list[1] }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] }}"
+          service:
+          - "{{ service_list[0] }}.{{ ipaserver_domain }}"
+        check_mode: yes
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure role is present with members, mixed case
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] }}"
+          - "{{ user_list[2] }}"
+          group:
+          - "{{ group_list[1] }}"
+          - "{{ group_list[2] }}"
+          host:
+          - "{{ host_list[0] }}"
+          - "{{ host_list[1] }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] }}"
+          service:
+          - "{{ service_list[0] }}.{{ ipaserver_domain }}"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Check role present with members would not trigger a change, mixed case
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] }}"
+          - "{{ user_list[2] }}"
+          group:
+          - "{{ group_list[1] }}"
+          - "{{ group_list[2] }}"
+          host:
+          - "{{ host_list[0] }}"
+          - "{{ host_list[1] }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] }}"
+          service:
+          - "{{ service_list[0] }}.{{ ipaserver_domain }}"
+        check_mode: yes
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure role is present with members, lowercase
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] | lower }}"
+          - "{{ user_list[2] | lower }}"
+          group:
+          - "{{ group_list[1] | lower }}"
+          - "{{ group_list[2] | lower }}"
+          host:
+          - "{{ host_list[0] | lower }}"
+          - "{{ host_list[1] | lower }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] | lower }}"
+          service:
+          - "{{ (service_list[0] + '.' + ipaserver_domain) | lower }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure role is present with members, upercase
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] | upper }}"
+          - "{{ user_list[2] | upper }}"
+          group:
+          - "{{ group_list[1] | upper }}"
+          - "{{ group_list[2] | upper }}"
+          host:
+          - "{{ host_list[0] | upper }}"
+          - "{{ host_list[1] | upper }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] | upper }}"
+          service:
+          - "{{ (service_list[0] + '.' + ipaserver_domain) | upper }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure test role is absent
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          state: absent
+
+      # Test with action: members
+
+      - name: Ensure test role is present
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+
+      - name: Check role members present would trigger a change, mixed case
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] }}"
+          - "{{ user_list[2] }}"
+          group:
+          - "{{ group_list[1] }}"
+          - "{{ group_list[2] }}"
+          host:
+          - "{{ host_list[0] }}"
+          - "{{ host_list[1] }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] }}"
+          service:
+          - "{{ service_list[0] }}.{{ ipaserver_domain }}"
+          action: member
+        check_mode: yes
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure role is present with members, mixed case
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] }}"
+          - "{{ user_list[2] }}"
+          group:
+          - "{{ group_list[1] }}"
+          - "{{ group_list[2] }}"
+          host:
+          - "{{ host_list[0] }}"
+          - "{{ host_list[1] }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] }}"
+          service:
+          - "{{ service_list[0] }}.{{ ipaserver_domain }}"
+          action: member
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Check role members present would  not trigger a change, mixed case
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] }}"
+          - "{{ user_list[2] }}"
+          group:
+          - "{{ group_list[1] }}"
+          - "{{ group_list[2] }}"
+          host:
+          - "{{ host_list[0] }}"
+          - "{{ host_list[1] }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] }}"
+          service:
+          - "{{ service_list[0] }}.{{ ipaserver_domain }}"
+          action: member
+        check_mode: yes
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure role is present with members, lowercase
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] | lower }}"
+          - "{{ user_list[2] | lower }}"
+          group:
+          - "{{ group_list[1] | lower }}"
+          - "{{ group_list[2] | lower }}"
+          host:
+          - "{{ host_list[0] | lower }}"
+          - "{{ host_list[1] | lower }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] | lower }}"
+          service:
+          - "{{ (service_list[0] + '.' + ipaserver_domain) | lower }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure role is present with members, upercase
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] | upper }}"
+          - "{{ user_list[2] | upper }}"
+          group:
+          - "{{ group_list[1] | upper }}"
+          - "{{ group_list[2] | upper }}"
+          host:
+          - "{{ host_list[0] | upper }}"
+          - "{{ host_list[1] | upper }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] | upper }}"
+          service:
+          - "{{ (service_list[0] + '.' + ipaserver_domain) | upper }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      # # Test absent members
+      - name: Check role members absent would trigger a change, upercase
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] | upper }}"
+          - "{{ user_list[2] | upper }}"
+          group:
+          - "{{ group_list[1] | upper }}"
+          - "{{ group_list[2] | upper }}"
+          host:
+          - "{{ host_list[0] | upper }}"
+          - "{{ host_list[1] | upper }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] | upper }}"
+          service:
+          - "{{ (service_list[0] + '.' + ipaserver_domain) | upper }}"
+          action: member
+          state: absent
+        check_mode: yes
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure role members are absent, upercase
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] | upper }}"
+          - "{{ user_list[2] | upper }}"
+          group:
+          - "{{ group_list[1] | upper }}"
+          - "{{ group_list[2] | upper }}"
+          host:
+          - "{{ host_list[0] | upper }}"
+          - "{{ host_list[1] | upper }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] | upper }}"
+          service:
+          - "{{ (service_list[0] + '.' + ipaserver_domain) | upper }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Check role members absent would not trigger a change, upercase
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] | upper }}"
+          - "{{ user_list[2] | upper }}"
+          group:
+          - "{{ group_list[1] | upper }}"
+          - "{{ group_list[2] | upper }}"
+          host:
+          - "{{ host_list[0] | upper }}"
+          - "{{ host_list[1] | upper }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] | upper }}"
+          service:
+          - "{{ (service_list[0] + '.' + ipaserver_domain) | upper }}"
+          action: member
+          state: absent
+        check_mode: yes
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure role members are absent, mixed case
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] }}"
+          - "{{ user_list[2] }}"
+          group:
+          - "{{ group_list[1] }}"
+          - "{{ group_list[2] }}"
+          host:
+          - "{{ host_list[0] }}"
+          - "{{ host_list[1] }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] }}"
+          service:
+          - "{{ service_list[0] }}.{{ ipaserver_domain }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure role members are absent, lowercase
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          user:
+          - "{{ user_list[1] | lower }}"
+          - "{{ user_list[2] | lower }}"
+          group:
+          - "{{ group_list[1] | lower }}"
+          - "{{ group_list[2] | lower }}"
+          host:
+          - "{{ host_list[0] | lower }}"
+          - "{{ host_list[1] | lower }}"
+          hostgroup:
+          - "{{ hostgroup_list[0] | lower }}"
+          service:
+          - "{{ (service_list[0] + '.' + ipaserver_domain) | lower }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.changed or result.failed
+
+    always:
+      - name: Ensure test role is absent
+        iparole:
+          ipaadmin_password: SomeADMINpassword
+          name: testrole
+          state: absent
+
+      - name: Ensure test users are absent
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          users:
+          - name: "{{ item }}"
+          state: absent
+        with_items: "{{ user_list }}"
+
+      - name: Ensure test groups are absent
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ item }}"
+          state: absent
+        with_items: "{{ group_list }}"
+
+      - name: Ensure test hosts are absent
+        ipahost:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ item }}.{{ ipaserver_domain }}"
+          state: absent
+        with_items: "{{ host_list }}"
+
+      - name: Ensure test hostgroups are absent
+        ipahostgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ item }}"
+          state: absent
+        with_items: "{{ hostgroup_list }}"
+
+      - name: Ensure test services are absent
+        ipaservice:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ item }}.{{ ipaserver_domain }}"
+          continue: yes
+          state: absent
+        with_items: "{{ service_list }}"

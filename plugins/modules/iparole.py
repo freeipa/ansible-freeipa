@@ -103,9 +103,9 @@ EXAMPLES = """
 # pylint: disable=no-name-in-module
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, gen_add_del_lists, compare_args_ipa
+    IPAAnsibleModule, gen_add_del_lists, compare_args_ipa, \
+    gen_intersection_list, ensure_fqdn
 from ansible.module_utils import six
-
 
 if six.PY3:
     unicode = str
@@ -170,28 +170,15 @@ def check_parameters(module):
     module.params_fail_used_invalid(invalid, state, action)
 
 
-def member_intersect(module, attr, memberof, res_find):
-    """Filter member arguments from role found by intersection."""
-    params = module.params_get(attr)
-    if not res_find:
-        return params
-    filtered = []
-    if params:
-        existing = res_find.get(memberof, [])
-        filtered = list(set(params) & set(existing))
-    return filtered
-
-
-def member_difference(module, attr, memberof, res_find):
-    """Filter member arguments from role found by difference."""
-    params = module.params_get(attr)
-    if not res_find:
-        return params
-    filtered = []
-    if params:
-        existing = res_find.get(memberof, [])
-        filtered = list(set(params) - set(existing))
-    return filtered
+def get_member_host_with_fqdn_lowercase(module, mod_member):
+    """Retrieve host members from module, as FQDN, lowercase."""
+    default_domain = module.ipa_get_domain()
+    hosts = module.params_get(mod_member)
+    return (
+        [ensure_fqdn(host, default_domain).lower() for host in hosts]
+        if hosts
+        else hosts
+    )
 
 
 def ensure_absent_state(module, name, action, res_find):
@@ -203,23 +190,41 @@ def ensure_absent_state(module, name, action, res_find):
 
     if action == "member":
 
-        members = member_intersect(
-            module, 'privilege', 'memberof_privilege', res_find)
-        if members:
-            commands.append([name, "role_remove_privilege",
-                             {"privilege": members}])
+        _members = module.params_get_lowercase("privilege")
+        if _members is not None:
+            del_list = gen_intersection_list(
+                _members,
+                result_get_value_lowercase(res_find, "memberof_privilege")
+            )
+            if del_list:
+                commands.append([name, "role_remove_privilege",
+                                 {"privilege": del_list}])
 
         member_args = {}
-        for key in ['user', 'group', 'host', 'hostgroup']:
-            items = member_intersect(
-                module, key, 'member_%s' % key, res_find)
-            if items:
-                member_args[key] = items
+        for key in ['user', 'group', 'hostgroup']:
+            _members = module.params_get_lowercase(key)
+            if _members:
+                del_list = gen_intersection_list(
+                    _members,
+                    result_get_value_lowercase(res_find, "member_%s" % key)
+                )
+                if del_list:
+                    member_args[key] = del_list
 
-        _services = filter_service(module, res_find,
-                                   lambda res, svc: res.startswith(svc))
+        # ensure hosts are FQDN.
+        _members = get_member_host_with_fqdn_lowercase(module, "host")
+        if _members:
+            del_list = gen_intersection_list(
+                _members, res_find.get('member_host'))
+            if del_list:
+                member_args["host"] = del_list
+
+        _services = get_service_param(module, "service")
         if _services:
-            member_args['service'] = _services
+            _existing = result_get_value_lowercase(res_find, "member_service")
+            items = gen_intersection_list(_services.keys(), _existing)
+            if items:
+                member_args["service"] = [_services[key] for key in items]
 
         # Only add remove command if there's at least one member no manage.
         if member_args:
@@ -228,66 +233,112 @@ def ensure_absent_state(module, name, action, res_find):
     return commands
 
 
-def filter_service(module, res_find, predicate):
+def get_service_param(module, key):
     """
-    Filter service based on predicate.
+    Retrieve dict of services, with realm, from the module parameters.
 
-    Compare service name with existing ones matching
-    at least until `@` from principal name.
-
-    Predicate is a callable that accepts the existing service, and the
-    modified service to be compared to.
+    As the services are compared in a case insensitive manner, but
+    are recorded in a case preserving way, a dict mapping the services
+    in lowercase to the provided module parameter is generated, so
+    that dict keys can be used for comparison and the values are used
+    with IPA API.
     """
-    _services = []
-    service = module.params_get('service')
-    if service:
-        existing = [to_text(x) for x in res_find.get('member_service', [])]
-        for svc in service:
-            svc = svc if '@' in svc else ('%s@' % svc)
-            found = [x for x in existing if predicate(x, svc)]
-            _services.extend(found)
+    _services = module.params_get(key)
+    if _services is not None:
+        ipa_realm = module.ipa_get_realm()
+        _services = [
+            to_text(svc) if '@' in svc else ('%s@%s' % (svc, ipa_realm))
+            for svc in _services
+        ]
+        if _services:
+            _services = {svc.lower(): svc for svc in _services}
     return _services
+
+
+def result_get_value_lowercase(res_find, key, default=None):
+    """
+    Retrieve a member of a dictionary converted to lowercase.
+
+    If field data is a string it is returned in lowercase. If
+    field data is a list or tuple, it is assumed that all values
+    are strings and the result is a list of strings in lowercase.
+
+    If 'key' is not found in the dictionary, returns 'default'.
+    """
+    existing = res_find.get(key)
+    if existing is not None:
+        if isinstance(existing, (list, tuple)):
+            existing = [to_text(item).lower() for item in existing]
+        if isinstance(existing, (str, unicode)):
+            existing = existing.lower()
+    else:
+        existing = default
+    return existing
+
+
+def gen_services_add_del_lists(module, mod_member, res_find, res_member):
+    """Generate add/del lists for service principals."""
+    add_list, del_list = None, None
+    _services = get_service_param(module, mod_member)
+    if _services is not None:
+        _existing = result_get_value_lowercase(res_find, res_member)
+        add_list, del_list = gen_add_del_lists(_services.keys(), _existing)
+        if add_list:
+            add_list = [_services[key] for key in add_list]
+        if del_list:
+            del_list = [to_text(item) for item in del_list]
+    return add_list, del_list
 
 
 def ensure_role_with_members_is_present(module, name, res_find, action):
     """Define commands to ensure member are present for action `role`."""
     commands = []
-    privilege_add, privilege_del = gen_add_del_lists(
-        module.params_get("privilege"),
-        res_find.get('memberof_privilege', []))
 
-    if privilege_add:
-        commands.append([name, "role_add_privilege",
-                         {"privilege": privilege_add}])
-    if action == "role" and privilege_del:
-        commands.append([name, "role_remove_privilege",
-                         {"privilege": privilege_del}])
+    _members = module.params_get_lowercase("privilege")
+    if _members:
+        add_list, del_list = gen_add_del_lists(
+            _members,
+            result_get_value_lowercase(res_find, "memberof_privilege")
+        )
+
+        if add_list:
+            commands.append([name, "role_add_privilege",
+                             {"privilege": add_list}])
+        if action == "role" and del_list:
+            commands.append([name, "role_remove_privilege",
+                             {"privilege": del_list}])
 
     add_members = {}
     del_members = {}
 
-    for key in ["user", "group", "host", "hostgroup"]:
-        add_list, del_list = gen_add_del_lists(
-            module.params_get(key),
-            res_find.get('member_%s' % key, [])
-        )
-        if add_list:
-            add_members[key] = add_list
-        if del_list:
-            del_members[key] = [to_text(item) for item in del_list]
+    for key in ["user", "group", "hostgroup"]:
+        _members = module.params_get_lowercase(key)
+        if _members is not None:
+            add_list, del_list = gen_add_del_lists(
+                _members,
+                result_get_value_lowercase(res_find, "member_%s" % key)
+            )
+            if add_list:
+                add_members[key] = add_list
+            if del_list:
+                del_members[key] = del_list
 
-    service = [
-        to_text(svc)
-        if '@' in svc
-        else ('%s@%s' % (svc, module.ipa_get_realm()))
-        for svc in (module.params_get('service') or [])
-    ]
-    existing = [str(svc) for svc in res_find.get('member_service', [])]
-    add_list, del_list = gen_add_del_lists(service, existing)
-    if add_list:
-        add_members['service'] = add_list
-    if del_list:
-        del_members['service'] = [to_text(item) for item in del_list]
+    # ensure hosts are FQDN.
+    _members = get_member_host_with_fqdn_lowercase(module, "host")
+    if _members:
+        add_list, del_list = gen_add_del_lists(
+            _members, res_find.get('member_host'))
+        if add_list:
+            add_members["host"] = add_list
+        if del_list:
+            del_members["host"] = del_list
+
+    (add_services, del_services) = gen_services_add_del_lists(
+        module, "service", res_find, "member_service")
+    if add_services:
+        add_members["service"] = add_services
+    if del_services:
+        del_members["service"] = del_services
 
     if add_members:
         commands.append([name, "role_add_member", add_members])
@@ -296,52 +347,6 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
         commands.append([name, "role_remove_member", del_members])
 
     return commands
-
-
-def ensure_members_are_present(module, name, res_find):
-    """Define commands to ensure members are present for action `member`."""
-    commands = []
-
-    members = member_difference(
-        module, 'privilege', 'memberof_privilege', res_find)
-    if members:
-        commands.append([name, "role_add_privilege",
-                         {"privilege": members}])
-
-    member_args = {}
-    for key in ['user', 'group', 'host', 'hostgroup']:
-        items = member_difference(
-            module, key, 'member_%s' % key, res_find)
-        if items:
-            member_args[key] = items
-
-    _services = filter_service(module, res_find,
-                               lambda res, svc: not res.startswith(svc))
-    if _services:
-        member_args['service'] = _services
-
-    if member_args:
-        commands.append([name, "role_add_member", member_args])
-
-    return commands
-
-
-# pylint: disable=unused-argument
-def result_handler(module, result, command, name, args, errors):
-    """Process the result of a command, looking for errors."""
-    # Get all errors
-    # All "already a member" and "not a member" failures in the
-    # result are ignored. All others are reported.
-    if "failed" in result and len(result["failed"]) > 0:
-        for item in result["failed"]:
-            failed_item = result["failed"][item]
-            for member_type in failed_item:
-                for member, failure in failed_item[member_type]:
-                    if "already a member" in failure \
-                       or "not a member" in failure:
-                        continue
-                    errors.append("%s: %s %s: %s" % (
-                        command, member_type, member, failure))
 
 
 def role_commands_for_name(module, state, action, name):
@@ -442,7 +447,8 @@ def main():
 
         # Execute commands
 
-        changed = ansible_module.execute_ipa_commands(commands, result_handler)
+        changed = ansible_module.execute_ipa_commands(
+            commands, fail_on_member_errors=True)
 
     # Done
     ansible_module.exit_json(changed=changed, **exit_args)

@@ -18,6 +18,8 @@ plugins/modules/ipadnsrecord.py pylint:use-maxsplit-arg
 plugins/modules/ipareplica_enable_ipa.py pylint:ansible-format-automatic-specification
 plugins/modules/ipareplica_prepare.py pylint:ansible-format-automatic-specification
 plugins/modules/ipareplica_test.py pylint:ansible-format-automatic-specification
+plugins/modules/iparole.py compile-2.6!skip
+plugins/modules/iparole.py import-2.6!skip
 plugins/modules/ipaserver_setup_ca.py compile-2.6!skip
 plugins/modules/ipaserver_setup_ca.py import-2.6!skip
 plugins/modules/ipaserver_test.py pylint:ansible-format-automatic-specification
