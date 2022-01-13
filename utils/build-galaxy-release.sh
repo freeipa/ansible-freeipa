@@ -1,10 +1,101 @@
 #!/bin/bash
+#
+# Build Ansible Collection from ansible-freeipa repo
+#
 
+prog=$(basename "$0")
+pwd=$(pwd)
+
+usage() {
+    cat <<EOF
+Usage: $prog [options] [namespace] [collection]
+
+Build Anible Collection for ansible-freeipa.
+
+The namespace defaults to freeipa an collection defaults to ansible_freeipa
+if namespace and collection are not given. Namespace and collection can not
+be givedn without the other one.
+
+Options:
+  -a          Add all files, no only files known to git repo
+  -k          Keep build directory
+  -h          Print this help
+
+EOF
+}
+
+all=0
+keep=0
+while getopts "ahk" arg; do
+    case $arg in
+        a)
+            all=1
+            ;;
+        h)
+            usage
+            exit 0
+            ;;
+        k)
+            keep=1
+            ;;
+        \?)
+            echo
+            usage
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ $# != 0 ] && [ $# != 2 ]; then
+    usage
+    exit 1
+fi
 namespace="${1-freeipa}"
 collection="${2-ansible_freeipa}"
+if [ -z "$namespace" ]; then
+    echo "Namespace might not be empty"
+    exit 1
+fi
+if [ -z "$collection" ]; then
+    echo "Collection might not be empty"
+    exit 1
+fi
 collection_prefix="${namespace}.${collection}"
 
-galaxy_version=$(git describe --tags | sed -e "s/^v//")
+galaxy_version=$(git describe --tags 2>/dev/null | sed -e "s/^v//")
+
+if [ -z "$galaxy_version" ]; then
+    echo "Version could not be detected"
+    exit 1
+fi
+
+echo "Builing galaxy release: ${namespace}-${collection}-${galaxy_version}"
+
+GALAXY_BUILD=".galaxy-build"
+
+if [ -e "$GALAXY_BUILD" ]; then
+    echo "Removing existing $GALAXY_BUILD ..."
+    rm -rf "$GALAXY_BUILD"
+    echo -e "\033[ARemoving existing $GALAXY_BUILD ... \033[32;1mDONE\033[0m"
+fi
+mkdir "$GALAXY_BUILD"
+echo "Copying files to build dir $GALAXY_BUILD ..."
+if [ $all == 1 ]; then
+    # Copy all files except galaxy build dir
+    for file in .[A-z]* [A-z]*; do
+        [[ "$file" == "${GALAXY_BUILD}" ]] && continue
+        cp -a "$file" "${GALAXY_BUILD}/"
+    done
+else
+    # git ls-tree is quoting, therefore ignore SC2046: Quote this to prevent
+    # word splitting
+    # shellcheck disable=SC2046
+    tar -cf - $(git ls-tree HEAD --name-only -r) | (cd "$GALAXY_BUILD/" && tar -xf -)
+fi
+echo -e "\033[ACopying files to build dir $GALAXY_BUILD ... \033[32;1mDONE\033[0m"
+cd "$GALAXY_BUILD" || exit 1
+
 sed -i -e "s/version: .*/version: \"$galaxy_version\"/" galaxy.yml
 sed -i -e "s/namespace: .*/namespace: \"$namespace\"/" galaxy.yml
 sed -i -e "s/name: .*/name: \"$collection\"/" galaxy.yml
@@ -69,22 +160,21 @@ find . -name "README*.md" -print0 |
     done
 echo -e "\033[AFixing examples in plugins/modules... \033[32;1mDONE\033[0m"
 
-echo "Fixing playbbooks in tests..."
+echo "Fixing playbooks in tests..."
 find tests -name "*.yml" -print0 |
     while IFS= read -d '' -r line; do
         python utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
     done
 echo -e "\033[AFixing playbooks in tests... \033[32;1mDONE\033[0m"
 
-#git diff
+ansible-galaxy collection build --force --output-path="$pwd"
 
-ansible-galaxy collection build
+cd "$pwd" || exit 1
 
-rm plugins/module_utils/ansible_ipa_*
-rm plugins/modules/ipaserver_*
-rm plugins/modules/ipareplica_*
-rm plugins/modules/ipaclient_*
-rm plugins/modules/ipabackup_*
-rm plugins/action/ipaclient_*
-rmdir plugins/action
-git reset --hard
+if [ $keep == 0 ]; then
+    echo "Removing build dir $GALAXY_BUILD ..."
+    rm -rf "$GALAXY_BUILD"
+    echo -e "\033[ARemoving build dir $GALAXY_BUILD ... \033[32;1mDONE\033[0m"
+else
+    echo "Keeping build dir $GALAXY_BUILD"
+fi
