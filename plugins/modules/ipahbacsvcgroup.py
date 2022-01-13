@@ -101,7 +101,8 @@ RETURN = """
 """
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
+    gen_intersection_list
 
 
 def find_hbacsvcgroup(module, name):
@@ -183,7 +184,7 @@ def main():
     # present
     description = ansible_module.params_get("description")
     nomembers = ansible_module.params_get("nomembers")
-    hbacsvc = ansible_module.params_get("hbacsvc")
+    hbacsvc = ansible_module.params_get_lowercase("hbacsvc")
     action = ansible_module.params_get("action")
     # state
     state = ansible_module.params_get("state")
@@ -223,6 +224,8 @@ def main():
             # Make sure hbacsvcgroup exists
             res_find = find_hbacsvcgroup(ansible_module, name)
 
+            hbacsvc_add, hbacsvc_del = [], []
+
             # Create command
             if state == "present":
                 # Generate args
@@ -246,32 +249,20 @@ def main():
                     if not compare_args_ipa(ansible_module, member_args,
                                             res_find):
                         # Generate addition and removal lists
-                        hbacsvc_add, hbacsvc_del = gen_add_del_lists(
-                            hbacsvc, res_find.get("member_hbacsvc"))
+                        if hbacsvc is not None:
+                            hbacsvc_add, hbacsvc_del = gen_add_del_lists(
+                                hbacsvc, res_find.get("member_hbacsvc"))
 
-                        # Add members
-                        if len(hbacsvc_add) > 0:
-                            commands.append([name, "hbacsvcgroup_add_member",
-                                             {
-                                                 "hbacsvc": hbacsvc_add
-                                             }])
-                        # Remove members
-                        if len(hbacsvc_del) > 0:
-                            commands.append([name,
-                                             "hbacsvcgroup_remove_member",
-                                             {
-                                                 "hbacsvc": hbacsvc_del
-                                             }])
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
                             msg="No hbacsvcgroup '%s'" % name)
 
                     # Ensure members are present
-                    commands.append([name, "hbacsvcgroup_add_member",
-                                     {
-                                         "hbacsvc": hbacsvc
-                                     }])
+                    if hbacsvc:
+                        hbacsvc_add = gen_add_list(
+                            hbacsvc, res_find.get("member_hbacsvc"))
+
             elif state == "absent":
                 if action == "hbacsvcgroup":
                     if res_find is not None:
@@ -283,15 +274,28 @@ def main():
                             msg="No hbacsvcgroup '%s'" % name)
 
                     # Ensure members are absent
-                    commands.append([name, "hbacsvcgroup_remove_member",
-                                     {
-                                         "hbacsvc": hbacsvc
-                                     }])
+                    if hbacsvc:
+                        hbacsvc_del = gen_intersection_list(
+                            hbacsvc, res_find.get("member_hbacsvc"))
+
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
-        # Execute commands
+            # Manage members
+            if len(hbacsvc_add) > 0:
+                commands.append([name, "hbacsvcgroup_add_member",
+                                 {
+                                     "hbacsvc": hbacsvc_add
+                                 }])
+            # Remove members
+            if len(hbacsvc_del) > 0:
+                commands.append([name,
+                                 "hbacsvcgroup_remove_member",
+                                 {
+                                     "hbacsvc": hbacsvc_del
+                                 }])
 
+        # Execute commands
         changed = ansible_module.execute_ipa_commands(commands, result_handler)
 
     # Done

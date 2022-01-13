@@ -1,0 +1,233 @@
+---
+- name: Test hbacsvcgroup member varying capitalization
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  vars:
+    hbacsvc_list:
+      - sVc1
+      - SvC2
+
+  tasks:
+  - block:
+      - name: Ensure test hbacsvcgroup is absent
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          state: absent
+
+      - name: Ensure test HBAC services are present
+        ipahbacsvc:
+          ipaadmin_password: SomeADMINpassword
+          name: "{{ item }}"
+        with_items: "{{ hbacsvc_list }}"
+
+      - name: Ensure test hbacsvcgroup is present with duplicate hbacsvc
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc:
+          - sVc1
+          - SvC1
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure test hbacsvc is absent from hbacsvcgroup, with duplicate hbacsvc
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc:
+          - sVc1
+          - SvC1
+          action: member
+          state: absent
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Check if test hbacsvc absent, again, from hbacsvcgroup, with duplicate hbacsvc, would trigger changes
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc:
+          - svC1
+          - SVC1
+          action: member
+          state: absent
+        check_mode: yes
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure test hbacsvcgroup is absent
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          state: absent
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Check if hbacsvcgroup with members would trigger changes, mixed case
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list }}"
+        check_mode: yes
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure hbacsvcgroup is present with members, mixed case
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list }}"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Check if hbacsvcgroup with members would not trigger changes, mixed case
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list }}"
+        check_mode: yes
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure hbacsvcgroup is present with members, lowercase
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list | lower }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure hbacsvcgroup is present with members, uppercase
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list | upper }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure test hbacsvcgroup is absent
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          state: absent
+
+      - name: Ensure test hbacsvcgroup is present
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+
+      - name: Check if hbacsvcgroup members would trigger changes, mixed case
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list }}"
+          action: member
+        check_mode: yes
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure hbacsvcgroup has members, mixed case
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list }}"
+          action: member
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Check if hbacsvcgroup members would not trigger changes, mixed case
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list }}"
+          action: member
+        check_mode: yes
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure hbacsvcgroup has members, lowercase
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list | lower }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure hbacsvcgroup has members, uppercase
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list | upper }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Check if hbacsvcgroup members absence would trigger changes, uppercase
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list | upper }}"
+          action: member
+          state: absent
+        check_mode: yes
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure hbacsvcgroup has members absent, uppercase
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list | upper }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Check if hbacsvcgroup members absence would not trigger changes, uppercase
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list | upper }}"
+          action: member
+          state: absent
+        check_mode: yes
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure hbacsvcgroup has members absent, mixed case
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure hbacsvcgroup has members absent, lowercase
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          hbacsvc: "{{ hbacsvc_list | lower }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.changed or result.failed
+
+    always:
+      - name: Ensure test hbac service group is absent
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          name: testgroup
+          state: absent
+
+      - name: Ensure test hbac services are absent
+        ipahbacsvc:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ hbacsvc_list }}"
+          state: absent
