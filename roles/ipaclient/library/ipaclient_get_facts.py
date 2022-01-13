@@ -56,10 +56,12 @@ def is_ntpd_configured():
     ntpd_conf_section = re.compile(r'^\s*\[ntpd\]\s*$')
 
     try:
+        # pylint: disable=invalid-name
         with open(SERVER_SYSRESTORE_STATE) as f:
             for line in f.readlines():
                 if ntpd_conf_section.match(line):
                     return True
+        # pylint: enable=invalid-name
         return False
     except IOError:
         return False
@@ -71,7 +73,7 @@ def is_dns_configured():
     bind_conf_section = re.compile(r'^\s*dyndb\s+"ipa"\s+"[^"]+"\s+{$')
 
     try:
-        with open(NAMED_CONF) as f:
+        with open(NAMED_CONF) as f:  # pylint: disable=invalid-name
             for line in f.readlines():
                 if bind_conf_section.match(line):
                     return True
@@ -103,7 +105,7 @@ def is_client_configured():
     # and /var/lib/ipa-client/sysrestore/sysrestore.state exists
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
-    return (os.path.isfile(paths.IPA_DEFAULT_CONF) and fstore.has_files())
+    return os.path.isfile(paths.IPA_DEFAULT_CONF) and fstore.has_files()
 
 
 def is_server_configured():
@@ -129,7 +131,9 @@ def get_ipa_conf():
 
 def get_ipa_version():
     try:
+        # pylint: disable=import-outside-toplevel
         from ipapython import version
+        # pylint: enable=import-outside-toplevel
     except ImportError:
         return None
     else:
@@ -156,7 +160,7 @@ def get_ipa_version():
 
 def main():
     module = AnsibleModule(
-        argument_spec=dict(),
+        argument_spec={},
         supports_check_mode=True
     )
 

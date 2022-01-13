@@ -312,6 +312,7 @@ def main():
 
         # Create the management framework config file and finalize api
         target_fname = paths.IPA_DEFAULT_CONF
+        # pylint: disable=invalid-name, consider-using-with
         fd = open(target_fname, "w")
         fd.write("[global]\n")
         fd.write("host=%s\n" % options.host_name)
@@ -331,6 +332,7 @@ def main():
             fd.write("ra_plugin=none\n")
         fd.write("mode=production\n")
         fd.close()
+        # pylint: enable=invalid-name, consider-using-with
 
         # Must be readable for everyone
         os.chmod(target_fname, 0o644)

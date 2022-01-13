@@ -113,7 +113,9 @@ def main():
     if sync_time is not None:
         if options.conf_ntp:
             # Attempt to configure and sync time with NTP server (chrony).
+            # pylint: disable=deprecated-method
             argspec = inspect.getargspec(sync_time)
+            # pylint: enable=deprecated-method
             if "options" not in argspec.args:
                 synced_ntp = sync_time(options.ntp_servers, options.ntp_pool,
                                        fstore, statestore)
@@ -149,8 +151,8 @@ def main():
             if options.ntp_servers:
                 ntp_servers = options.ntp_servers
 
-            for s in ntp_servers:
-                synced_ntp = timeconf.synconce_ntp(s, options.debug)
+            for _ntp_server in ntp_servers:
+                synced_ntp = timeconf.synconce_ntp(_ntp_server, options.debug)
                 if synced_ntp:
                     break
 

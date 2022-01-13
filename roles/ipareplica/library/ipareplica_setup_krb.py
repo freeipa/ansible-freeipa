@@ -161,7 +161,9 @@ def main():
     ansible_log.debug("-- INSTALL_KRB --")
 
     with redirect_stdout(ansible_log):
+        # pylint: disable=deprecated-method
         argspec = inspect.getargspec(install_krb)
+        # pylint: enable=deprecated-method
         if "promote" in argspec.args:
             install_krb(
                 config,

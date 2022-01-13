@@ -56,8 +56,7 @@ from ansible.module_utils.ansible_ipa_replica import (
 
 def main():
     ansible_module = AnsibleModule(
-        argument_spec=dict(
-        ),
+        argument_spec={},
         supports_check_mode=True,
     )
 

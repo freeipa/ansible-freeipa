@@ -138,15 +138,15 @@ else:
 
         try:
             from ipaclient.install import timeconf
-            time_service = "chronyd"
-            ntpinstance = None
+            time_service = "chronyd"  # pylint: disable=invalid-name
+            ntpinstance = None  # pylint: disable=invalid-name
         except ImportError:
             try:
                 from ipaclient.install import ntpconf as timeconf
             except ImportError:
                 from ipaclient import ntpconf as timeconf
             from ipaserver.install import ntpinstance
-            time_service = "ntpd"
+            time_service = "ntpd"  # pylint: disable=invalid-name
 
     else:
         # IPA version < 4.6
@@ -162,10 +162,10 @@ else:
             filemode='a', console_format='%(message)s')
 
     @contextlib_contextmanager
-    def redirect_stdout(f):
-        sys.stdout = f
+    def redirect_stdout(stream):
+        sys.stdout = stream
         try:
-            yield f
+            yield stream
         finally:
             sys.stdout = sys.__stdout__
 
@@ -202,7 +202,8 @@ else:
             self.module.debug(msg)
             # self.module.warn(msg)
 
-    class installer_obj(object):
+    # pylint: disable=too-many-instance-attributes, useless-object-inheritance
+    class installer_obj(object):  # pylint: disable=invalid-name
         def __init__(self):
             # CompatServerReplicaInstall
             self.ca_cert_files = None
@@ -244,10 +245,10 @@ else:
         #             (attr, repr(value)))
         #     return value
 
-        def __getattr__(self, attr):
-            logger.info("  --> ADDING missing installer.%s", attr)
-            setattr(self, attr, None)
-            return getattr(self, attr)
+        def __getattr__(self, attrname):
+            logger.info("  --> ADDING missing installer.%s", attrname)
+            setattr(self, attrname, None)
+            return getattr(self, attrname)
 
         # def __setattr__(self, attr, value):
         #    logger.debug("  --> Setting installer.%s to %s" %
@@ -258,6 +259,9 @@ else:
             for name in self.__dict__:
                 yield self, name
 
+    # pylint: enable=too-many-instance-attributes, useless-object-inheritance
+
+    # pylint: disable=attribute-defined-outside-init
     installer = installer_obj()
     options = installer
 
@@ -274,6 +278,7 @@ else:
     # ServerReplicaInstall
     options.subject_base = None
     options.ca_subject = None
+    # pylint: enable=attribute-defined-outside-init
 
     def gen_env_boostrap_finalize_core(etc_ipa, default_config):
         env = Env()
@@ -295,9 +300,12 @@ else:
         # pylint: enable=no-member
         api.finalize()
 
-    def gen_ReplicaConfig():
+    def gen_ReplicaConfig():  # pylint: disable=invalid-name
+        # pylint: disable=too-many-instance-attributes
         class ExtendedReplicaConfig(ReplicaConfig):
+            # pylint: disable=useless-super-delegation
             def __init__(self, top_dir=None):
+                # pylint: disable=super-with-arguments
                 super(ExtendedReplicaConfig, self).__init__(top_dir)
 
             # def __getattribute__(self, attr):
@@ -306,12 +314,13 @@ else:
             #    if attr not in ["__dict__", "knobs"]:
             #        logger.debug("  <== Accessing config.%s (%s)" %
             #                     (attr, repr(value)))
-            #    return value
+            #    return value\
+            # pylint: enable=useless-super-delegation
 
-            def __getattr__(self, attr):
-                logger.info("  ==> ADDING missing config.%s", attr)
-                setattr(self, attr, None)
-                return getattr(self, attr)
+            def __getattr__(self, attrname):
+                logger.info("  ==> ADDING missing config.%s", attrname)
+                setattr(self, attrname, None)
+                return getattr(self, attrname)
 
             # def __setattr__(self, attr, value):
             #   logger.debug("  ==> Setting config.%s to %s" %
@@ -322,7 +331,9 @@ else:
             def knobs(self):
                 for name in self.__dict__:
                     yield self, name
+        # pylint: enable=too-many-instance-attributes
 
+        # pylint: disable=attribute-defined-outside-init
         # config = ReplicaConfig()
         config = ExtendedReplicaConfig()
         config.realm_name = api.env.realm
@@ -338,10 +349,12 @@ else:
         config.basedn = api.env.basedn
         # config.subject_base = options.subject_base
 
+        # pylint: enable=attribute-defined-outside-init
+
         return config
 
     def replica_ds_init_info(ansible_log,
-                             config, options, ca_is_configured, remote_api,
+                             config, options_, ca_is_configured, remote_api,
                              ds_ca_subject, ca_file,
                              promote=False, pkcs12_info=None):
 
@@ -364,7 +377,7 @@ else:
         ca_subject = ds_ca_subject
 
         ds = dsinstance.DsInstance(
-            config_ldif=options.dirsrv_config_file)
+            config_ldif=options_.dirsrv_config_file)
         ds.set_output(ansible_log)
 
         # Source: ipaserver/install/dsinstance.py

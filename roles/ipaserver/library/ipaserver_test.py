@@ -742,7 +742,7 @@ def main():
         validate_admin_password(options.admin_password)
 
     # pkinit is not supported on DL0, don't allow related options
-
+    # pylint: disable=pointless-string-statement
     """
     # replica install: if not options.replica_file is None:
     if (not options._replica_install and \
@@ -755,6 +755,7 @@ def main():
                 "don't use any pkinit-related options.")
         options.no_pkinit = True
     """
+    # pylint: enable=pointless-string-statement
 
     if options.setup_dns:
         if len(options.forwarders) < 1 and not options.no_forwarders and \
@@ -942,7 +943,9 @@ def main():
     else:
         realm_name = options.realm_name.upper()
 
+    # pylint: disable=deprecated-method
     argspec = inspect.getargspec(validate_domain_name)
+    # pylint: enable=deprecated-method
     if "entity" in argspec.args:
         # NUM_VERSION >= 40690:
         try:

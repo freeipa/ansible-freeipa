@@ -199,7 +199,9 @@ def main():
 
         ansible_log.debug("-- CUSTODIA IMPORT DM PASSWORD --")
 
+        # pylint: disable=deprecated-method
         argspec = inspect.getargspec(custodia.import_dm_password)
+        # pylint: enable=deprecated-method
         if "master_host_name" in argspec.args:
             custodia.import_dm_password(config.master_host_name)
         else:

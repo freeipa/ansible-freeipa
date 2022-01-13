@@ -146,7 +146,7 @@ def get_host_diff(ipa_host, module_host):
     :return: a dict representing the host attributes to apply
     """
     non_updateable_keys = ['ip_address']
-    data = dict()
+    data = {}
     for key in non_updateable_keys:
         if key in module_host:
             del module_host[key]
@@ -173,7 +173,7 @@ def get_module_host(module):
     :param module: the ansible module
     :returns: a dict representing the host attributes
     """
-    data = dict()
+    data = {}
     certificates = module.params.get('certificates')
     if certificates:
         data['usercertificate'] = certificates
@@ -189,7 +189,7 @@ def get_module_host(module):
     return data
 
 
-def ensure_host_present(module, api, ipahost):
+def ensure_host_present(module, _api, ipahost):
     """
     Ensure host exists in IPA and has the same attributes.
 
@@ -216,13 +216,13 @@ def ensure_host_present(module, api, ipahost):
         # already has Keytab: true, then we need first to run
         # ipa host-disable in order to remove OTP and keytab
         if module.params.get('random') and ipahost['has_keytab'] is True:
-            api.Command.host_disable(fqdn)
+            _api.Command.host_disable(fqdn)
 
-        result = api.Command.host_mod(fqdn, **diffs)
+        result = _api.Command.host_mod(fqdn, **diffs)
         # Save random password as it is not displayed by host-show
         if module.params.get('random'):
             randompassword = result['result']['randompassword']
-        result = api.Command.host_show(fqdn)
+        result = _api.Command.host_show(fqdn)
         if module.params.get('random'):
             result['result']['randompassword'] = randompassword
         module.exit_json(changed=True, host=result['result'])
@@ -236,17 +236,17 @@ def ensure_host_present(module, api, ipahost):
         module_host = get_module_host(module)
         # force creation of host even if there is no DNS record
         module_host["force"] = True
-        result = api.Command.host_add(fqdn, **module_host)
+        result = _api.Command.host_add(fqdn, **module_host)
         # Save random password as it is not displayed by host-show
         if module.params.get('random'):
             randompassword = result['result']['randompassword']
-        result = api.Command.host_show(fqdn)
+        result = _api.Command.host_show(fqdn)
         if module.params.get('random'):
             result['result']['randompassword'] = randompassword
         module.exit_json(changed=True, host=result['result'])
 
 
-def ensure_host_absent(module, api, host):
+def ensure_host_absent(module, _api, host):
     """
     Ensure host does not exist in IPA.
 
@@ -265,7 +265,7 @@ def ensure_host_absent(module, api, host):
 
     fqdn = unicode(module.params.get('fqdn'))
     try:
-        api.Command.host_del(fqdn)
+        _api.Command.host_del(fqdn)
     except Exception as e:
         module.fail_json(msg="Failed to remove host: %s" % e)
 

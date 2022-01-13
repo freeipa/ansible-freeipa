@@ -61,7 +61,7 @@ from ipaplatform.paths import paths
 
 def main():
     module = AnsibleModule(
-        argument_spec=dict(),
+        argument_spec={},
         supports_check_mode=True,
     )
 

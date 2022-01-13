@@ -316,7 +316,9 @@ def main():
         ansible_log.debug("-- CONFIGURE DIRSRV --")
         # Configure dirsrv
         with redirect_stdout(ansible_log):
+            # pylint: disable=deprecated-method
             argspec = inspect.getargspec(install_replica_ds)
+            # pylint: enable=deprecated-method
             if "promote" in argspec.args:
                 ds = install_replica_ds(config, options, ca_enabled,
                                         remote_api,
@@ -336,9 +338,13 @@ def main():
                                             ca_file=cafile,
                                             pkcs12_info=dirsrv_pkcs12_info)
 
+        # pylint: disable=deprecated-method
         ansible_log.debug("-- INSTALL DNS RECORDS --")
+        # pylint: enable=deprecated-method
         # Always try to install DNS records
+        # pylint: disable=deprecated-method
         argspec = inspect.getargspec(install_dns_records)
+        # pylint: enable=deprecated-method
         if "fstore" not in argspec.args:
             install_dns_records(config, options, remote_api)
         else:
