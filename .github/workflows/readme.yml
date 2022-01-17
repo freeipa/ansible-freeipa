@@ -1,0 +1,16 @@
+---
+name: readme test
+on:
+  - push
+  - pull_request
+jobs:
+  ansible_test:
+    name: Verify readme
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run readme test
+        run: |
+          error=0
+          for i in README-*.md; do grep -q $i README.md && echo "OK: $i" || { echo -e "\033[31;1mERROR: ${i} missing\033[0m"; error=1; } done
+          exit $error
