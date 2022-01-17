@@ -29,6 +29,12 @@ jobs:
 
 - template: templates/build_container.yml
   parameters:
+    job_name_suffix: C8S
+    container_name: c8s
+    build_scenario_name: c8s-build
+
+- template: templates/build_container.yml
+  parameters:
     job_name_suffix: Centos9
     container_name: centos-9
     build_scenario_name: centos-9-build
