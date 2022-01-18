@@ -21,10 +21,6 @@ from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
-try:
-    import gssapi
-except ImportError:
-    gssapi = None
 import os
 import shutil
 import subprocess
@@ -82,22 +78,17 @@ def kinit_keytab(principal, keytab, ccache_name, config):
     It uses the specified config file to kinit and stores the TGT
     in ccache_name.
     """
-    if gssapi is None:
-        raise ImportError("gssapi is not available")
-
+    args = ["/usr/bin/kinit", "-kt", keytab, "-c", ccache_name, principal]
     old_config = os.environ.get('KRB5_CONFIG')
-    os.environ['KRB5_CONFIG'] = config
+    os.environ["KRB5_CONFIG"] = config
+
     try:
-        name = gssapi.Name(principal, gssapi.NameType.kerberos_principal)
-        store = {'ccache': ccache_name,
-                 'client_keytab': keytab}
-        cred = gssapi.Credentials(name=name, store=store, usage='initiate')
-        return cred
+        return run_cmd(args)
     finally:
         if old_config is not None:
-            os.environ['KRB5_CONFIG'] = old_config
+            os.environ["KRB5_CONFIG"] = old_config
         else:
-            os.environ.pop('KRB5_CONFIG', None)
+            os.environ.pop("KRB5_CONFIG", None)
 
 
 KRB5CONF_TEMPLATE = """

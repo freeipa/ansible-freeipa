@@ -65,7 +65,6 @@ Requirements
 **Controller**
 * Ansible version: 2.8+ (ansible-freeipa is an Ansible Collection)
 * /usr/bin/kinit is required on the controller if a one time password (OTP) is used
-* python3-gssapi is required on the controller if a one time password (OTP) is used with keytab to install the client.
 
 **Node**
 * Supported FreeIPA version (see above)
@@ -285,7 +284,8 @@ ipaserver_domain=test.local
 ipaserver_realm=TEST.LOCAL
 ```
 
-For enhanced security it is possible to use a auto-generated one-time-password (OTP). This will be generated on the controller using the (first) server. It is needed to have the python-gssapi bindings installed on the controller for this.
+For enhanced security it is possible to use a auto-generated one-time-password (OTP). This will be generated on the controller using the (first) server.
+
 To enable the generation of the one-time-password:
 ```yaml
 [ipaclients:vars]
