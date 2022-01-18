@@ -33,7 +33,6 @@ Requirements
 **Controller**
 * Ansible version: 2.8+
 * /usr/bin/kinit is required on the controller if a one time password (OTP) is used
-* python3-gssapi is required on the controller if a one time password (OTP) is used with keytab
 
 **Node**
 * Supported FreeIPA version (see above)
