@@ -171,7 +171,6 @@
     register: result
     failed_when: not result.changed or result.failed
 
-
   - name: Ensure all forwarders are absent, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
@@ -182,6 +181,54 @@
         - ip_address: 2001:4860:4860::8888
           port: 53
       state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure forwarder is present.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.8.8
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure forwarders are present.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.4.4
+        - ip_address: 8.8.8.8
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure forwarders are present, again.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.4.4
+        - ip_address: 8.8.8.8
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure another forwarder is present.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.4.4
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure forwarders are present.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.4.4
+        - ip_address: 8.8.8.8
     register: result
     failed_when: result.changed or result.failed
 

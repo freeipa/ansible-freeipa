@@ -144,8 +144,8 @@ def gen_args(module, state, dnsconfig, forwarders, forward_policy,
                 _args['idnsforwarders'] = ['']
 
         elif state == 'present':
-            _args['idnsforwarders'] = [
-                fwd for fwd in _forwarders if fwd not in global_forwarders]
+            _args['idnsforwarders'] = \
+                list(set(list(_forwarders) + list(global_forwarders)))
             # If no forwarders should be added, remove argument.
             if not _args['idnsforwarders']:
                 del _args['idnsforwarders']
