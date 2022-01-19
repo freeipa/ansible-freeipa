@@ -12,5 +12,5 @@ jobs:
       - name: Run readme test
         run: |
           error=0
-          for i in README-*.md; do grep -q $i README.md && echo "OK: $i" || { echo -e "\033[31;1mERROR: ${i} missing\033[0m"; error=1; } done
+          for i in roles/ipa*/README.md README-*.md; do grep -q $i README.md && echo "OK: $i" || { echo -e "\033[31;1mERROR: ${i} missing\033[0m"; error=1; } done
           exit $error
