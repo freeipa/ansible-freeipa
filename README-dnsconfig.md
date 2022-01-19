@@ -71,6 +71,7 @@ Example playbook to ensure a global forwarder, with a custom port, is absent:
       forwarders:
           - ip_address: 2001:4860:4860::8888
             port: 53
+      action: member
       state: absent
 ```
 
@@ -130,7 +131,8 @@ Variable | Description | Required
 &nbsp; | `port` - The custom port that should be used on this server. | no
 `forward_policy` | The global forwarding policy. It can be one of `only`, `first`, or `none`.  | no
 `allow_sync_ptr` | Allow synchronization of forward (A, AAAA) and reverse (PTR) records (bool). | yes
-`state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. | yes
+`action` | Work on dnsconfig or member level. It can be one of `member` or `dnsconfig` and defaults to `dnsconfig`. Only `forwarders` can be managed with `action: member`. | no
+`state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. `absent` can only be used with `action: member` and `forwarders`. | yes
 
 
 Authors

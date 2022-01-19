@@ -59,8 +59,16 @@ options:
       Allow synchronization of forward (A, AAAA) and reverse (PTR) records.
     required: false
     type: bool
+  action:
+    description: |
+      Work on dnsconfig or member level. It can be one of `member` or
+      `dnsconfig`. Only `forwarders` can be managed with `action: member`.
+    default: "dnsconfig"
+    choices: ["member", "dnsconfig"]
   state:
-    description: State to ensure
+    description: |
+      The state to ensure. It can be one of `present` or `absent`.
+      `absent` can only be used with `action: member` and `forwarders`.
     default: present
     choices: ["present", "absent"]
 """
@@ -83,6 +91,7 @@ EXAMPLES = """
       - ip_address: 2001:4860:4860::8888
         port: 53
     state: absent
+    action: member
 
 # Disable PTR record synchronization.
 - ipadnsconfig:
@@ -118,7 +127,7 @@ def find_dnsconfig(module):
     return None
 
 
-def gen_args(module, state, dnsconfig, forwarders, forward_policy,
+def gen_args(module, state, action, dnsconfig, forwarders, forward_policy,
              allow_sync_ptr):
     _args = {}
 
@@ -137,15 +146,20 @@ def gen_args(module, state, dnsconfig, forwarders, forward_policy,
 
         global_forwarders = dnsconfig.get('idnsforwarders', [])
         if state == 'absent':
-            _args['idnsforwarders'] = [
-                fwd for fwd in global_forwarders if fwd not in _forwarders]
-            # When all forwarders should be excluded, use an empty string ('').
-            if not _args['idnsforwarders']:
-                _args['idnsforwarders'] = ['']
+            if action == "member":
+                _args['idnsforwarders'] = [
+                    fwd for fwd in global_forwarders if fwd not in _forwarders]
+                # When all forwarders should be excluded,
+                # use an empty string ('').
+                if not _args['idnsforwarders']:
+                    _args['idnsforwarders'] = ['']
 
         elif state == 'present':
-            _args['idnsforwarders'] = \
-                list(set(list(_forwarders) + list(global_forwarders)))
+            if action == "member":
+                _args['idnsforwarders'] = \
+                    list(set(list(_forwarders) + list(global_forwarders)))
+            else:
+                _args['idnsforwarders'] = _forwarders
             # If no forwarders should be added, remove argument.
             if not _args['idnsforwarders']:
                 del _args['idnsforwarders']
@@ -179,6 +193,8 @@ def main():
             allow_sync_ptr=dict(type='bool', required=False, default=None),
 
             # general
+            action=dict(type="str", default="dnsconfig",
+                        choices=["member", "dnsconfig"]),
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
         )
@@ -191,11 +207,17 @@ def main():
     forward_policy = ansible_module.params_get('forward_policy')
     allow_sync_ptr = ansible_module.params_get('allow_sync_ptr')
 
+    action = ansible_module.params_get('action')
     state = ansible_module.params_get('state')
 
     # Check parameters.
     invalid = []
+    if state == "present" and action == "member":
+        invalid = ['forward_policy', 'allow_sync_ptr']
     if state == 'absent':
+        if action != "member":
+            ansible_module.fail_json(
+                msg="State 'absent' is only valid with action 'member'.")
         invalid = ['forward_policy', 'allow_sync_ptr']
 
     ansible_module.params_fail_used_invalid(invalid, state)
@@ -208,7 +230,7 @@ def main():
     with ansible_module.ipa_connect():
 
         res_find = find_dnsconfig(ansible_module)
-        args = gen_args(ansible_module, state, res_find, forwarders,
+        args = gen_args(ansible_module, state, action, res_find, forwarders,
                         forward_policy, allow_sync_ptr)
 
         # Execute command only if configuration changes.
