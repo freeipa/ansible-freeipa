@@ -133,6 +133,19 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure hosts db1 and db2 (no FQDN) are member of host-group databases again
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: databases
+      state: present
+      host:
+      - db1
+      - db2
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: Ensure host-group mysql-server is member of host-group databases
     ipahostgroup:
       ipaadmin_password: SomeADMINpassword

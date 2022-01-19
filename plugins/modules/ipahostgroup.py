@@ -139,7 +139,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list
+    gen_intersection_list, ensure_fqdn
 
 
 def find_hostgroup(module, name):
@@ -280,6 +280,15 @@ def main():
         if not has_mod_rename and rename is not None:
             ansible_module.fail_json(
                 msg="Renaming hostgroups is not supported by your IPA version")
+
+        # If hosts are given, ensure that the hosts are FQDN and also
+        # lowercase to be able to do a proper comparison to exising hosts
+        # in the hostgroup.
+        # Fixes #666 (ipahostgroup not idempotent and with error)
+        if host is not None:
+            default_domain = ansible_module.ipa_get_domain()
+            host = [ensure_fqdn(_host, default_domain).lower()
+                    for _host in host]
 
         commands = []
 
