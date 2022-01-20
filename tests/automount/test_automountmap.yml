@@ -1,6 +1,6 @@
 ---
 - name: Test automountmap
-  hosts: ipaserver
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: no
   gather_facts: no
 
