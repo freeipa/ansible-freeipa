@@ -297,17 +297,19 @@ def main():
     hostcategory = ansible_module.params_get("hostcategory")  # noqa
     nomembers = ansible_module.params_get("nomembers")  # noqa
     host = ansible_module.params_get("host")
-    hostgroup = ansible_module.params_get("hostgroup")
-    user = ansible_module.params_get("user")
-    group = ansible_module.params_get("group")
+    hostgroup = ansible_module.params_get_lowercase("hostgroup")
+    user = ansible_module.params_get_lowercase("user")
+    group = ansible_module.params_get_lowercase("group")
     allow_sudocmd = ansible_module.params_get('allow_sudocmd')
-    allow_sudocmdgroup = ansible_module.params_get('allow_sudocmdgroup')
+    allow_sudocmdgroup = \
+        ansible_module.params_get_lowercase('allow_sudocmdgroup')
     deny_sudocmd = ansible_module.params_get('deny_sudocmd')
-    deny_sudocmdgroup = ansible_module.params_get('deny_sudocmdgroup')
+    deny_sudocmdgroup = \
+        ansible_module.params_get_lowercase('deny_sudocmdgroup')
     sudooption = ansible_module.params_get("sudooption")
     order = ansible_module.params_get("order")
-    runasuser = ansible_module.params_get("runasuser")
-    runasgroup = ansible_module.params_get("runasgroup")
+    runasuser = ansible_module.params_get_lowercase("runasuser")
+    runasgroup = ansible_module.params_get_lowercase("runasgroup")
     action = ansible_module.params_get("action")
 
     # state
@@ -383,6 +385,17 @@ def main():
             )
 
         commands = []
+        host_add, host_del = [], []
+        user_add, user_del = [], []
+        group_add, group_del = [], []
+        hostgroup_add, hostgroup_del = [], []
+        allow_cmd_add, allow_cmd_del = [], []
+        allow_cmdgroup_add, allow_cmdgroup_del = [], []
+        deny_cmd_add, deny_cmd_del = [], []
+        deny_cmdgroup_add, deny_cmdgroup_del = [], []
+        sudooption_add, sudooption_del = [], []
+        runasuser_add, runasuser_del = [], []
+        runasgroup_add, runasgroup_del = [], []
 
         for name in names:
             # Make sure sudorule exists
@@ -487,94 +500,10 @@ def main():
                     runasgroup_add, runasgroup_del = gen_add_del_lists(
                         runasgroup,
                         (
-                            res_find.get('ipasudorunas_group', [])
+                            res_find.get('ipasudorunasgroup_group', [])
                             + res_find.get('ipasudorunasextgroup', [])
                         )
                     )
-
-                    # Add hosts and hostgroups
-                    if len(host_add) > 0 or len(hostgroup_add) > 0:
-                        commands.append([name, "sudorule_add_host",
-                                         {
-                                             "host": host_add,
-                                             "hostgroup": hostgroup_add,
-                                         }])
-                    # Remove hosts and hostgroups
-                    if len(host_del) > 0 or len(hostgroup_del) > 0:
-                        commands.append([name, "sudorule_remove_host",
-                                         {
-                                             "host": host_del,
-                                             "hostgroup": hostgroup_del,
-                                         }])
-
-                    # Add users and groups
-                    if len(user_add) > 0 or len(group_add) > 0:
-                        commands.append([name, "sudorule_add_user",
-                                         {
-                                             "user": user_add,
-                                             "group": group_add,
-                                         }])
-                    # Remove users and groups
-                    if len(user_del) > 0 or len(group_del) > 0:
-                        commands.append([name, "sudorule_remove_user",
-                                         {
-                                             "user": user_del,
-                                             "group": group_del,
-                                         }])
-
-                    # Add commands allowed
-                    if len(allow_cmd_add) > 0 or len(allow_cmdgroup_add) > 0:
-                        commands.append([name, "sudorule_add_allow_command",
-                                         {"sudocmd": allow_cmd_add,
-                                          "sudocmdgroup": allow_cmdgroup_add,
-                                          }])
-
-                    if len(allow_cmd_del) > 0 or len(allow_cmdgroup_del) > 0:
-                        commands.append([name, "sudorule_remove_allow_command",
-                                         {"sudocmd": allow_cmd_del,
-                                          "sudocmdgroup": allow_cmdgroup_del
-                                          }])
-
-                    # Add commands denied
-                    if len(deny_cmd_add) > 0 or len(deny_cmdgroup_add) > 0:
-                        commands.append([name, "sudorule_add_deny_command",
-                                         {"sudocmd": deny_cmd_add,
-                                          "sudocmdgroup": deny_cmdgroup_add,
-                                          }])
-
-                    if len(deny_cmd_del) > 0 or len(deny_cmdgroup_del) > 0:
-                        commands.append([name, "sudorule_remove_deny_command",
-                                         {"sudocmd": deny_cmd_del,
-                                          "sudocmdgroup": deny_cmdgroup_del
-                                          }])
-
-                    # Add RunAS Users
-                    if len(runasuser_add) > 0:
-                        commands.append([name, "sudorule_add_runasuser",
-                                         {"user": runasuser_add}])
-                    # Remove RunAS Users
-                    if len(runasuser_del) > 0:
-                        commands.append([name, "sudorule_remove_runasuser",
-                                         {"user": runasuser_del}])
-
-                    # Add RunAS Groups
-                    if len(runasgroup_add) > 0:
-                        commands.append([name, "sudorule_add_runasgroup",
-                                         {"group": runasgroup_add}])
-                    # Remove RunAS Groups
-                    if len(runasgroup_del) > 0:
-                        commands.append([name, "sudorule_remove_runasgroup",
-                                         {"group": runasgroup_del}])
-
-                    # Add sudo options
-                    for sudoopt in sudooption_add:
-                        commands.append([name, "sudorule_add_option",
-                                         {"ipasudoopt": sudoopt}])
-
-                    # Remove sudo options
-                    for sudoopt in sudooption_del:
-                        commands.append([name, "sudorule_remove_option",
-                                         {"ipasudoopt": sudoopt}])
 
                 elif action == "member":
                     if res_find is None:
@@ -585,56 +514,47 @@ def main():
                     # deny_sudocmdgroup, sudooption, runasuser, runasgroup
                     # and res_find to only try to add the items that not in
                     # the sudorule already
-                    if host is not None and \
-                       "memberhost_host" in res_find:
-                        host = gen_add_list(
-                            host, res_find["memberhost_host"])
-                    if hostgroup is not None and \
-                       "memberhost_hostgroup" in res_find:
-                        hostgroup = gen_add_list(
-                            hostgroup, res_find["memberhost_hostgroup"])
-                    if user is not None and \
-                       "memberuser_user" in res_find:
-                        user = gen_add_list(
-                            user, res_find["memberuser_user"])
-                    if group is not None and \
-                       "memberuser_group" in res_find:
-                        group = gen_add_list(
-                            group, res_find["memberuser_group"])
-                    if allow_sudocmd is not None and \
-                       "memberallowcmd_sudocmd" in res_find:
-                        allow_sudocmd = gen_add_list(
-                            allow_sudocmd, res_find["memberallowcmd_sudocmd"])
-                    if allow_sudocmdgroup is not None and \
-                       "memberallowcmd_sudocmdgroup" in res_find:
-                        allow_sudocmdgroup = gen_add_list(
+                    if host is not None:
+                        host_add = gen_add_list(
+                            host, res_find.get("memberhost_host"))
+                    if hostgroup is not None:
+                        hostgroup_add = gen_add_list(
+                            hostgroup, res_find.get("memberhost_hostgroup"))
+                    if user is not None:
+                        user_add = gen_add_list(
+                            user, res_find.get("memberuser_user"))
+                    if group is not None:
+                        group_add = gen_add_list(
+                            group, res_find.get("memberuser_group"))
+                    if allow_sudocmd is not None:
+                        allow_cmd_add = gen_add_list(
+                            allow_sudocmd,
+                            res_find.get("memberallowcmd_sudocmd")
+                        )
+                    if allow_sudocmdgroup is not None:
+                        allow_cmdgroup_add = gen_add_list(
                             allow_sudocmdgroup,
-                            res_find["memberallowcmd_sudocmdgroup"])
-                    if deny_sudocmd is not None and \
-                       "memberdenycmd_sudocmd" in res_find:
-                        deny_sudocmd = gen_add_list(
-                            deny_sudocmd, res_find["memberdenycmd_sudocmd"])
-                    if deny_sudocmdgroup is not None and \
-                       "memberdenycmd_sudocmdgroup" in res_find:
-                        deny_sudocmdgroup = gen_add_list(
+                            res_find.get("memberallowcmd_sudocmdgroup")
+                        )
+                    if deny_sudocmd is not None:
+                        deny_cmd_add = gen_add_list(
+                            deny_sudocmd,
+                            res_find.get("memberdenycmd_sudocmd")
+                        )
+                    if deny_sudocmdgroup is not None:
+                        deny_cmdgroup_add = gen_add_list(
                             deny_sudocmdgroup,
-                            res_find["memberdenycmd_sudocmdgroup"])
-                    if sudooption is not None and \
-                       "ipasudoopt" in res_find:
-                        sudooption = gen_add_list(
-                            sudooption, res_find["ipasudoopt"])
+                            res_find("memberdenycmd_sudocmdgroup")
+                        )
+                    if sudooption is not None:
+                        sudooption_add = gen_add_list(
+                            sudooption, res_find.get("ipasudoopt"))
                     # runasuser attribute can be used with both IPA and
                     # non-IPA (external) users, so we need to compare
                     # the provided list against both users and external
                     # users list.
-                    if (
-                        runasuser is not None
-                        and (
-                            "ipasudorunas_user" in res_find
-                            or "ipasudorunasextuser" in res_find
-                        )
-                    ):
-                        runasuser = gen_add_list(
+                    if runasuser is not None:
+                        runasuser_add = gen_add_list(
                             runasuser,
                             (list(res_find.get('ipasudorunas_user', []))
                              + list(res_find.get('ipasudorunasextuser', [])))
@@ -643,68 +563,12 @@ def main():
                     # non-IPA (external) groups, so we need to compare
                     # the provided list against both users and external
                     # groups list.
-                    if (
-                        runasgroup is not None
-                        and (
-                            "ipasudorunasgroup_group" in res_find
-                            or "ipasudorunasextgroup" in res_find
-                        )
-                    ):
-                        runasgroup = gen_add_list(
+                    if runasgroup is not None:
+                        runasgroup_add = gen_add_list(
                             runasgroup,
                             (list(res_find.get("ipasudorunasgroup_group", []))
                              + list(res_find.get("ipasudorunasextgroup", [])))
                         )
-
-                    # Add hosts and hostgroups
-                    if host is not None or hostgroup is not None:
-                        commands.append([name, "sudorule_add_host",
-                                         {
-                                             "host": host,
-                                             "hostgroup": hostgroup,
-                                         }])
-
-                    # Add users and groups
-                    if user is not None or group is not None:
-                        commands.append([name, "sudorule_add_user",
-                                         {
-                                             "user": user,
-                                             "group": group,
-                                         }])
-
-                    # Add commands
-                    if allow_sudocmd is not None \
-                       or allow_sudocmdgroup is not None:
-                        commands.append([name, "sudorule_add_allow_command",
-                                         {"sudocmd": allow_sudocmd,
-                                          "sudocmdgroup": allow_sudocmdgroup,
-                                          }])
-
-                    # Add commands
-                    if deny_sudocmd is not None \
-                       or deny_sudocmdgroup is not None:
-                        commands.append([name, "sudorule_add_deny_command",
-                                         {"sudocmd": deny_sudocmd,
-                                          "sudocmdgroup": deny_sudocmdgroup,
-                                          }])
-
-                    # Add RunAS Users
-                    if runasuser is not None and len(runasuser) > 0:
-                        commands.append([name, "sudorule_add_runasuser",
-                                         {"user": runasuser}])
-
-                    # Add RunAS Groups
-                    if runasgroup is not None and len(runasgroup) > 0:
-                        commands.append([name, "sudorule_add_runasgroup",
-                                         {"group": runasgroup}])
-
-                    # Add options
-                    if sudooption is not None:
-                        existing_opts = res_find.get('ipasudoopt', [])
-                        for sudoopt in sudooption:
-                            if sudoopt not in existing_opts:
-                                commands.append([name, "sudorule_add_option",
-                                                 {"ipasudoopt": sudoopt}])
 
             elif state == "absent":
                 if action == "sudorule":
@@ -721,153 +585,70 @@ def main():
                     # and res_find to only try to remove the items that are
                     # in sudorule
                     if host is not None:
-                        if "memberhost_host" in res_find:
-                            host = gen_intersection_list(
-                                host, res_find["memberhost_host"])
-                        else:
-                            host = None
+                        host_del = gen_intersection_list(
+                            host, res_find.get("memberhost_host"))
+
                     if hostgroup is not None:
-                        if "memberhost_hostgroup" in res_find:
-                            hostgroup = gen_intersection_list(
-                                hostgroup, res_find["memberhost_hostgroup"])
-                        else:
-                            hostgroup = None
+                        hostgroup_del = gen_intersection_list(
+                            hostgroup, res_find.get("memberhost_hostgroup"))
+
                     if user is not None:
-                        if "memberuser_user" in res_find:
-                            user = gen_intersection_list(
-                                user, res_find["memberuser_user"])
-                        else:
-                            user = None
+                        user_del = gen_intersection_list(
+                            user, res_find.get("memberuser_user"))
+
                     if group is not None:
-                        if "memberuser_group" in res_find:
-                            group = gen_intersection_list(
-                                group, res_find["memberuser_group"])
-                        else:
-                            group = None
+                        group_del = gen_intersection_list(
+                            group, res_find.get("memberuser_group"))
+
                     if allow_sudocmd is not None:
-                        if "memberallowcmd_sudocmd" in res_find:
-                            allow_sudocmd = gen_intersection_list(
-                                allow_sudocmd,
-                                res_find["memberallowcmd_sudocmd"])
-                        else:
-                            allow_sudocmd = None
+                        allow_cmd_del = gen_intersection_list(
+                            allow_sudocmd,
+                            res_find.get("memberallowcmd_sudocmd")
+                        )
                     if allow_sudocmdgroup is not None:
-                        if "memberallowcmd_sudocmdgroup" in res_find:
-                            allow_sudocmdgroup = gen_intersection_list(
-                                allow_sudocmdgroup,
-                                res_find["memberallowcmd_sudocmdgroup"])
-                        else:
-                            allow_sudocmdgroup = None
+                        allow_cmdgroup_del = gen_intersection_list(
+                            allow_sudocmdgroup,
+                            res_find.get("memberallowcmd_sudocmdgroup")
+                        )
                     if deny_sudocmd is not None:
-                        if "memberdenycmd_sudocmd" in res_find:
-                            deny_sudocmd = gen_intersection_list(
-                                deny_sudocmd,
-                                res_find["memberdenycmd_sudocmd"])
-                        else:
-                            deny_sudocmd = None
+                        deny_cmd_del = gen_intersection_list(
+                            deny_sudocmd,
+                            res_find.get("memberdenycmd_sudocmd")
+                        )
                     if deny_sudocmdgroup is not None:
-                        if "memberdenycmd_sudocmdgroup" in res_find:
-                            deny_sudocmdgroup = gen_intersection_list(
-                                deny_sudocmdgroup,
-                                res_find["memberdenycmd_sudocmdgroup"])
-                        else:
-                            deny_sudocmdgroup = None
+                        deny_cmdgroup_del = gen_intersection_list(
+                            deny_sudocmdgroup,
+                            res_find.get("memberdenycmd_sudocmdgroup")
+                        )
                     if sudooption is not None:
-                        if "ipasudoopt" in res_find:
-                            sudooption = gen_intersection_list(
-                                sudooption, res_find["ipasudoopt"])
-                        else:
-                            sudooption = None
+                        sudooption_del = gen_intersection_list(
+                            sudooption, res_find.get("ipasudoopt"))
                     # runasuser attribute can be used with both IPA and
                     # non-IPA (external) users, so we need to compare
                     # the provided list against both users and external
                     # users list.
                     if runasuser is not None:
-                        if (
-                            "ipasudorunas_user" in res_find
-                            or "ipasudorunasextuser" in res_find
-                        ):
-                            runasuser = gen_intersection_list(
-                                runasuser,
-                                (
-                                    list(res_find.get('ipasudorunas_user', []))
-                                    + list(res_find.get(
-                                        'ipasudorunasextuser', []))
-                                )
+                        runasuser_del = gen_intersection_list(
+                            runasuser,
+                            (
+                                list(res_find.get('ipasudorunas_user', []))
+                                + list(res_find.get('ipasudorunasextuser', []))
                             )
-                        else:
-                            runasuser = None
+                        )
                     # runasgroup attribute can be used with both IPA and
                     # non-IPA (external) groups, so we need to compare
                     # the provided list against both groups and external
                     # groups list.
                     if runasgroup is not None:
-                        if (
-                            "ipasudorunasgroup_group" in res_find
-                            or "ipasudorunasextgroup" in res_find
-                        ):
-                            runasgroup = gen_intersection_list(
-                                runasgroup,
-                                (
-                                    list(res_find.get(
-                                        "ipasudorunasgroup_group", []))
-                                    + list(res_find.get(
-                                        "ipasudorunasextgroup", []))
-                                )
+                        runasgroup_del = gen_intersection_list(
+                            runasgroup,
+                            (
+                                list(res_find.get(
+                                    "ipasudorunasgroup_group", []))
+                                + list(res_find.get(
+                                    "ipasudorunasextgroup", []))
                             )
-                        else:
-                            runasgroup = None
-
-                    # Remove hosts and hostgroups
-                    if host is not None or hostgroup is not None:
-                        commands.append([name, "sudorule_remove_host",
-                                         {
-                                             "host": host,
-                                             "hostgroup": hostgroup,
-                                         }])
-
-                    # Remove users and groups
-                    if user is not None or group is not None:
-                        commands.append([name, "sudorule_remove_user",
-                                         {
-                                             "user": user,
-                                             "group": group,
-                                         }])
-
-                    # Remove allow commands
-                    if allow_sudocmd is not None \
-                       or allow_sudocmdgroup is not None:
-                        commands.append([name, "sudorule_remove_allow_command",
-                                         {"sudocmd": allow_sudocmd,
-                                          "sudocmdgroup": allow_sudocmdgroup
-                                          }])
-
-                    # Remove deny commands
-                    if deny_sudocmd is not None \
-                       or deny_sudocmdgroup is not None:
-                        commands.append([name, "sudorule_remove_deny_command",
-                                         {"sudocmd": deny_sudocmd,
-                                          "sudocmdgroup": deny_sudocmdgroup
-                                          }])
-
-                    # Remove RunAS Users
-                    if runasuser is not None:
-                        commands.append([name, "sudorule_remove_runasuser",
-                                         {"user": runasuser}])
-
-                    # Remove RunAS Groups
-                    if runasgroup is not None:
-                        commands.append([name, "sudorule_remove_runasgroup",
-                                         {"group": runasgroup}])
-
-                    # Remove options
-                    if sudooption is not None:
-                        existing_opts = res_find.get('ipasudoopt', [])
-                        for sudoopt in sudooption:
-                            if sudoopt in existing_opts:
-                                commands.append([name,
-                                                 "sudorule_remove_option",
-                                                 {"ipasudoopt": sudoopt}])
+                        )
 
             elif state == "enabled":
                 if res_find is None:
@@ -891,6 +672,99 @@ def main():
 
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+            # Manage members.
+            # Manage hosts and hostgroups
+            if host_add or hostgroup_add:
+                commands.append([name, "sudorule_add_host",
+                                 {
+                                     "host": host_add,
+                                     "hostgroup": hostgroup_add,
+                                 }])
+            if host_del or hostgroup_del:
+                commands.append([name, "sudorule_remove_host",
+                                 {
+                                     "host": host_del,
+                                     "hostgroup": hostgroup_del,
+                                 }])
+
+            # Manage users and groups
+            if user_add or group_add:
+                commands.append([
+                    name, "sudorule_add_user",
+                    {"user": user_add, "group": group_add}
+                ])
+            if user_del or group_del:
+                commands.append([
+                    name, "sudorule_remove_user",
+                    {"user": user_del, "group": group_del}
+                ])
+
+            # Manage commands allowed
+            if allow_cmd_add or allow_cmdgroup_add:
+                commands.append([
+                    name, "sudorule_add_allow_command",
+                    {
+                        "sudocmd": allow_cmd_add,
+                        "sudocmdgroup": allow_cmdgroup_add,
+                    }
+                ])
+            if allow_cmd_del or allow_cmdgroup_del:
+                commands.append([
+                    name, "sudorule_remove_allow_command",
+                    {
+                        "sudocmd": allow_cmd_del,
+                        "sudocmdgroup": allow_cmdgroup_del
+                    }
+                ])
+            # Manage commands denied
+            if deny_cmd_add or deny_cmdgroup_add:
+                commands.append([
+                    name, "sudorule_add_deny_command",
+                    {
+                        "sudocmd": deny_cmd_add,
+                        "sudocmdgroup": deny_cmdgroup_add,
+                    }
+                ])
+            if deny_cmd_del or deny_cmdgroup_del:
+                commands.append([
+                    name, "sudorule_remove_deny_command",
+                    {
+                        "sudocmd": deny_cmd_del,
+                        "sudocmdgroup": deny_cmdgroup_del
+                    }
+                ])
+            # Manage RunAS users
+            if runasuser_add:
+                commands.append([
+                    name, "sudorule_add_runasuser", {"user": runasuser_add}
+                ])
+            if runasuser_del:
+                commands.append([
+                    name, "sudorule_remove_runasuser", {"user": runasuser_del}
+                ])
+
+            # Manage RunAS Groups
+            if runasgroup_add:
+                commands.append([
+                    name, "sudorule_add_runasgroup", {"group": runasgroup_add}
+                ])
+            if runasgroup_del:
+                commands.append([
+                    name, "sudorule_remove_runasgroup",
+                    {"group": runasgroup_del}
+                ])
+            # Manage sudo options
+            if sudooption_add:
+                for option in sudooption_add:
+                    commands.append([
+                        name, "sudorule_add_option", {"ipasudoopt": option}
+                    ])
+            if sudooption_del:
+                for option in sudooption_del:
+                    commands.append([
+                        name, "sudorule_remove_option", {"ipasudoopt": option}
+                    ])
 
         # Execute commands
 
