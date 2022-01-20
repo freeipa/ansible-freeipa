@@ -17,6 +17,7 @@
         - ip_address: 2001:4860:4860::8888
           port: 53
       state: absent
+      action: member
 
   # Tests.
   - name: Set config to invalid IPv4.
@@ -74,23 +75,72 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure forwarder is absent.
+  - name: Ensure forwarder 8.8.8.8 is absent.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.8.8
       state: absent
+      action: member
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure forwarder is absent, again.
+  - name: Ensure forwarder 8.8.8.8 is absent, again.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.8.8
       state: absent
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure forwarder 8.8.4.4 is present.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.4.4
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure forwarder 8.8.8.8 is present.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.8.8
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure forwarder 8.8.4.4 is present.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.4.4
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure forwarders are absent.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.4.4
+        - ip_address: 8.8.8.8
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure forwarders are absent, again.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.4.4
+        - ip_address: 8.8.8.8
     register: result
     failed_when: result.changed or result.failed
 
@@ -168,6 +218,7 @@
         - ip_address: 2001:4860:4860::8888
           port: 53
       state: absent
+      action: member
     register: result
     failed_when: not result.changed or result.failed
 
@@ -181,6 +232,7 @@
         - ip_address: 2001:4860:4860::8888
           port: 53
       state: absent
+      action: member
     register: result
     failed_when: result.changed or result.failed
 
@@ -193,6 +245,16 @@
     register: result
     failed_when: not result.changed or result.failed
 
+  - name: Ensure forwarders is not present.
+    ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      forwarders:
+        - ip_address: 8.8.4.4
+    check_mode: yes
+    register: result
+    failed_when: not result.changed or result.failed
+
   - name: Ensure forwarders are present.
     ipadnsconfig:
       ipaadmin_password: SomeADMINpassword
@@ -200,6 +262,7 @@
       forwarders:
         - ip_address: 8.8.4.4
         - ip_address: 8.8.8.8
+      action: member
     register: result
     failed_when: not result.changed or result.failed
 
@@ -210,6 +273,7 @@
       forwarders:
         - ip_address: 8.8.4.4
         - ip_address: 8.8.8.8
+      action: member
     register: result
     failed_when: result.changed or result.failed
 
@@ -219,6 +283,7 @@
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       forwarders:
         - ip_address: 8.8.4.4
+      action: member
     register: result
     failed_when: result.changed or result.failed
 
@@ -229,6 +294,7 @@
       forwarders:
         - ip_address: 8.8.4.4
         - ip_address: 8.8.8.8
+      action: member
     register: result
     failed_when: result.changed or result.failed
 
@@ -244,3 +310,4 @@
         - ip_address: 2001:4860:4860::8888
           port: 53
       state: absent
+      action: member
