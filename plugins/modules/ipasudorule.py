@@ -544,7 +544,7 @@ def main():
                     if deny_sudocmdgroup is not None:
                         deny_cmdgroup_add = gen_add_list(
                             deny_sudocmdgroup,
-                            res_find("memberdenycmd_sudocmdgroup")
+                            res_find.get("memberdenycmd_sudocmdgroup")
                         )
                     if sudooption is not None:
                         sudooption_add = gen_add_list(
