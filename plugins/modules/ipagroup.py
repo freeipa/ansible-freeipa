@@ -181,6 +181,7 @@ EXAMPLES = """
 RETURN = """
 """
 
+from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
     gen_add_list, gen_intersection_list
@@ -198,7 +199,14 @@ def find_group(module, name):
         module.fail_json(
             msg="There is more than one group '%s'" % (name))
     elif len(_result["result"]) == 1:
-        return _result["result"][0]
+        _res = _result["result"][0]
+        # The returned services are of type ipapython.kerberos.Principal,
+        # also services are not case sensitive. Therefore services are
+        # converted to lowercase strings to be able to do the comparison.
+        if "member_service" in _res:
+            _res["member_service"] = \
+                [to_text(svc).lower() for svc in _res["member_service"]]
+        return _res
 
     return None
 
@@ -308,7 +316,8 @@ def main():
     nomembers = ansible_module.params_get("nomembers")
     user = ansible_module.params_get("user")
     group = ansible_module.params_get("group")
-    service = ansible_module.params_get("service")
+    # Services are not case sensitive
+    service = ansible_module.params_get_lowercase("service")
     membermanager_user = ansible_module.params_get("membermanager_user")
     membermanager_group = ansible_module.params_get("membermanager_group")
     externalmember = ansible_module.params_get("externalmember")
