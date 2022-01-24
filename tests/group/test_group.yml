@@ -5,6 +5,23 @@
   gather_facts: false
 
   tasks:
+  # setup
+  - include_tasks: ../env_freeipa_facts.yml
+
+  # GET DOMAIN AND REALM
+
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Get Realm from server name
+    set_fact:
+      ipaserver_realm: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') | upper }}"
+    when: ipaserver_realm is not defined
+
+  # CLEANUP TEST ITEMS
+
   - name: Ensure users user1, user2 and user3 are absent
     ipauser:
       ipaadmin_password: SomeADMINpassword
@@ -18,6 +35,8 @@
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group3,group2,group1
       state: absent
+
+  # CREATE TEST ITEMS
 
   - name: Ensure users user1..user3 are present
     ipauser:
@@ -35,6 +54,8 @@
         last: Last
     register: result
     failed_when: not result.changed or result.failed
+
+  # TESTS
 
   - name: Ensure group1 is present
     ipagroup:
@@ -118,6 +139,156 @@
       action: member
     register: result
     failed_when: result.changed or result.failed
+
+    # service
+
+  - block:
+
+    - name: Ensure service "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is present in group group1
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure service "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is present in group group1, again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure service "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is present in group group1
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure service "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is present in group group1, again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure service "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is absent in group group1
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure service "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is absent in group group1, again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure service "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is absent in group group1
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure service "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is absent in group group1, again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure services are present in group group1
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure services are present in group group1, again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'http/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure services are absent in group group1
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'LDAP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure services are absent in group group1, again
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        service:
+        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    when: ipa_version is version('4.7.0', '>=')
+
+    # user
 
   - name: Ensure users user1, user2 and user3 are present in group group1
     ipagroup:
@@ -296,6 +467,8 @@
       - user2
     register: result
     failed_when: not result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
 
   - name: Ensure group group3, group2 and group1 are absent
     ipagroup:
