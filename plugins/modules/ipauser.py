@@ -1354,14 +1354,14 @@ def main():
                     if res_find.get("preserved", False):
                         commands.append([name, "user_undel", {}])
                 else:
-                    raise ValueError("No preserved user '%s'" % name)
+                    raise ValueError("No user '%s'" % name)
 
             elif state == "enabled":
                 if res_find is not None:
                     if res_find["nsaccountlock"]:
                         commands.append([name, "user_enable", {}])
                 else:
-                    raise ValueError("No disabled user '%s'" % name)
+                    raise ValueError("No user '%s'" % name)
 
             elif state == "disabled":
                 if res_find is not None:
@@ -1373,6 +1373,8 @@ def main():
             elif state == "unlocked":
                 if res_find is not None:
                     commands.append([name, "user_unlock", {}])
+                else:
+                    raise ValueError("No user '%s'" % name)
 
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
