@@ -369,6 +369,15 @@
     register: result
     failed_when: not result.changed or result.failed
 
+  - name: User pinky absent and preserved, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      preserve: yes
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: User pinky undeleted (preserved before)
     ipauser:
       ipaadmin_password: SomeADMINpassword
@@ -376,6 +385,14 @@
       state: undeleted
     register: result
     failed_when: not result.changed or result.failed
+
+  - name: User pinky undeleted (preserved before), again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      state: undeleted
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: Users pinky disabled
     ipauser:
@@ -385,6 +402,14 @@
     register: result
     failed_when: not result.changed or result.failed
 
+  - name: Users pinky disabled, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      state: disabled
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: User pinky enabled
     ipauser:
       ipaadmin_password: SomeADMINpassword
@@ -392,6 +417,43 @@
       state: enabled
     register: result
     failed_when: not result.changed or result.failed
+
+  - name: User pinky enabled, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      state: enabled
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: User pinky absent and preserved for future exclusion.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      preserve: yes
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: User pinky absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: User pinky absent and preserved, when already absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      preserve: yes
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: Remove test users
     ipauser:

@@ -474,41 +474,31 @@ user:
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, date_format, \
-    encode_certificate, load_cert_from_str, DN_x500_text, to_text
+    encode_certificate, load_cert_from_str, DN_x500_text, to_text, \
+    ipalib_errors
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
 
 
-def find_user(module, name, preserved=False):
+def find_user(module, name):
     _args = {
         "all": True,
-        "uid": name,
     }
-    if preserved:
-        _args["preserved"] = preserved
 
-    _result = module.ipa_command("user_find", name, _args)
+    try:
+        _result = module.ipa_command("user_show", name, _args).get("result")
+    except ipalib_errors.NotFound:
+        return None
 
-    if len(_result["result"]) > 1:
-        module.fail_json(
-            msg="There is more than one user '%s'" % (name))
-    elif len(_result["result"]) == 1:
-        # Transform each principal to a string
-        _result = _result["result"][0]
-        if "krbprincipalname" in _result \
-           and _result["krbprincipalname"] is not None:
-            _list = []
-            for x in _result["krbprincipalname"]:
-                _list.append(str(x))
-            _result["krbprincipalname"] = _list
-        certs = _result.get("usercertificate")
-        if certs is not None:
-            _result["usercertificate"] = [encode_certificate(x)
-                                          for x in certs]
-        return _result
-
-    return None
+    # Transform each principal to a string
+    _result["krbprincipalname"] = [
+        to_text(x) for x in (_result.get("krbprincipalname") or [])
+    ]
+    _result["usercertificate"] = [
+        encode_certificate(x) for x in (_result.get("usercertificate") or [])
+    ]
+    return _result
 
 
 def gen_args(first, last, fullname, displayname, initials, homedir, shell,
@@ -1085,12 +1075,6 @@ def main():
 
             # Make sure user exists
             res_find = find_user(ansible_module, name)
-            # Also search for preserved user if the user could not be found
-            if res_find is None:
-                res_find_preserved = find_user(ansible_module, name,
-                                               preserved=True)
-            else:
-                res_find_preserved = None
 
             # Create command
             if state == "present":
@@ -1103,10 +1087,6 @@ def main():
                     sshpubkey, userauthtype, userclass, radius, radiususer,
                     departmentnumber, employeenumber, employeetype,
                     preferredlanguage, noprivate, nomembers)
-
-                # Also check preserved users
-                if res_find is None and res_find_preserved is not None:
-                    res_find = res_find_preserved
 
                 if action == "user":
                     # Found the user
@@ -1310,16 +1290,16 @@ def main():
                                              gen_certmapdata_args(_data)])
 
             elif state == "absent":
-                # Also check preserved users
-                if res_find is None and res_find_preserved is not None:
-                    res_find = res_find_preserved
-
                 if action == "user":
                     if res_find is not None:
                         args = {}
                         if preserve is not None:
                             args["preserve"] = preserve
-                        commands.append([name, "user_del", args])
+                        if (
+                            not res_find.get("preserved", False)
+                            or not args.get("preserve", False)
+                        ):
+                            commands.append([name, "user_del", args])
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
@@ -1370,17 +1350,18 @@ def main():
                             commands.append([name, "user_remove_certmapdata",
                                              gen_certmapdata_args(_data)])
             elif state == "undeleted":
-                if res_find_preserved is not None:
-                    commands.append([name, "user_undel", {}])
+                if res_find is not None:
+                    if res_find.get("preserved", False):
+                        commands.append([name, "user_undel", {}])
                 else:
-                    raise ValueError("No preserved user '%s'" % name)
+                    raise ValueError("No user '%s'" % name)
 
             elif state == "enabled":
                 if res_find is not None:
                     if res_find["nsaccountlock"]:
                         commands.append([name, "user_enable", {}])
                 else:
-                    raise ValueError("No disabled user '%s'" % name)
+                    raise ValueError("No user '%s'" % name)
 
             elif state == "disabled":
                 if res_find is not None:
@@ -1392,6 +1373,8 @@ def main():
             elif state == "unlocked":
                 if res_find is not None:
                     commands.append([name, "user_unlock", {}])
+                else:
+                    raise ValueError("No user '%s'" % name)
 
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
