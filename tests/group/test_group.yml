@@ -2,23 +2,17 @@
 - name: Test group
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
-  gather_facts: false
+  gather_facts: true
 
   tasks:
   # setup
   - include_tasks: ../env_freeipa_facts.yml
 
-  # GET DOMAIN AND REALM
+  # GET FQDN_AT_DOMAIN
 
-  - name: Get Domain from server name
+  - name: Get fqdn_at_domain
     set_fact:
-      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
-    when: ipaserver_domain is not defined
-
-  - name: Get Realm from server name
-    set_fact:
-      ipaserver_realm: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') | upper }}"
-    when: ipaserver_realm is not defined
+      fqdn_at_domain: "{{ ansible_facts['fqdn'] + '@' + ipaserver_realm }}"
 
   # CLEANUP TEST ITEMS
 
@@ -144,93 +138,93 @@
 
   - block:
 
-    - name: Ensure service "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is present in group group1
+    - name: Ensure service "{{ 'HTTP/' + fqdn_at_domain }}" is present in group group1
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'HTTP/' + fqdn_at_domain }}"
         action: member
       register: result
       failed_when: not result.changed or result.failed
 
-    - name: Ensure service "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is present in group group1, again
+    - name: Ensure service "{{ 'HTTP/' + fqdn_at_domain }}" is present in group group1, again
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'HTTP/' + fqdn_at_domain }}"
         action: member
       register: result
       failed_when: result.changed or result.failed
 
-    - name: Ensure service "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is present in group group1
+    - name: Ensure service "{{ 'ldap/' + fqdn_at_domain }}" is present in group group1
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'ldap/' + fqdn_at_domain }}"
         action: member
       register: result
       failed_when: not result.changed or result.failed
 
-    - name: Ensure service "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is present in group group1, again
+    - name: Ensure service "{{ 'ldap/' + fqdn_at_domain }}" is present in group group1, again
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'ldap/' + fqdn_at_domain }}"
         action: member
       register: result
       failed_when: result.changed or result.failed
 
-    - name: Ensure service "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is absent in group group1
+    - name: Ensure service "{{ 'HTTP/' + fqdn_at_domain }}" is absent in group group1
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'HTTP/' + fqdn_at_domain }}"
         action: member
         state: absent
       register: result
       failed_when: not result.changed or result.failed
 
-    - name: Ensure service "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is absent in group group1, again
+    - name: Ensure service "{{ 'HTTP/' + fqdn_at_domain }}" is absent in group group1, again
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'HTTP/' + fqdn_at_domain }}"
         action: member
         state: absent
       register: result
       failed_when: result.changed or result.failed
 
-    - name: Ensure service "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is absent in group group1
+    - name: Ensure service "{{ 'ldap/' + fqdn_at_domain }}" is absent in group group1
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'ldap/' + fqdn_at_domain }}"
         action: member
         state: absent
       register: result
       failed_when: not result.changed or result.failed
 
-    - name: Ensure service "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}" is absent in group group1, again
+    - name: Ensure service "{{ 'ldap/' + fqdn_at_domain }}" is absent in group group1, again
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'ldap/' + fqdn_at_domain }}"
         action: member
         state: absent
       register: result
@@ -242,8 +236,8 @@
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
-        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'HTTP/' + fqdn_at_domain }}"
+        - "{{ 'ldap/' + fqdn_at_domain }}"
         action: member
       register: result
       failed_when: not result.changed or result.failed
@@ -254,8 +248,8 @@
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'http/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
-        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'http/' + fqdn_at_domain }}"
+        - "{{ 'ldap/' + fqdn_at_domain }}"
         action: member
       register: result
       failed_when: result.changed or result.failed
@@ -266,8 +260,8 @@
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
-        - "{{ 'LDAP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'HTTP/' + fqdn_at_domain }}"
+        - "{{ 'LDAP/' + fqdn_at_domain }}"
         action: member
         state: absent
       register: result
@@ -279,8 +273,8 @@
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
-        - "{{ 'HTTP/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
-        - "{{ 'ldap/ipaserver.' + ipaserver_domain + '@' + ipaserver_realm }}"
+        - "{{ 'HTTP/' + fqdn_at_domain }}"
+        - "{{ 'ldap/' + fqdn_at_domain }}"
         action: member
         state: absent
       register: result
