@@ -709,7 +709,7 @@ def main():
                        elements='dict', required=False),
 
             # mod
-            update_password=dict(type='str', default=None,
+            update_password=dict(type='str', default=None, no_log=False,
                                  choices=['always', 'on_create']),
 
             # general
