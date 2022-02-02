@@ -1,0 +1,124 @@
+---
+- name: Test servicedelegationtarget
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  # Change "become" or "gather_facts" to "yes",
+  # if you test playbook requires any.
+  become: no
+  gather_facts: yes
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure servicedelegationtarget test-delegation-target is absent
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      state: absent
+
+  - name: Ensure service is absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      state: absent
+      continue: yes
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure service test-sevice is present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # TESTS
+
+  - name: Ensure servicedelegationtarget test-delegation-target is present
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target is present again
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service/' + ansible_facts['fqdn'] }}" is present
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service/' + ansible_facts['fqdn'] }}" is present again
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service/' + ansible_facts['fqdn'] }}" is absent
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service/' + ansible_facts['fqdn'] }}" is present absent
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target is absent
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target is absent again
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure service is absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      state: absent
+      continue: yes

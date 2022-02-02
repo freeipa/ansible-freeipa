@@ -1,0 +1,10 @@
+---
+- name: Servicedelegationtarget absent example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure servicedelegationtarget test-delegation-target is absent
+    ipaservicedelegationtarget:
+     name: test-delegation-target
+     state: absent
