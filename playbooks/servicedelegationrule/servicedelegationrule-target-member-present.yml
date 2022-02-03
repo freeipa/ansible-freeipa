@@ -1,0 +1,11 @@
+---
+- name: Servicedelegationrule member present example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure member test/example.com is present in servicedelegationrule test-delegation-rule
+    ipaservicedelegationrule:
+     name: test-delegation-rule
+     principal: test/example.com
+     action: member

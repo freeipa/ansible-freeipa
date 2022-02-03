@@ -1,0 +1,9 @@
+---
+- name: Servicedelegationrule present example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure servicedelegationrule test-delegation-rule is present
+    ipaservicedelegationrule:
+     name: test-delegation-rule
