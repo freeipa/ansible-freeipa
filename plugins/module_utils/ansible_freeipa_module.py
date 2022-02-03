@@ -86,6 +86,7 @@ else:
     from ipaplatform.paths import paths
     from ipalib.krb_utils import get_credentials_if_valid
     from ipapython.dnsutil import DNSName
+    from ipapython import kerberos
     from ansible.module_utils.basic import AnsibleModule
     from ansible.module_utils._text import to_text
     from ansible.module_utils.common.text.converters import jsonify
@@ -549,6 +550,87 @@ else:
         except socket.error:
             return False
         return True
+
+    def servicedelegation_normalize_principals(module, principal):
+        """
+        Normalize servicedelegation principals.
+
+        The principals can be service and with IPA 4.9.0+ also host principals.
+        """
+
+        def _normalize_principal_name(name, realm):
+            # Normalize principal name
+            # Copied from ipaserver/plugins/servicedelegation.py
+            try:
+                princ = kerberos.Principal(name, realm=realm)
+            except ValueError as _err:
+                raise ipalib_errors.ValidationError(
+                    name='principal',
+                    reason="Malformed principal: %s" % str(_err))
+
+            if len(princ.components) == 1 and \
+               not princ.components[0].endswith('$'):
+                nprinc = 'host/' + unicode(princ)
+            else:
+                nprinc = unicode(princ)
+            return nprinc
+
+        def _check_exists(module, _type, name):
+            # Check if item of type _type exists using the show command
+            try:
+                module.ipa_command("%s_show" % _type, name, {})
+            except ipalib_errors.NotFound as e:
+                msg = str(e)
+                if "%s not found" % _type in msg:
+                    return False
+                module.fail_json(msg="%s_show failed: %s" % (_type, msg))
+            return True
+
+        ipa_realm = module.ipa_get_realm()
+        _principal = []
+        for _princ in principal:
+            princ = _princ
+            realm = ipa_realm
+
+            # Get principal and realm from _princ if there is a realm
+            if '@' in _princ:
+                princ, realm = _princ.rsplit('@', 1)
+
+            # Lowercase principal
+            princ = princ.lower()
+
+            # Normalize principal
+            try:
+                nprinc = _normalize_principal_name(princ, realm)
+            except ipalib_errors.ValidationError as err:
+                module.fail_json(msg="%s: %s" % (_princ, str(err)))
+            princ = unicode(nprinc)
+
+            # Check that host principal exists
+            if princ.startswith("host/"):
+                if module.ipa_check_version("<", "4.9.0"):
+                    module.fail_json(
+                        msg="The use of host principals is not supported "
+                        "by your IPA version")
+
+                # Get host FQDN (no leading 'host/' and no trailing realm)
+                # (There is no removeprefix and removesuffix in Python2)
+                _host = princ[5:]
+                if _host.endswith("@%s" % realm):
+                    _host = _host[:-len(realm) - 1]
+
+                # Seach for host
+                if not _check_exists(module, "host", _host):
+                    module.fail_json(msg="Host '%s' does not exist" % _host)
+
+            # Check the service principal exists
+            else:
+                if not _check_exists(module, "service", princ):
+                    module.fail_json(msg="Service %s does not exist" % princ)
+
+            _principal.append(princ)
+
+        return _principal
 
     def exit_raw_json(module, **kwargs):
         """
