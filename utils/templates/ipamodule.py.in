@@ -135,7 +135,10 @@ def main():
 
     # present
     PARAMETER1 = ansible_module.params_get("PARAMETER1")
-    PARAMETER2 = ansible_module.params_get("PARAMETER2")
+    # Note: some parameters must be compared in a case insensitive way,
+    # or are transliterated into its lowercase version by IPA API. For
+    # these parameters, use IPAAnsibleModule.params_get_lowercase.
+    PARAMETER2 = ansible_module.params_get_lowercase("PARAMETER2")
 
     # state
     state = ansible_module.params_get("state")
