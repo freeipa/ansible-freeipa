@@ -1,0 +1,9 @@
+---
+- name: Servicedelegationtarget present example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure servicedelegationtarget test-delegation-target is present
+    ipaservicedelegationtarget:
+     name: test-delegation-target
