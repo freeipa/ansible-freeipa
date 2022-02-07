@@ -45,3 +45,13 @@ options:
     type: bool
     default: true
 """
+
+    DELETE_CONTINUE = r"""
+options:
+  delete_continue:
+    description: |
+      Continuous mode. Don't stop on errors. Valid only if `state` is `absent`.
+    aliases: ["continue"]
+    type: bool
+    default: True
+"""

@@ -826,12 +826,28 @@ else:
             ipaapi_ldap_cache=dict(type="bool", default="True"),
         )
 
+        ipa_module_options_spec = dict(
+            delete_continue=dict(
+                type="bool", default=True, aliases=["continue"]
+            )
+        )
+
         def __init__(self, *args, **kwargs):
             # Extend argument_spec with ipa_module_base_spec
             if "argument_spec" in kwargs:
                 _spec = kwargs["argument_spec"]
                 _spec.update(self.ipa_module_base_spec)
                 kwargs["argument_spec"] = _spec
+
+            if "ipa_module_options" in kwargs:
+                _update = {
+                    k: self.ipa_module_options_spec[k]
+                    for k in kwargs["ipa_module_options"]
+                }
+                _spec = kwargs.get("argument_spec", {})
+                _spec.update(_update)
+                kwargs["argument_spec"] = _spec
+                del kwargs["ipa_module_options"]
 
             # pylint: disable=super-with-arguments
             super(IPAAnsibleModule, self).__init__(*args, **kwargs)
