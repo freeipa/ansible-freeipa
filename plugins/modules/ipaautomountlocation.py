@@ -38,6 +38,7 @@ description:
 - Add and delete an IPA automount location
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamodule_base_docs.delete_continue
 options:
   name:
     description: The automount location to be managed
@@ -105,8 +106,9 @@ class AutomountLocation(IPAAnsibleModule):
                     (location_name, "automountlocation_add", {}))
             elif location and state == "absent":
                 # exists and is not wanted
+                args = {"continue": bool(self.params_get("delete_continue"))}
                 self.commands.append(
-                    (location_name, "automountlocation_del", {}))
+                    (location_name, "automountlocation_del", args))
 
 
 def main():
@@ -122,6 +124,7 @@ def main():
                       required=True
                       ),
         ),
+        ipa_module_options=["delete_continue"]
     )
     ipaapi_context = ipa_module.params_get("ipaapi_context")
     with ipa_module.ipa_connect(context=ipaapi_context):
