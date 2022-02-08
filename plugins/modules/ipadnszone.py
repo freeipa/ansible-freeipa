@@ -36,6 +36,7 @@ short description: Manage FreeIPA dnszone
 description: Manage FreeIPA dnszone
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamodule_base_docs.delete_continue
 options:
   name:
     description: The zone name string.
@@ -474,7 +475,11 @@ class DNSZoneModule(IPAAnsibleModule):
                 self.commands.append((zone_name, "dnszone_disable", {}))
 
             if self.ipa_params.state == "absent" and zone is not None:
-                self.commands.append((zone_name, "dnszone_del", {}))
+                self.commands.append((
+                    zone_name,
+                    "dnszone_del",
+                    {"continue": bool(self.ipa_params.delete_continue)}
+                ))
 
     def process_results(self, _result, command, name, _args, exit_args):
         if command == "dnszone_add" and self.ipa_params.name_from_ip:
@@ -542,6 +547,7 @@ def main():
         mutually_exclusive=[["name", "name_from_ip"]],
         required_one_of=[["name", "name_from_ip"]],
         supports_check_mode=True,
+        ipa_module_options=["delete_continue"],
     )
 
     exit_args = {}
