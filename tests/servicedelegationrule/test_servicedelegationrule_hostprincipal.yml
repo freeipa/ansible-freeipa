@@ -1,0 +1,148 @@
+---
+- name: Test servicedelegationrule_hostprincipal
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: yes
+
+  tasks:
+  # setup
+  - include_tasks: ../env_freeipa_facts.yml
+
+  # host principals are only possible with IPA 4.9.0+
+  - block:
+
+    # SET FACTS
+
+    - name: Get Domain from server name
+      set_fact:
+        ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+      when: ipaserver_domain is not defined
+
+    - name: Get REALM from server name
+      set_fact:
+        ipaserver_realm: "{{ ipaserver_domain | upper }}"
+      when: ipaserver_realm is not defined
+
+    - name: Set test-host fqdn
+      set_fact:
+        test_host_fqdn: "{{ 'test-host.' + ipaserver_domain }}"
+        test_host_fqdn_realm: "{{ 'test-host.' + ipaserver_domain + '@' + ipaserver_realm }}"
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure servicedelegationrule test-delegation-rule is absent
+      ipaservicedelegationrule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: test-delegation-rule
+        state: absent
+
+    - name: Ensure host is absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: "{{ test_host_fqdn }}"
+        state: absent
+
+    # CREATE TEST ITEMS
+
+    - name: Ensure host is present
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: "{{ test_host_fqdn }}"
+        force: yes
+
+    - name: Ensure servicedelegationrule test-delegation-rule is present
+      ipaservicedelegationrule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: test-delegation-rule
+      register: result
+      failed_when: not result.changed or result.failed
+
+    # TESTS
+
+    - name: Ensure servicedelegationrule test-delegation-rule member host principal "{{ test_host_fqdn }}" is present
+      ipaservicedelegationrule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: test-delegation-rule
+        principal: "{{ test_host_fqdn }}"
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure servicedelegationrule test-delegation-rule member host principal "{{ test_host_fqdn }}" is present again
+      ipaservicedelegationrule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: test-delegation-rule
+        principal: "{{ test_host_fqdn }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure servicedelegationrule test-delegation-rule member host principal "{{ test_host_fqdn_realm }}" is present unchanged
+      ipaservicedelegationrule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: test-delegation-rule
+        principal: "{{ test_host_fqdn_realm }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure servicedelegationrule test-delegation-rule member host principal "{{ 'host/' + test_host_fqdn_realm }}" is present unchanged
+      ipaservicedelegationrule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: test-delegation-rule
+        principal: "{{ 'host/' + test_host_fqdn_realm }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure servicedelegationrule test-delegation-rule member host principal "{{ test_host_fqdn_realm }}" is absent
+      ipaservicedelegationrule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: test-delegation-rule
+        principal: "{{ test_host_fqdn_realm }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure servicedelegationrule test-delegation-rule member host principal "{{ test_host_fqdn }}" is absent unchanged
+      ipaservicedelegationrule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: test-delegation-rule
+        principal: "{{ test_host_fqdn }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure servicedelegationrule test-delegation-rule is absent
+      ipaservicedelegationrule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: test-delegation-rule
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure host is absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: "{{ test_host_fqdn }}"
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    when: ipa_version is version('4.9.0', '>=')

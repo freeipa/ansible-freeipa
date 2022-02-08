@@ -36,6 +36,7 @@ Features
 * Modules for self service management
 * Modules for server management
 * Modules for service management
+* Modules for service delegation rule management
 * Modules for service delegation target management
 * Modules for sudocmd management
 * Modules for sudocmdgroup management
@@ -451,6 +452,7 @@ Modules in plugin/modules
 * [ipaselfservice](README-selfservice.md)
 * [ipaserver](README-server.md)
 * [ipaservice](README-service.md)
+* [ipaservicedelegationrule](README-servicedelegationrule.md)
 * [ipaservicedelegationtarget](README-servicedelegationtarget.md)
 * [ipasudocmd](README-sudocmd.md)
 * [ipasudocmdgroup](README-sudocmdgroup.md)

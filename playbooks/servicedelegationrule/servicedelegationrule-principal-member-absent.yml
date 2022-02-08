@@ -1,0 +1,12 @@
+---
+- name: Servicedelegationrule principal member absent example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure principal member test/example.com is absent in servicedelegationrule test-delegation-rule
+    ipaservicedelegationrule:
+     name: test-delegation-rule
+     principal: test/example.com
+     action: member
+     state: absent
