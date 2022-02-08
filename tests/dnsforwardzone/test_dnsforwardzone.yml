@@ -12,6 +12,7 @@
       name:
       - example.com
       - newfailzone.com
+      continue: no
       state: absent
 
   - name: ensure forwardzone example.com is created
