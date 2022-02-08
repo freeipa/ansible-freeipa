@@ -37,6 +37,7 @@ short description: Manage FreeIPA service
 description: Manage FreeIPA service
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamodule_base_docs.delete_continue
 options:
   name:
     description: The service to manage
@@ -142,12 +143,6 @@ options:
     required: false
     type: list
     aliases: ["ipaallowedtoperform_read_keys_hostgroup"]
-  continue:
-    description:
-      Continuous mode. Don't stop on errors. Valid only if `state` is `absent`.
-    required: false
-    default: True
-    type: bool
   action:
     description: Work on service or member level
     default: service
@@ -308,7 +303,7 @@ def check_parameters(module, state, action, names):
             module.fail_json(msg="Only one service can be added at a time.")
 
         if action == 'service':
-            invalid = ['delete_continue']
+            invalid = []
 
             if (
                 not module.params_get('smb')
@@ -317,8 +312,6 @@ def check_parameters(module, state, action, names):
                 module.fail_json(
                     msg="Argument 'netbiosname' can not be used without "
                         "SMB service.")
-        else:
-            invalid.append('delete_continue')
 
     elif state == 'absent':
         if len(names) < 1:
@@ -326,12 +319,9 @@ def check_parameters(module, state, action, names):
 
         if action == "service":
             invalid.extend(invalid_not_member)
-        else:
-            invalid.extend('delete_continue')
 
     elif state == 'disabled':
         invalid.extend(invalid_not_member)
-        invalid.append('delete_continue')
         if action != "service":
             module.fail_json(
                 msg="Invalid action '%s' for state '%s'" % (action, state))
@@ -392,8 +382,6 @@ def init_ansible_module():
             allow_retrieve_keytab_hostgroup=dict(
                 type="list", required=False,
                 aliases=['ipaallowedtoperform_read_keys_hostgroup']),
-            delete_continue=dict(type="bool", required=False,
-                                 aliases=['continue']),
             # action
             action=dict(type="str", default="service",
                         choices=["member", "service"]),
@@ -402,6 +390,7 @@ def init_ansible_module():
                        choices=["present", "absent", "disabled"]),
         ),
         supports_check_mode=True,
+        ipa_module_options=["delete_continue"],
     )
 
     ansible_module._ansible_debug = True
