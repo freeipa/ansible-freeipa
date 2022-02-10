@@ -17,21 +17,40 @@
       name: test-delegation-target
       state: absent
 
-  - name: Ensure service is absent
+  - name: Ensure test services are absent
     ipaservice:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      name:
+      - "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
+      - "{{ 'test-service2/' + ansible_facts['fqdn'] }}"
+      - "{{ 'test-service3/' + ansible_facts['fqdn'] }}"
       state: absent
       continue: yes
 
   # CREATE TEST ITEMS
 
-  - name: Ensure service test-sevice is present
+  - name: Ensure service test-sevice1 is present
     ipaservice:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      name: "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure service test-sevice2 is present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'test-service2/' + ansible_facts['fqdn'] }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure service test-sevice3 is present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ 'test-service3/' + ansible_facts['fqdn'] }}"
     register: result
     failed_when: not result.changed or result.failed
 
@@ -53,43 +72,182 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service/' + ansible_facts['fqdn'] }}" is present
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service1/' + ansible_facts['fqdn'] }}" is present
     ipaservicedelegationtarget:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test-delegation-target
-      principal: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      principal: "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
       action: member
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service/' + ansible_facts['fqdn'] }}" is present again
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service1/' + ansible_facts['fqdn'] }}" is present again
     ipaservicedelegationtarget:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test-delegation-target
-      principal: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      principal: "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
       action: member
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service/' + ansible_facts['fqdn'] }}" is absent
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service2/' + ansible_facts['fqdn'] }}" is present
     ipaservicedelegationtarget:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test-delegation-target
-      principal: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      principal: "{{ 'test-service2/' + ansible_facts['fqdn'] }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service2/' + ansible_facts['fqdn'] }}" is present again
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service2/' + ansible_facts['fqdn'] }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target principal is empty
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: []
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target principal is empty, again
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: []
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service1/' + ansible_facts['fqdn'] }}" is absent
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service1/' + ansible_facts['fqdn'] }}" is absent
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service3/' + ansible_facts['fqdn'] }}" is present
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service3/' + ansible_facts['fqdn'] }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service3/' + ansible_facts['fqdn'] }}" is present again
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service3/' + ansible_facts['fqdn'] }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target principal
+      "{{ 'test-service1/' + ansible_facts['fqdn'] }}" and
+      "{{ 'test-service2/' + ansible_facts['fqdn'] }}" are set
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal:
+      - "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
+      - "{{ 'test-service2/' + ansible_facts['fqdn'] }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target principal
+      "{{ 'test-service1/' + ansible_facts['fqdn'] }}" and
+      "{{ 'test-service2/' + ansible_facts['fqdn'] }}" are set, again
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal:
+      - "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
+      - "{{ 'test-service2/' + ansible_facts['fqdn'] }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Fail if servicedelegationtarget test-delegation-target member principal "{{ 'test-service3/' + ansible_facts['fqdn'] }}" can be removed
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service3/' + ansible_facts['fqdn'] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service1/' + ansible_facts['fqdn'] }}" is absent
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
       action: member
       state: absent
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service/' + ansible_facts['fqdn'] }}" is present absent
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service1/' + ansible_facts['fqdn'] }}" is absent, again
     ipaservicedelegationtarget:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test-delegation-target
-      principal: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      principal: "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service2/' + ansible_facts['fqdn'] }}" is absent
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service2/' + ansible_facts['fqdn'] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure servicedelegationtarget test-delegation-target member principal "{{ 'test-service2/' + ansible_facts['fqdn'] }}" is absent, again
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'test-service2/' + ansible_facts['fqdn'] }}"
       action: member
       state: absent
     register: result
@@ -115,10 +273,13 @@
 
   # CLEANUP TEST ITEMS
 
-  - name: Ensure service is absent
+  - name: Ensure test services are absent
     ipaservice:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      name:
+      - "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
+      - "{{ 'test-service2/' + ansible_facts['fqdn'] }}"
+      - "{{ 'test-service3/' + ansible_facts['fqdn'] }}"
       state: absent
       continue: yes
