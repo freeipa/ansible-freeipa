@@ -2,7 +2,7 @@
 driver:
   name: docker
 platforms:
-  - name: centos-9-build
+  - name: c9s-build
     image: "quay.io/centos/centos:stream9"
     dockerfile: Dockerfile
     hostname: ipaserver.test.local

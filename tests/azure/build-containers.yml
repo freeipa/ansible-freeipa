@@ -35,9 +35,9 @@ jobs:
 
 - template: templates/build_container.yml
   parameters:
-    job_name_suffix: Centos9
-    container_name: centos-9
-    build_scenario_name: centos-9-build
+    job_name_suffix: C9S
+    container_name: c9s
+    build_scenario_name: c9s-build
 
 - template: templates/build_container.yml
   parameters:
