@@ -15,12 +15,12 @@
 - name: Verify if host is an IPA server or client.
   shell:
     cmd: |
-      echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-      RESULT=$(KRB5CCNAME={{ KRB5CCNAME }} ipa server-show `hostname` && echo SERVER || echo CLIENT)
-      kdestroy -A -c {{ KRB5CCNAME }}
+      echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+      RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa server-show `hostname` && echo SERVER || echo CLIENT)
+      kdestroy -A -c {{ krb5ccname }}
       echo $RESULT
   vars:
-    KRB5CCNAME: "__check_ipa_host_is_client_or_server__"
+    krb5ccname: "__check_ipa_host_is_client_or_server__"
   register: output
 
 - name: Set FreeIPA facts.
