@@ -177,8 +177,8 @@ def main():
 
         # Normalize principals
         if principal:
-            principal = servicedelegation_normalize_principals(ansible_module,
-                                                               principal)
+            principal = servicedelegation_normalize_principals(
+                ansible_module, principal, state == "present")
 
         commands = []
         principal_add = principal_del = []

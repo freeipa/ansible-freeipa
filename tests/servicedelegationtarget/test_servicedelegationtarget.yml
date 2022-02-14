@@ -25,6 +25,7 @@
       - "{{ 'test-service1/' + ansible_facts['fqdn'] }}"
       - "{{ 'test-service2/' + ansible_facts['fqdn'] }}"
       - "{{ 'test-service3/' + ansible_facts['fqdn'] }}"
+      - "{{ 'not-existing-test-service/' + ansible_facts['fqdn'] }}"
       state: absent
       continue: yes
 
@@ -69,6 +70,17 @@
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test-delegation-target
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Do not fail to ensure absence of not existing servicedelegationtarget test-delegation-target member principal
+    ipaservicedelegationtarget:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-target
+      principal: "{{ 'not-existing-test-service/' + ansible_facts['fqdn'] }}"
+      action: member
+      state: absent
     register: result
     failed_when: result.changed or result.failed
 

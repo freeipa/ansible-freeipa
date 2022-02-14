@@ -21,7 +21,9 @@
     ipaservice:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      name:
+      - "{{ 'test-service/' + ansible_facts['fqdn'] }}"
+      - "{{ 'not-existing-test-service/' + ansible_facts['fqdn'] }}"
       state: absent
       continue: yes
 
@@ -29,7 +31,9 @@
     ipaservicedelegationtarget:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: test-delegation-target
+      name:
+      - test-delegation-target
+      - not-existing-test-delegation-target
       state: absent
 
   # CREATE TEST ITEMS
@@ -65,6 +69,28 @@
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: test-delegation-rule
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Do not fail to ensure absence of not existing servicedelegationrule test-delegation-rule member principal
+    ipaservicedelegationrule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-rule
+      principal: "{{ 'not-existing-test-service/' + ansible_facts['fqdn'] }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Do not fail to ensure absence of not existing servicedelegationrule test-delegation-rule member target
+    ipaservicedelegationrule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: test-delegation-rule
+      target: not-existing-test-delegation-target
+      action: member
+      state: absent
     register: result
     failed_when: result.changed or result.failed
 
