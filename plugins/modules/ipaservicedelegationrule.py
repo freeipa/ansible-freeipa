@@ -221,9 +221,9 @@ def main():
 
         # Normalize principals
         if principal:
-            principal = servicedelegation_normalize_principals(ansible_module,
-                                                               principal)
-        if target:
+            principal = servicedelegation_normalize_principals(
+                ansible_module, principal, state == "present")
+        if target and state == "present":
             check_targets(ansible_module, target)
 
         commands = []

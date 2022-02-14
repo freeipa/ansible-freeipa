@@ -551,7 +551,8 @@ else:
             return False
         return True
 
-    def servicedelegation_normalize_principals(module, principal):
+    def servicedelegation_normalize_principals(module, principal,
+                                               check_exists=False):
         """
         Normalize servicedelegation principals.
 
@@ -620,12 +621,13 @@ else:
                     _host = _host[:-len(realm) - 1]
 
                 # Seach for host
-                if not _check_exists(module, "host", _host):
+                if check_exists and not _check_exists(module, "host", _host):
                     module.fail_json(msg="Host '%s' does not exist" % _host)
 
             # Check the service principal exists
             else:
-                if not _check_exists(module, "service", princ):
+                if check_exists and \
+                   not _check_exists(module, "service", princ):
                     module.fail_json(msg="Service %s does not exist" % princ)
 
             _principal.append(princ)
