@@ -216,15 +216,18 @@
               ipaclient_force_join)
 
   - block:
-    - fail:
+    - name: krb5 configuration not correct
+      fail:
         msg: >
           The krb5 configuration is not correct, please enable allow_repair
           to fix this.
       when: not result_ipaclient_test_keytab.krb5_conf_ok
-    - fail:
+    - name: IPA test failed
+      fail:
         msg: "The IPA test failed, please enable allow_repair to fix this."
       when: not result_ipaclient_test_keytab.ping_test_ok
-    - fail:
+    - name: ca.crt file is missing
+      fail:
         msg: >
           The ca.crt file is missing, please enable allow_repair to fix this.
       when: not result_ipaclient_test_keytab.ca_crt_exists

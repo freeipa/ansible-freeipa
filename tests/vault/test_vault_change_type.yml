@@ -43,14 +43,14 @@
 
     - name: Verify assymetric-only fields are not present.
       shell: |
-         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
-         kdestroy -A -q -c {{ KRB5CCNAME }}
+         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+         KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Public Key:" in result.stdout
 
     vars:
-      KRB5CCNAME: verify_change_from_asymmetric
+      krb5ccname: verify_change_from_asymmetric
 
   - block:
     - name: Change from symmetric to standard
@@ -64,14 +64,14 @@
 
     - name: Verify salt is not present.
       shell: |
-         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
-         kdestroy -A -q -c {{ KRB5CCNAME }}
+         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+         KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Salt:" in result.stdout
 
     vars:
-      KRB5CCNAME: verify_change_from_symmetric
+      krb5ccname: verify_change_from_symmetric
 
   - name: Change from standard to symmetric
     ipavault:
@@ -95,14 +95,14 @@
 
     - name: Verify salt is not present.
       shell: |
-         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
-         kdestroy -A -q -c {{ KRB5CCNAME }}
+         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+         KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Salt:" in result.stdout
 
     vars:
-      KRB5CCNAME: verify_change_from_symmetric
+      krb5ccname: verify_change_from_symmetric
 
   - block:
     - name: Change from asymmetric to standard
@@ -116,14 +116,14 @@
 
     - name: Verify assymetric-only fields are not present.
       shell: |
-         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
-         kdestroy -A -q -c {{ KRB5CCNAME }}
+         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+         KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Public Key:" in result.stdout
 
     vars:
-      KRB5CCNAME: verify_change_from_asymmetric
+      krb5ccname: verify_change_from_asymmetric
 
   - name: Ensure test_vault is absent.
     ipavault:
@@ -169,14 +169,14 @@
 
     - name: Verify assymetric-only fields are not present.
       shell: |
-         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
-         kdestroy -A -q -c {{ KRB5CCNAME }}
+         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+         KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Public Key:" in result.stdout
 
     vars:
-      KRB5CCNAME: verify_change_from_asymmetric
+      krb5ccname: verify_change_from_asymmetric
 
   - name: Retrieve data from symmetric vault.
     ipavault:
@@ -199,14 +199,14 @@
 
     - name: Verify salt is not present.
       shell: |
-         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
-         kdestroy -A -q -c {{ KRB5CCNAME }}
+         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+         KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Salt:" in result.stdout
 
     vars:
-      KRB5CCNAME: verify_change_from_symmetric
+      krb5ccname: verify_change_from_symmetric
 
   - name: Retrieve data from standard vault.
     ipavault:
@@ -247,14 +247,14 @@
 
     - name: Verify salt is not present.
       shell: |
-         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
-         kdestroy -A -q -c {{ KRB5CCNAME }}
+         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+         KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Salt:" in result.stdout
 
     vars:
-      KRB5CCNAME: verify_change_from_symmetric
+      krb5ccname: verify_change_from_symmetric
 
   - name: Retrieve data from asymmetric vault.
     ipavault:
@@ -277,14 +277,14 @@
 
     - name: Verify assymetric-only fields are not present.
       shell: |
-         echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-         KRB5CCNAME={{ KRB5CCNAME }} ipa vault-show test_vault
-         kdestroy -A -q -c {{ KRB5CCNAME }}
+         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+         KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
+         kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Public Key:" in result.stdout
 
     vars:
-      KRB5CCNAME: verify_change_from_asymmetric
+      krb5ccname: verify_change_from_asymmetric
 
   - name: Retrieve data from standard vault.
     ipavault:

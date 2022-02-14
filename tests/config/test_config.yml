@@ -56,9 +56,9 @@
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           pac_type: ""
 
-      - name: set maxhostname to 255
-        block:
-          - ipaconfig:
+      - block:
+          - name: set maxhostname to 255
+            ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
               maxhostname: 255
@@ -221,16 +221,17 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set maxhostname to 77
-        block:
-          - ipaconfig:
+      - block:
+          - name: set maxhostname to 77
+            ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
               maxhostname: 77
             register: result
             failed_when: not result.changed or result.failed
 
-          - ipaconfig:
+          - name: set maxhostname to 77, again
+            ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
               maxhostname: 77
@@ -409,9 +410,9 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: reset maxhostname
-        block:
-          - ipaconfig:
+      - block:
+          - name: reset maxhostname
+            ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
               maxhostname: '{{ previousconfig.config.maxhostname | default(omit) }}'
@@ -444,9 +445,9 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: reset maxhostname
-        block:
-          - ipaconfig:
+      - block:
+          - name: reset maxhostname
+            ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
               maxhostname: '{{ previousconfig.config.maxhostname | default(omit) }}'

@@ -43,9 +43,9 @@
   - name: Verify role privileges.
     shell:
       cmd: |
-        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
-        kdestroy -A -q -c {{ KRB5CCNAME }}
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+        KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
+        kdestroy -A -q -c {{ krb5ccname }}
     register: result
     failed_when: |
       result.failed or not (
@@ -57,7 +57,7 @@
         and "Group Administrators" in result.stdout
       )
     vars:
-      KRB5CCNAME: verify_issue_409
+      krb5ccname: verify_issue_409
   # End of test fix for https://github.com/freeipa/ansible-freeipa/issues/409
 
   # Test fix for https://github.com/freeipa/ansible-freeipa/issues/412
@@ -73,9 +73,9 @@
   - name: Verify role users.
     shell:
       cmd: |
-        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
-        kdestroy -A -q -c {{ KRB5CCNAME }}
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+        KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
+        kdestroy -A -q -c {{ krb5ccname }}
     register: result
     failed_when: |
       result.failed or not (
@@ -83,7 +83,7 @@
         and "user02" in result.stdout
       )
     vars:
-      KRB5CCNAME: verify_issue_412
+      krb5ccname: verify_issue_412
 
   - name: Add new group to role.
     iparole:
@@ -97,9 +97,9 @@
   - name: Verify role group.
     shell:
       cmd: |
-        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
-        kdestroy -A -q -c {{ KRB5CCNAME }}
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+        KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
+        kdestroy -A -q -c {{ krb5ccname }}
     register: result
     failed_when: |
       result.failed or not (
@@ -107,7 +107,7 @@
         and "group02" in result.stdout
       )
     vars:
-      KRB5CCNAME: verify_issue_412
+      krb5ccname: verify_issue_412
 
   - name: Add new host to role.
     iparole:
@@ -121,9 +121,9 @@
   - name: Verify role hosts.
     shell:
       cmd: |
-        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
-        kdestroy -A -q -c {{ KRB5CCNAME }}
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+        KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
+        kdestroy -A -q -c {{ krb5ccname }}
     register: result
     failed_when: |
       result.failed or not (
@@ -131,7 +131,7 @@
         and host2 in result.stdout
       )
     vars:
-      KRB5CCNAME: verify_issue_412
+      krb5ccname: verify_issue_412
       host1: " {{ host1_fqdn }}"
       host2: " {{ host2_fqdn }}"
 
@@ -147,9 +147,9 @@
   - name: Verify role hostgroups.
     shell:
       cmd: |
-        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
-        kdestroy -A -q -c {{ KRB5CCNAME }}
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+        KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
+        kdestroy -A -q -c {{ krb5ccname }}
     register: result
     failed_when: |
       result.failed or not (
@@ -157,7 +157,7 @@
         and " hostgroup02" in result.stdout
       )
     vars:
-      KRB5CCNAME: verify_issue_412
+      krb5ccname: verify_issue_412
 
   - name: Add new service to role.
     iparole:
@@ -171,9 +171,9 @@
   - name: Verify role services.
     shell:
       cmd: |
-        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
-        kdestroy -A -q -c {{ KRB5CCNAME }}
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+        KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
+        kdestroy -A -q -c {{ krb5ccname }}
     register: result
     failed_when: |
       result.failed or not (
@@ -181,7 +181,7 @@
         and service1 in result.stdout
       )
     vars:
-      KRB5CCNAME: verify_issue_412
+      krb5ccname: verify_issue_412
       service1: "service01/{{ host1_fqdn }}"
       service2: "service02/{{ host2_fqdn }}"
   # End of test fix for https://github.com/freeipa/ansible-freeipa/issues/412
@@ -199,9 +199,9 @@
   - name: Verify role services.
     shell:
       cmd: |
-        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
-        kdestroy -A -q -c {{ KRB5CCNAME }}
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+        KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
+        kdestroy -A -q -c {{ krb5ccname }}
     register: result
     failed_when: |
       result.failed or not (
@@ -210,7 +210,7 @@
         and "user03" in result.stdout
       )
     vars:
-      KRB5CCNAME: verify_issue_413
+      krb5ccname: verify_issue_413
       service1: "service01/{{ host1_fqdn }}"
       service2: "service02/{{ host2_fqdn }}"
 
@@ -227,9 +227,9 @@
   - name: Verify role services.
     shell:
       cmd: |
-        echo SomeADMINpassword | kinit -c {{ KRB5CCNAME }} admin
-        KRB5CCNAME={{ KRB5CCNAME }} ipa role-show testrole
-        kdestroy -A -q -c {{ KRB5CCNAME }}
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+        KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
+        kdestroy -A -q -c {{ krb5ccname }}
     register: result
     failed_when: |
       result.failed or not (
@@ -238,7 +238,7 @@
         and "user03" not in result.stdout
       )
     vars:
-      KRB5CCNAME: verify_issue_413
+      krb5ccname: verify_issue_413
       service1: "service01/{{ host1_fqdn }}"
       service2: "service02/{{ host2_fqdn }}"
   # End of test fix for https://github.com/freeipa/ansible-freeipa/issues/413
