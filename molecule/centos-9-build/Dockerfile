@@ -5,7 +5,6 @@ RUN rm -fv /var/cache/dnf/metadata_lock.pid; \
 dnf makecache; \
 dnf --assumeyes install \
     /usr/bin/python3 \
-    /usr/bin/python3-config \
     /usr/bin/dnf-3 \
     sudo \
     bash \
