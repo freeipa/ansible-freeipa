@@ -4,6 +4,7 @@ parameters:
     type: string
   - name: scenario
     type: string
+    default: fedora-latest
   - name: ansible_version
     type: string
     default: ""
