@@ -31,4 +31,3 @@
       dnssec: yes
       skip_nameserver_check: yes
       skip_overlap_check: yes
-    ignore_errors: yes
