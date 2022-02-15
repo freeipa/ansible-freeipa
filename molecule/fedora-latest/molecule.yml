@@ -16,3 +16,4 @@ provisioner:
   name: ansible
   playbooks:
     prepare: ../resources/playbooks/prepare.yml
+prerun: false
