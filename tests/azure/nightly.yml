@@ -107,7 +107,7 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: centos-8
+      scenario: c8s
       ansible_version: "-core >=2.11,<2.12"
 
 - stage: c8s_Ansible_Core_2_12
