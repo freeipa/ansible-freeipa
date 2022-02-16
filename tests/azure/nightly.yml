@@ -72,6 +72,15 @@ stages:
       scenario: centos-9
       ansible_version: "-core >=2.11,<2.12"
 
+- stage: CentOS9_Ansible_Core_2_12
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: centos-9
+      ansible_version: "-core >=2.12,<2.13"
+
 - stage: CentOS9_Ansible_latest
   dependsOn: []
   jobs:
