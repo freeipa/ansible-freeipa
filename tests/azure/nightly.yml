@@ -54,40 +54,40 @@ stages:
 
 # CentoOS 9 Stream
 
-- stage: CentOS9_Ansible_2_9
+- stage: c9s_Ansible_2_9
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: centos-9
+      scenario: c9s
       ansible_version: ">=2.9,<2.10"
 
-- stage: CentOS9_Ansible_Core_2_11
+- stage: c9s_Ansible_Core_2_11
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: centos-9
+      scenario: c9s
       ansible_version: "-core >=2.11,<2.12"
 
-- stage: CentOS9_Ansible_Core_2_12
+- stage: c9s_Ansible_Core_2_12
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: centos-9
+      scenario: c9s
       ansible_version: "-core >=2.12,<2.13"
 
-- stage: CentOS9_Ansible_latest
+- stage: c9s_Ansible_latest
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: centos-9
+      scenario: c9s
       ansible_version: ""
 
 # CentOS 8 Stream

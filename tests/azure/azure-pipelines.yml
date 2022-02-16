@@ -26,7 +26,7 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: centos-9
+      scenario: c9s
       ansible_version: ">=2.9,<2.10"
 
 # CentOS 8 Stream
