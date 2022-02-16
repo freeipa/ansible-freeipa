@@ -6,6 +6,9 @@ parameters:
     type: string
   - name: build_scenario_name
     type: string
+  - name: python_version
+    type: string
+    default: 3.x
 
 jobs:
 - job: BuildTestImage${{ parameters.job_name_suffix }}
@@ -13,7 +16,7 @@ jobs:
   steps:
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.6'
+      versionSpec: '${{ parameters.python_version }}'
 
   - script: python -m pip install --upgrade pip setuptools wheel ansible
     displayName: Install tools

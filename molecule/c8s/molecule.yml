@@ -1,0 +1,19 @@
+---
+driver:
+  name: docker
+platforms:
+  - name: c8s
+    image: quay.io/ansible-freeipa/upstream-tests:c8s
+    pre_build_image: true
+    hostname: ipaserver.test.local
+    dns_servers:
+      - 127.0.0.1
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /usr/sbin/init
+    privileged: true
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: ../resources/playbooks/prepare.yml
+prerun: false

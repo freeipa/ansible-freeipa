@@ -2,7 +2,7 @@
 parameters:
   - name: scenario
     type: string
-    default: centos-8
+    default: fedora-latest
   - name: build_number
     type: string
   - name: ansible_version
