@@ -36,6 +36,7 @@ short description: Manage vaults and secret vaults.
 description: Manage vaults and secret vaults. KRA service must be enabled.
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamodule_base_docs.delete_continue
 options:
   name:
     description: The vault name
@@ -652,6 +653,7 @@ def main():
                             ['new_password', 'new_password_file'],
                             ['vault_password', 'vault_password_file'],
                             ['vault_public_key', 'vault_public_key_file']],
+        ipa_module_options=["delete_continue"],
     )
 
     ansible_module._ansible_debug = True
@@ -688,6 +690,8 @@ def main():
 
     datafile_in = ansible_module.params_get("datafile_in")
     datafile_out = ansible_module.params_get("datafile_out")
+
+    delete_continue = ansible_module.params_get("delete_continue")
 
     action = ansible_module.params_get("action")
     state = ansible_module.params_get("state")
@@ -921,6 +925,8 @@ def main():
                         args = {
                             k: v for k, v in args.items() if k not in remove
                         }
+                        if delete_continue:
+                            args["continue"] = delete_continue
                         commands.append([name, "vault_del", args])
 
                 elif action == "member":
