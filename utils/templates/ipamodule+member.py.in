@@ -36,6 +36,7 @@ short description: Manage FreeIPA $name
 description: Manage FreeIPA $name and $name members
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamoudle_base_docs.delete_continue
 options:
   name:
     description: The list of $name name strings.
@@ -152,6 +153,7 @@ def main():
                        choices=["present", "absent"]),
         ),
         supports_check_mode=True,
+        ipa_module_options=["delete_continue"]
     )
 
     ansible_module._ansible_debug = True
@@ -168,6 +170,8 @@ def main():
     # these parameters, use IPAAnsibleModule.params_get_lowercase.
     PARAMETER2 = ansible_module.params_get_lowercase("PARAMETER2")
     action = ansible_module.params_get("action")
+
+    delete_continue = ansible_module.params_get("delete_continue")
 
     # state
     state = ansible_module.params_get("state")
@@ -249,7 +253,9 @@ def main():
             elif state == "absent":
                 if action == "$name":
                     if res_find is not None:
-                        commands.append([name, "$name_del", {}])
+                        commands.append(
+                            [name, "$name_del", {"continue": delete_continue}]
+                        )
 
                 elif action == "member":
                     if res_find is None:
@@ -275,10 +281,12 @@ def main():
                                  }])
 
             # Remove members
+
             if PARAMETER2_del:
                 commands.append([name, "$name_remove_member",
                                  {
                                      "PARAMETER2": PARAMETER2_del,
+                                     "continue": delete_continue,
                                  }])
 
         # Execute commands
