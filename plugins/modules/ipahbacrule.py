@@ -360,28 +360,28 @@ def main():
                         res_find = {}
 
                     # Generate addition and removal lists
-                    if host:
+                    if host is not None:
                         host_add, host_del = gen_add_del_lists(
                             host, res_find.get("memberhost_host"))
 
-                    if hostgroup:
+                    if hostgroup is not None:
                         hostgroup_add, hostgroup_del = gen_add_del_lists(
                             hostgroup, res_find.get("memberhost_hostgroup"))
 
-                    if hbacsvc:
+                    if hbacsvc is not None:
                         hbacsvc_add, hbacsvc_del = gen_add_del_lists(
                             hbacsvc, res_find.get("memberservice_hbacsvc"))
 
-                    if hbacsvcgroup:
+                    if hbacsvcgroup is not None:
                         hbacsvcgroup_add, hbacsvcgroup_del = gen_add_del_lists(
                             hbacsvcgroup,
                             res_find.get("memberservice_hbacsvcgroup"))
 
-                    if user:
+                    if user is not None:
                         user_add, user_del = gen_add_del_lists(
                             user, res_find.get("memberuser_user"))
 
-                    if group:
+                    if group is not None:
                         group_add, group_del = gen_add_del_lists(
                             group, res_find.get("memberuser_group"))
 
@@ -395,7 +395,7 @@ def main():
                     if host:
                         host_add = gen_add_list(
                             host, res_find.get("memberhost_host"))
-                    if hostgroup is not None:
+                    if hostgroup:
                         hostgroup_add = gen_add_list(
                             hostgroup, res_find.get("memberhost_hostgroup"))
 

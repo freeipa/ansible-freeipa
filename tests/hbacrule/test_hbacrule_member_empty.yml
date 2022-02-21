@@ -1,0 +1,296 @@
+---
+- name: Test hbacrule
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: true
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - block:
+      # SETUP:
+      - name: Ensure test HBAC rule is absent
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          state: absent
+
+      - name: Ensure test hosts are present
+        ipahost:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          hosts:
+          - name: "{{ 'testhost03.' + ipaserver_domain }}"
+            force: yes
+          - name: "{{ 'testhost04.' + ipaserver_domain }}"
+            force: yes
+
+      - name: Ensure test hostgroups are present
+        ipahostgroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ item }}"
+        with_items:
+          - testhostgroup03
+          - testhostgroup04
+
+      - name: Ensure test users are present
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          users:
+          - name: testuser03
+            first: test
+            last: user03
+          - name: testuser04
+            first: test
+            last: user04
+
+      - name: Ensure test groups are present
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ item }}"
+        with_items:
+          - testgroup03
+          - testgroup04
+
+      - name: Ensure test HBAC Services are present
+        ipahbacsvc:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ item }}"
+        with_items:
+          - testhbacsvc03
+          - testhbacsvc04
+
+      - name: Ensure test HBAC Service Groups are present
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "{{ item }}"
+        with_items:
+          - testhbacsvcgroup03
+          - testhbacsvcgroup04
+
+      - name: Ensure test HBAC rule hbacrule01 is absent
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          state: absent
+
+      # Ensure members are empty.
+      - name: Ensure HBAC rule is present with known members
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          host:
+          - "{{ 'testhost03.' + ipaserver_domain }}"
+          - "{{ 'testhost04.' + ipaserver_domain }}"
+          hostgroup: testhostgroup03,testhostgroup04
+          user: testuser03,testuser04
+          group: testgroup03,testgroup04
+          hbacsvc: testhbacsvc03,testhbacsvc04
+          hbacsvcgroup: testhbacsvcgroup03,testhbacsvcgroup04
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure test HBAC rule host is empty
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          host: []
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure test HBAC rule host is empty, again
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          host: []
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure test HBAC rule hostgroup is empty
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          hostgroup: []
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure test HBAC rule hostgroup is empty, again
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          hostgroup: []
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure test HBAC rule user is empty
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          user: []
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure test HBAC rule user is empty, again
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          user: []
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure test HBAC rule group is empty
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          group: []
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure test HBAC rule group is empty, again
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          group: []
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure test HBAC rule hbacsvc is empty
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          hbacsvc: []
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure test HBAC rule hbacsvc is empty, again
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          hbacsvc: []
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure test HBAC rule hbacsvcgroup is empty
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          hbacsvcgroup: []
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure test HBAC rule hbacsvcgroup is empty, again
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          hbacsvcgroup: []
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Verify HBAC rule is present with only members would not require changes.
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          host: []
+          hostgroup: []
+          user: []
+          group: []
+          hbacsvc: []
+          hbacsvcgroup: []
+        check_mode: yes
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Verify HBAC rule is present with known members would require changes.
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          host:
+          - "{{ 'testhost03.' + ipaserver_domain }}"
+          - "{{ 'testhost04.' + ipaserver_domain }}"
+          hostgroup: testhostgroup03,testhostgroup04
+          user: testuser03,testuser04
+          group: testgroup03,testgroup04
+          hbacsvc: testhbacsvc03,testhbacsvc04
+          hbacsvcgroup: testhbacsvcgroup03,testhbacsvcgroup04
+        check_mode: yes
+        register: result
+        failed_when: not result.changed or result.failed
+
+    always:
+      # CLEANUP
+      - name: Ensure test HBAC rule is absent
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: hbacrule01
+          state: absent
+
+      - name: Ensure test HBAC Service Groups are absent
+        ipahbacsvcgroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testhbacsvcgroup01,testhbacsvcgroup02,testhbacsvcgroup03,testhbacsvcgroup04
+          state: absent
+
+      - name: Ensure test HBAC Services are absent
+        ipahbacsvc:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testhbacsvc01,testhbacsvc02,testhbacsvc03,testhbacsvc04
+          state: absent
+
+      - name: Ensure test hostgroups are absent
+        ipahostgroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testhostgroup01,testhostgroup02,testhostgroup03,testhostgroup04
+          state: absent
+
+      - name: Ensure test hosts are absent
+        ipahost:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name:
+          - "{{ 'testhost01.' + ipaserver_domain }}"
+          - "{{ 'testhost02.' + ipaserver_domain }}"
+          - "{{ 'testhost03.' + ipaserver_domain }}"
+          - "{{ 'testhost04.' + ipaserver_domain }}"
+          state: absent
+
+      - name: Ensure test user groups are absent
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testgroup01,testgroup02,testgroup03,testgroup04
+          state: absent
+
+      - name: Ensure test users are absent
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser01,testuser02,testuser03,testuser04
+          state: absent
