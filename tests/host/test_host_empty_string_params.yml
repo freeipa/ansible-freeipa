@@ -1,0 +1,86 @@
+---
+- name: Test host
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - name: Get Domain from server name
+    set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Set host1_fqdn .. host6_fqdn
+    set_fact:
+      host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure host "{{ host1_fqdn }}" absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure host "{{ host1_fqdn }}" present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      force: yes
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # TESTS
+
+  - name: Ensure host "{{ host1_fqdn }}" present with auth_ind otp and radius
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      auth_ind:
+      - otp
+      - radius
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" present with auth_ind otp and radius, again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      auth_ind:
+      - otp
+      - radius
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" present with empty auth_ind
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      auth_ind: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" present with empty auth_ind, again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      auth_ind: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure host "{{ host1_fqdn }}" absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      state: absent
