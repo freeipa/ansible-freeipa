@@ -123,10 +123,8 @@ class AutomountMap(IPAAnsibleModule):
         self.params_fail_used_invalid(invalid, state)
 
     def get_args(self, mapname, desc):  # pylint: disable=no-self-use
-        _args = {}
-        if mapname:
-            _args["automountmapname"] = mapname
-        if desc:
+        _args = {"automountmapname": mapname}
+        if desc is not None:
             _args["description"] = desc
         return _args
 
