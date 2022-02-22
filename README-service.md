@@ -293,8 +293,8 @@ Variable | Description | Required
 `ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
 `name` \| `service` | The list of service name strings. | yes
 `certificate` \| `usercertificate` | Base-64 encoded service certificate. | no
-`pac_type` \| `ipakrbauthzdata` | Supported PAC type. It can be one of `MS-PAC`, `PAD`, or `NONE`. | no
-`auth_ind` \| `krbprincipalauthind` | Defines an allow list for Authentication Indicators. It can be any of `otp`, `radius`, `pkinit`, or `hardened`. | no
+`pac_type` \| `ipakrbauthzdata` | Supported PAC type. It can be one of `MS-PAC`, `PAD`, or `NONE`. Use empty string to reset pac_type to the initial value. | no
+`auth_ind` \| `krbprincipalauthind` | Defines an allow list for Authentication Indicators. It can be any of `otp`, `radius`, `pkinit` or `hardened`.  Use empty string to reset auth_ind to the initial value. | no
 `requires_pre_auth` \| `ipakrbrequirespreauth` | Pre-authentication is required for the service. Default to true. (bool) | no
 `ok_as_delegate` \|  `ipakrbokasdelegate` | Client credentials may be delegated to the service. Default to false. (bool) | no
 `ok_to_auth_as_delegate` \|  `ipakrboktoauthasdelegate` | The service is allowed to authenticate on behalf of a client. Default to false. (bool) | no
