@@ -310,15 +310,49 @@ else:
         raise ValueError("Invalid date '%s'" % value)
 
     def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
-        """Compare IPA obj attrs with the command args.
+        """Compare IPA object attributes against command arguments.
 
-        This function compares IPA objects attributes with the args the
-        module is intending to use to call a command. ignore can be a list
-        of attributes, that should be ignored in the comparison.
-        This is useful to know if a call to IPA server will be needed or not.
-        In order to compare we have to perform slight changes in data formats.
+        This function compares 'ipa' attributes with the 'args' the module
+        is intending to use as parameters to an IPA API command. A list of
+        attribute names that should be ignored during comparison may be
+        provided.
 
-        Returns True if they are the same and False otherwise.
+        The comparison will be performed on every attribute provided in
+        'args'. If the attribute in 'args' or 'ipa' is not a scalar value
+        (including strings) the comparison will be performed as if the
+        attribute is a set of values, so duplicate values will count as a
+        single one. If both values are scalar values, then a direct
+        comparison is performed.
+
+        If an attribute is not available in 'ipa', its value is considered
+        to be a list with an empty string (['']), possibly forcing the
+        conversion of the 'args' attribute to a list for comparison. This
+        allows, for example, the usage of empty strings which should compare
+        as equals to inexistent attributes (None), as is done in IPA API.
+
+        This function is mostly useful to evaluate the need of a call to
+        IPA server when provided arguments are equivalent to the existing
+        values for a given IPA object.
+
+        Parameters
+        ----------
+        module: AnsibleModule
+            The AnsibleModule used to log debug messages.
+
+        args: dict
+            The set of attributes provided by the playbook task.
+
+        ipa: dict
+            The set of attributes from the IPA object retrieved.
+
+        ignore: list
+            An optional list of attribute names that should be ignored and
+            not evaluated.
+
+        Return
+        ------
+            True is returned if all attribute values in 'args' are
+            equivalent to the corresponding attribute value in 'ipa'.
         """
         base_debug_msg = "Ansible arguments and IPA commands differed. "
 
@@ -338,52 +372,45 @@ else:
         filtered_args = [key for key in args if key not in ignore]
 
         for key in filtered_args:
-            if key not in ipa:  # pylint: disable=no-else-return
-                module.debug(
-                    base_debug_msg + "Command key not present in IPA: %s" % key
-                )
-                return False
+            arg = args[key]
+            ipa_arg = ipa.get(key, [""])
+            # If ipa_arg is a list and arg is not, replace arg
+            # with list containing arg. Most args in a find result
+            # are lists, but not all.
+            if isinstance(ipa_arg, (list, tuple)):
+                if not isinstance(arg, list):
+                    arg = [arg]
+                if len(ipa_arg) != len(arg):
+                    module.debug(
+                        base_debug_msg
+                        + "List length doesn't match for key %s: %d %d"
+                        % (key, len(arg), len(ipa_arg),)
+                    )
+                    return False
+                # ensure list elements types are the same.
+                if not (
+                    isinstance(ipa_arg[0], type(arg[0]))
+                    or isinstance(arg[0], type(ipa_arg[0]))
+                ):
+                    arg = [to_text(_arg) for _arg in arg]
+            try:
+                arg_set = set(arg)
+                ipa_arg_set = set(ipa_arg)
+            except TypeError:
+                if arg != ipa_arg:
+                    module.debug(
+                        base_debug_msg
+                        + "Different values: %s %s" % (arg, ipa_arg)
+                    )
+                    return False
             else:
-                arg = args[key]
-                ipa_arg = ipa[key]
-                # If ipa_arg is a list and arg is not, replace arg
-                # with list containing arg. Most args in a find result
-                # are lists, but not all.
-                if isinstance(ipa_arg, tuple):
-                    ipa_arg = list(ipa_arg)
-                if isinstance(ipa_arg, list):
-                    if not isinstance(arg, list):
-                        arg = [arg]
-                    if len(ipa_arg) != len(arg):
-                        module.debug(
-                            base_debug_msg
-                            + "List length doesn't match for key %s: %d %d"
-                            % (key, len(arg), len(ipa_arg),)
-                        )
-                        return False
-                    if isinstance(ipa_arg[0], str) and isinstance(arg[0], int):
-                        arg = [to_text(_arg) for _arg in arg]
-                    if isinstance(ipa_arg[0], unicode) \
-                       and isinstance(arg[0], int):
-                        arg = [to_text(_arg) for _arg in arg]
-                try:
-                    arg_set = set(arg)
-                    ipa_arg_set = set(ipa_arg)
-                except TypeError:
-                    if arg != ipa_arg:
-                        module.debug(
-                            base_debug_msg
-                            + "Different values: %s %s" % (arg, ipa_arg)
-                        )
-                        return False
-                else:
-                    if arg_set != ipa_arg_set:
-                        module.debug(
-                            base_debug_msg
-                            + "Different set content: %s %s"
-                            % (arg_set, ipa_arg_set,)
-                        )
-                        return False
+                if arg_set != ipa_arg_set:
+                    module.debug(
+                        base_debug_msg
+                        + "Different set content: %s %s"
+                        % (arg_set, ipa_arg_set,)
+                    )
+                    return False
         return True
 
     def _afm_convert(value):
