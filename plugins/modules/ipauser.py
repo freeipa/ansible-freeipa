@@ -1103,20 +1103,6 @@ def main():
                         if "noprivate" in args:
                             del args["noprivate"]
 
-                        # Ignore sshpubkey if it is empty (for resetting)
-                        # and not set in for the user
-                        if "ipasshpubkey" not in res_find and \
-                           "ipasshpubkey" in args and \
-                           args["ipasshpubkey"] == ['']:
-                            del args["ipasshpubkey"]
-
-                        # Ignore userauthtype if it is empty (for resetting)
-                        # and not set in for the user
-                        if "ipauserauthtype" not in res_find and \
-                           "ipauserauthtype" in args and \
-                           args["ipauserauthtype"] == ['']:
-                            del args["ipauserauthtype"]
-
                         # For all settings is args, check if there are
                         # different settings in the find result.
                         # If yes: modify
