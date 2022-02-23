@@ -346,11 +346,13 @@ def main():
         "ca_renewal_master_server": "ca_renewal_master_server",
         "domain_resolution_order": "ipadomainresolutionorder"
     }
+    allow_empty_string = ["pac_type", "user_auth_type", "configstring"]
     reverse_field_map = {v: k for k, v in field_map.items()}
 
     params = {}
     for x in field_map:
-        val = ansible_module.params_get(x)
+        val = ansible_module.params_get(
+            x, allow_empty_string=(x in allow_empty_string))
 
         if val is not None:
             params[field_map.get(x, x)] = val
@@ -401,6 +403,10 @@ def main():
                 k: v for k, v in params.items()
                 if k not in result or result[k] != v
             }
+            # Remove empty string args from params if result arg is not set
+            for k in ["ipakrbauthzdata", "ipauserauthtype", "ipaconfigstring"]:
+                if k not in result and k in params and params[k] == [""]:
+                    del params[k]
             if params \
                and not compare_args_ipa(ansible_module, params, result):
                 changed = True
@@ -441,6 +447,13 @@ def main():
                             raise ValueError(
                                 "Unexpected attribute type: %s" % arg_type)
                         exit_args[k] = type_map[arg_type](value)
+            # Add empty pac_type and user_auth_type if they are not set
+            for key in ["pac_type", "user_auth_type"]:
+                if key not in exit_args:
+                    exit_args[key] = ""
+            # Add empty domain_resolution_order if it is not set
+            if "domain_resolution_order" not in exit_args:
+                exit_args["domain_resolution_order"] = []
 
     # Done
     ansible_module.exit_json(changed=changed, config=exit_args)
