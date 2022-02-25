@@ -1356,3 +1356,82 @@ class IPAAnsibleModule(AnsibleModule):
             self.fail_json(msg=", ".join(_errors))
 
         return changed
+
+    def execute_query(self, names, prefix, name_ipa_param,
+                      query_param, query_command, query_param_settings):
+        """
+        Execute query state.
+
+        Parameters
+        ----------
+        names: The main items to return
+            It names is not None and not an empty list then all items
+            found with "item_find" are returned, else the items in names.
+        prefix: The prefix for use with several main items
+            The prefix is "users" for the "user" module. It is used
+            if only the list of main items (example: users) is returned.
+        name_ipa_param: The IPA param name of the name parameter
+            This is for example "uid" that is used for the user name in
+            the user module.
+        query_param: The parameters to return
+            The parameters that should be returned. If query_param is
+            ["ALL"], all parameters in ipa_pram_names will be returned.
+        query_param_settings: IPA base parameters, all and mapping
+            The dict provides all parameters the "ALL" list and the
+            mapping of the default module paramter name to IPA option name
+            if it is not the same.
+            Example: "uid" for user name of the user commands.
+        query_command: The Query function
+            This is a module function that returns the structure(s) from
+            the show or find command.
+
+        """
+
+        def store_params(exit_args, name, prefix, name_ipa_param, result,
+                         params):
+            if params is None:
+                exit_args.setdefault(prefix, []).append(
+                    result[name_ipa_param])
+                return
+            for field in params:
+                if field not in query_param_settings["ALL"]:
+                    self.fail_json(
+                        msg="query_param '%s' is not supported" % field)
+                if "mapping" in query_param_settings and \
+                   field in query_param_settings["mapping"]:
+                    ipa_field = query_param_settings["mapping"][field]
+                else:
+                    ipa_field = field
+
+                if ipa_field in result:
+                    value = result[ipa_field]
+                    if name is None:
+                        exit_args[field] = value
+                    else:
+                        exit_args.setdefault(name, {})[field] = value
+
+        # Create exit_args
+        exit_args = {}
+
+        if query_param == ["BASE"]:
+            query_param = query_param_settings["BASE"]
+        elif query_param == ["ALL"]:
+            query_param = query_param_settings["ALL"]
+
+        if names and isinstance(names, list):
+            with_name = len(names) > 1
+            for name in names:
+                result = query_command(self, name)
+                if result:
+                    store_params(exit_args, name if with_name else None,
+                                 prefix, name_ipa_param, result,
+                                 query_param)
+        else:
+            results = query_command(self, None)
+            if results is not None:
+                for result in results:
+                    name = result[name_ipa_param]
+                    store_params(exit_args, name, prefix, name_ipa_param,
+                                 result, query_param)
+
+        return exit_args
