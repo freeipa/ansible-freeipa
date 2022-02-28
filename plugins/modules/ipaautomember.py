@@ -587,7 +587,6 @@ def main():
                         commands.append([None,
                                          'automember_default_group_remove',
                                          {'type': automember_type}])
-                        ansible_module.warn("commands: %s" % repr(commands))
 
                 else:
                     dn_default_group = [DN(('cn', default_group),
