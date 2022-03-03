@@ -892,8 +892,10 @@ def main():
     title = ansible_module.params_get("title")
     manager = ansible_module.params_get("manager")
     carlicense = ansible_module.params_get("carlicense")
-    sshpubkey = ansible_module.params_get("sshpubkey")
-    userauthtype = ansible_module.params_get("userauthtype")
+    sshpubkey = ansible_module.params_get("sshpubkey",
+                                          allow_empty_string=True)
+    userauthtype = ansible_module.params_get("userauthtype",
+                                             allow_empty_string=True)
     userclass = ansible_module.params_get("userclass")
     radius = ansible_module.params_get("radius")
     radiususer = ansible_module.params_get("radiususer")
@@ -1100,6 +1102,13 @@ def main():
                                 del args["random"]
                         if "noprivate" in args:
                             del args["noprivate"]
+
+                        # Ignore sshpubkey if it is empty (for resetting)
+                        # and not set in for the user
+                        if "ipasshpubkey" not in res_find and \
+                           "ipasshpubkey" in args and \
+                           args["ipasshpubkey"] == ['']:
+                            del args["ipasshpubkey"]
 
                         # Ignore userauthtype if it is empty (for resetting)
                         # and not set in for the user

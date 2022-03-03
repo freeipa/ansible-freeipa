@@ -1,0 +1,143 @@
+---
+- name: Test config
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: yes
+  gather_facts: no
+
+  tasks:
+
+  # GET CURRENT CONFIG
+
+  - name: Return current values of the global configuration options
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    register: previousconfig
+
+  - name: Ensure config with empty pac_type, user_auth_type and configstring
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      pac_type: ""
+      user_auth_type: ""
+      configstring: ""
+
+  # TESTS
+
+  - name: Ensure config with pac_type "nfs:NONE" and PAD
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      pac_type:
+      - "nfs:NONE"
+      - PAD
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure config with pac_type "nfs:NONE" and PAD, again
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      pac_type:
+      - "nfs:NONE"
+      - PAD
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure config with empty pac_type
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      pac_type: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure config with empty pac_type, again
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      pac_type: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure config with user_auth_type otp and radius
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      user_auth_type:
+      - otp
+      - radius
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure config with user_auth_type otp and radius, again
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      user_auth_type:
+      - otp
+      - radius
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure config with empty user_auth_type
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      user_auth_type: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure config with empty user_auth_type, again
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      user_auth_type: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure config with configstring AllowNThash and "KDC:Disable Lockout"
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      configstring:
+      - AllowNThash
+      - "KDC:Disable Lockout"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure config with configstring AllowNThash and "KDC:Disable Lockout", again
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      configstring:
+      - AllowNThash
+      - "KDC:Disable Lockout"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure config with empty configstring
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      configstring: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure config with empty configstring, again
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      configstring: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # REVERT TO PREVIOUS CONFIG
+
+  - name: Reset to previous pac_type and user_auth_type
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      pac_type: '{{ previousconfig.config.pac_type }}'
+      user_auth_type: '{{ previousconfig.config.user_auth_type }}'
+      configstring: '{{ previousconfig.config.configstring }}'

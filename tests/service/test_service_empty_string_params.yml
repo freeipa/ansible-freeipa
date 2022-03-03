@@ -1,0 +1,110 @@
+---
+- name: Test service
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: yes
+  gather_facts: yes
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is absent.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      continue: yes
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # TESTS
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with pac_type MS-PAC and PAD
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      pac_type:
+        - MS-PAC
+        - PAD
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with pac_type MS-PAC and PAD, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      pac_type:
+        - MS-PAC
+        - PAD
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with empty pac_type
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      pac_type: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with empty pac_type, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      pac_type: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with auth_ind otp and radius
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      auth_ind:
+        - otp
+        - radius
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with auth_ind otp and radius, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      auth_ind:
+        - otp
+        - radius
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with empty auth_ind
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      auth_ind: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with empty auth_ind, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      auth_ind: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is absent.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      continue: yes
+      state: absent

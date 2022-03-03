@@ -50,13 +50,13 @@ options:
   pac_type:
     description: Supported PAC type.
     required: false
-    choices: ["MS-PAC", "PAD", "NONE"]
+    choices: ["MS-PAC", "PAD", "NONE", ""]
     type: list
     aliases: ["pac_type", "ipakrbauthzdata"]
   auth_ind:
     description: Defines a whitelist for Authentication Indicators.
     required: false
-    choices: ["otp", "radius", "pkinit", "hardened"]
+    choices: ["otp", "radius", "pkinit", "hardened", ""]
     aliases: ["krbprincipalauthind"]
   skip_host_check:
     description: Skip checking if host object exists.
@@ -356,7 +356,7 @@ def init_ansible_module():
             smb=dict(type="bool", required=False),
             netbiosname=dict(type="str", required=False),
             pac_type=dict(type="list", aliases=["ipakrbauthzdata"],
-                          choices=["MS-PAC", "PAD", "NONE"]),
+                          choices=["MS-PAC", "PAD", "NONE", ""]),
             auth_ind=dict(type="list",
                           aliases=["krbprincipalauthind"],
                           choices=["otp", "radius", "pkinit", "hardened", ""]),
@@ -420,8 +420,8 @@ def main():
     # service attributes
     principal = ansible_module.params_get("principal")
     certificate = ansible_module.params_get("certificate")
-    pac_type = ansible_module.params_get("pac_type")
-    auth_ind = ansible_module.params_get("auth_ind")
+    pac_type = ansible_module.params_get("pac_type", allow_empty_string=True)
+    auth_ind = ansible_module.params_get("auth_ind", allow_empty_string=True)
     skip_host_check = ansible_module.params_get("skip_host_check")
     force = ansible_module.params_get("force")
     requires_pre_auth = ansible_module.params_get("requires_pre_auth")
@@ -536,6 +536,15 @@ def main():
                         for remove in ['skip_host_check', 'force']:
                             if remove in args:
                                 del args[remove]
+
+                        if (
+                            "ipakrbauthzdata" in args
+                            and (
+                                args.get("ipakrbauthzdata", [""]) ==
+                                res_find.get("ipakrbauthzdata", [""])
+                            )
+                        ):
+                            del args["ipakrbauthzdata"]
 
                         if (
                             "krbprincipalauthind" in args
