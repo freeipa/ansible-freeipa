@@ -487,8 +487,8 @@ def main():
                     runasuser_add, runasuser_del = gen_add_del_lists(
                         runasuser,
                         (
-                            res_find.get('ipasudorunas_user', [])
-                            + res_find.get('ipasudorunasextuser', [])
+                            list(res_find.get('ipasudorunas_user', []))
+                            + list(res_find.get('ipasudorunasextuser', []))
                         )
                     )
 
@@ -522,7 +522,12 @@ def main():
                             hostgroup, res_find.get("memberhost_hostgroup"))
                     if user is not None:
                         user_add = gen_add_list(
-                            user, res_find.get("memberuser_user"))
+                            user, 
+                            (
+                                res_find.get("memberuser_user", [])
+                                + list(res_find.get("externaluser", []))
+                            )
+                        )
                     if group is not None:
                         group_add = gen_add_list(
                             group, res_find.get("memberuser_group"))
