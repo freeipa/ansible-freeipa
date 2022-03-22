@@ -207,7 +207,7 @@ else:
                         cli_realm, cli_domain, cli_server, cli_kdc, dnsok,
                         filename, client_domain, client_hostname, force=False,
                         configure_sssd=True):
-                    # pylint: disable=global-statement
+                    # pylint: disable=global-variable-not-assigned
                     global options
                     options.force = force
                     options.sssd = configure_sssd
