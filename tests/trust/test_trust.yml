@@ -8,6 +8,7 @@
     adserver:
       domain: "{{ winserver_domain | default('windows.local')}}"
       realm: "{{ winserver_realm | default(winserver_domain) | default('windows.local') | upper }}"
+      password: "{{ winserver_admin_password | default('SomeW1Npassword') }}"
     trust_exists: 'Realm name: {{ adserver.domain }}'
     range_exists: 'Range name: {{ adserver.realm }}_id_range'
 
@@ -19,27 +20,25 @@
       ipatrust:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
-        realm: windows.local
+        realm: "{{ adserver.domain }}"
         state: absent
-      register: del_trust
 
     - name: check for trust
       shell: |
         echo 'SomeADMINpassword' | kinit admin
-        ipa trust-find windows.local
+        ipa trust-find {{ adserver.domain }}
       register: check_find_trust
       failed_when: "trust_exists in check_find_trust.stdout"
 
     - name: delete id range
       shell: |
         echo 'SomeADMINpassword' | kinit admin
-        ipa idrange-del WINDOWS.LOCAL_id_range
-      when: del_trust['changed'] | bool
+        ipa idrange-del {{ adserver.realm }}_id_range
 
     - name: check for range
       shell: |
         echo 'SomeADMINpassword' | kinit admin
-        ipa idrange-find WINDOWS.LOCAL_id_range
+        ipa idrange-find {{ adserver.realm }}_id_range
       register: check_del_idrange
       failed_when: "range_exists in check_find_trust.stdout"
 
@@ -47,16 +46,25 @@
       ipatrust:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
-        realm: windows.local
+        realm: "{{ adserver.domain }}"
         admin: Administrator
-        password: secret_ad_pw
+        password: "{{ adserver.password }}"
         state: present
+      register: result
+      failed_when: result.failed or not result.changed
 
-    - name: check for trust
+    - name: check if trust exists
       shell: |
         echo 'SomeADMINpassword' | kinit admin
-        ipa trust-find windows.local
+        ipa trust-find {{ adserver.domain }}
       register: check_add_trust
-      failed_when: "trust_exists in check_find_trust.stdout"
+      failed_when: "trust_exists not in check_add_trust.stdout"
+
+    - name: check if range exists
+      shell: |
+        echo 'SomeADMINpassword' | kinit admin
+        ipa idrange-find {{ adserver.realm }}_id_range
+      register: check_add_trust
+      failed_when: "range_exists not in check_add_trust.stdout"
 
     when: trust_test_is_supported | default(false)
