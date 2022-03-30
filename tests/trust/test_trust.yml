@@ -4,6 +4,13 @@
   become: true
   gather_facts: false
 
+  vars:
+    adserver:
+      domain: "{{ winserver_domain | default('windows.local')}}"
+      realm: "{{ winserver_realm | default(winserver_domain) | default('windows.local') | upper }}"
+    trust_exists: 'Realm name: {{ adserver.domain }}'
+    range_exists: 'Range name: {{ adserver.realm }}_id_range'
+
   tasks:
 
   - block:
@@ -21,7 +28,7 @@
         echo 'SomeADMINpassword' | kinit admin
         ipa trust-find windows.local
       register: check_find_trust
-      failed_when: "'0 trusts matched' not in check_find_trust.stdout"
+      failed_when: "trust_exists in check_find_trust.stdout"
 
     - name: delete id range
       shell: |
@@ -34,7 +41,7 @@
         echo 'SomeADMINpassword' | kinit admin
         ipa idrange-find WINDOWS.LOCAL_id_range
       register: check_del_idrange
-      failed_when: "'0 ranges matched' not in check_del_idrange.stdout"
+      failed_when: "range_exists in check_find_trust.stdout"
 
     - name: add trust
       ipatrust:
@@ -50,6 +57,6 @@
         echo 'SomeADMINpassword' | kinit admin
         ipa trust-find windows.local
       register: check_add_trust
-      failed_when: "'1 trust matched' not in check_add_trust.stdout"
+      failed_when: "trust_exists in check_find_trust.stdout"
 
     when: trust_test_is_supported | default(false)
