@@ -1,55 +1,168 @@
 ---
-- name: find trust
+- name: Test ipatrust
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: false
+
+  vars:
+    adserver:
+      domain: "{{ winserver_domain | default('windows.local')}}"
+      realm: "{{ winserver_realm | default(winserver_domain) | default('windows.local') | upper }}"
+      password: "{{ winserver_admin_password | default('SomeW1Npassword') }}"
+    ipaserver:
+      domain: "{{ ipaserver_domain | default('ipa.test')}}"
+      realm: "{{ ipaserver_realm | default(ipaserver_domain) | default('ipa.test') | upper }}"
+    trust_exists: 'Realm name: {{ adserver.domain }}'
+    ad_range_exists: 'Range name: {{ adserver.realm }}_id_range'
+    ipa_range_exists: 'Range name: {{ ipaserver.realm }}_subid_range'
 
   tasks:
 
   - block:
 
-    - name: delete trust
+    - name: Delete test trust
       ipatrust:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
-        realm: windows.local
+        realm: "{{ adserver.domain }}"
         state: absent
-      register: del_trust
 
-    - name: check for trust
+    - name: Clear test idranges
       shell: |
-        echo 'SomeADMINpassword' | kinit admin
-        ipa trust-find windows.local
-      register: check_find_trust
-      failed_when: "'0 trusts matched' not in check_find_trust.stdout"
+        kinit -c test_krb5_cache admin <<< SomeADMINpassword
+        ipa idrange-del {{ adserver.realm }}_id_range || true
+        ipa idrange-del {{ ipaserver.realm }}_subid_range || true
+        kdestroy -c test_krb5_cache -q -A
 
-    - name: delete id range
-      shell: |
-        echo 'SomeADMINpassword' | kinit admin
-        ipa idrange-del WINDOWS.LOCAL_id_range
-      when: del_trust['changed'] | bool
-
-    - name: check for range
-      shell: |
-        echo 'SomeADMINpassword' | kinit admin
-        ipa idrange-find WINDOWS.LOCAL_id_range
-      register: check_del_idrange
-      failed_when: "'0 ranges matched' not in check_del_idrange.stdout"
-
-    - name: add trust
+    - name: Add trust with range_type 'ipa-ad-trust'
       ipatrust:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
-        realm: windows.local
+        realm: "{{ adserver.domain }}"
         admin: Administrator
-        password: secret_ad_pw
+        trust_type: ad
+        range_type: ipa-ad-trust
+        password: "{{ adserver.password }}"
         state: present
+      register: result
+      failed_when: result.failed or not result.changed
 
-    - name: check for trust
+    - name: check if 'ipa-ad-trust' trust exists
       shell: |
         echo 'SomeADMINpassword' | kinit admin
-        ipa trust-find windows.local
+        ipa trust-find
+        kdestroy -c test_krb5_cache -q -A
       register: check_add_trust
-      failed_when: "'1 trust matched' not in check_add_trust.stdout"
+      failed_when: "trust_exists not in check_add_trust.stdout"
+
+    - name: Add trust with range_type 'ipa-ad-trust', again
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        realm: "{{ adserver.domain }}"
+        admin: Administrator
+        range_type: ipa-ad-trust
+        password: "{{ adserver.password }}"
+        state: present
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Delete 'ipa-ad-trust' trust
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        realm: "{{ adserver.domain }}"
+        state: absent
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Check if 'ipa-ad-trust' trust was removed
+      shell: |
+        kinit -c test_krb5_cache admin <<< SomeADMINpassword
+        ipa trust-find
+        kdestroy -c test_krb5_cache -q -A
+      register: check_add_trust
+      failed_when: "trust_exists in check_add_trust.stdout"
+
+    - name: Delete 'ipa-ad-trust' trust, again
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        realm: "{{ adserver.domain }}"
+        state: absent
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Clear test idranges
+      shell: |
+        kinit -c test_krb5_cache admin <<< SomeADMINpassword
+        ipa idrange-del {{ adserver.realm }}_id_range || true
+        ipa idrange-del {{ ipaserver.realm }}_subid_range || true
+        kdestroy -c test_krb5_cache -q -A
+
+    - name: Add trust with range_type 'ipa-ad-trust-posix'
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        realm: "{{ adserver.domain }}"
+        admin: Administrator
+        range_type: ipa-ad-trust-posix
+        password: "{{ adserver.password }}"
+        state: present
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Check if 'ipa-ad-trust-posix' trust exists
+      shell: |
+        kinit -c test_krb5_cache admin <<< SomeADMINpassword
+        ipa trust-find
+        kdestroy -c test_krb5_cache -q -A
+      register: check_add_trust
+      failed_when: "trust_exists not in check_add_trust.stdout"
+
+    - name: Add trust with range_type 'ipa-ad-trust-posix', again
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        realm: "{{ adserver.domain }}"
+        admin: Administrator
+        range_type: ipa-ad-trust-posix
+        password: "{{ adserver.password }}"
+        state: present
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Delete 'ipa-ad-trust-posix' trust
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        realm: "{{ adserver.domain }}"
+        state: absent
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Check if trust 'ipa-ad-trust-posix' was removed
+      shell: |
+        kinit -c test_krb5_cache admin <<< SomeADMINpassword
+        ipa trust-find
+        kdestroy -c test_krb5_cache -q -A
+      register: check_del_trust
+      failed_when: "trust_exists in check_del_trust.stdout"
+
+    - name: Delete 'ipa-ad-trust-posix' trust, again
+      ipatrust:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        realm: "{{ adserver.domain }}"
+        state: absent
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Clear test idranges
+      shell: |
+        kinit -c test_krb5_cache admin <<< SomeADMINpassword
+        ipa idrange-del {{ adserver.realm }}_id_range || true
+        ipa idrange-del {{ ipaserver.realm }}_subid_range || true
+        kdestroy -c test_krb5_cache -q -A
 
     when: trust_test_is_supported | default(false)
