@@ -13,7 +13,7 @@
     ipatrust:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: server
-      realm: windows.local
+      realm: this.test.should.fail
     register: result
     failed_when: not (result.failed and result.msg is regex("No module named '*ipaserver'*"))
     when: ipa_host_is_client
