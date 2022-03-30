@@ -6,6 +6,6 @@
   tasks:
   - name: Ensure sudorule command is absent
     ipasudorule:
-      ipaadmin_password: pass1234
+      ipaadmin_password: SomeADMINpassword
       name: testrule1
       state: absent

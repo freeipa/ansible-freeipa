@@ -6,5 +6,6 @@
   tasks:
     - name: ensure the trust is absent
       ipatrust:
+        ipaadmin_password: SomeADMINpassword
         realm: windows.local
         state: absent

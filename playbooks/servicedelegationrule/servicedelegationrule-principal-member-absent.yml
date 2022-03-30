@@ -6,7 +6,8 @@
   tasks:
   - name: Ensure principal member test/example.com is absent in servicedelegationrule test-delegation-rule
     ipaservicedelegationrule:
-     name: test-delegation-rule
-     principal: test/example.com
-     action: member
-     state: absent
+      ipaadmin_password: SomeADMINpassword
+      name: test-delegation-rule
+      principal: test/example.com
+      action: member
+      state: absent

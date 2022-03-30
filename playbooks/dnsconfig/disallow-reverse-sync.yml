@@ -6,4 +6,5 @@
   tasks:
   - name: Disallow reverse record synchronization.
     ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
       allow_sync_ptr: no

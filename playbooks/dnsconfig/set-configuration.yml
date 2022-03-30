@@ -6,6 +6,7 @@
   tasks:
   - name: Set dnsconfig.
     ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
       forwarders:
         - ip_address: 8.8.4.4
         - ip_address: 2001:4860:4860::8888

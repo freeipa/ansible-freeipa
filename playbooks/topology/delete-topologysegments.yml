@@ -14,7 +14,7 @@
   tasks:
   - name: Add topology segment
     ipatopologysegment:
-      ipaadmin_password: "{{ ipaadmin_password }}"
+      ipaadmin_password: SomeADMINpassword
       suffix: "{{ item.suffix }}"
       name: "{{ item.name | default(omit) }}"
       left: "{{ item.left }}"

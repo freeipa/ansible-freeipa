@@ -5,7 +5,7 @@
   tasks:
   - name: Ensure aumount key TestKey is renamed to NewKeyName
     ipaautomountkey:
-      ipaadmin_password: password01
+      ipaadmin_password: SomeADMINpassword
       automountlocationcn: TestLocation
       automountmapname: TestMap
       automountkey: TestKey

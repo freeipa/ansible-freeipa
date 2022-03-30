@@ -6,7 +6,7 @@
   tasks:
   - name: Ensure sudocmdgroup sudocmds are present
     ipasudocmdgroup:
-      ipaadmin_password: pass1234
+      ipaadmin_password: SomeADMINpassword
       name: network
       description: Group of important commands.
       sudocmd:
