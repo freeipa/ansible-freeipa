@@ -6,6 +6,7 @@
   tasks:
     - name: ensure the trust is present
       ipatrust:
+        ipaadmin_password: SomeADMINpassword
         realm: windows.local
         admin: Administrator
         password: secret_password

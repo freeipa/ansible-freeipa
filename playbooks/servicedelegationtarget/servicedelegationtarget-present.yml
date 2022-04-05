@@ -6,4 +6,5 @@
   tasks:
   - name: Ensure servicedelegationtarget test-delegation-target is present
     ipaservicedelegationtarget:
-     name: test-delegation-target
+      ipaadmin_password: SomeADMINpassword
+      name: test-delegation-target

@@ -6,4 +6,5 @@
   tasks:
   - name: Ensure servicedelegationrule test-delegation-rule is present
     ipaservicedelegationrule:
-     name: test-delegation-rule
+      ipaadmin_password: SomeADMINpassword
+      name: test-delegation-rule

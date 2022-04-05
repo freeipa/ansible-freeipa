@@ -6,7 +6,7 @@
   tasks:
   - name: Ensure sudocmdgroup is absent
     ipasudocmdgroup:
-      ipaadmin_password: pass1234
+      ipaadmin_password: SomeADMINpassword
       name: network
       state: absent
       action: sudocmdgroup

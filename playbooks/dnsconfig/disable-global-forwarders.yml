@@ -6,4 +6,5 @@
   tasks:
   - name: Disable global forwarders.
     ipadnsconfig:
+      ipaadmin_password: SomeADMINpassword
       forward_policy: none
