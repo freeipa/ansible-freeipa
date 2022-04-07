@@ -100,7 +100,7 @@ Example playbook to add group members to a group:
   become: true
 
   tasks:
-  # Add group members sysops and appops to group sysops
+  # Add group members sysops and appops to group ops
   - ipagroup:
       ipaadmin_password: SomeADMINpassword
       name: ops
