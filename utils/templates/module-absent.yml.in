@@ -6,5 +6,6 @@
   tasks:
   - name: Ensure $name NAME is absent
     ipa$name:
-     name: NAME
-     state: absent
+      ipaadmin_password: SomeADMINpassword
+      name: NAME
+      state: absent
