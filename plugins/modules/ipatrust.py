@@ -190,7 +190,8 @@ def main():
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
             # present
-            trust_type=dict(type="str", default="ad", required=False),
+            trust_type=dict(type="str", default="ad", required=False,
+                            choices=["ad"]),
             admin=dict(type="str", default=None, required=False),
             password=dict(type="str", default=None,
                           required=False, no_log=True),
