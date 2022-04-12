@@ -129,7 +129,7 @@ Variable | Description | Required
 `forwarders` | The list of forwarders dicts. Each `forwarders` dict entry has:| no
 &nbsp; | `ip_address` - The IPv4 or IPv6 address of the DNS server. | yes
 &nbsp; | `port` - The custom port that should be used on this server. | no
-`forward_policy` | The global forwarding policy. It can be one of `only`, `first`, or `none`.  | no
+`forward_policy` \| `forwardpolicy` | The global forwarding policy. It can be one of `only`, `first`, or `none`.  | no
 `allow_sync_ptr` | Allow synchronization of forward (A, AAAA) and reverse (PTR) records (bool). | yes
 `action` | Work on dnsconfig or member level. It can be one of `member` or `dnsconfig` and defaults to `dnsconfig`. Only `forwarders` can be managed with `action: member`. | no
 `state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. `absent` can only be used with `action: member` and `forwarders`. | yes

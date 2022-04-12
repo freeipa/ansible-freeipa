@@ -68,7 +68,7 @@ options:
     required: false
     default: only
     choices: ["only", "first", "none"]
-    aliases: ["idnsforwarders"]
+    aliases: ["idnsforwarders", "forward_policy"]
   skip_overlap_check:
     description:
     - Force DNS zone creation even if it will overlap with an existing zone.
@@ -189,7 +189,8 @@ def main():
                                  port=dict(type='int', required=False,
                                            default=None),
                             )),
-            forwardpolicy=dict(type='str', aliases=["idnsforwardpolicy"],
+            forwardpolicy=dict(type='str',
+                               aliases=["idnsforwardpolicy", "forward_policy"],
                                required=False,
                                choices=['only', 'first', 'none']),
             skip_overlap_check=dict(type='bool', required=False),
