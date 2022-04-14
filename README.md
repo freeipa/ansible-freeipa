@@ -28,6 +28,7 @@ Features
 * Modules for hbacsvcgroup management
 * Modules for host management
 * Modules for hostgroup management
+* Modules for idrange management
 * Modules for location management
 * Modules for permission management
 * Modules for privilege management
@@ -444,6 +445,7 @@ Modules in plugin/modules
 * [ipahbacsvcgroup](README-hbacsvcgroup.md)
 * [ipahost](README-host.md)
 * [ipahostgroup](README-hostgroup.md)
+* [idrange](README-idrange.md)
 * [ipalocation](README-location.md)
 * [ipapermission](README-permission.md)
 * [ipaprivilege](README-privilege.md)

@@ -1,0 +1,280 @@
+---
+- name: Test idrange
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  vars:
+    adserver:
+      domain: "{{ winserver_domain | default('windows.local')}}"
+      realm: "{{ winserver_realm | default(winserver_domain) | default('windows.local') | upper }}"
+      password: "{{ winserver_admin_password | default('SomeW1Npassword') }}"
+      ip_address: "{{ winserver_ip | default(omit) }}"
+
+  tasks:
+  # CLEANUP TEST ITEMS
+  - name: Remove test trust.
+    include_tasks: tasks_remove_trust.yml
+    when: trust_test_is_supported | default(false)
+
+  - name: Ensure testing idranges are absent
+    ipaidrange:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name:
+        - "{{ adserver.realm }}_id_range"
+        - local_id_range
+        - ad_id_range
+        - ad_posix_id_range
+      continue: yes
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  # TESTS
+
+  # Test local idrange, only if ipa-adtrust-install was not executed.
+  - block:
+      - name: Ensure idrange with minimal attributes is present
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          base_id: 150000000
+          range_size: 200000
+        register: result
+        failed_when:
+          not (result.failed or result.changed) or (result.failed and 'ipa-adtrust-install has already been run' not in result.msg)
+
+      - name: Ensure idrange with minimal attributes is present, again
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          base_id: 150000000
+          range_size: 200000
+        register: result
+        failed_when:
+          result.changed or (result.failed and 'ipa-adtrust-install has already been run' not in result.msg)
+
+      - name: Ensure idrange with minimal attributes is absent
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          state: absent
+        register: range_delete
+        failed_when: range_delete.failed or (result.changed and not range_delete.changed)
+
+      # Test local idrange, even after ipa-adtrust-install.
+      - name: Ensure local idrange is present
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          base_id: 150000000
+          range_size: 200000
+          rid_base: 1000000
+          secondary_rid_base: 200000000
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure local idrange is present again
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          base_id: 150000000
+          range_size: 200000
+          rid_base: 1000000
+          secondary_rid_base: 200000000
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure local idrange is absent
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          state: absent
+          continue: no
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure local idrange is absent again
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          state: absent
+          continue: no
+        register: result
+        failed_when: result.changed or result.failed
+
+    rescue:
+      - name: Ensure local idranges is absent
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+
+  - block:
+      # Create trust with range_type: ipa-ad-trust-posix
+      - name: Create trust with range_type 'ipa-ad-trust'
+        include_tasks: tasks_set_trust.yml
+        vars:
+          trust_base_id: 10000000
+          trust_range_size: 200000
+          trust_range_type: ipa-ad-trust
+
+      # Can't user secondary_rid_base with dom_sid/dom_name
+      - name: Ensure AD-trust idrange is present
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_id_range
+          base_id: 150000000
+          range_size: 200000
+          rid_base: 1000000
+          idrange_type: ipa-ad-trust
+          dom_sid: "{{ ipa_domain_sid }}"
+          auto_private_groups: "false"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure AD-trust idrange is present again
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_id_range
+          base_id: 150000000
+          range_size: 200000
+          rid_base: 1000000
+          idrange_type: ipa-ad-trust
+          dom_sid: "{{ ipa_domain_sid }}"
+          auto_private_groups: "false"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Check if AD-trust idrange is present, uning domain name
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_id_range
+          base_id: 150000000
+          range_size: 200000
+          rid_base: 1000000
+          idrange_type: ipa-ad-trust
+          dom_name: "{{ adserver.domain }}"
+          auto_private_groups: "false"
+        check_mode: true
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Modify AD-trust idrange 'base_id'
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_id_range
+          base_id: 151230000
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Modify AD-trust idrange 'base_id', again
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_id_range
+          base_id: 151230000
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Modify AD-trust idrange 'range_size'
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_id_range
+          range_size: 100000
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Modify AD-trust idrange 'rid_base'
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_id_range
+          rid_base: 12345678
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Modify AD-trust idrange 'auto_private_groups'
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_id_range
+          auto_private_groups: "hybrid"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      # Remove trust and idrange
+      - name: Remove test trust.
+        include_tasks: tasks_remove_trust.yml
+
+      - name: Ensure AD-trust idrange is absent
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_id_range
+          state: absent
+
+      # Create trust with range_type: ipa-ad-trust-posix
+      - name: Create trust with range_type 'ipa-ad-trust-posix'
+        include_tasks: tasks_set_trust.yml
+        vars:
+          trust_base_id: 10000000
+          trust_range_size: 2000000
+          trust_range_type: ipa-ad-trust-posix
+
+      # Can't user secondary_rid_base or rid_base with "ad-trust-posix"
+      - name: Ensure AD-trust-posix idrange is present
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_posix_id_range
+          base_id: 150000000
+          range_size: 200000
+          idrange_type: ipa-ad-trust-posix
+          dom_sid: "{{ ipa_domain_sid }}"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure AD-trust-posix idrange is present again
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: ad_posix_id_range
+          base_id: 150000000
+          range_size: 200000
+          idrange_type: ipa-ad-trust-posix
+          dom_sid: "{{ ipa_domain_sid }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+    always:
+      # CLEANUP TEST ITEMS
+      - name: Remove test trust.
+        include_tasks: tasks_remove_trust.yml
+
+      - name: Ensure testing idranges are absent
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name:
+            - "{{ adserver.realm }}_id_range"
+            - local_id_range
+            - ad_id_range
+            - ad_posix_id_range
+          continue: yes
+          state: absent
+
+    when: trust_test_is_supported | default(false)

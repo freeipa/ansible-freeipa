@@ -1,0 +1,11 @@
+---
+- name: Idrange absent example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure idrange is absent
+    ipaidrange:
+      ipaadmin_password: SomeADMINpassword
+      name: id_range
+      state: absent
