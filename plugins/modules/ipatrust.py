@@ -44,7 +44,8 @@ options:
     description:
     - Trust type (ad for Active Directory, default)
     default: ad
-    required: true
+    required: false
+    choices: ["ad"]
   admin:
     description:
     - Active Directory domain administrator
@@ -103,7 +104,7 @@ EXAMPLES = """
     realm: ad.example.test
     trust_type: ad
     admin: Administrator
-    password: Welcome2020!
+    password: SomeW1Npassword
     state: present
 
 # delete ad-trust
