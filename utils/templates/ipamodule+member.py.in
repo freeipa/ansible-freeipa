@@ -36,6 +36,7 @@ short description: Manage FreeIPA $name
 description: Manage FreeIPA $name and $name members
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamoudle_base_docs.delete_continue
 options:
   name:
     description: The list of $name name strings.
@@ -152,6 +153,7 @@ def main():
                        choices=["present", "absent"]),
         ),
         supports_check_mode=True,
+        ipa_module_options=["delete_continue"]
     )
 
     ansible_module._ansible_debug = True
@@ -163,8 +165,13 @@ def main():
 
     # present
     PARAMETER1 = ansible_module.params_get("PARAMETER1")
-    PARAMETER2 = ansible_module.params_get("PARAMETER2")
+    # Note: some parameters must be compared in a case insensitive way,
+    # or are transliterated into its lowercase version by IPA API. For
+    # these parameters, use IPAAnsibleModule.params_get_lowercase.
+    PARAMETER2 = ansible_module.params_get_lowercase("PARAMETER2")
     action = ansible_module.params_get("action")
+
+    delete_continue = ansible_module.params_get("delete_continue")
 
     # state
     state = ansible_module.params_get("state")
@@ -202,6 +209,9 @@ def main():
             # Make sure $name exists
             res_find = find_$name(ansible_module, name)
 
+            # add/del lists
+            PARAMETER2_add, PARAMETER2_del = [], []
+
             # Create command
             if state == "present":
 
@@ -228,19 +238,6 @@ def main():
                         PARAMETER2_add, PARAMETER2_del = gen_add_del_lists(
                                 PARAMETER2, res_find.get("member_PARAMETER2"))
 
-                        # Add members
-                        if len(PARAMETER2_add) > 0:
-                            commands.append([name, "$name_add_member",
-                                             {
-                                                 "PARAMETER2": PARAMETER2_add,
-                                             }])
-                        # Remove members
-                        if len(PARAMETER2_del) > 0:
-                            commands.append([name, "$name_remove_member",
-                                             {
-                                                 "PARAMETER2": PARAMETER2_del,
-                                             }])
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
@@ -248,21 +245,17 @@ def main():
 
                     # Reduce add lists for PARAMETER2
                     # to new entries only that are not in res_find.
-                    if PARAMETER2 is not None and \
-                       "API_PARAMETER2_NAME" in res_find:
-                        PARAMETER2 = gen_add_list(
-                            PARAMETER2, res_find["API_PARAMETER2_NAME"])
-
                     if PARAMETER2 is not None:
-                        commands.append([name, "$name_add_member",
-                                         {
-                                             "PARAMETER2": PARAMETER2,
-                                         }])
+                        PARAMETER2_add = gen_add_list(
+                            PARAMETER2, res_find.get("member_PARAMETER2"))
+
 
             elif state == "absent":
                 if action == "$name":
                     if res_find is not None:
-                        commands.append([name, "$name_del", {}])
+                        commands.append(
+                            [name, "$name_del", {"continue": delete_continue}]
+                        )
 
                 elif action == "member":
                     if res_find is None:
@@ -272,18 +265,29 @@ def main():
                     # Reduce del lists of member_host and member_hostgroup,
                     # to the entries only that are in res_find.
                     if PARAMETER2 is not None:
-                        PARAMETER2 = gen_intersection_list(
-                            PARAMETER2, res_find.get("API_PARAMETER2_NAME"))
-
-                    if PARAMETER2 is not None:
-                        commands.append([name, "$name_remove_member",
-                                         {
-                                             "PARAMETER2": PARAMETER2,
-                                         }])
+                        PARAMETER2_del = gen_intersection_list(
+                            PARAMETER2, res_find.get("member_PARAMETER2"))
 
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
+            # Member management
+
+            # Add members
+            if PARAMETER2_add:
+                commands.append([name, "$name_add_member",
+                                 {
+                                     "PARAMETER2": PARAMETER2_add,
+                                 }])
+
+            # Remove members
+
+            if PARAMETER2_del:
+                commands.append([name, "$name_remove_member",
+                                 {
+                                     "PARAMETER2": PARAMETER2_del,
+                                     "continue": delete_continue,
+                                 }])
 
         # Execute commands
 
