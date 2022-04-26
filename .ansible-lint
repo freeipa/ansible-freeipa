@@ -14,6 +14,8 @@ exclude_paths:
 kinds:
   - playbook: '**/tests/**/test_*.yml'
   - playbook: '**/playbooks/**/*.yml'
+  - tasks: '**/tasks_*.yml'
+  - tasks: '**/env_*.yml'
 
 parseable: true
 
