@@ -54,6 +54,7 @@ options:
       global forwarders.
     required: false
     choices: ['only', 'first', 'none']
+    alias: ["forwardpolicy"]
   allow_sync_ptr:
     description:
       Allow synchronization of forward (A, AAAA) and reverse (PTR) records.
@@ -189,7 +190,8 @@ def main():
             forwarders=dict(type='list', default=None, required=False,
                             options=dict(**forwarder_spec)),
             forward_policy=dict(type='str', required=False, default=None,
-                                choices=['only', 'first', 'none']),
+                                choices=['only', 'first', 'none'],
+                                aliases=["forwardpolicy"]),
             allow_sync_ptr=dict(type='bool', required=False, default=None),
 
             # general

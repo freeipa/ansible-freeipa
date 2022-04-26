@@ -110,7 +110,7 @@ Variable | Description | Required
 `forwarders` \| `idnsforwarders` |  Per-zone forwarders. A custom port can be specified for each forwarder. Options | no
 &nbsp; | `ip_address`: The forwarder IP address. | yes
 &nbsp; | `port`: The forwarder IP port. | no
-`forwardpolicy` \| `idnsforwardpolicy` | Per-zone conditional forwarding policy. Possible values are `only`, `first`, `none`. Set to "none" to disable forwarding to global forwarder for this zone. In that case, conditional zone forwarders are disregarded. | no
+`forwardpolicy` \| `idnsforwardpolicy` \| `forward_policy` | Per-zone conditional forwarding policy. Possible values are `only`, `first`, `none`. Set to "none" to disable forwarding to global forwarder for this zone. In that case, conditional zone forwarders are disregarded. | no
 `skip_overlap_check` | Force DNS zone creation even if it will overlap with an existing zone. Defaults to False. | no
 `permission` | Allow DNS Forward Zone to be managed. (bool) | no
 `action` | Work on group or member level. It can be on of `member` or `dnsforwardzone` and defaults to `dnsforwardzone`. | no
