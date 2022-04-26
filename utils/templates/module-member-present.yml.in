@@ -6,6 +6,7 @@
   tasks:
   - name: Ensure $name NAME is present
     ipa$name:
-     name: NAME
-     PARAMETER2: VALUE
-     action: member
+      ipaadmin_password: SomeADMINpassword
+      name: NAME
+      PARAMETER2: VALUE
+      action: member
