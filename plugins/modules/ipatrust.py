@@ -44,7 +44,8 @@ options:
     description:
     - Trust type (ad for Active Directory, default)
     default: ad
-    required: true
+    required: false
+    choices: ["ad"]
   admin:
     description:
     - Active Directory domain administrator
@@ -103,7 +104,7 @@ EXAMPLES = """
     realm: ad.example.test
     trust_type: ad
     admin: Administrator
-    password: Welcome2020!
+    password: SomeW1Npassword
     state: present
 
 # delete ad-trust
@@ -190,7 +191,8 @@ def main():
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
             # present
-            trust_type=dict(type="str", default="ad", required=False),
+            trust_type=dict(type="str", default="ad", required=False,
+                            choices=["ad"]),
             admin=dict(type="str", default=None, required=False),
             password=dict(type="str", default=None,
                           required=False, no_log=True),
