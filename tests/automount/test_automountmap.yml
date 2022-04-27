@@ -71,6 +71,24 @@
       register: result
       failed_when: result.failed or result.changed
 
+    - name: ensure map TestMap has an empty description
+      ipaautomountmap:
+        ipaadmin_password: SomeADMINpassword
+        name: TestMap
+        location: TestLocation
+        desc: ""
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: ensure map TestMap has an empty description, again
+      ipaautomountmap:
+        ipaadmin_password: SomeADMINpassword
+        name: TestMap
+        location: TestLocation
+        desc: ""
+      register: result
+      failed_when: result.failed or result.changed
+
     - name: ensure map TestMap is removed
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword

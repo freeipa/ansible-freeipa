@@ -1,0 +1,71 @@
+---
+- name: Test users
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  tasks:
+  # SETUP
+  - name: Remove test users
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      state: absent
+
+  - name: Ensure user testuser is present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      first: test
+      last: user
+      userauthtype: password,radius,otp
+      sshpubkey:
+      # yamllint disable-line rule:line-length
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCqmVDpEX5gnSjKuv97AyzOhaUMMKz8ahOA3GY77tVC4o68KNgMCmDSEG1/kOIaElngNLaCha3p/2iAcU9Bi1tLKUlm2bbO5NHNwHfRxY/3cJtq+/7D1vxJzqThYwI4F9vr1WxyY2+mMTv3pXbfAJoR8Mu06XaEY5PDetlDKjHLuNWF+/O7ZU8PsULTa1dJZFrtXeFpmUoLoGxQBvlrlcPI1zDciCSU24t27Zan5Py2l5QchyI7yhCyMM77KDtj5+AFVpmkb9+zq50rYJAyFVeyUvwjzErvQrKJzYpA0NyBp7vskWbt36M16/M/LxEK7HA6mkcakO3ESWx5MT1LAjvdlnxbWG3787MxweHXuB8CZU+9bZPFBaJ+VQtOfJ7I8eH0S16moPC4ak8FlcFvOH8ERDPWLFDqfy09yaZ7bVIF0//5ZI7Nf3YDe3S7GrBX5ieYuECyP6UNkTx9BRsAQeVvXEc6otzB7iCSnYBMGUGzCqeigoAWaVQUONsSR3Uatks= pinky@ipaserver.el81.local  # noqa 204
+
+  # TESTS - action: user
+  - name: Ensure user testuser present with empty sshpubkey
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      sshpubkey: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure user testuser present with empty sshpubkey, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      sshpubkey: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure user testuser present with empty userauthtype
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      userauthtype: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure user testuser present with empty userauthtype, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      userauthtype: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP
+  - name: Remove test users
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      state: absent

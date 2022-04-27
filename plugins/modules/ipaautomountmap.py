@@ -126,7 +126,8 @@ class AutomountMap(IPAAnsibleModule):
         _args = {}
         if mapname:
             _args["automountmapname"] = mapname
-        if desc:
+        # An empty string is valid and will clear the attribute.
+        if desc is not None:
             _args["description"] = desc
         return _args
 
