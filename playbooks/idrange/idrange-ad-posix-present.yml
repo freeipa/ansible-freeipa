@@ -1,0 +1,15 @@
+---
+- name: Playbook to manage idrange
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure AD-trust idrange is present
+    ipaidrange:
+      name: id_range
+      base_id: 150000000
+      range_size: 200000
+      rid_base: 1000000
+      idrange_type: ipa-ad-trust-posix
+      dom_name: ad.ipa.test
+      auto_private_groups: "false"

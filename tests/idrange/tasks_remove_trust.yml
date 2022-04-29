@@ -1,0 +1,24 @@
+---
+- name: Ensure testing trust is absent
+  ipatrust:
+    ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
+    realm: "{{ adserver.domain }}"
+    state: absent
+
+- name: Ensure testing idranges are absent
+  ipaidrange:
+    ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
+    name:
+      - "{{ adserver.realm }}_id_range"
+    continue: yes
+    state: absent
+
+- name: Remove dns forward zone
+  ipadnsforwardzone:
+    ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
+    name: "{{ adserver.domain }}"
+    state: absent
+  when: trust_dnszone is defined and trust_dnszone.changed

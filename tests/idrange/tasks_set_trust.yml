@@ -1,0 +1,36 @@
+---
+- name: Ensure DNS forward zone to Windows AD
+  ipadnsforwardzone:
+    ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
+    name: "{{ adserver.domain }}"
+    forwarders:
+      - ip_address: "{{ adserver.ip_address }}"
+    forwardpolicy: first
+  register: trust_dnszone
+
+- name: Set trust to Widows AD
+  ipatrust:
+    ipaadmin_password: SomeADMINpassword
+    ipaapi_context: "{{ ipa_context | default(omit) }}"
+    realm: "{{ adserver.domain }}"
+    admin: Administrator
+    password: "{{ adserver.password }}"
+    base_id: "{{ trust_base_id | default(omit) }}"
+    range_type: "{{ trust_range_type | default(omit) }}"
+    range_size: "{{ trust_range_size | default(omit) }}"
+  register: result
+  failed_when: result.failed
+
+- name: Retrieve Domain Security Identifier
+  shell:
+    cmd: |
+      kinit -c test_krb5_cache admin <<< SomeADMINpassword > /dev/null
+      KRB5CCNAME=test_krb5_cache ipa trust-show {{ adserver.domain }} | sed -n "/Domain Security Identifier/s/ //gp" | cut -d":" -f2
+      kdestroy -c test_krb5_cache -A -q > /dev/null
+  register: getsid
+  no_log: yes
+
+- name: Set ipa_domain_sid.
+  set_fact:
+    ipa_domain_sid: "{{ getsid.stdout }}"

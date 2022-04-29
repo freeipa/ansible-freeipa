@@ -1,0 +1,14 @@
+---
+- name: Playbook to manage idrange
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure local idrange is present
+    ipaidrange:
+      ipaadmin_password: SomeADMINpassword
+      name: id_range
+      base_id: 150000000
+      range_size: 200000
+      rid_base: 1000000
+      secondary_rid_base: 200000000
