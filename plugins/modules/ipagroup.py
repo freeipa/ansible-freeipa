@@ -97,6 +97,11 @@ options:
     required: false
     type: list
     ailases: ["ipaexternalmember", "external_member"]
+  idoverrideuser:
+    description:
+    - User ID overrides to add
+    required: false
+    type: list
   action:
     description: Work on group or member level
     default: group
@@ -184,7 +189,7 @@ RETURN = """
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
-    gen_add_list, gen_intersection_list
+    gen_add_list, gen_intersection_list, api_check_param
 
 
 def find_group(module, name):
@@ -223,7 +228,7 @@ def gen_args(description, gid, nomembers):
     return _args
 
 
-def gen_member_args(user, group, service, externalmember):
+def gen_member_args(user, group, service, externalmember, idoverrideuser):
     _args = {}
     if user is not None:
         _args["member_user"] = user
@@ -233,6 +238,8 @@ def gen_member_args(user, group, service, externalmember):
         _args["member_service"] = service
     if externalmember is not None:
         _args["member_external"] = externalmember
+    if idoverrideuser is not None:
+        _args["member_idoverrideuser"] = idoverrideuser
 
     return _args
 
@@ -280,6 +287,7 @@ def main():
             user=dict(required=False, type='list', default=None),
             group=dict(required=False, type='list', default=None),
             service=dict(required=False, type='list', default=None),
+            idoverrideuser=dict(required=False, type='list', default=None),
             membermanager_user=dict(required=False, type='list', default=None),
             membermanager_group=dict(required=False, type='list',
                                      default=None),
@@ -312,6 +320,7 @@ def main():
     gid = ansible_module.params_get("gid")
     nonposix = ansible_module.params_get("nonposix")
     external = ansible_module.params_get("external")
+    idoverrideuser = ansible_module.params_get("idoverrideuser")
     posix = ansible_module.params_get("posix")
     nomembers = ansible_module.params_get("nomembers")
     user = ansible_module.params_get("user")
@@ -379,6 +388,13 @@ def main():
                 "by your IPA version"
             )
 
+        has_idoverrideuser = api_check_param(
+            "group_add_member", "idoverrideuser")
+        if idoverrideuser is not None and not has_idoverrideuser:
+            ansible_module.fail_json(
+                msg="Managing a idoverrideuser as part of a group is not "
+                "supported by your IPA version")
+
         commands = []
 
         for name in names:
@@ -389,6 +405,7 @@ def main():
             group_add, group_del = [], []
             service_add, service_del = [], []
             externalmember_add, externalmember_del = [], []
+            idoverrides_add, idoverrides_del = [], []
             membermanager_user_add, membermanager_user_del = [], []
             membermanager_group_add, membermanager_group_del = [], []
 
@@ -438,7 +455,7 @@ def main():
                         res_find["objectclass"].append("posixgroup")
 
                     member_args = gen_member_args(
-                        user, group, service, externalmember
+                        user, group, service, externalmember, idoverrideuser
                     )
                     if not compare_args_ipa(ansible_module, member_args,
                                             res_find):
@@ -455,6 +472,12 @@ def main():
                         (externalmember_add,
                          externalmember_del) = gen_add_del_lists(
                             externalmember, res_find.get("member_external"))
+
+                        (idoverrides_add,
+                         idoverrides_del) = gen_add_del_lists(
+                            idoverrideuser,
+                            res_find.get("member_idoverrideuser")
+                        )
 
                     membermanager_user_add, membermanager_user_del = \
                         gen_add_del_lists(
@@ -483,6 +506,8 @@ def main():
                         service, res_find.get("member_service"))
                     externalmember_add = gen_add_list(
                         externalmember, res_find.get("member_external"))
+                    idoverrides_add = gen_add_list(
+                        idoverrideuser, res_find.get("member_idoverrideuser"))
 
                     membermanager_user_add = gen_add_list(
                         membermanager_user,
@@ -516,6 +541,8 @@ def main():
                         service, res_find.get("member_service"))
                     externalmember_del = gen_intersection_list(
                         externalmember, res_find.get("member_external"))
+                    idoverrides_del = gen_intersection_list(
+                        idoverrideuser, res_find.get("member_idoverrideuser"))
 
                     membermanager_user_del = gen_intersection_list(
                         membermanager_user, res_find.get("membermanager_user"))
@@ -532,10 +559,16 @@ def main():
                 "user": user_add,
                 "group": group_add,
             }
+
             del_member_args = {
                 "user": user_del,
                 "group": group_del,
             }
+
+            if has_idoverrideuser:
+                add_member_args["idoverrideuser"] = idoverrides_add
+                del_member_args["idoverrideuser"] = idoverrides_del
+
             if has_add_member_service:
                 add_member_args["service"] = service_add
                 del_member_args["service"] = service_del
@@ -550,15 +583,16 @@ def main():
                     msg="Cannot add external members to a "
                         "non-external group."
                 )
+
             # Add members
-            add_members = any([user_add, group_add,
+            add_members = any([user_add, group_add, idoverrides_add,
                                service_add, externalmember_add])
             if add_members:
                 commands.append(
                     [name, "group_add_member", add_member_args]
                 )
             # Remove members
-            remove_members = any([user_del, group_del,
+            remove_members = any([user_del, group_del, idoverrides_del,
                                   service_del, externalmember_del])
             if remove_members:
                 commands.append(
