@@ -2,28 +2,28 @@
 # tasks file for ipaclient
 
 - name: Install - Ensure that IPA client packages are installed
-  package:
+  ansible.builtin.package:
     name: "{{ ipaclient_packages }}"
     state: present
   when: ipaclient_install_packages | bool
 
 - name: Install - Set ipaclient_servers
-  set_fact:
+  ansible.builtin.set_fact:
     ipaclient_servers: "{{ groups['ipaservers'] | list }}"
   when: groups.ipaservers is defined and ipaclient_servers is not defined
 
 - name: Install - Set ipaclient_servers from cluster inventory
-  set_fact:
+  ansible.builtin.set_fact:
     ipaclient_servers: "{{ groups['ipaserver'] | list }}"
   when: ipaclient_no_dns_lookup | bool and groups.ipaserver is defined and
         ipaclient_servers is not defined
 
 - name: Install - Check that either principal or keytab is set
-  fail: msg="ipaadmin_principal and ipaadmin_keytab cannot be used together"
+  ansible.builtin.fail: msg="ipaadmin_principal and ipaadmin_keytab cannot be used together"
   when: ipaadmin_keytab is defined and ipaadmin_principal is defined
 
 - name: Install - Set default principal if no keytab is given
-  set_fact:
+  ansible.builtin.set_fact:
     ipaadmin_principal: admin
   when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
 
@@ -54,7 +54,7 @@
 
 - block:
   - name: Install - Cleanup leftover ccache
-    file:
+    ansible.builtin.file:
       path: "/etc/ipa/.dns_ccache"
       state: absent
 
@@ -71,12 +71,12 @@
       domain: "{{ result_ipaclient_test.domain }}"
 
   - name: Install - Make sure One-Time Password is enabled if it's already defined
-    set_fact:
+    ansible.builtin.set_fact:
       ipaclient_use_otp: "yes"
     when: ipaclient_otp is defined
 
   - name: Install - Disable One-Time Password for on_master
-    set_fact:
+    ansible.builtin.set_fact:
       ipaclient_use_otp: "no"
     when: ipaclient_use_otp | bool and ipaclient_on_master | bool
 
@@ -92,7 +92,7 @@
 
   - name: Install - Disable One-Time Password for client with working
           krb5.keytab
-    set_fact:
+    ansible.builtin.set_fact:
       ipaclient_use_otp: "no"
     when: ipaclient_use_otp | bool and
           result_ipaclient_test_keytab.krb5_keytab_ok and
@@ -107,7 +107,7 @@
   # if ipaclient_use_otp is set.
   - block:
     - name: Install - Keytab or password is required for getting otp
-      fail: msg="Keytab or password is required for getting otp"
+      ansible.builtin.fail: msg="Keytab or password is required for getting otp"
       when: ipaadmin_keytab is undefined and ipaadmin_password is undefined
 
     - name: Install - Get One-Time Password for client enrollment
@@ -130,14 +130,14 @@
       ignore_errors: yes
 
     - name: Install - Report error for OTP generation
-      debug:
+      ansible.builtin.debug:
         msg: "{{ result_ipaclient_get_otp.msg }}"
       when: result_ipaclient_get_otp is failed
       failed_when: yes
 
     - name: Install - Store the previously obtained OTP
       no_log: yes
-      set_fact:
+      ansible.builtin.set_fact:
         ipaadmin_orig_password: "{{ ipaadmin_password | default(omit) }}"
         ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword
                                if result_ipaclient_get_otp.host is defined }}"
@@ -146,7 +146,7 @@
 
   - name: Store predefined OTP in admin_password
     no_log: yes
-    set_fact:
+    ansible.builtin.set_fact:
       ipaadmin_orig_password: "{{ ipaadmin_password | default(omit) }}"
       ipaadmin_password: "{{ ipaclient_otp }}"
     when: ipaclient_otp is defined
@@ -161,11 +161,11 @@
     #        result_ipaclient_join.already_joined)))
 
     - name: Install - Check if principal and keytab are set
-      fail: msg="Principal and keytab cannot be used together"
+      ansible.builtin.fail: msg="Principal and keytab cannot be used together"
       when: ipaadmin_principal is defined and ipaclient_keytab is defined
 
     - name: Install - Check if one of password or keytabs are set
-      fail: msg="At least one of password or keytabs must be specified"
+      ansible.builtin.fail: msg="At least one of password or keytabs must be specified"
       when: not result_ipaclient_test_keytab.krb5_keytab_ok
             and ipaadmin_password is undefined
             and ipaadmin_keytab is undefined
@@ -173,7 +173,7 @@
     when: not ipaclient_on_master | bool
 
   - name: Install - Purge {{ result_ipaclient_test.realm }} from host keytab
-    command: >
+    ansible.builtin.command: >
       /usr/sbin/ipa-rmkeytab
       -k /etc/krb5.keytab
       -r "{{ result_ipaclient_test.realm }}"
@@ -217,17 +217,17 @@
 
   - block:
     - name: krb5 configuration not correct
-      fail:
+      ansible.builtin.fail:
         msg: >
           The krb5 configuration is not correct, please enable allow_repair
           to fix this.
       when: not result_ipaclient_test_keytab.krb5_conf_ok
     - name: IPA test failed
-      fail:
+      ansible.builtin.fail:
         msg: "The IPA test failed, please enable allow_repair to fix this."
       when: not result_ipaclient_test_keytab.ping_test_ok
     - name: ca.crt file is missing
-      fail:
+      ansible.builtin.fail:
         msg: >
           The ca.crt file is missing, please enable allow_repair to fix this.
       when: not result_ipaclient_test_keytab.ca_crt_exists
@@ -374,11 +374,11 @@
   always:
   - name: Install - Restore original admin password if overwritten by OTP
     no_log: yes
-    set_fact:
+    ansible.builtin.set_fact:
         ipaadmin_password: "{{ ipaadmin_orig_password }}"
     when: ipaclient_use_otp | bool and ipaadmin_orig_password is defined
 
   - name: Cleanup leftover ccache
-    file:
+    ansible.builtin.file:
       path: "/etc/ipa/.dns_ccache"
       state: absent
