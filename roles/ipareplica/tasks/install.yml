@@ -4,24 +4,24 @@
 - block:
 
   - name: Install - Ensure IPA replica packages are installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipareplica_packages }}"
       state: present
 
   - name: Install - Ensure IPA replica packages for dns are installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipareplica_packages_dns }}"
       state: present
     when: ipareplica_setup_dns | bool
 
   - name: Install - Ensure IPA replica packages for adtrust are installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipareplica_packages_adtrust }}"
       state: present
     when: ipareplica_setup_adtrust | bool
 
   - name: Install - Ensure that firewall packages installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipareplica_packages_firewalld }}"
       state: present
     when: ipareplica_setup_firewalld | bool
@@ -30,20 +30,20 @@
 
 - block:
   - name: Firewalld service - Ensure that firewalld is running
-    systemd:
+    ansible.builtin.systemd:
       name: firewalld
       enabled: yes
       state: started
 
   - name: Firewalld - Verify runtime zone "{{ ipareplica_firewalld_zone }}"
-    shell: >
+    ansible.builtin.shell: >
       firewall-cmd
       --info-zone="{{ ipareplica_firewalld_zone }}"
       >/dev/null
     when: ipareplica_firewalld_zone is defined
 
   - name: Firewalld - Verify permanent zone "{{ ipareplica_firewalld_zone }}"
-    shell: >
+    ansible.builtin.shell: >
       firewall-cmd
       --permanent
       --info-zone="{{ ipareplica_firewalld_zone }}"
@@ -53,12 +53,12 @@
   when: ipareplica_setup_firewalld | bool
 
 - name: Install - Set ipareplica_servers
-  set_fact:
+  ansible.builtin.set_fact:
     ipareplica_servers: "{{ groups['ipaservers'] | list }}"
   when: groups.ipaservers is defined and ipareplica_servers is not defined
 
 - name: Install - Set default principal if no keytab is given
-  set_fact:
+  ansible.builtin.set_fact:
     ipaadmin_principal: admin
   when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
 
@@ -108,7 +108,7 @@
   #      result_ipareplica_test.server_already_configured is defined)
 
   - name: Install - Setup client
-    include_role:
+    ansible.builtin.include_role:
       name: ipaclient
     vars:
       state: present
@@ -122,7 +122,7 @@
     when: not result_ipareplica_test.client_enrolled
 
   - name: Install - Configure firewalld
-    command: >
+    ansible.builtin.command: >
       firewall-cmd
       --permanent
       --zone="{{ ipareplica_firewalld_zone if ipareplica_firewalld_zone is
@@ -136,7 +136,7 @@
     when: ipareplica_setup_firewalld | bool
 
   - name: Install - Configure firewalld runtime
-    command: >
+    ansible.builtin.command: >
       firewall-cmd
       --zone="{{ ipareplica_firewalld_zone if ipareplica_firewalld_zone is
          defined else '' }}"
@@ -223,7 +223,7 @@
 
   - name: Install - Set dirman password
     no_log: yes
-    set_fact:
+    ansible.builtin.set_fact:
       ipareplica_dirman_password:
         "{{ result_ipareplica_master_password.password }}"
 
@@ -774,14 +774,14 @@
     register: result_ipareplica_enable_ipa
 
   - name: Install - Cleanup root IPA cache
-    file:
+    ansible.builtin.file:
       path: "/root/.ipa_cache"
       state: absent
     when: result_ipareplica_enable_ipa.changed
 
   always:
   - name: Cleanup temporary files
-    file:
+    ansible.builtin.file:
       path: "{{ item }}"
       state: absent
     with_items:
