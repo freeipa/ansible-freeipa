@@ -3,24 +3,24 @@
 
 - block:
   - name: Install - Ensure that IPA server packages are installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipaserver_packages }}"
       state: present
 
   - name: Install - Ensure that IPA server packages for dns are installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipaserver_packages_dns }}"
       state: present
     when: ipaserver_setup_dns | bool
 
   - name: Install - Ensure that IPA server packages for adtrust are installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipaserver_packages_adtrust }}"
       state: present
     when: ipaserver_setup_adtrust | bool
 
   - name: Install - Ensure that firewall packages installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipaserver_packages_firewalld }}"
       state: present
     when: ipaserver_setup_firewalld | bool
@@ -29,20 +29,20 @@
 
 - block:
   - name: Firewalld service - Ensure that firewalld is running
-    systemd:
+    ansible.builtin.systemd:
       name: firewalld
       enabled: yes
       state: started
 
   - name: Firewalld - Verify runtime zone "{{ ipaserver_firewalld_zone }}"
-    shell: >
+    ansible.builtin.shell: >
       firewall-cmd
       --info-zone="{{ ipaserver_firewalld_zone }}"
       >/dev/null
     when: ipaserver_firewalld_zone is defined
 
   - name: Firewalld - Verify permanent zone "{{ ipaserver_firewalld_zone }}"
-    shell: >
+    ansible.builtin.shell: >
       firewall-cmd
       --permanent
       --info-zone="{{ ipaserver_firewalld_zone }}"
@@ -51,7 +51,7 @@
 
   when: ipaserver_setup_firewalld | bool
 
-- include_tasks: "{{ role_path }}/tasks/copy_external_cert.yml"
+- ansible.builtin.include_tasks: "{{ role_path }}/tasks/copy_external_cert.yml"  # noqa: unnamed-task
   with_items: "{{ ipaserver_external_cert_files_from_controller }}"
   when: ipaserver_external_cert_files_from_controller is defined and
         ipaserver_external_cert_files_from_controller|length > 0 and
@@ -144,7 +144,7 @@
 
     - name: Install - Use new master password
       no_log: yes
-      set_fact:
+      ansible.builtin.set_fact:
         ipaserver_master_password:
           "{{ result_ipaserver_master_password.password }}"
 
@@ -305,7 +305,7 @@
     register: result_ipaserver_setup_ca
 
   - name: Copy /root/ipa.csr to "{{ inventory_hostname }}-ipa.csr"
-    fetch:
+    ansible.builtin.fetch:
       src: /root/ipa.csr
       dest: "{{ inventory_hostname }}-ipa.csr"
       flat: yes
@@ -412,7 +412,7 @@
         _dirsrv_pkcs12_info: "{{ result_ipaserver_test._dirsrv_pkcs12_info if result_ipaserver_test._dirsrv_pkcs12_info != None else omit }}"
 
     - name: Install - Setup client
-      include_role:
+      ansible.builtin.include_role:
         name: ipaclient
       vars:
         state: present
@@ -434,13 +434,13 @@
       register: result_ipaserver_enable_ipa
 
     - name: Install - Cleanup root IPA cache
-      file:
+      ansible.builtin.file:
         path: "/root/.ipa_cache"
         state: absent
       when: result_ipaserver_enable_ipa.changed
 
     - name: Install - Configure firewalld
-      command: >
+      ansible.builtin.command: >
         firewall-cmd
         --permanent
         --zone="{{ ipaserver_firewalld_zone if ipaserver_firewalld_zone is
@@ -454,7 +454,7 @@
       when: ipaserver_setup_firewalld | bool
 
     - name: Install - Configure firewalld runtime
-      command: >
+      ansible.builtin.command: >
         firewall-cmd
         --zone="{{ ipaserver_firewalld_zone if ipaserver_firewalld_zone is
            defined else '' }}"
@@ -470,7 +470,7 @@
 
   always:
   - name: Cleanup temporary files
-    file:
+    ansible.builtin.file:
       path: "{{ item }}"
       state: absent
     with_items:

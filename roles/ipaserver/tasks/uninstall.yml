@@ -2,7 +2,7 @@
 # tasks to uninstall IPA server
 
 - name: Uninstall - Uninstall IPA server
-  command: >
+  ansible.builtin.command: >
     /usr/sbin/ipa-server-install
     --uninstall
     -U
@@ -15,6 +15,6 @@
   changed_when: uninstall.rc == 0
 
 #- name: Remove IPA server packages
-#  package:
+#  ansible.builtin.package:
 #    name: "{{ ipaserver_packages }}"
 #    state: absent
