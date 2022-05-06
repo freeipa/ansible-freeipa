@@ -1,0 +1,41 @@
+---
+parameters:
+  - name: scenario
+    type: string
+    default: fedora-latest
+  - name: build_number
+    type: string
+  - name: ansible_version
+    type: string
+    default: ""
+
+jobs:
+- template: galaxy_script.yml
+  parameters:
+    group_number: 1
+    number_of_groups: 3
+    build_number: ${{ parameters.build_number }}
+    scenario: ${{ parameters.scenario }}
+    ansible_version: ${{ parameters.ansible_version }}
+
+- template: galaxy_script.yml
+  parameters:
+    group_number: 2
+    number_of_groups: 3
+    build_number: ${{ parameters.build_number }}
+    scenario: ${{ parameters.scenario }}
+    ansible_version: ${{ parameters.ansible_version }}
+
+- template: galaxy_script.yml
+  parameters:
+    group_number: 3
+    number_of_groups: 3
+    build_number: ${{ parameters.build_number }}
+    scenario: ${{ parameters.scenario }}
+    ansible_version: ${{ parameters.ansible_version }}
+
+- template: galaxy_pytest_script.yml
+  parameters:
+    build_number: ${{ parameters.build_number }}
+    scenario: ${{ parameters.scenario }}
+    ansible_version: ${{ parameters.ansible_version }}

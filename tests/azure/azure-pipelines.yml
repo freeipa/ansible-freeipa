@@ -18,6 +18,17 @@ stages:
       scenario: fedora-latest
       ansible_version: "-core >=2.12,<2.13"
 
+# Galaxy on Fedora
+
+- stage: Galaxy_Fedora_Latest
+  dependsOn: []
+  jobs:
+  - template: templates/galaxy_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-latest
+      ansible_version: "-core >=2.12,<2.13"
+
 # CentOS 9 Stream
 
 - stage: CentOS_9_Stream
