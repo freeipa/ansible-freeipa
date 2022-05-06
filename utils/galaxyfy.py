@@ -23,6 +23,14 @@
 import re
 
 
+def task_starts_in_line(line, *tasks):
+    """Check if the any of the given tasks start in the provided line."""
+    for task in tasks:
+        if bool(re.compile(f"^{task}|[.]{task}:").search(line)):
+            return True
+    return False
+
+
 def galaxyfy_playbook(project_prefix, collection_prefix, lines):
     po1 = re.compile('(%s.*:)$' % project_prefix)
     po2 = re.compile('(.*:) (%s.*)$' % project_prefix)
@@ -39,13 +47,13 @@ def galaxyfy_playbook(project_prefix, collection_prefix, lines):
         if stripped.startswith("- name:") or \
            stripped.startswith("- block:"):
             changeable = True
-        elif stripped in ["set_fact:", "vars:"]:
+        elif task_starts_in_line(stripped, "set_fact", "vars"):
             changeable = False
             include_role = False
         elif stripped == "roles:":
             changeable = True
             include_role = False
-        elif stripped.startswith("include_role:"):
+        elif task_starts_in_line(stripped, "include_role"):
             include_role = True
         elif include_role and stripped.startswith("name:"):
             line = po2.sub(pattern2, line)
