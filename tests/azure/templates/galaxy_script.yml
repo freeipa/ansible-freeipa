@@ -1,0 +1,72 @@
+---
+parameters:
+  - name: group_number
+    type: number
+    default: 1
+  - name: number_of_groups
+    type: number
+    default: 1
+  - name: scenario
+    type: string
+    default: fedora-latest
+  - name: ansible_version
+    type: string
+    default: ""
+  - name: python_version
+    type: string
+    default: 3.x
+  - name: build_number
+    type: string
+
+
+jobs:
+- job: Test_Group${{ parameters.group_number }}
+  displayName: Run playbook tests ${{ parameters.scenario }} (${{ parameters.group_number }}/${{ parameters.number_of_groups }})
+  timeoutInMinutes: 120
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '${{ parameters.python_version }}'
+
+  - script: |
+      pip install \
+        "molecule[docker]>=3" \
+        "ansible${{ parameters.ansible_version }}"
+    displayName: Install molecule and Ansible
+
+  - script: ansible-galaxy collection install community.docker ansible.posix
+    displayName: Install Ansible collections
+
+  - script: pip install -r requirements-tests.txt
+    displayName: Install dependencies
+
+  - script: |
+      utils/build-galaxy-release.sh
+      ansible-galaxy collection install freeipa-ansible_freeipa-$(git describe --tags 2>/dev/null | sed -e "s/^v//").tar.gz -vvv
+      molecule create -s ${{ parameters.scenario }}
+    displayName: Setup test container
+    env:
+      ANSIBLE_LIBRARY: ./molecule
+
+  - script: |
+      mkdir /tmp/ansible-freipa
+      tar xzvf freeipa-ansible_freeipa-$(git describe --tags 2>/dev/null | sed -e "s/^v//").tar.gz -C /tmp/ansible-freeipa
+      cd /tmp/ansible-freeipa
+      pytest \
+        -m "playbook" \
+        --verbose \
+        --color=yes \
+        --test-group-count=${{ parameters.number_of_groups }} \
+        --test-group=${{ parameters.group_number }} \
+        --test-group-random-seed=97943259814 \
+        --junit-xml=TEST-results-group-${{ parameters.group_number }}.xml
+    displayName: Run playbook tests
+    env:
+      IPA_SERVER_HOST: ${{ parameters.scenario }}
+      RUN_TESTS_IN_DOCKER: true
+
+  - task: PublishTestResults@2
+    inputs:
+      mergeTestResults: true
+      testRunTitle: PlaybookTests-Build${{ parameters.build_number }}
+    condition: succeededOrFailed()
