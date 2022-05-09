@@ -9,7 +9,7 @@ stages:
 
 # Fedora
 
-- stage: FedoraLatest_Ansible_2_9
+- stage: Fedora_Latest
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
@@ -20,7 +20,7 @@ stages:
 
 # CentOS 9 Stream
 
-- stage: c9s_Ansible_2_9
+- stage: CentOS_9_Stream
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
@@ -31,7 +31,7 @@ stages:
 
 # CentOS 8 Stream
 
-- stage: c8s_Ansible_2_9
+- stage: CentOS_8_Stream
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
@@ -53,7 +53,7 @@ stages:
 
 # CentOS 7
 
-- stage: CentOS7_Ansible_2_9
+- stage: CentOS_7
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
