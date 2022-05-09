@@ -16,7 +16,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: fedora-latest
-      ansible_version: ">=2.9,<2.10"
+      ansible_version: "-core >=2.12,<2.13"
 
 # CentOS 9 Stream
 
@@ -27,7 +27,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: c9s
-      ansible_version: ">=2.9,<2.10"
+      ansible_version: "-core >=2.12,<2.13"
 
 # CentOS 8 Stream
 
@@ -38,8 +38,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: c8s
-      ansible_version: ">=2.9,<2.10"
-
+      ansible_version: "-core >=2.12,<2.13"
 
 # CentOS 7
 
@@ -50,4 +49,4 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: centos-7
-      ansible_version: ">=2.9,<2.10"
+      ansible_version: "-core >=2.12,<2.13"
