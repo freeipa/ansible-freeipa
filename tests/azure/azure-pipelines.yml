@@ -40,16 +40,6 @@ stages:
       scenario: c8s
       ansible_version: ">=2.9,<2.10"
 
-# # CentOS 8
-#
-# - stage: CentOS8_Ansible_2_9
-#   dependsOn: []
-#   jobs:
-#   - template: templates/group_tests.yml
-#     parameters:
-#       build_number: $(Build.BuildNumber)
-#       scenario: centos-8
-#       ansible_version: ">=2.9,<2.10"
 
 # CentOS 7
 
