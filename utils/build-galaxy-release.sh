@@ -107,6 +107,11 @@ sed -i -e "s/name: .*/name: \"$collection\"/" galaxy.yml
 
 find . -name "*~" -exec rm {} \;
 
+
+echo "Creating CHANGELOG.rst..."
+"$(dirname "$0")/changelog" --galaxy > CHANGELOG.rst
+echo -e "\033[ACreating CHANGELOG.rst... \033[32;1mDONE\033[0m"
+
 sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.${collection_prefix}.plugins.module_utils.ansible_freeipa_module/" plugins/modules/*.py
 
 (cd plugins/module_utils && {
