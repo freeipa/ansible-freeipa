@@ -19,6 +19,7 @@ be givedn without the other one.
 Options:
   -a          Add all files, no only files known to git repo
   -k          Keep build directory
+  -i          Install the generated collection
   -h          Print this help
 
 EOF
@@ -26,7 +27,8 @@ EOF
 
 all=0
 keep=0
-while getopts "ahk" arg; do
+install=0
+while getopts "ahki" arg; do
     case $arg in
         a)
             all=1
@@ -37,6 +39,9 @@ while getopts "ahk" arg; do
             ;;
         k)
             keep=1
+            ;;
+        i)
+            install=1
             ;;
         \?)
             echo
@@ -70,7 +75,7 @@ if [ -z "$galaxy_version" ]; then
     exit 1
 fi
 
-echo "Builing galaxy release: ${namespace}-${collection}-${galaxy_version}"
+echo "Building collection: ${namespace}-${collection}-${galaxy_version}"
 
 GALAXY_BUILD=".galaxy-build"
 
@@ -181,4 +186,9 @@ if [ $keep == 0 ]; then
     echo -e "\033[ARemoving build dir $GALAXY_BUILD ... \033[32;1mDONE\033[0m"
 else
     echo "Keeping build dir $GALAXY_BUILD"
+fi
+
+if [ $install == 1 ]; then
+    echo "Installing collection ${namespace}-${collection}-${galaxy_version}.tar.gz ..."
+    ansible-galaxy collection install "${namespace}-${collection}-${galaxy_version}.tar.gz" --force
 fi
