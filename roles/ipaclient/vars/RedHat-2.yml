@@ -1,0 +1,7 @@
+# defaults file for ipaclient
+# vars/RedHat-2
+# Provides support for RedHat-7 based Amazon Linux 2
+
+ipaclient_packages: [ "ipa-client", "libselinux-python" ]
+# The 'ipapython' module is not available in python3.
+ansible_python_interpreter: '/usr/bin/python2'
