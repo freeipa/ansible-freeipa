@@ -721,7 +721,9 @@ else:
                 )
             )
 
+        # pylint: disable=no-member
         domain_validator = ipaserver.dcerpc.DomainValidator(api)
+        # pylint: enable=no-member
 
         if not domain_validator.is_configured():
             raise ipalib_errors.NotFound(
