@@ -175,8 +175,8 @@ Variable | Description | Required
 `rid_base` \| `ipabaserid` | First RID of the corresponding RID range. (int) | no
 `secondary_rid_base` \| `ipasecondarybaserid` | First RID of the secondary RID range. (int) | no
 `dom_sid` \| `ipanttrusteddomainsid` | Domain SID of the trusted domain. | no
-`dom_name` \| `ipanttrusteddomainname` | Name of the trusted domain. | no
 `idrange_type` \| `iparangetype` | ID range type, one of `ipa-ad-trust`, `ipa-ad-trust-posix`, `ipa-local`. Only valid if idrange does not exist. | no
+`dom_name` \| `ipanttrusteddomainname` | Name of the trusted domain. Can only be used when `ipaapi_context: server`. | no
 `auto_private_groups` \| `ipaautoprivategroups` | Auto creation of private groups, one of `true`, `false`, `hybrid`. | no
 `delete_continue` \| `continue` | Continuous mode: don't stop on errors. Valid only if `state` is `absent`. Default: `no` (bool) | no
 `state` | The state to ensure. It can be one of `present`, `absent`, default: `present`. | no
