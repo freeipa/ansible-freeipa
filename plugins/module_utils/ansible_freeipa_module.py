@@ -900,6 +900,8 @@ else:
             # pylint: disable=super-with-arguments
             super(IPAAnsibleModule, self).__init__(*args, **kwargs)
 
+            self.__ipa_api_domain = None
+
         @contextmanager
         def ipa_connect(self, context=None):
             """
@@ -1029,9 +1031,9 @@ else:
 
         def ipa_get_domain(self):
             """Retrieve IPA API domain."""
-            if not hasattr(self, "__ipa_api_domain"):
-                setattr(self, "__ipa_api_domain", api_get_domain())
-            return getattr(self, "__ipa_api_domain")
+            if self.__ipa_api_domain is None:
+                self.__ipa_api_domain = api_get_domain()
+            return self.__ipa_api_domain
 
         @staticmethod
         def ipa_get_realm():
