@@ -199,6 +199,9 @@ def get_test_playbooks():
     test_dirs = os.listdir(SCRIPT_DIR)
     groups = {}
     for test_group_dir in sorted(test_dirs):
+        # TODO: Remove this when forwarders with port issue is fixed.
+        if test_group_dir in ['dnsconfig', 'dnsforwardzone']:
+            continue
         group_dir_path = os.path.join(SCRIPT_DIR, test_group_dir)
         if not os.path.isdir(group_dir_path):
             continue
