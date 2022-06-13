@@ -1,0 +1,3 @@
+---
+ipasmartcard_client_remove_pam_pkcs11_packages: [ "pam_pkcs11" ]
+ipasmartcard_client_packages: [ "opensc", "dconf", "krb5-pkinit-openssl" ]

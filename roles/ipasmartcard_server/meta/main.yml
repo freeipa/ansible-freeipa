@@ -1,0 +1,22 @@
+---
+dependencies: []
+
+galaxy_info:
+  author: Thomas Woerner
+  description: A role to setup IPA server(s) for Smart Card authentication
+  company: Red Hat, Inc
+  license: GPLv3
+  min_ansible_version: 2.8
+  platforms:
+  - name: Fedora
+    versions:
+    - all
+  - name: EL
+    versions:
+    - 7
+    - 8
+  galaxy_tags:
+    - identity
+    - ipa
+    - freeipa
+    - smartcard

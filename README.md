@@ -12,6 +12,7 @@ Features
 * One-time-password (OTP) support for client installation
 * Repair mode for clients
 * Backup and restore, also to and from controller
+* Smartcard setup for servers and clients
 * Modules for automembership rule management
 * Modules for automount key management
 * Modules for automount location management
@@ -425,6 +426,8 @@ Roles
 * [Replica](roles/ipareplica/README.md)
 * [Client](roles/ipaclient/README.md)
 * [Backup](roles/ipabackup/README.md)
+* [SmartCard server](roles/ipasmartcard_server/README.md)
+* [SmartCard client](roles/ipasmartcard_client/README.md)
 
 Modules in plugin/modules
 =========================
