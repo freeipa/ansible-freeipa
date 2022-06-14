@@ -34,14 +34,14 @@ stages:
       scenario: fedora-latest
       ansible_version: "-core >=2.11,<2.12"
 
-- stage: FedoraLatest_Ansible_Core_2_12
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
-      ansible_version: "-core >=2.12,<2.13"
+# - stage: FedoraLatest_Ansible_Core_2_12
+#   dependsOn: []
+#   jobs:
+#   - template: templates/group_tests.yml
+#     parameters:
+#       build_number: $(Build.BuildNumber)
+#       scenario: fedora-latest
+#       ansible_version: "-core >=2.12,<2.13"
 
 - stage: FedoraLatest_Ansible_latest
   dependsOn: []
@@ -51,6 +51,15 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: fedora-latest
       ansible_version: ""
+
+- stage: FedoraLatest_Ansible_Core_latest
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-latest
+      ansible_version: "-core"
 
 # CentoOS 9 Stream
 
@@ -72,14 +81,14 @@ stages:
       scenario: c9s
       ansible_version: "-core >=2.11,<2.12"
 
-- stage: c9s_Ansible_Core_2_12
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: c9s
-      ansible_version: "-core >=2.12,<2.13"
+# - stage: c9s_Ansible_Core_2_12
+#   dependsOn: []
+#   jobs:
+#   - template: templates/group_tests.yml
+#     parameters:
+#       build_number: $(Build.BuildNumber)
+#       scenario: c9s
+#       ansible_version: "-core >=2.12,<2.13"
 
 - stage: c9s_Ansible_latest
   dependsOn: []
@@ -89,6 +98,15 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: c9s
       ansible_version: ""
+
+- stage: c9s_Ansible_Core_latest
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: c9s
+      ansible_version: "-core"
 
 # CentOS 8 Stream
 
@@ -110,14 +128,14 @@ stages:
       scenario: c8s
       ansible_version: "-core >=2.11,<2.12"
 
-- stage: c8s_Ansible_Core_2_12
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: c8s
-      ansible_version: "-core >=2.12,<2.13"
+# - stage: c8s_Ansible_Core_2_12
+#   dependsOn: []
+#   jobs:
+#   - template: templates/group_tests.yml
+#     parameters:
+#       build_number: $(Build.BuildNumber)
+#       scenario: c8s
+#       ansible_version: "-core >=2.12,<2.13"
 
 - stage: c8s_Ansible_latest
   dependsOn: []
@@ -128,43 +146,14 @@ stages:
       scenario: c8s
       ansible_version: ""
 
-# # CentOS 8
-#
-# - stage: CentOS8_Ansible_2_9
-#   dependsOn: []
-#   jobs:
-#   - template: templates/group_tests.yml
-#     parameters:
-#       build_number: $(Build.BuildNumber)
-#       scenario: centos-8
-#       ansible_version: ">=2.9,<2.10"
-#
-# - stage: CentOS8_Ansible_Core_2_11
-#   dependsOn: []
-#   jobs:
-#   - template: templates/group_tests.yml
-#     parameters:
-#       build_number: $(Build.BuildNumber)
-#       scenario: centos-8
-#       ansible_version: "-core >=2.11,<2.12"
-#
-# - stage: CentOS8_Ansible_Core_2_12
-#   dependsOn: []
-#   jobs:
-#   - template: templates/group_tests.yml
-#     parameters:
-#       build_number: $(Build.BuildNumber)
-#       scenario: centos-8
-#       ansible_version: "-core >=2.12,<2.13"
-#
-# - stage: CentOS8_Ansible_latest
-#   dependsOn: []
-#   jobs:
-#   - template: templates/group_tests.yml
-#     parameters:
-#       build_number: $(Build.BuildNumber)
-#       scenario: centos-8
-#       ansible_version: ""
+- stage: c8s_Ansible_Core_latest
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: c8s
+      ansible_version: "-core"
 
 # CentOS 7
 
@@ -186,14 +175,14 @@ stages:
       scenario: centos-7
       ansible_version: "-core >=2.11,<2.12"
 
-- stage: CentOS7_Ansible_Core_2_12
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: "-core >=2.12,<2.13"
+# - stage: CentOS7_Ansible_Core_2_12
+#   dependsOn: []
+#   jobs:
+#   - template: templates/group_tests.yml
+#     parameters:
+#       build_number: $(Build.BuildNumber)
+#       scenario: centos-7
+#       ansible_version: "-core >=2.12,<2.13"
 
 - stage: CentOS7_Ansible_latest
   dependsOn: []
@@ -203,3 +192,12 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: centos-7
       ansible_version: ""
+
+- stage: CentOS7_Ansible_Core_latest
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: centos-7
+      ansible_version: "-core"

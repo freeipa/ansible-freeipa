@@ -92,19 +92,21 @@ pip install molecule[docker]>=3
 
 Now you can start a test container using the following command:
 ```
-molecule create -s centos-8
+molecule create -s c8s
 ```
 
 Note: Currently the containers available for running the tests are:
+ * fedora-latest
  * centos-7
- * centos-8
+ * c8s
+ * c9s
 
 ### Running the tests inside the container
 
 To run the tests you will use pytest (works the same as for VMs).
 
 ```
-RUN_TESTS_IN_DOCKER=1 IPA_SERVER_HOST=centos-8 pytest
+RUN_TESTS_IN_DOCKER=1 IPA_SERVER_HOST=c8s pytest
 ```
 
 ### Cleaning up after tests
@@ -112,7 +114,7 @@ RUN_TESTS_IN_DOCKER=1 IPA_SERVER_HOST=centos-8 pytest
 After running the tests you should probably destroy the test container using:
 
 ```
-molecule destroy -s centos-8
+molecule destroy -s c8s
 ```
 
 See [Running the tests](#running-the-tests) section for more information on available options.

@@ -9,55 +9,44 @@ stages:
 
 # Fedora
 
-- stage: FedoraLatest_Ansible_2_9
+- stage: Fedora_Latest
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: fedora-latest
-      ansible_version: ">=2.9,<2.10"
+      ansible_version: "-core >=2.12,<2.13"
 
 # CentOS 9 Stream
 
-- stage: c9s_Ansible_2_9
+- stage: CentOS_9_Stream
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: c9s
-      ansible_version: ">=2.9,<2.10"
+      ansible_version: "-core >=2.12,<2.13"
 
 # CentOS 8 Stream
 
-- stage: c8s_Ansible_2_9
+- stage: CentOS_8_Stream
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: c8s
-      ansible_version: ">=2.9,<2.10"
-
-# # CentOS 8
-#
-# - stage: CentOS8_Ansible_2_9
-#   dependsOn: []
-#   jobs:
-#   - template: templates/group_tests.yml
-#     parameters:
-#       build_number: $(Build.BuildNumber)
-#       scenario: centos-8
-#       ansible_version: ">=2.9,<2.10"
+      ansible_version: "-core >=2.12,<2.13"
 
 # CentOS 7
 
-- stage: CentOS7_Ansible_2_9
+- stage: CentOS_7
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: centos-7
-      ansible_version: ">=2.9,<2.10"
+      ansible_version: "-core >=2.12,<2.13"
