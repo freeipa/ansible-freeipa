@@ -25,48 +25,6 @@ import argparse
 import subprocess
 
 
-usage = "Usage: changelog [options] [<new version>]"
-parser = argparse.ArgumentParser(usage=usage)
-parser.add_argument("--tag", dest="tag",
-                    help="git tag")
-options, args = parser.parse_known_args()
-
-if len(args) == 1:
-    new_version = args[0]
-elif len(args) != 0:
-    parser.error("new version is not set")
-else:
-    new_version = None
-
-if options.tag is None:
-    tag = subprocess.check_output(
-        "git describe --tags $(git rev-list --tags --max-count=1)",
-        shell=True)
-    options.tag = tag.decode("utf-8").strip()
-
-version = options.tag[1:]
-
-command = ["git", "log", "%s.." % options.tag]
-process = subprocess.run(command,
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-
-if process.returncode != 0:
-    print("git log failed: %s" % process.stderr.decode("utf8").split("\n")[0])
-    sys.exit(1)
-
-if new_version is not None:
-    s = "ansible-freeipa-%s" % new_version
-    print(s)
-    print("=" * len(s))
-    print()
-
-commits = {}
-prs = {}
-authors = {}
-
-lines = process.stdout.decode("utf-8").split("\n")
-
 class Ref:
     def __init__(self, commit):
         self.commit = commit
@@ -75,11 +33,11 @@ class Ref:
 def store(commits, prs, authors, commit, author, merge, msg):
     if commit is not None:
         if msg[0].startswith("Merge pull request #"):
-            pr = int(msg[0].split()[3][1:])
+            pr_ref = int(msg[0].split()[3][1:])
             if len(msg) > 1:
-                prs[pr] = msg[1].strip()
+                prs[pr_ref] = msg[1].strip()
             else:
-                prs[pr] = Ref(merge)
+                prs[pr_ref] = Ref(merge)
         else:
             commits[commit] = msg[0].strip()
             authors.setdefault(author, []).append(commit)
@@ -93,57 +51,125 @@ def get_commit(commits, commit):
     return commit
 
 
-commit = None
-author = None
-merge = None
-msg = None
-for line in lines:
-    line = line.rstrip()
-    if line.startswith("commit "):
+def get_output(command):
+    try:
+        ret = subprocess.check_output(command, shell=True)
+        ret = ret.decode("utf-8").strip()
+    except subprocess.CalledProcessError:
+        print("Command '%s' failed" % command)
+        sys.exit(1)
+    return ret
+
+
+def changelog(tag):
+    prev_tag = None
+    if tag is not None and tag != "":
+        prev_tag = get_output(
+            "git describe --tag --abbrev=0 --always '%s^'" % tag)
+    else:
+        tag = get_output("git describe --tags --abbrev=0 "
+                         "$(git rev-list --tags --max-count=1)")
+
+    version = tag[1:]
+
+    if prev_tag is not None:
+        command = ["git", "log", "%s..%s" % (prev_tag, tag)]
+    else:
+        command = ["git", "log", "%s.." % tag]
+    process = subprocess.run(command,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
+
+    if process.returncode != 0:
+        print("git log failed: %s" %
+              process.stderr.decode("utf8").split("\n")[0])
+        sys.exit(1)
+
+    lines = process.stdout.decode("utf-8").split("\n")
+
+    commits = {}
+    prs = {}
+    authors = {}
+    commit = None
+    author = None
+    merge = None
+    msg = None
+    for line in lines:
+        line = line.rstrip()
+        if line.startswith("commit "):
+            store(commits, prs, authors, commit, author, merge, msg)
+            author = None
+            msg = []
+            commit = line[7:]
+        elif line.startswith("    "):
+            msg.append(line[4:])
+        else:
+            try:
+                key, value = line.split(":", 1)
+                if key == "Author":
+                    author = value.split("<")[0].strip()
+                elif key == "Merge":
+                    merge = value.split()[1].strip()
+                # Ignore Date, ..
+            except ValueError:
+                pass
+
+    # Add final commit
+    if commit:
         store(commits, prs, authors, commit, author, merge, msg)
-        author = None
-        msg = []
-        commit = line[7:]
-    elif line.startswith("    "):
-        msg.append(line[4:])
+
+    if prev_tag is not None:
+        line = "Changes for %s since %s" % (version, prev_tag[1:])
     else:
-        try:
-            key, value = line.split(":", 1)
-            if key == "Author":
-                author = value.split("<")[0].strip()
-            elif key == "Merge":
-                merge = value.split()[1].strip()
-            # Ignore Date, ..
-        except ValueError:
-            pass
-
-# Add final commit
-if commit:
-    store(commits, prs, authors, commit, author, merge, msg)
-
-s = "Changes since %s" % version
-print("%s" % s)
-print("-" * len(s))
-print()
-
-prs_sorted = sorted(prs.keys(), reverse=True)
-for pr in prs_sorted:
-    if isinstance(prs[pr], Ref):
-        msg = get_commit(commits, prs[pr].commit)
-    else:
-        msg = prs[pr]
-    print("  - %s (#%d)" % (msg, pr))
-print()
-
-s = "Detailed changelog since %s by author" % version
-print("%s" % s)
-print("-" * len(s))
-print("  %d authors, %d commits" % (len(authors), len(commits)))
-print()
-
-authors_sorted = sorted(authors.keys())
-for author in authors_sorted:
-    print("%s (%d)\n" % (author, len(authors[author])))
-    for commit in authors[author]:
-        print("  - %s" % commits[commit])
+        line = "Changes since %s" % version
+    print("%s" % line)
+    print("-" * len(line))
     print()
+
+    prs_sorted = sorted(prs.keys(), reverse=True)
+    for pr_ref in prs_sorted:
+        if isinstance(prs[pr_ref], Ref):
+            msg = get_commit(commits, prs[pr_ref].commit)
+        else:
+            msg = prs[pr_ref]
+        print("  - %s (#%d)" % (msg, pr_ref))
+    print()
+
+    if prev_tag is not None:
+        line = "Detailed changelog for %s since %s by author" % (version,
+                                                                 prev_tag[1:])
+    else:
+        line = "Detailed changelog since %s by author" % version
+    print("%s" % line)
+    print("-" * len(line))
+    print("  %d authors, %d commits" % (len(authors), len(commits)))
+    print()
+
+    authors_sorted = sorted(authors.keys())
+    for author in authors_sorted:
+        print("%s (%d)\n" % (author, len(authors[author])))
+        for commit in authors[author]:
+            print("  - %s" % commits[commit])
+        print()
+
+
+parser = argparse.ArgumentParser(usage="Usage: changelog [options]")
+parser.add_argument("--tag", dest="tag", help="git tag")
+parser.add_argument("--galaxy", dest="galaxy", action="store_true",
+                    help="Create changelog for galaxy")
+options, args = parser.parse_known_args()
+
+if len(args) != 0:
+    parser.print_help()
+    sys.exit(1)
+
+if options.galaxy:
+    # Get latest tag
+    tag = get_output("git describe --tag --abbrev=0")
+    # get number of commits since latest tag
+    count = get_output("git rev-list '%s'.. --count" % tag)
+    if count != "0":
+        changelog(None)
+    changelog(tag)
+else:
+    changelog(options.tag)
