@@ -1,0 +1,20 @@
+#
+# Variables must be defined as comma separated lists.
+# For easier management of items to enable/disable,
+# use one test/module on each line, followed by a comma.
+#
+# Example:
+#
+# disabled_modules: >-
+#   dnsconfig,
+#   group,
+#   hostgroup
+#
+---
+variables:
+  # ipa_enabled_modules: >-
+  # ipa_enabled_tests: >-
+  ipa_disabled_modules: >-
+    dnsconfig,
+    dnsforwardzone,
+  # ipa_disabled_tests: >-

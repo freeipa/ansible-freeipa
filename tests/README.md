@@ -63,6 +63,24 @@ IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest -rs
 
 For a complete list of options check `pytest --help`.
 
+### Disabling and enabling playbook tests
+
+Sometimes it is useful to enable or disable specific playbook tests. To only run a subset of modules or tests, use the variables IPA_ENABLED_MODULES and IPA ENABLED_TESTS, to define a comma-separated list of modules or tests to be enabled. Any test or module not in the list will not be executed. For example, to run only `sudorule` and `sudocmd` tests:
+
+```
+IPA_ENABLE_MODULES="sudorule,sudocmd" IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest
+```
+
+If all but a few selected tests are to be executed, use the IPA_DISABLED_MODULES or IPA_DISABLED_TESTS. For example, to run all, but "test_service_certificate" test:
+
+```
+IPA_DISABLED_TESTS=test_service_certificate IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest
+```
+
+If none of this variables are defined, all tests will be executed.
+
+To configure the tests that will run for your pull request, add a TEMP commit, with the configuration defined in the file `tests/azure/templates/variables.yml`. Set the variables `ipa_enable_modules`, `ipa_enable_tests`, `ipa_disable_modules`, and `ipa_disable_tests`, in the same way as the equivalent environment variables.
+
 ### Types of tests
 
 #### Playbook tests
@@ -118,6 +136,7 @@ molecule destroy -s c8s
 ```
 
 See [Running the tests](#running-the-tests) section for more information on available options.
+
 
 ## Upcoming/desired improvements:
 
