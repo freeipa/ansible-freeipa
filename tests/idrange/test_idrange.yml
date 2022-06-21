@@ -119,7 +119,7 @@
           name: local_id_range
 
   - block:
-      # Create trust with range_type: ipa-ad-trust-posix
+      # Create trust with range_type: ipa-ad-trust
       - name: Create trust with range_type 'ipa-ad-trust'
         include_tasks: tasks_set_trust.yml
         vars:
@@ -127,7 +127,7 @@
           trust_range_size: 200000
           trust_range_type: ipa-ad-trust
 
-      # Can't user secondary_rid_base with dom_sid/dom_name
+      # Can't use secondary_rid_base with dom_sid/dom_name
       - name: Ensure AD-trust idrange is present
         ipaidrange:
           ipaadmin_password: SomeADMINpassword
@@ -235,7 +235,7 @@
           trust_range_size: 2000000
           trust_range_type: ipa-ad-trust-posix
 
-      # Can't user secondary_rid_base or rid_base with "ad-trust-posix"
+      # Can't use secondary_rid_base or rid_base with "ad-trust-posix"
       - name: Ensure AD-trust-posix idrange is present
         ipaidrange:
           ipaadmin_password: SomeADMINpassword
