@@ -1,0 +1,173 @@
+---
+# tasks file for ipasmartcard_client role
+
+- name: Uninstall smartcard client
+  ansible.builtin.fail: msg="Uninstalling smartcard for IPA is not supported"
+  when: state|default('present') == 'absent'
+
+- name: Import variables specific to distribution
+  ansible.builtin.include_vars: "{{ item }}"
+  with_first_found:
+    - "vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_version'] }}.yml"
+    - "vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
+    - "vars/{{ ansible_facts['distribution'] }}.yml"
+    # os_family is used as a fallback for distros which are not currently
+    # supported, but are based on a supported distro family. For example,
+    # Oracle, Rocky, Alma and Alibaba linux, which are all "RedHat" based.
+    - "vars/{{ ansible_facts['os_family'] }}-{{ ansible_facts['distribution_version'] }}.yml"
+    - "vars/{{ ansible_facts['os_family'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
+    - "vars/{{ ansible_facts['os_family'] }}.yml"
+    # If neither distro nor family is supported, try a default configuration.
+    - "vars/default.yml"
+
+- block:
+
+  # CA CERTS
+
+  # Use "ipasmartcard_server_ca_certs"
+
+  - name: Use "ipasmartcard_server_ca_certs"
+    ansible.builtin.set_fact:
+      ipasmartcard_client_ca_certs: "{{ ipasmartcard_server_ca_certs }}"
+    when: ipasmartcard_client_ca_certs is not defined and
+          ipasmartcard_server_ca_certs is defined
+
+  # Fail on empty "ipasmartcard_client_ca_certs"
+
+  - name: Fail on empty "ipasmartcard_client_ca_certs"
+    ansible.builtin.fail: msg="No CA certs given in 'ipasmartcard_client_ca_certs'"
+    when: ipasmartcard_client_ca_certs is not defined or
+          ipasmartcard_client_ca_certs | length < 1
+
+  # Validate ipasmartcard_client_ca_certs
+
+  - name: Validate CA certs "{{ ipasmartcard_client_ca_certs }}"
+    ipasmartcard_client_validate_ca_certs:
+      ca_cert_files: "{{ ipasmartcard_client_ca_certs }}"
+    register: result_validate_ca_certs
+
+  # INSTALL needed packages: opensc, dconf and krb5-pkinit-openssl
+
+  - name: Ensure needed packages are installed
+    ansible.builtin.package:
+      name: "{{ ipasmartcard_client_packages }}"
+      state: present
+
+  # REMOVE pam_pkcs11
+
+  - name: Ensure pam_pkcs11 is missing
+    ansible.builtin.package:
+      name: "{{ ipasmartcard_client_remove_pam_pkcs11_packages }}"
+      state: absent
+
+  # KINIT
+
+  - name: Set default principal if not given
+    ansible.builtin.set_fact:
+      ipaadmin_principal: admin
+    when: ipaadmin_principal is undefined
+
+  - name: kinit using "{{ ipaadmin_principal }}" password
+    ansible.builtin.command: kinit "{{ ipaadmin_principal }}"
+    args:
+      stdin: "{{ ipaadmin_password }}"
+    when: ipaadmin_password is defined
+
+  - name: kinit using "{{ ipaadmin_principal }}" keytab
+    ansible.builtin.command: kinit -kt "{{ ipaadmin_keytab }}" "{{ ipaadmin_principal }}"
+    when: ipaadmin_keytab is defined
+
+  # Enable and start smartcard daemon
+
+  - name: Enable and start smartcard daemon
+    ansible.builtin.service:
+      name: pcscd
+      enabled: true
+      state: started
+
+  # GET VARS FROM IPA
+
+  - name: Get VARS from IPA
+    ipasmartcard_client_get_vars:
+    register: ipasmartcard_client_vars
+
+  # Add pkcs11 module to systemwide db
+
+  - name: Add pkcs11 module to systemwide db
+    ansible.builtin.script: ipasmartcard_client_add_pkcs11_module_to_systemwide_db.sh
+                            "{{ ipasmartcard_client_vars.NSS_DB_DIR }}"
+
+  # Ensure /etc/sssd/pki exists
+
+  - block:
+    - name: Ensure /etc/sssd/pki exists
+      ansible.builtin.file:
+        path: /etc/sssd/pki
+        state: directory
+        mode: 0711
+
+    - name: Ensure /etc/sssd/pki/sssd_auth_ca_db.pem is absent
+      ansible.builtin.file:
+        path: /etc/sssd/pki/sssd_auth_ca_db.pem
+        state: absent
+
+    when: ipasmartcard_client_vars.USE_AUTHSELECT
+
+  # Upload smartcard CA certificates to systemwide db
+
+  - name: Upload smartcard CA certificates to systemwide db
+    ansible.builtin.script: ipasmartcard_client_add_ca_to_systemwide_db.sh
+                            "{{ item }}"
+                            "{{ ipasmartcard_client_vars.NSS_DB_DIR }}"
+    with_items: "{{ result_validate_ca_certs.ca_cert_files }}"
+
+  # Newer version of sssd use OpenSSL and read the CA certs
+  # from /etc/sssd/pki/sssd_auth_ca_db.pem
+
+  - name: Add CA certs to /etc/sssd/pki/sssd_auth_ca_db.pem
+    ansible.builtin.script: ipasmartcard_client_add_ca_to_sssd_auth_ca_db.sh
+                            "{{ item }}"
+                            /etc/sssd/pki/sssd_auth_ca_db.pem
+    with_items: "{{ result_validate_ca_certs.ca_cert_files }}"
+    when: ipasmartcard_client_vars.USE_AUTHSELECT
+
+  # Update ipa CA certificate store
+
+  - name: Update ipa CA certificate store
+    ansible.builtin.command: ipa-certupdate
+
+  # Run authselect or authconfig to configure smartcard auth
+
+  - name: Use authselect to enable Smart Card authentication
+    ansible.builtin.command: authselect enable-feature with-smartcard
+    when: ipasmartcard_client_vars.USE_AUTHSELECT
+
+  - name: Use authconfig to enable Smart Card authentication
+    ansible.builtin.command: authconfig --enablesssd --enablesssdauth --enablesmartcard --smartcardmodule=sssd --smartcardaction=1 --updateall
+    when: not ipasmartcard_client_vars.USE_AUTHSELECT
+
+  # Set pam_cert_auth=True in /etc/sssd/sssd.conf
+
+  - name: Store NSS OCSP upgrade state
+    ansible.builtin.command: "{{ ipasmartcard_client_vars.python_interpreter }}"
+    args:
+      stdin: |
+        from SSSDConfig import SSSDConfig
+        c = SSSDConfig()
+        c.import_config()
+        c.set("pam", "pam_cert_auth", "True")
+        c.write()
+    when: ipasmartcard_client_vars.USE_AUTHSELECT
+
+  # Restart sssd
+
+  - name: Restart sssd
+    ansible.builtin.service:
+      name: sssd
+      state: restarted
+
+  ### ALWAYS ###
+
+  always:
+  - name: kdestroy
+    ansible.builtin.command: kdestroy -A

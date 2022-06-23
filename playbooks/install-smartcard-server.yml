@@ -1,0 +1,8 @@
+---
+- name: Playbook to setup smartcard for IPA server
+  hosts: ipaserver
+  become: true
+
+  roles:
+  - role: ipasmartcard_server
+    state: present
