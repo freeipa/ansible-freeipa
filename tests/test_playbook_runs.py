@@ -24,7 +24,10 @@ import functools
 
 from unittest import TestCase
 
-from utils import get_test_playbooks, get_skip_conditions, run_playbook
+from utils import (
+    get_test_playbooks, get_server_host, run_playbook, get_enabled_test,
+    get_disabled_test
+)
 
 
 def prepare_test(testname, testpath):
@@ -47,6 +50,9 @@ def prepare_test(testname, testpath):
     return decorator
 
 
+if not get_server_host():
+    raise RuntimeError("IPA_SERVER_HOST is not set.")
+
 # Dynamically create the TestCase classes with respective
 #   test_* methods.
 for test_dir_name, playbooks_in_dir in get_test_playbooks().items():
@@ -56,16 +62,17 @@ for test_dir_name, playbooks_in_dir in get_test_playbooks().items():
         test_name = playbook["name"].replace("-", "_")
         test_path = playbook["path"]
 
-        skip = get_skip_conditions(test_dir_name, test_name) or {}
+        if (
+            get_enabled_test(test_dir_name, test_name)
+            and not get_disabled_test(test_dir_name, test_name)
+        ):
+            # pylint: disable=W0621,W0640,W0613
+            @pytest.mark.playbook
+            @prepare_test(test_name, test_path)
+            def method(self, test_path, test_name):
+                run_playbook(test_path)
+            # pylint: enable=W0621,W0640,W0613
 
-        # pylint: disable=W0621,W0640,W0613
-        @pytest.mark.skipif(**skip)
-        @pytest.mark.playbook
-        @prepare_test(test_name, test_path)
-        def method(self, test_path, test_name):
-            run_playbook(test_path)
-        # pylint: enable=W0621,W0640,W0613
-
-        _tests[test_name] = method
+            _tests[test_name] = method
 
     globals()[test_dir_name] = type(test_dir_name, tuple([TestCase]), _tests,)

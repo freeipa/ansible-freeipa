@@ -84,30 +84,6 @@ def get_enabled_test(group_name, test_name):
     return group_enabled or test_enabled
 
 
-def get_skip_conditions(group_name, test_name):
-    """
-    Check tests that need to be skipped.
-
-    The return is a dict containing `condition` and `reason`. For the test
-    to be skipped, `condition` must be True, if it is `False`, the test is
-    to be skipped. Although "reason" must be always provided, it can be
-    `None` if `condition` is True.
-    """
-    if not get_server_host():
-        return {
-            "condition": True,
-            "reason": "Environment variable IPA_SERVER_HOST must be set",
-        }
-
-    if not get_enabled_test(group_name, test_name):
-        return {"condition": True, "reason": "Test not configured to run"}
-
-    if get_disabled_test(group_name, test_name):
-        return {"condition": True, "reason": "Test configured to not run"}
-
-    return {"condition": False, "reason": "Test will run."}
-
-
 def get_inventory_content():
     """Create the content of an inventory file for a test run."""
     ipa_server_host = get_server_host()
