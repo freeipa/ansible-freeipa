@@ -253,7 +253,10 @@ def main():
     if state == "absent":
         if len(names) < 1:
             ansible_module.fail_json(msg="No name given.")
-        invalid = ["base_id", "range_size", "idrange_type", "dom_sid"]
+        invalid = [
+            "base_id", "range_size", "idrange_type", "dom_sid", "dom_name",
+            "rid_base", "secondary_rid_base", "auto_private_groups"
+        ]
 
     ansible_module.params_fail_used_invalid(invalid, state)
 
