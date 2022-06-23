@@ -95,12 +95,12 @@ def get_disabled_test(group_name, test_name):
 def get_enabled_test(group_name, test_name):
     enabled_modules = [
         enabled.strip()
-        for enabled in os.environ.get("IPA_ENABLED_MODULES", "").split(":")
+        for enabled in os.environ.get("IPA_ENABLED_MODULES", "").split(",")
         if enabled.strip()
     ]
     enabled_tests = [
         enabled.strip()
-        for enabled in os.environ.get("IPA_ENABLED_TESTS", "").split(":")
+        for enabled in os.environ.get("IPA_ENABLED_TESTS", "").split(",")
         if enabled.strip()
     ]
 
@@ -127,9 +127,6 @@ def get_skip_conditions(group_name, test_name):
             "condition": True,
             "reason": "Environment variable IPA_SERVER_HOST must be set",
         }
-
-    if not get_enabled_test(group_name, test_name):
-        return {"condition": True, "reason": "Test not configured to run"}
 
     if get_disabled_test(group_name, test_name):
         return {"condition": True, "reason": "Test configured to not run"}

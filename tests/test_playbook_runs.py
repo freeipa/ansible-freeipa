@@ -24,7 +24,9 @@ import functools
 
 from unittest import TestCase
 
-from utils import get_test_playbooks, get_skip_conditions, run_playbook
+from utils import (
+    get_test_playbooks, get_skip_conditions, run_playbook, get_enabled_test
+)
 
 
 def prepare_test(testname, testpath):
@@ -56,16 +58,19 @@ for test_dir_name, playbooks_in_dir in get_test_playbooks().items():
         test_name = playbook["name"].replace("-", "_")
         test_path = playbook["path"]
 
-        skip = get_skip_conditions(test_dir_name, test_name) or {}
+        if get_enabled_test(test_dir_name, test_name):
+            skip = get_skip_conditions(test_dir_name, test_name) or {}
 
-        # pylint: disable=W0621,W0640,W0613
-        @pytest.mark.skipif(**skip)
-        @pytest.mark.playbook
-        @prepare_test(test_name, test_path)
-        def method(self, test_path, test_name):
-            run_playbook(test_path)
-        # pylint: enable=W0621,W0640,W0613
+            # pylint: disable=W0621,W0640,W0613
+            @pytest.mark.skipif(**skip)
+            @pytest.mark.playbook
+            @prepare_test(test_name, test_path)
+            def method(self, test_path, test_name):
+                run_playbook(test_path)
+            # pylint: enable=W0621,W0640,W0613
 
-        _tests[test_name] = method
+            _tests[test_name] = method
 
-    globals()[test_dir_name] = type(test_dir_name, tuple([TestCase]), _tests,)
+            globals()[test_dir_name] = (
+                type(test_dir_name, tuple([TestCase]), _tests,)
+            )
