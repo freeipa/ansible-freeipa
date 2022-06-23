@@ -15,14 +15,15 @@ variables:
   # ipa_enabled_modules: >-
   ipa_enabled_tests: >-
     group, user
-  # ipa_disabled_modules: >-
-  #   dnsconfig,
-  #   dnsforwardzone,
+
+  ipa_disabled_modules: >-
+    dnsconfig,
+    dnsforwardzone,
   # ipa_disabled_tests: >-
-  ipa_disabled_fedora_36: >-
-    group
-  ipa_disabled_centos_7: >-
-    user
-  ipa_disabled_centos_8: >-
-    group, user
+  # ipa_disabled_fedora_36: >-
+  #   group
+  # ipa_disabled_centos_7: >-
+  #   user
+  # ipa_disabled_centos_8: >-
+  #   group, user
   # ipa_disabled_centos_9: >-
