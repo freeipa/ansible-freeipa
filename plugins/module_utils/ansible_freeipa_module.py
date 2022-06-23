@@ -139,6 +139,13 @@ else:
 
                 return fstore.has_files()
 
+    # Try to import dcerpc
+    try:
+        import ipaserver.dcerpc  # pylint: disable=no-member
+        _dcerpc_bindings_installed = True  # pylint: disable=invalid-name
+    except ImportError:
+        _dcerpc_bindings_installed = False  # pylint: disable=invalid-name
+
     if six.PY3:
         unicode = str
 
@@ -221,6 +228,8 @@ else:
                 ldap_cache: Control use of LDAP cache layer. (bool)
 
         """
+        global _dcerpc_bindings_installed  # pylint: disable=C0103,W0603
+
         env = Env()
         env._bootstrap()
         env._finalize_core(**dict(DEFAULT_CONFIG))
@@ -252,6 +261,7 @@ else:
             backend = api.Backend.ldap2
         else:
             backend = api.Backend.rpcclient
+            _dcerpc_bindings_installed = False
 
         if not backend.isconnected():
             backend.connect(ccache=os.environ.get('KRB5CCNAME', None))
@@ -700,6 +710,42 @@ else:
         module.do_cleanup_files()
         print(jsonify(kwargs))
         sys.exit(0)
+
+    def __get_domain_validator():
+        if not _dcerpc_bindings_installed:
+            raise ipalib_errors.NotFound(
+                reason=(
+                    'Cannot perform SID validation without Samba 4 support '
+                    'installed. Make sure you have installed server-trust-ad '
+                    'sub-package of IPA on the server'
+                )
+            )
+
+        # pylint: disable=no-member
+        domain_validator = ipaserver.dcerpc.DomainValidator(api)
+        # pylint: enable=no-member
+
+        if not domain_validator.is_configured():
+            raise ipalib_errors.NotFound(
+                reason=(
+                    'Cross-realm trusts are not configured. Make sure you '
+                    'have run ipa-adtrust-install on the IPA server first'
+                )
+            )
+
+        return domain_validator
+
+    def get_trusted_domain_sid_from_name(dom_name):
+        """
+        Given a trust domain name, returns the domain SID.
+
+        Returns unicode string representation for a given trusted domain name
+        or None if SID for the given trusted domain name could not be found.
+        """
+        domain_validator = __get_domain_validator()
+        sid = domain_validator.get_sid_from_domain_name(dom_name)
+
+        return unicode(sid) if sid is not None else None
 
     class IPAParamMapping(Mapping):
         """

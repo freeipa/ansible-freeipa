@@ -74,7 +74,9 @@ options:
     required: false
     aliases: ["ipanttrusteddomainsid"]
   dom_name:
-    description: Domain name of the trusted domain.
+    description: |
+      Domain name of the trusted domain. Can only be used when
+      `ipaapi_context: server`.
     type: string
     required: false
     aliases: ["ipanttrusteddomainname"]
@@ -134,7 +136,7 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa
+    IPAAnsibleModule, compare_args_ipa, get_trusted_domain_sid_from_name
 from ansible.module_utils import six
 
 if six.PY3:
@@ -154,7 +156,7 @@ def find_idrange(module, name):
 
 def gen_args(
     base_id, range_size, rid_base, secondary_rid_base, idrange_type, dom_sid,
-    auto_private_groups
+    dom_name, auto_private_groups
 ):
     _args = {}
     # Integer parameters are stored as strings.
@@ -169,6 +171,8 @@ def gen_args(
         _args["ipasecondarybaserid"] = secondary_rid_base
     if idrange_type is not None:
         _args["iparangetype"] = idrange_type
+    if dom_name is not None:
+        dom_sid = get_trusted_domain_sid_from_name(dom_name)
     if dom_sid is not None:
         _args["ipanttrusteddomainsid"] = dom_sid
     if auto_private_groups is not None:
@@ -230,6 +234,7 @@ def main():
     secondary_rid_base = ansible_module.params_get("secondary_rid_base")
     idrange_type = ansible_module.params_get("idrange_type")
     dom_sid = ansible_module.params_get("dom_sid")
+    dom_name = ansible_module.params_get("dom_name")
     auto_private_groups = \
         ansible_module.params_get_lowercase("auto_private_groups")
 
@@ -278,7 +283,7 @@ def main():
                 # Generate args
                 args = gen_args(
                     base_id, range_size, rid_base, secondary_rid_base,
-                    idrange_type, dom_sid, auto_private_groups
+                    idrange_type, dom_sid, dom_name, auto_private_groups
                 )
 
                 # Found the idrange
