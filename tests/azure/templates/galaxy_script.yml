@@ -67,6 +67,10 @@ jobs:
       IPA_DISABLED_TESTS: ${{ variables.ipa_disabled_tests }}
       IPA_ENABLED_MODULES: ${{ variables.ipa_enabled_modules }}
       IPA_ENABLED_TESTS: ${{ variables.ipa_enabled_tests }}
+      IPA_DISABLED_FEDORA_36: ${{ variables.ipa_disabled_fedora_36 }}
+      IPA_DISABLED_CENTOS_7: ${{ variables.ipa_disabled_centos_7 }}
+      IPA_DISABLED_CENTOS_8: ${{ variables.ipa_disabled_centos_8 }}
+      IPA_DISABLED_CENTOS_9: ${{ variables.ipa_disabled_centos_8 }}
 
   - task: PublishTestResults@2
     inputs:

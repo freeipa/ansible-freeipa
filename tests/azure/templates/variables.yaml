@@ -18,3 +18,7 @@ variables:
     dnsconfig,
     dnsforwardzone,
   # ipa_disabled_tests: >-
+  # ipa_disabled_fedora_36: >-
+  # ipa_disabled_centos_7: >-
+  # ipa_disabled_centos_8: >-
+  # ipa_disabled_centos_9: >-

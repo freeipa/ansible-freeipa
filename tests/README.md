@@ -81,6 +81,8 @@ If none of this variables are defined, all tests will be executed.
 
 To configure the tests that will run for your pull request, add a TEMP commit, with the configuration defined in the file `tests/azure/templates/variables.yml`. Set the variables `ipa_enable_modules`, `ipa_enable_tests`, `ipa_disable_modules`, and `ipa_disable_tests`, in the same way as the equivalent environment variables.
 
+To disable tests, based on the container image Linux distribution used, set the variables `ipa_disabled_<distro>_<version>` in the Azure varibles template file. For example, `ipa_disabled_fedora_36: hbacrule, test_location` would disable all `hbacrule` tests and the `location::test_location` test for the jobs running using `Fedora 36`. 
+
 ### Types of tests
 
 #### Playbook tests

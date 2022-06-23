@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import configparser
 import os
 import pytest
 import subprocess
@@ -29,6 +30,26 @@ from unittest import TestCase
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def get_distro():
+    """Get a distro identifier from /etc/os-release."""
+    def fake_ini_section(fp):  # pylint: disable=invalid-name
+        yield "[global]\n"
+        yield from fp
+
+    distro = getattr(get_distro, "distro", None)
+    if distro is None:
+        config = configparser.ConfigParser()
+        with open("/etc/os-release", "rt") as distro_info:
+            config.read_file(fake_ini_section(distro_info))
+        info = config["global"]
+        distro = (
+            f"{info.get('ID','unknown')}-{info.get('VERSION_ID','latest')}"
+        )
+        get_distro.distro = distro
+
+    return distro
 
 
 def is_docker_env():
@@ -55,11 +76,20 @@ def get_disabled_test(group_name, test_name):
         for disabled in os.environ.get("IPA_DISABLED_TESTS", "").split(",")
         if disabled.strip()
     ]
+    distro_id = get_distro().replace("-", "_").upper().strip()
+    distro_disabled = [
+        test.strip()
+        for test in os.environ.get(f"IPA_DISABLED_{distro_id}", "").split(",")
+        if test.strip()
+    ]
 
-    if not any([disabled_modules, disabled_tests]):
+    if not any([disabled_modules, disabled_tests, distro_disabled]):
         return False
 
-    return group_name in disabled_modules or test_name in disabled_tests
+    return (
+        group_name in (disabled_modules + distro_disabled)
+        or test_name in (disabled_tests + distro_disabled)
+    )
 
 
 def get_enabled_test(group_name, test_name):
