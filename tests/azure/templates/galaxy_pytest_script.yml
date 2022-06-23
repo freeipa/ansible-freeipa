@@ -1,0 +1,58 @@
+---
+parameters:
+  - name: build_number
+    type: string
+  - name: scenario
+    type: string
+    default: fedora-latest
+  - name: ansible_version
+    type: string
+    default: ""
+  - name: python_version
+    type: string
+    default: 3.x
+
+jobs:
+- job: Test_PyTests
+  displayName: Run pytests on ${{ parameters.scenario }}
+  timeoutInMinutes: 120
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '${{ parameters.python_version }}'
+
+  - script: |
+      pip install \
+        "molecule[docker]>=3" \
+        "ansible${{ parameters.ansible_version }}"
+    displayName: Install molecule and Ansible
+
+  - script: ansible-galaxy collection install community.docker ansible.posix
+    displayName: Install Ansible collections
+
+  - script: pip install -r requirements-tests.txt
+    displayName: Install dependencies
+  - script: |
+      utils/build-galaxy-release.sh -i
+      molecule create -s ${{ parameters.scenario }}
+    displayName: Setup test container
+    env:
+      ANSIBLE_LIBRARY: ./molecule
+
+  - script: |
+      cd ~/.ansible/collections/ansible_collections/freeipa/ansible_freeipa
+      pytest \
+        -m "not playbook" \
+        --verbose \
+        --color=yes \
+        --junit-xml=TEST-results-pytests.xml
+    displayName: Run tests
+    env:
+      IPA_SERVER_HOST: ${{ parameters.scenario }}
+      RUN_TESTS_IN_DOCKER: true
+
+  - task: PublishTestResults@2
+    inputs:
+      mergeTestResults: true
+      testRunTitle: PlaybookTests-Build${{ parameters.build_number }}
+    condition: succeededOrFailed()
