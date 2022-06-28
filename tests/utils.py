@@ -32,10 +32,11 @@ from unittest import TestCase
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def is_docker_env():
-    if os.getenv("RUN_TESTS_IN_DOCKER", "0") == "0":
-        return False
-    return True
+def get_docker_env():
+    docker_env = os.getenv("RUN_TESTS_IN_DOCKER", None)
+    if docker_env in ["1", "True", "true", "yes", True]:
+        docker_env = "docker"
+    return docker_env
 
 
 def get_ssh_password():
@@ -88,8 +89,9 @@ def get_inventory_content():
     """Create the content of an inventory file for a test run."""
     ipa_server_host = get_server_host()
 
-    if is_docker_env():
-        ipa_server_host += " ansible_connection=docker"
+    container_engine = get_docker_env()
+    if container_engine is not None:
+        ipa_server_host += f" ansible_connection={container_engine}"
 
     sshpass = get_ssh_password()
     if sshpass:
@@ -145,12 +147,11 @@ def _run_playbook(playbook):
     with tempfile.NamedTemporaryFile() as inventory_file:
         inventory_file.write(get_inventory_content())
         inventory_file.flush()
-        cmd = [
-            "ansible-playbook",
-            "-i",
-            inventory_file.name,
-            playbook,
-        ]
+        cmd_options = ["-i", inventory_file.name]
+        verbose = os.environ.get("IPA_VERBOSITY", None)
+        if verbose is not None:
+            cmd_options.append(verbose)
+        cmd = ["ansible-playbook"] + cmd_options + [playbook]
         # pylint: disable=subprocess-run-check
         process = subprocess.run(
             cmd, cwd=SCRIPT_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -257,8 +258,9 @@ def kdestroy(host):
 
 class AnsibleFreeIPATestCase(TestCase):
     def setUp(self):
-        if is_docker_env():
-            protocol = "docker://"
+        container_engine = get_docker_env()
+        if container_engine:
+            protocol = f"{container_engine}://"
             user = ""
             ssh_identity_file = None
         else:
