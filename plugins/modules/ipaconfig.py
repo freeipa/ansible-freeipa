@@ -441,7 +441,11 @@ def main():
                     elif (
                         isinstance(value, (tuple, list)) and arg_type == "bool"
                     ):
-                        exit_args[k] = (value[0] == "TRUE")
+                        # FreeIPA 4.9.10+ and 4.10 use proper mapping for
+                        # boolean values, so we need to convert it to str
+                        # for comparison.
+                        # See: https://github.com/freeipa/freeipa/pull/6294
+                        exit_args[k] = (str(value[0]).upper() == "TRUE")
                     else:
                         if arg_type not in type_map:
                             raise ValueError(

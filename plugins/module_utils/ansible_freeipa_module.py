@@ -845,7 +845,10 @@ else:
                 # Check if param_name is actually a param
                 if param_name in self.ansible_module.params:
                     value = self.ansible_module.params_get(param_name)
-                    if isinstance(value, bool):
+                    if (
+                        self.ansible_module.ipa_check_version("<", "4.9.10")
+                        and isinstance(value, bool)
+                    ):
                         value = "TRUE" if value else "FALSE"
 
                 # Since param wasn't a param check if it's a method name
