@@ -1,7 +1,12 @@
 #!/bin/bash
 
+TOPDIR=$(readlink -f "$(dirname "$0")/../..")
+pushd "${TOPDIR}" >/dev/null || exit 1
+
 VENV=/tmp/ansible-test-venv
 ANSIBLE_COLLECTION=freeipa-ansible_freeipa
+
+use_docker=$(which docker >/dev/null 2>&1 && echo "True" || echo "False")
 
 virtualenv "$VENV"
 # shellcheck disable=SC1091
@@ -15,7 +20,8 @@ rm -f importer_result.json
 
 utils/build-galaxy-release.sh
 
-export GALAXY_IMPORTER_CONFIG=tests/sanity/galaxy-importer.cfg
+sed "s/LOCAL_IMAGE_DOCKER = True/LOCAL_IMAGE_DOCKER = ${use_docker}/" < tests/sanity/galaxy-importer.cfg > ${VENV}/galaxy-importer.cfg
+export GALAXY_IMPORTER_CONFIG=${VENV}/galaxy-importer.cfg
 
 collection=$(ls -1 "$ANSIBLE_COLLECTION"-*.tar.gz)
 echo "Running: python -m galaxy_importer.main $collection"
@@ -32,5 +38,7 @@ do
 done < <(python -m galaxy_importer.main "$collection")
 
 rm -rf "$VENV"
+
+popd >/dev/null || exit 1
 
 exit "$error"
