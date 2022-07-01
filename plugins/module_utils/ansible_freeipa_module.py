@@ -67,9 +67,15 @@ else:
                 """
                 Split a version string A.B.C, into a tuple.
 
-                This will not work for `rc`, `dev` or similar version string.
+                This will not work for `rc`, `dev` or similar.
                 """
-                return tuple(re.split("[-_.]", version_str))  # noqa: W605
+                try:
+                    _version = tuple(
+                        (int(x) for x in re.split("[-_.]", version_str))
+                    )
+                except ValueError:
+                    _version = tuple(re.split("[-_.]", version_str))
+                return _version
 
     from ipalib import api
     from ipalib import errors as ipalib_errors  # noqa
