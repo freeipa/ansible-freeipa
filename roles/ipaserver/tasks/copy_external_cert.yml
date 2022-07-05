@@ -11,4 +11,4 @@
     force: yes
 - name: Install - Extend ipaserver_external_cert_files with "/root/{{ item | basename }}"
   set_fact:
-    ipaserver_external_cert_files: "{{ ipaserver_external_cert_files }} + [ '/root/{{ item | basename }}' ]"
+    ipaserver_external_cert_files: "{{ ipaserver_external_cert_files + [ '/root/' + (item | basename) ] }}"
