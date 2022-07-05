@@ -64,18 +64,26 @@ class TestDNSZone(AnsibleFreeIPATestCase):
     def test_dnszone_disable(self):
         """TC-30: Disable DNS Zone."""
         zone26 = "26testzone.test"
-        self.check_details(["Active zone: TRUE"], "dnszone-find", [zone26])
+        self.check_details(
+            ["Active zone: (TRUE|True)"], "dnszone-find", [zone26]
+        )
         # Disable dns zone
         self.run_playbook(BASE_PATH + "dnszone_disable.yaml")
-        self.check_details(["Active zone: FALSE"], "dnszone-find", [zone26])
+        self.check_details(
+            ["Active zone: (FALSE|False)"], "dnszone-find", [zone26]
+        )
 
     def test_dnszone_enable(self):
         """TC-31: Enable DNS Zone."""
         zone26 = "26testzone.test"
-        self.check_details(["Active zone: FALSE"], "dnszone-find", [zone26])
+        self.check_details(
+            ["Active zone: (FALSE|False)"], "dnszone-find", [zone26]
+        )
         # Enable dns zone
         self.run_playbook(BASE_PATH + "dnszone_enable.yaml")
-        self.check_details(["Active zone: TRUE"], "dnszone-find", [zone26])
+        self.check_details(
+            ["Active zone: (TRUE|True)"], "dnszone-find", [zone26]
+        )
 
     def test_dnszone_name_from_ip(self):
         """TC-35: Add dns zone with reverse zone IP. Bug#1845056."""
