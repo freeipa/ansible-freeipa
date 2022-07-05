@@ -38,3 +38,9 @@ jobs:
     job_name_suffix: FedoraLatest
     container_name: fedora-latest
     build_scenario_name: fedora-latest-build
+
+- template: templates/build_container.yml
+  parameters:
+    job_name_suffix: FedoraRawhide
+    container_name: fedora-rawhide
+    build_scenario_name: fedora-rawhide-build
