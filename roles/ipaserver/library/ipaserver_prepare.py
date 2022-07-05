@@ -213,6 +213,8 @@ def main():
 
             # additional
             setup_ca=dict(required=False, type='bool', default=False),
+            random_serial_numbers=dict(required=False, type='bool',
+                                       default=False),
             _hostname_overridden=dict(required=False, type='bool',
                                       default=False),
         ),
@@ -225,9 +227,11 @@ def main():
 
     # initialize return values for flake ############################
 
-    # These are set by ca.install_check
+    # These are set by ca.install_check and need to be passed to ca.install
+    # in the _setup_ca module and also some others.
     options._subject_base = None
     options._ca_subject = None
+    options._random_serial_numbers = None
 
     # set values ####################################################
 
@@ -277,6 +281,8 @@ def main():
     options.netbios_name = ansible_module.params.get('netbios_name')
     # additional
     options.setup_ca = ansible_module.params.get('setup_ca')
+    options.random_serial_numbers = ansible_module.params.get(
+        'random_serial_numbers')
     options._host_name_overridden = ansible_module.params.get(
         '_hostname_overridden')
     options.kasp_db_file = None
@@ -405,6 +411,7 @@ def main():
         _subject_base=options._subject_base,
         ca_subject=options.ca_subject,
         _ca_subject=options._ca_subject,
+        _random_serial_numbers=options._random_serial_numbers,
         # dns
         reverse_zones=options.reverse_zones,
         forward_policy=options.forward_policy,

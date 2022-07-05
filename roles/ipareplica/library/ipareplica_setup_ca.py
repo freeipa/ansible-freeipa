@@ -85,6 +85,9 @@ options:
   _subject_base:
     description: The installer _subject_base setting
     required: no
+  _random_serial_numbers:
+    description: The installer _random_serial_numbers setting
+    required: yes
   dirman_password:
     description: Directory Manager (master) password
     required: no
@@ -144,6 +147,7 @@ def main():
             _top_dir=dict(required=True),
             _ca_subject=dict(required=True),
             _subject_base=dict(required=True),
+            _random_serial_numbers=dict(required=True),
             dirman_password=dict(required=True, no_log=True),
             config_setup_ca=dict(required=True, type='bool'),
             config_master_host_name=dict(required=True),
@@ -190,6 +194,8 @@ def main():
     options._subject_base = ansible_module.params.get('_subject_base')
     if options._subject_base is not None:
         options._subject_base = DN(options._subject_base)
+    options._random_serial_numbers = ansible_module.params.get(
+        '_random_serial_numbers')
     dirman_password = ansible_module.params.get('dirman_password')
     config_setup_ca = ansible_module.params.get('config_setup_ca')
     config_master_host_name = ansible_module.params.get(

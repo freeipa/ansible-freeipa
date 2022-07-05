@@ -132,6 +132,9 @@ options:
   ca_signing_algorithm:
     description: Signing algorithm of the IPA CA certificate
     required: yes
+  _random_serial_numbers:
+    description: The installer _random_serial_numbers setting
+    required: yes
   reverse_zones:
     description: The reverse DNS zones to use
     required: yes
@@ -204,6 +207,7 @@ def main():
             ca_subject=dict(required=False),
             _ca_subject=dict(required=False),
             ca_signing_algorithm=dict(required=False),
+            _random_serial_numbers=dict(required=True),
             # dns
             reverse_zones=dict(required=False, type='list', default=[]),
             no_reverse=dict(required=False, type='bool', default=False),
@@ -259,6 +263,8 @@ def main():
     options._ca_subject = ansible_module.params.get('_ca_subject')
     options.ca_signing_algorithm = ansible_module.params.get(
         'ca_signing_algorithm')
+    options._random_serial_numbers = ansible_module.params.get(
+        '_random_serial_numbers')
     # dns
     options.reverse_zones = ansible_module.params.get('reverse_zones')
     options.no_reverse = ansible_module.params.get('no_reverse')
