@@ -472,18 +472,26 @@ def main():
                 # hbacrule_enable is not failing on an enabled hbacrule
                 # Therefore it is needed to have a look at the ipaenabledflag
                 # in res_find.
-                if "ipaenabledflag" not in res_find or \
-                   res_find["ipaenabledflag"][0] != "TRUE":
+                # FreeIPA 4.9.10+ and 4.10 use proper mapping for
+                # boolean values, so we need to convert it to str
+                # for comparison.
+                # See: https://github.com/freeipa/freeipa/pull/6294
+                enabled_flag = str(res_find.get("ipaenabledflag", [False])[0])
+                if enabled_flag.upper() != "TRUE":
                     commands.append([name, "hbacrule_enable", {}])
 
             elif state == "disabled":
                 if res_find is None:
                     ansible_module.fail_json(msg="No hbacrule '%s'" % name)
-                # hbacrule_disable is not failing on an disabled hbacrule
+                # hbacrule_disable is not failing on an enabled hbacrule
                 # Therefore it is needed to have a look at the ipaenabledflag
                 # in res_find.
-                if "ipaenabledflag" not in res_find or \
-                   res_find["ipaenabledflag"][0] != "FALSE":
+                # FreeIPA 4.9.10+ and 4.10 use proper mapping for
+                # boolean values, so we need to convert it to str
+                # for comparison.
+                # See: https://github.com/freeipa/freeipa/pull/6294
+                enabled_flag = str(res_find.get("ipaenabledflag", [False])[0])
+                if enabled_flag.upper() != "FALSE":
                     commands.append([name, "hbacrule_disable", {}])
 
             else:

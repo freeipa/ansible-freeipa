@@ -21,6 +21,7 @@
 
 import os
 import pytest
+import re
 import subprocess
 import tempfile
 import testinfra
@@ -314,6 +315,10 @@ class AnsibleFreeIPATestCase(TestCase):
             expected_msg in result.stderr.decode("utf8")
         )
 
+    @staticmethod
+    def __is_text_on_data(text, data):
+        return re.search(text, data) is not None
+
     def check_details(self, expected_output, cmd, extra_cmds=None):
         cmd = "ipa " + cmd
         if extra_cmds:
@@ -322,10 +327,16 @@ class AnsibleFreeIPATestCase(TestCase):
         res = self.master.run(cmd)
         if res.rc != 0:
             for output in expected_output:
-                assert output in res.stderr
+                assert self.__is_text_on_data(output, res.stderr), (
+                    f"\n{'='*40}\nExpected: {output}\n{'='*40}\n"
+                    + f"Output:\n{res.stderr}{'='*40}\n"
+                )
         else:
             for output in expected_output:
-                assert output in res.stdout
+                assert self.__is_text_on_data(output, res.stdout), (
+                    f"\n{'='*40}\nExpected: {output}\n{'='*40}\n"
+                    + f"Output:\n{res.stdout}{'='*40}\n"
+                )
         kdestroy(self.master)
 
     def check_notexists(self, members, cmd, extra_cmds=None):
@@ -335,7 +346,10 @@ class AnsibleFreeIPATestCase(TestCase):
         kinit_admin(self.master)
         res = self.master.run(cmd)
         for member in members:
-            assert member not in res.stdout
+            assert not self.__is_text_on_data(member, res.stdout), (
+                f"\n{'='*40}\nExpected: {member}\n{'='*40}\n"
+                + f"Output:\n{res.stdout}{'='*40}\n"
+            )
         kdestroy(self.master)
 
     def mark_xfail_using_ansible_freeipa_version(self, version, reason):

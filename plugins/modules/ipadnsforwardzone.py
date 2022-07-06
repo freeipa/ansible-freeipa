@@ -344,7 +344,13 @@ def main():
 
             if state in ['enabled', 'disabled']:
                 if existing_resource is not None:
-                    is_enabled = existing_resource["idnszoneactive"][0]
+                    # FreeIPA 4.9.10+ and 4.10 use proper mapping for
+                    # boolean values, so we need to convert it to str
+                    # for comparison.
+                    # See: https://github.com/freeipa/freeipa/pull/6294
+                    is_enabled = (
+                        str(existing_resource["idnszoneactive"][0]).upper()
+                    )
                 else:
                     ansible_module.fail_json(
                         msg="dnsforwardzone '%s' not found." % (name))

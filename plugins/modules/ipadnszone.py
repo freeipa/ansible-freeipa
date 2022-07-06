@@ -418,7 +418,11 @@ class DNSZoneModule(IPAAnsibleModule):
             is_zone_active = False
         else:
             zone = response["result"]
-            is_zone_active = "TRUE" in zone.get("idnszoneactive")
+            # FreeIPA 4.9.10+ and 4.10 use proper mapping for boolean vaalues.
+            # See: https://github.com/freeipa/freeipa/pull/6294
+            is_zone_active = (
+                str(zone.get("idnszoneactive")[0]).upper() == "TRUE"
+            )
 
         return zone, is_zone_active
 

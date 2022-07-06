@@ -88,9 +88,15 @@ else:
                 """
                 Split a version string A.B.C, into a tuple.
 
-                This will not work for `rc`, `dev` or similar version string.
+                This will not work for `rc`, `dev` or similar.
                 """
-                return tuple(re.split("[-_.]", version_str))  # noqa: W605
+                try:
+                    _version = tuple(
+                        (int(x) for x in re.split("[-_.]", version_str))
+                    )
+                except ValueError:
+                    _version = tuple(re.split("[-_.]", version_str))
+                return _version
 
     from ipalib import api
     from ipalib import errors as ipalib_errors  # noqa
@@ -866,7 +872,10 @@ else:
                 # Check if param_name is actually a param
                 if param_name in self.ansible_module.params:
                     value = self.ansible_module.params_get(param_name)
-                    if isinstance(value, bool):
+                    if (
+                        self.ansible_module.ipa_check_version("<", "4.9.10")
+                        and isinstance(value, bool)
+                    ):
                         value = "TRUE" if value else "FALSE"
 
                 # Since param wasn't a param check if it's a method name

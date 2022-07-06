@@ -656,8 +656,12 @@ def main():
                 # sudorule_enable is not failing on an enabled sudorule
                 # Therefore it is needed to have a look at the ipaenabledflag
                 # in res_find.
-                if "ipaenabledflag" not in res_find or \
-                   res_find["ipaenabledflag"][0] != "TRUE":
+                # FreeIPA 4.9.10+ and 4.10 use proper mapping for
+                # boolean values, so we need to convert it to str
+                # for comparison.
+                # See: https://github.com/freeipa/freeipa/pull/6294
+                enabled_flag = str(res_find.get("ipaenabledflag", [False])[0])
+                if enabled_flag.upper() != "TRUE":
                     commands.append([name, "sudorule_enable", {}])
 
             elif state == "disabled":
@@ -666,8 +670,12 @@ def main():
                 # sudorule_disable is not failing on an disabled sudorule
                 # Therefore it is needed to have a look at the ipaenabledflag
                 # in res_find.
-                if "ipaenabledflag" not in res_find or \
-                   res_find["ipaenabledflag"][0] != "FALSE":
+                # FreeIPA 4.9.10+ and 4.10 use proper mapping for
+                # boolean values, so we need to convert it to str
+                # for comparison.
+                # See: https://github.com/freeipa/freeipa/pull/6294
+                enabled_flag = str(res_find.get("ipaenabledflag", [False])[0])
+                if enabled_flag.upper() != "FALSE":
                     commands.append([name, "sudorule_disable", {}])
 
             else:
