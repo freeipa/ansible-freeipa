@@ -191,6 +191,7 @@
       secondary_rid_base: "{{ ipaserver_secondary_rid_base | default(omit) }}"
       ### additional ###
       setup_ca: "{{ result_ipaserver_test.setup_ca }}"
+      random_serial_numbers: no
       _hostname_overridden: "{{ result_ipaserver_test._hostname_overridden }}"
     register: result_ipaserver_prepare
 
@@ -298,6 +299,7 @@
       _ca_subject: "{{ result_ipaserver_prepare._ca_subject }}"
       ca_signing_algorithm: "{{ ipaserver_ca_signing_algorithm |
                                 default(omit) }}"
+      _random_serial_numbers: "{{ result_ipaserver_prepare._random_serial_numbers }}"
       reverse_zones: "{{ result_ipaserver_prepare.reverse_zones }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"
