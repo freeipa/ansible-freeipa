@@ -212,7 +212,6 @@ RETURN = '''
 
 import os
 import sys
-import inspect
 import random
 from shutil import copyfile
 
@@ -226,7 +225,7 @@ from ansible.module_utils.ansible_ipa_server import (
     read_cache, ca, tasks, check_ldap_conf, timeconf, httpinstance,
     check_dirsrv, ScriptError, get_fqdn, verify_fqdn, BadHostError,
     validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION,
-    encode_certificate, check_available_memory
+    encode_certificate, check_available_memory, getargspec
 )
 from ansible.module_utils import six
 
@@ -944,7 +943,7 @@ def main():
         realm_name = options.realm_name.upper()
 
     # pylint: disable=deprecated-method
-    argspec = inspect.getargspec(validate_domain_name)
+    argspec = getargspec(validate_domain_name)
     # pylint: enable=deprecated-method
     if "entity" in argspec.args:
         # NUM_VERSION >= 40690:

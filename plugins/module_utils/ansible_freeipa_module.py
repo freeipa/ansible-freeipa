@@ -29,7 +29,7 @@ __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "DEFAULT_CONFIG", "LDAP_GENERALIZED_TIME_FORMAT",
            "kinit_password", "kinit_keytab", "run", "DN", "VERSION",
            "paths", "get_credentials_if_valid", "Encoding",
-           "load_pem_x509_certificate", "DNSName"]
+           "load_pem_x509_certificate", "DNSName", "getargspec"]
 
 import sys
 
@@ -48,7 +48,28 @@ else:
     import gssapi
     from datetime import datetime
     from contextlib import contextmanager
-    import inspect
+
+    # Import getargspec from inspect or provide own getargspec for
+    # Python 2 compatibility with Python 3.11+.
+    try:
+        from inspect import getargspec
+    except ImportError:
+        from collections import namedtuple
+        from inspect import getfullargspec
+
+        # The code is copied from Python 3.10 inspect.py
+        # Authors: Ka-Ping Yee <ping@lfw.org>
+        #          Yury Selivanov <yselivanov@sprymix.com>
+        ArgSpec = namedtuple('ArgSpec', 'args varargs keywords defaults')
+
+        def getargspec(func):
+            args, varargs, varkw, defaults, kwonlyargs, _kwonlydefaults, \
+                ann = getfullargspec(func)
+            if kwonlyargs or ann:
+                raise ValueError(
+                    "Function has keyword-only parameters or annotations"
+                    ", use inspect.signature() API which can support them")
+            return ArgSpec(args, varargs, varkw, defaults)
 
     # ansible-freeipa requires locale to be C, IPA requires utf-8.
     os.environ["LANGUAGE"] = "C"
@@ -1228,7 +1249,7 @@ else:
             elif result_handler is not None:
                 if "errors" not in handlers_user_args:
                     # pylint: disable=deprecated-method
-                    argspec = inspect.getargspec(result_handler)
+                    argspec = getargspec(result_handler)
                     if "errors" in argspec.args:
                         handlers_user_args["errors"] = _errors
 

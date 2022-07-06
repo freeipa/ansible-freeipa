@@ -46,7 +46,7 @@ __all__ = ["contextlib", "dnsexception", "dnsresolver", "dnsreversename",
            "common_check", "current_domain_level",
            "check_domain_level_is_supported", "promotion_check_ipa_domain",
            "SSSDConfig", "CalledProcessError", "timeconf", "ntpinstance",
-           "dnsname", "kernel_keyring", "krbinstance"]
+           "dnsname", "kernel_keyring", "krbinstance", "getargspec"]
 
 import sys
 
@@ -58,6 +58,28 @@ if 'ansible.executor' in sys.modules:
 else:
     import logging
     from contextlib import contextmanager as contextlib_contextmanager
+
+    # Import getargspec from inspect or provide own getargspec for
+    # Python 2 compatibility with Python 3.11+.
+    try:
+        from inspect import getargspec
+    except ImportError:
+        from collections import namedtuple
+        from inspect import getfullargspec
+
+        # The code is copied from Python 3.10 inspect.py
+        # Authors: Ka-Ping Yee <ping@lfw.org>
+        #          Yury Selivanov <yselivanov@sprymix.com>
+        ArgSpec = namedtuple('ArgSpec', 'args varargs keywords defaults')
+
+        def getargspec(func):
+            args, varargs, varkw, defaults, kwonlyargs, _kwonlydefaults, \
+                ann = getfullargspec(func)
+            if kwonlyargs or ann:
+                raise ValueError(
+                    "Function has keyword-only parameters or annotations"
+                    ", use inspect.signature() API which can support them")
+            return ArgSpec(args, varargs, varkw, defaults)
 
     from ipapython.version import NUM_VERSION, VERSION
 

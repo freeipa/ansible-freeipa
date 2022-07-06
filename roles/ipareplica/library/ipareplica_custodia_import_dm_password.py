@@ -96,13 +96,13 @@ RETURN = '''
 '''
 
 import os
-import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
     AnsibleModuleLog, setup_logging, installer, DN, paths,
     gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
-    gen_ReplicaConfig, gen_remote_api, redirect_stdout, custodiainstance
+    gen_ReplicaConfig, gen_remote_api, redirect_stdout, custodiainstance,
+    getargspec
 )
 
 
@@ -200,7 +200,7 @@ def main():
         ansible_log.debug("-- CUSTODIA IMPORT DM PASSWORD --")
 
         # pylint: disable=deprecated-method
-        argspec = inspect.getargspec(custodia.import_dm_password)
+        argspec = getargspec(custodia.import_dm_password)
         # pylint: enable=deprecated-method
         if "master_host_name" in argspec.args:
             custodia.import_dm_password(config.master_host_name)

@@ -46,7 +46,7 @@ __all__ = ["gssapi", "version", "ipadiscovery", "api", "errors", "x509",
            "configure_nslcd_conf", "configure_ssh_config",
            "configure_sshd_config", "configure_automount",
            "configure_firefox", "sync_time", "check_ldap_conf",
-           "sssd_enable_ifp"]
+           "sssd_enable_ifp", "getargspec"]
 
 import sys
 
@@ -110,9 +110,30 @@ else:
         # IPA version >= 4.4
 
         # import sys
-        import inspect
         import gssapi
         import logging
+
+        # Import getargspec from inspect or provide own getargspec for
+        # Python 2 compatibility with Python 3.11+.
+        try:
+            from inspect import getargspec
+        except ImportError:
+            from collections import namedtuple
+            from inspect import getfullargspec
+
+            # The code is copied from Python 3.10 inspect.py
+            # Authors: Ka-Ping Yee <ping@lfw.org>
+            #          Yury Selivanov <yselivanov@sprymix.com>
+            ArgSpec = namedtuple('ArgSpec', 'args varargs keywords defaults')
+
+            def getargspec(func):
+                args, varargs, varkw, defaults, kwonlyargs, _kwonlydefaults, \
+                    ann = getfullargspec(func)
+                if kwonlyargs or ann:
+                    raise ValueError(
+                        "Function has keyword-only parameters or annotations"
+                        ", use inspect.signature() API which can support them")
+                return ArgSpec(args, varargs, varkw, defaults)
 
         from ipapython import version
         try:
@@ -200,7 +221,7 @@ else:
             sys.path.remove(temp_dir)
 
             # pylint: disable=deprecated-method
-            argspec = inspect.getargspec(
+            argspec = getargspec(
                 ipa_client_install.configure_krb5_conf)
             if argspec.keywords is None:
                 def configure_krb5_conf(
@@ -240,7 +261,7 @@ else:
             create_ipa_nssdb = certdb.create_ipa_nssdb
 
             argspec = \
-                inspect.getargspec(ipa_client_install.configure_nisdomain)
+                getargspec(ipa_client_install.configure_nisdomain)
             if len(argspec.args) == 3:
                 configure_nisdomain = ipa_client_install.configure_nisdomain
             else:

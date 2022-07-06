@@ -75,7 +75,6 @@ subject_base:
 '''
 
 import os
-import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
@@ -83,7 +82,7 @@ from ansible.module_utils.ansible_ipa_client import (
     paths, x509, NUM_VERSION, serialization, certdb, api,
     delete_persistent_client_session_data, write_tmp_file,
     ipa_generate_password, CalledProcessError, errors, disable_ra, DN,
-    CLIENT_INSTALL_ERROR, logger
+    CLIENT_INSTALL_ERROR, logger, getargspec
 )
 
 
@@ -134,7 +133,7 @@ def main():
         # Add CA certs to a temporary NSS database
         try:
             # pylint: disable=deprecated-method
-            argspec = inspect.getargspec(tmp_db.create_db)
+            argspec = getargspec(tmp_db.create_db)
             # pylint: enable=deprecated-method
             if "password_filename" not in argspec.args:
                 tmp_db.create_db()

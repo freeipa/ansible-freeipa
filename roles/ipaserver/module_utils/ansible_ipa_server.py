@@ -41,7 +41,7 @@ __all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
            "adtrustinstance", "IPAAPI_USER", "sync_time", "PKIIniLoader",
            "default_subject_base", "default_ca_subject_dn",
            "check_ldap_conf", "encode_certificate", "decode_certificate",
-           "check_available_memory"]
+           "check_available_memory", "getargspec"]
 
 import sys
 
@@ -57,6 +57,28 @@ else:
     from contextlib import contextmanager as contextlib_contextmanager
     from ansible.module_utils import six
     import base64
+
+    # Import getargspec from inspect or provide own getargspec for
+    # Python 2 compatibility with Python 3.11+.
+    try:
+        from inspect import getargspec
+    except ImportError:
+        from collections import namedtuple
+        from inspect import getfullargspec
+
+        # The code is copied from Python 3.10 inspect.py
+        # Authors: Ka-Ping Yee <ping@lfw.org>
+        #          Yury Selivanov <yselivanov@sprymix.com>
+        ArgSpec = namedtuple('ArgSpec', 'args varargs keywords defaults')
+
+        def getargspec(func):
+            args, varargs, varkw, defaults, kwonlyargs, _kwonlydefaults, \
+                ann = getfullargspec(func)
+            if kwonlyargs or ann:
+                raise ValueError(
+                    "Function has keyword-only parameters or annotations"
+                    ", use inspect.signature() API which can support them")
+            return ArgSpec(args, varargs, varkw, defaults)
 
     from ipapython.version import NUM_VERSION, VERSION
 

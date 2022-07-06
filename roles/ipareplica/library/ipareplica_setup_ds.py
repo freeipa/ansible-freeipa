@@ -149,7 +149,6 @@ RETURN = '''
 '''
 
 import os
-import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
@@ -157,7 +156,8 @@ from ansible.module_utils.ansible_ipa_replica import (
     ansible_module_get_parsed_ip_addresses,
     gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
     gen_ReplicaConfig, gen_remote_api, redirect_stdout, ipaldap,
-    install_replica_ds, install_dns_records, ntpinstance, ScriptError
+    install_replica_ds, install_dns_records, ntpinstance, ScriptError,
+    getargspec
 )
 
 
@@ -317,7 +317,7 @@ def main():
         # Configure dirsrv
         with redirect_stdout(ansible_log):
             # pylint: disable=deprecated-method
-            argspec = inspect.getargspec(install_replica_ds)
+            argspec = getargspec(install_replica_ds)
             # pylint: enable=deprecated-method
             if "promote" in argspec.args:
                 ds = install_replica_ds(config, options, ca_enabled,
@@ -343,7 +343,7 @@ def main():
         # pylint: enable=deprecated-method
         # Always try to install DNS records
         # pylint: disable=deprecated-method
-        argspec = inspect.getargspec(install_dns_records)
+        argspec = getargspec(install_dns_records)
         # pylint: enable=deprecated-method
         if "fstore" not in argspec.args:
             install_dns_records(config, options, remote_api)
