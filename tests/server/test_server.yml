@@ -10,7 +10,7 @@
   - block:
       - name: Get server name from hostname
         set_fact:
-          ipa_server_name: "{{ ansible_facts['hostname'].split('.')[0] }}"
+          ipa_server_name: "{{ ansible_facts['fqdn'].split('.')[0] }}"
     rescue:
       - name: Fallback to 'ipaserver'
         set_fact:
@@ -20,7 +20,7 @@
   - block:
       - name: Get domain name from hostname.
         set_fact:
-          ipaserver_domain: "{{ ansible_facts['hostname'].split('.')[0][1:] }}"
+          ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
     rescue:
       - name: Fallback to 'ipa.test'
         set_fact:
