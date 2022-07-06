@@ -78,13 +78,12 @@ RETURN = '''
 '''
 
 import os
-import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
     AnsibleModuleLog, setup_logging, installer, DN, paths, sysrestore,
     gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
-    gen_ReplicaConfig, api, redirect_stdout, install_krb
+    gen_ReplicaConfig, api, redirect_stdout, install_krb, getargspec
 )
 
 
@@ -162,7 +161,7 @@ def main():
 
     with redirect_stdout(ansible_log):
         # pylint: disable=deprecated-method
-        argspec = inspect.getargspec(install_krb)
+        argspec = getargspec(install_krb)
         # pylint: enable=deprecated-method
         if "promote" in argspec.args:
             install_krb(

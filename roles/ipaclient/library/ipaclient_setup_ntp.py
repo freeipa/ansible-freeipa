@@ -66,13 +66,11 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-import inspect
-
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
     setup_logging,
     options, sysrestore, paths, sync_time, logger, ipadiscovery,
-    timeconf
+    timeconf, getargspec
 )
 
 
@@ -114,7 +112,7 @@ def main():
         if options.conf_ntp:
             # Attempt to configure and sync time with NTP server (chrony).
             # pylint: disable=deprecated-method
-            argspec = inspect.getargspec(sync_time)
+            argspec = getargspec(sync_time)
             # pylint: enable=deprecated-method
             if "options" not in argspec.args:
                 synced_ntp = sync_time(options.ntp_servers, options.ntp_pool,

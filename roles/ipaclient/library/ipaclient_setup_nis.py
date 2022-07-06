@@ -57,11 +57,10 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-import inspect
-
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging, options, sysrestore, paths, configure_nisdomain
+    setup_logging, options, sysrestore, paths, configure_nisdomain,
+    getargspec
 )
 
 
@@ -83,7 +82,7 @@ def main():
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
 
     # pylint: disable=deprecated-method
-    argspec = inspect.getargspec(configure_nisdomain)
+    argspec = getargspec(configure_nisdomain)
     # pylint: enable=deprecated-method
     if "statestore" not in argspec.args:
         # NUM_VERSION < 40500:

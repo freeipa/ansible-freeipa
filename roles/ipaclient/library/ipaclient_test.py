@@ -197,7 +197,6 @@ nosssd_files:
 
 import os
 import socket
-import inspect
 
 try:
     from ansible.module_utils.six.moves.configparser import RawConfigParser
@@ -212,7 +211,7 @@ from ansible.module_utils.ansible_ipa_client import (
     CLIENT_INSTALL_ERROR, tasks, check_ldap_conf, timeconf, constants,
     validate_hostname, nssldap_exists, gssapi, remove_file,
     check_ip_addresses, ipadiscovery, print_port_conf_info,
-    IPA_PYTHON_VERSION
+    IPA_PYTHON_VERSION, getargspec
 )
 
 
@@ -344,7 +343,7 @@ def main():
 
         if options.realm_name:
             # pylint: disable=deprecated-method
-            argspec = inspect.getargspec(validate_domain_name)
+            argspec = getargspec(validate_domain_name)
             if "entity" in argspec.args:
                 # NUM_VERSION >= 40690:
                 validate_domain_name(options.realm_name, entity="realm")

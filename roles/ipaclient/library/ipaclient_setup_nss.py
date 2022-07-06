@@ -141,7 +141,6 @@ RETURN = '''
 
 import os
 import time
-import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
@@ -151,7 +150,7 @@ from ansible.module_utils.ansible_ipa_client import (
     get_certs_from_ldap, DN, certstore, x509, logger, certdb,
     CalledProcessError, tasks, client_dns, configure_certmonger, services,
     update_ssh_keys, save_state, configure_ldap_conf, configure_nslcd_conf,
-    configure_openldap_conf, hardcode_ldap_server
+    configure_openldap_conf, hardcode_ldap_server, getargspec
 )
 
 
@@ -323,7 +322,7 @@ def main():
             pass
 
         # pylint: disable=deprecated-method
-        argspec_save_state = inspect.getargspec(save_state)
+        argspec_save_state = getargspec(save_state)
 
         # Name Server Caching Daemon. Disable for SSSD, use otherwise
         # (if installed)
@@ -387,7 +386,7 @@ def main():
         if not options.no_ac:
             # Modify nsswitch/pam stack
             # pylint: disable=deprecated-method
-            argspec = inspect.getargspec(tasks.modify_nsswitch_pam_stack)
+            argspec = getargspec(tasks.modify_nsswitch_pam_stack)
             if "sudo" in argspec.args:
                 tasks.modify_nsswitch_pam_stack(
                     sssd=options.sssd,

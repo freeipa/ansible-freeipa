@@ -136,7 +136,6 @@ RETURN = '''
 '''
 
 import os
-import inspect
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
@@ -144,7 +143,7 @@ from ansible.module_utils.ansible_ipa_replica import (
     ansible_module_get_parsed_ip_addresses, service,
     redirect_stdout, create_ipa_conf, ipautil,
     x509, validate_domain_name, common_check,
-    IPA_PYTHON_VERSION
+    IPA_PYTHON_VERSION, getargspec
 )
 
 
@@ -287,7 +286,7 @@ def main():
     # create_ipa_conf has the additional master argument.
     change_master_for_certmonger = False
     # pylint: disable=deprecated-method
-    argspec = inspect.getargspec(create_ipa_conf)
+    argspec = getargspec(create_ipa_conf)
     # pylint: enable=deprecated-method
     if "master" in argspec.args:
         change_master_for_certmonger = True
@@ -421,7 +420,7 @@ def main():
     try:
         with redirect_stdout(ansible_log):
             # pylint: disable=deprecated-method
-            argspec = inspect.getargspec(common_check)
+            argspec = getargspec(common_check)
             # pylint: enable=deprecated-method
             if "skip_mem_check" in argspec.args:
                 common_check(options.no_ntp, options.skip_mem_check,

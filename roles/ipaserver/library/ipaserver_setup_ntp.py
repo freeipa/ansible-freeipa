@@ -53,12 +53,11 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
-import inspect
-
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
     AnsibleModuleLog, setup_logging, options, sysrestore, paths,
-    redirect_stdout, time_service, sync_time, ntpinstance, timeconf
+    redirect_stdout, time_service, sync_time, ntpinstance, timeconf,
+    getargspec
 )
 
 
@@ -94,7 +93,7 @@ def main():
         ansible_module.log("Synchronizing time")
 
         # pylint: disable=deprecated-method
-        argspec = inspect.getargspec(sync_time)
+        argspec = getargspec(sync_time)
         # pylint: enable=deprecated-method
         if "options" not in argspec.args:
             synced_ntp = sync_time(options.ntp_servers, options.ntp_pool,
