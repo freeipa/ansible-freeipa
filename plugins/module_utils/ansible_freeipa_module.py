@@ -28,7 +28,7 @@ __metaclass__ = type
 __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "DEFAULT_CONFIG", "LDAP_GENERALIZED_TIME_FORMAT",
            "kinit_password", "kinit_keytab", "run", "DN", "VERSION",
-           "paths", "get_credentials_if_valid", "Encoding",
+           "paths", "tasks", "get_credentials_if_valid", "Encoding",
            "load_pem_x509_certificate", "DNSName", "getargspec"]
 
 import sys
@@ -74,30 +74,6 @@ else:
     # ansible-freeipa requires locale to be C, IPA requires utf-8.
     os.environ["LANGUAGE"] = "C"
 
-    try:
-        from packaging import version
-    except ImportError:
-        # If `packaging` not found, split version string for creating version
-        # object. Although it is not PEP 440 compliant, it will work for stable
-        # FreeIPA releases.
-        import re
-
-        class version:  # pylint: disable=invalid-name, too-few-public-methods
-            @staticmethod
-            def parse(version_str):
-                """
-                Split a version string A.B.C, into a tuple.
-
-                This will not work for `rc`, `dev` or similar.
-                """
-                try:
-                    _version = tuple(
-                        (int(x) for x in re.split("[-_.]", version_str))
-                    )
-                except ValueError:
-                    _version = tuple(re.split("[-_.]", version_str))
-                return _version
-
     from ipalib import api
     from ipalib import errors as ipalib_errors  # noqa
     from ipalib.config import Env
@@ -111,6 +87,7 @@ else:
     from ipapython.dn import DN
     from ipapython.version import VERSION
     from ipaplatform.paths import paths
+    from ipaplatform.tasks import tasks
     from ipalib.krb_utils import get_credentials_if_valid
     from ipapython.dnsutil import DNSName
     from ipapython import kerberos
@@ -326,8 +303,8 @@ else:
         operation = oper_map.get(oper)
         if not operation:
             raise NotImplementedError("Invalid operator: %s" % oper)
-        return operation(version.parse(VERSION),
-                         version.parse(requested_version))
+        return operation(tasks.parse_ipa_version(VERSION),
+                         tasks.parse_ipa_version(requested_version))
 
     def date_format(value):
         accepted_date_formats = [
