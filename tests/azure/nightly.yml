@@ -90,6 +90,44 @@ stages:
       scenario: fedora-latest
       ansible_version: "-core"
 
+# Fedora Rawhide
+
+- stage: FedoraRawhide_Ansible_Core_2_11
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-rawhide
+      ansible_version: "-core >=2.11,<2.12"
+
+- stage: FedoraRawhide_Ansible_Core_2_12
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-rawhide
+      ansible_version: "-core >=2.12,<2.13"
+
+- stage: FedoraRawhide_Ansible_latest
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-rawhide
+      ansible_version: ""
+
+- stage: FedoraRawhide_Ansible_Core_latest
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-rawhide
+      ansible_version: "-core"
+
 # CentoOS 9 Stream
 
 - stage: c9s_Ansible_Core_2_11

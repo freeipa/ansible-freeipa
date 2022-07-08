@@ -1,0 +1,19 @@
+---
+driver:
+  name: docker
+platforms:
+  - name: fedora-rawhide-build
+    image: "fedora:rawhide"
+    dockerfile: Dockerfile
+    hostname: ipaserver.test.local
+    dns_servers:
+      - 8.8.8.8
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    command: /usr/sbin/init
+    privileged: true
+provisioner:
+  name: ansible
+  playbooks:
+    prepare: ../resources/playbooks/prepare-build.yml
+prerun: false
