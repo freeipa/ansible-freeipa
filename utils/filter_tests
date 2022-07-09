@@ -1,0 +1,33 @@
+#!/bin/bash
+# This file shoud be source'd (. filter_tests) rather than executed.
+
+RED="\033[31;1m"
+RST="\033[0m"
+
+die() {
+    echo -e "${RED}${*}${RST}"
+}
+
+TOPDIR="$(dirname "${BASH_SOURCE[0]}")/.."
+
+pushd "${TOPDIR}" >/dev/null 2>&1 || die "Failed to change directory."
+
+files_list=$(mktemp)
+
+since_tag="upstream/master"
+git diff "${since_tag}" --name-only > "${files_list}"
+
+# Get all modules that should have tests executed
+mapfile -t suites < <(sed -n "s#^plugins/modules/ipa\([^.]*\)\.py#\1#p" "${files_list}")
+[ ${#suites[@]} -gt 0 ] && IPA_ENABLED_MODULES=$(IFS=, ; echo "${suites[*]}")
+
+# Get individual tests that should be executed
+mapfile -t suites < <(sed -n "s#.*/\(test_[^/]*\).yml#\1#p" "${files_list}")
+[ ${#suites[@]} -gt 0 ] && IPA_ENABLED_TESTS=$(IFS=, ; echo "${suites[*]}")
+
+rm -f "${test_list}"
+
+export IPA_ENABLED_MODULES
+export IPA_ENABLED_TESTS
+
+popd >/dev/null 2>&1 || die "Failed to change back to original directory."

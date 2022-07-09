@@ -1,0 +1,31 @@
+---
+name: readme test
+on:
+  - push
+  - pull_request
+
+jobs:
+  fedora_latest:
+    name: Test plugins against Fedora-latest
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/ansible-freeipa/upstream-tests:fedora-latest
+      options: --cpus 1 --mem 3g --hostname ipaserver.ipa.tes --memory-swap -1 --name fedora_latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Run tests
+        run: |
+          pip install ansible-core
+          pip install -r requirements-test.txt
+          . utils/filter_steps
+          pytest -m "playbook" --verbose --color=yes
+        env:
+          RUN_IN_DOCKER: docker
+          IPA_SERVER_NAME: fedora_latest
+          ANSIBLE_MODULE_UTILS: plugins/module_utils
+          ANSIBLE_LIBRARY: plugins/modules
+          ANSIBLE_DOC_FRAGMENT_PLUGINS: plugins/doc_fragments
+          
