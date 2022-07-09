@@ -13,13 +13,13 @@ jobs:
       options: --cpus 1 --memory 3g --hostname ipaserver.ipa.tes --memory-swap -1 --name fedora_latest
     steps:
       - uses: actions/checkout@v2
-      # - uses: actions/setup-python@v2
-      #   with:
-      #     python-version: "3.x"
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Run tests
         run: |
-          dnf install -y pip ansible-core
-          pip install -r requirements-test.txt
+          python -m pip install --upgrade pip
+          pip install -r requirements-tests.txt
           . utils/filter_steps
           pytest -m "playbook" --verbose --color=yes
         env:
