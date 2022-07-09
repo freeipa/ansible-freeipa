@@ -18,7 +18,7 @@ jobs:
       #     python-version: "3.x"
       - name: Run tests
         run: |
-          dnf install pip ansible-core
+          dnf install -y pip ansible-core
           pip install -r requirements-test.txt
           . utils/filter_steps
           pytest -m "playbook" --verbose --color=yes
