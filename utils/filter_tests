@@ -20,7 +20,7 @@ git remote add "${temp_remote}" "https://github.com/freeipa/ansible-freeipa" 2>/
 git fetch "${temp_remote}" master >/dev/null 2>&1
 since_tag="${temp_remote}/master"
 git diff "${since_tag}" --name-only > "${files_list}"
-[ -n "${del_remote}" ] &&  git remote del "${temp_remote}"
+[ -n "${del_remote}" ] &&  git remote remove "${temp_remote}"
 
 # Get all modules that should have tests executed
 mapfile -t suites < <(sed -n "s#^plugins/modules/ipa\([^.]*\)\.py#\1#p" "${files_list}")
