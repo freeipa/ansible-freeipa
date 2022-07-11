@@ -11,7 +11,7 @@ jobs:
     # container:
     #   image: quay.io/ansible-freeipa/upstream-tests:fedora-latest
     #   options: --cpus 1 --memory 3g --hostname ipaserver.ipa.tes --memory-swap -1 --name fedora_latest
-    service:
+    services:
       fedora_latest:
         image: quay.io/ansible-freeipa/upstream-tests:fedora-latest
         options: >-
