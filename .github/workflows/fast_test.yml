@@ -38,6 +38,6 @@ jobs:
           RUN_IN_DOCKER: docker
           IPA_SERVER_HOST: fedora_latest
           ANSIBLE_MODULE_UTILS: plugins/module_utils
-          ANSIBLE_LIBRARY: plugins/modules
+          ANSIBLE_LIBRARY: plugins
           ANSIBLE_DOC_FRAGMENT_PLUGINS: plugins/doc_fragments
           
