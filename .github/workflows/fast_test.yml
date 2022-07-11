@@ -11,6 +11,14 @@ jobs:
     # container:
     #   image: quay.io/ansible-freeipa/upstream-tests:fedora-latest
     #   options: --cpus 1 --memory 3g --hostname ipaserver.ipa.tes --memory-swap -1 --name fedora_latest
+    service:
+      fedora_latest:
+        image: quay.io/ansible-freeipa/upstream-tests:fedora-latest
+        options: >-
+          --cpus 1
+          --memory 3g
+          --hostname ipaserver.ipa.test
+          --memory-swap -1
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
@@ -20,7 +28,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-tests.txt
-          . utils/filter_steps
+          pip install ansible-core
+          ansible-galaxy collection install community.docker
+          . utils/filter_tests
           pytest -m "playbook" --verbose --color=yes
         env:
           RUN_IN_DOCKER: docker
