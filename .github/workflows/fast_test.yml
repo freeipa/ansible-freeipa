@@ -8,9 +8,9 @@ jobs:
   fedora_latest:
     name: Test plugins against Fedora-latest
     runs-on: ubuntu-latest
-    container:
-      image: quay.io/ansible-freeipa/upstream-tests:fedora-latest
-      options: --cpus 1 --memory 3g --hostname ipaserver.ipa.tes --memory-swap -1 --name fedora_latest
+    # container:
+    #   image: quay.io/ansible-freeipa/upstream-tests:fedora-latest
+    #   options: --cpus 1 --memory 3g --hostname ipaserver.ipa.tes --memory-swap -1 --name fedora_latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
@@ -18,13 +18,13 @@ jobs:
           python-version: "3.10"
       - name: Run tests
         run: |
-          python -m pip install --upgrade pip --trusted-host pypi.org --trusted-host pip.pypa.io
+          python -m pip install --upgrade pip
           pip install -r requirements-tests.txt
           . utils/filter_steps
           pytest -m "playbook" --verbose --color=yes
         env:
           RUN_IN_DOCKER: docker
-          IPA_SERVER_NAME: fedora_latest
+          IPA_SERVER_HOST: fedora_latest
           ANSIBLE_MODULE_UTILS: plugins/module_utils
           ANSIBLE_LIBRARY: plugins/modules
           ANSIBLE_DOC_FRAGMENT_PLUGINS: plugins/doc_fragments
