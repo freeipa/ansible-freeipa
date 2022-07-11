@@ -14,8 +14,13 @@ pushd "${TOPDIR}" >/dev/null 2>&1 || die "Failed to change directory."
 
 files_list=$(mktemp)
 
-since_tag="upstream/master"
+temp_remote="ansible-freeipa-upstream"
+del_remote=""
+git remote add "${temp_remote}" "https://github.com/freeipa/ansible-freeipa" 2>/dev/null && del_remote="Y"
+git fetch "${temp_remote}" master >/dev/null 2>&1
+since_tag="${temp_remote}/master"
 git diff "${since_tag}" --name-only > "${files_list}"
+[ -n "${del_remote}" ] &&  git remote del "${temp_remote}"
 
 # Get all modules that should have tests executed
 mapfile -t suites < <(sed -n "s#^plugins/modules/ipa\([^.]*\)\.py#\1#p" "${files_list}")
