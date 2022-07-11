@@ -30,6 +30,8 @@ jobs:
           pip install -r requirements-tests.txt
           pip install ansible-core
           ansible-galaxy collection install community.docker
+          ls
+          git status
           . utils/filter_tests
           pytest -m "playbook" --verbose --color=yes
         env:
