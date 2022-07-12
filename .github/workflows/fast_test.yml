@@ -37,7 +37,7 @@ jobs:
           EOF
           cat <<EOF > debug_inventory
           [ipaserver]
-          fedora_latest  ansible_connection:podman
+          fedora_latest  ansible_connection=podman
           EOF
           ansible -m ping -i debug_inventory ipaserver
           . utils/filter_tests
