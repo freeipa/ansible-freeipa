@@ -30,9 +30,14 @@ jobs:
           pip install -r requirements-tests.txt
           pip install ansible-core
           ansible-galaxy collection install community.docker
+          cat <<EOF > ansible.cfg
+          [defaults]
+          library = ./plugins/modules
+          module_utils = ./plugins/module_utils
+          EOF
+          ls ansible.cfg
+          cat ansible.cfg
           . utils/filter_tests
-          echo "$ANSIBLE_MODULE_UTILS"
-          echo "$ANSIBLE_LIBRARY"
           ANSIBLE_MODULE_UTILS=plugins/module_utils ANSIBLE_LIBRARY=plugins pytest -m "playbook" --verbose --color=yes
         env:
           RUN_IN_DOCKER: docker
