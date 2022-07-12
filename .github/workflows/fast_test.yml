@@ -39,7 +39,7 @@ jobs:
           [ipaserver]
           fedora_latest  ansible_connection:podman
           EOF
-          ansible -m ping -i debug_inventory
+          ansible -m ping -i debug_inventory ipaserver
           . utils/filter_tests
           ansible -m ping -i 
           pytest -m "playbook" --verbose --color=yes
