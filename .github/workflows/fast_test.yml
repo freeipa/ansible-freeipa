@@ -35,11 +35,11 @@ jobs:
           library = ./plugins
           module_utils = ./plugins/module_utils
           EOF
-          cat <<EOF > inventory
+          cat <<EOF > debug_inventory
           [ipaserver]
           fedora_latest  ansible_connection:podman
           EOF
-          ansible -m ping -i inventory
+          ansible -m ping -i debug_inventory
           . utils/filter_tests
           ansible -m ping -i 
           pytest -m "playbook" --verbose --color=yes
