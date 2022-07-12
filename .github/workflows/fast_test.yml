@@ -32,13 +32,17 @@ jobs:
           ansible-galaxy collection install community.docker
           cat <<EOF > ansible.cfg
           [defaults]
-          library = ./plugins/modules
+          library = ./plugins
           module_utils = ./plugins/module_utils
           EOF
-          echo "DIRECTORY: ${PWD}"
-          ls
+          cat <<EOF > inventory
+          [ipaserver]
+          fedora_latest  ansible_connection:podman
+          EOF
+          ansible -m ping -i inventory
           . utils/filter_tests
-          ANSIBLE_MODULE_UTILS=plugins/module_utils ANSIBLE_LIBRARY=plugins pytest -m "playbook" --verbose --color=yes
+          ansible -m ping -i 
+          pytest -m "playbook" --verbose --color=yes
         env:
           RUN_IN_DOCKER: docker
           IPA_SERVER_HOST: fedora_latest
