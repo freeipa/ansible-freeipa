@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 # This file shoud be source'd (. filter_tests) rather than executed.
 
 RED="\033[31;1m"

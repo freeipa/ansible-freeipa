@@ -33,8 +33,7 @@ jobs:
           . utils/filter_tests
           echo "$ANSIBLE_MODULE_UTILS"
           echo "$ANSIBLE_LIBRARY"
-          ls plugins/modules
-          ANSIBLE_MODULE_UTILS=plugins/module_utils ANSIBLE_LIBRARY=plugins/modules pytest -m "playbook" --verbose --color=yes
+          ANSIBLE_MODULE_UTILS=plugins/module_utils ANSIBLE_LIBRARY=plugins pytest -m "playbook" --verbose --color=yes
         env:
           RUN_IN_DOCKER: docker
           IPA_SERVER_HOST: fedora_latest
