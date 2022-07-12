@@ -35,8 +35,8 @@ jobs:
           library = ./plugins/modules
           module_utils = ./plugins/module_utils
           EOF
-          ls ansible.cfg
-          cat ansible.cfg
+          echo "DIRECTORY: ${PWD}"
+          ls
           . utils/filter_tests
           ANSIBLE_MODULE_UTILS=plugins/module_utils ANSIBLE_LIBRARY=plugins pytest -m "playbook" --verbose --color=yes
         env:
