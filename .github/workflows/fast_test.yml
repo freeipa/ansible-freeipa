@@ -19,6 +19,7 @@ jobs:
           --memory 3g
           --hostname ipaserver.ipa.test
           --memory-swap -1
+          --name fedora_latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
@@ -32,8 +33,8 @@ jobs:
           ansible-galaxy collection install community.docker
           cat <<EOF > ansible.cfg
           [defaults]
-          library = ./plugins
-          module_utils = ./plugins/module_utils
+          library = ${PWD}/plugins
+          module_utils = ${PWD}/plugins/module_utils
           EOF
           cat <<EOF > debug_inventory
           [ipaserver]
@@ -49,4 +50,3 @@ jobs:
           # ANSIBLE_MODULE_UTILS: plugins/module_utils
           # ANSIBLE_LIBRARY: plugins
           ANSIBLE_DOC_FRAGMENT_PLUGINS: plugins/doc_fragments
-          
