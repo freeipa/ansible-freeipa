@@ -15,10 +15,7 @@ jobs:
       fedora_latest:
         image: quay.io/ansible-freeipa/upstream-tests:fedora-latest
         options: >-
-          --cpus 1
-          --memory 3g
           --hostname ipaserver.ipa.test
-          --memory-swap -1
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
@@ -37,7 +34,7 @@ jobs:
           EOF
           cat <<EOF > debug_inventory
           [ipaserver]
-          fedora_latest  ansible_connection=docker
+          fedora_latest
           EOF
           ansible -m ping -i debug_inventory ipaserver
           . utils/filter_tests
