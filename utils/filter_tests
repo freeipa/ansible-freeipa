@@ -27,12 +27,15 @@ mapfile -t suites < <(sed -n "s#^plugins/modules/ipa\([^.]*\)\.py#\1#p" "${files
 [ ${#suites[@]} -gt 0 ] && IPA_ENABLED_MODULES=$(IFS=, ; echo "${suites[*]}")
 
 # Get individual tests that should be executed
-mapfile -t suites < <(sed -n "s#.*/\(test_[^/]*\).yml#\1#p" "${files_list}")
-[ ${#suites[@]} -gt 0 ] && IPA_ENABLED_TESTS=$(IFS=, ; echo "${suites[*]}")
+mapfile -t tests < <(sed -n "s#.*/\(test_[^/]*\).yml#\1#p" "${files_list}")
+[ ${#tests[@]} -gt 0 ] && IPA_ENABLED_TESTS=$(IFS=, ; echo "${tests[*]}")
 
 rm -f "${test_list}"
 
 export IPA_ENABLED_MODULES
 export IPA_ENABLED_TESTS
+
+echo IPA_ENABLED_MODULES = ${IPA_ENABLED_MODULES}
+echo IPA_ENABLED_TESTS = ${IPA_ENABLED_TESTS}
 
 popd >/dev/null 2>&1 || die "Failed to change back to original directory."
