@@ -34,11 +34,11 @@ jobs:
           EOF
           cat <<EOF > debug_inventory
           [ipaserver]
-          fedora_latest
+          fedora_latest ansible_connection=docker
           EOF
+          echo "RUNNING: ansible -m ping -i debug_inventory ipaserver"
           ansible -m ping -i debug_inventory ipaserver
           . utils/filter_tests
-          ansible -m ping -i 
           pytest -m "playbook" --verbose --color=yes
         env:
           RUN_IN_DOCKER: docker
