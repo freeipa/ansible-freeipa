@@ -19,7 +19,6 @@ jobs:
           --memory 3g
           --hostname ipaserver.ipa.test
           --memory-swap -1
-          --name fedora_latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v4
