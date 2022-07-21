@@ -202,7 +202,8 @@ def main():
                         choices=["member", "dnsconfig"]),
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
-        )
+        ),
+        supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
