@@ -231,7 +231,7 @@ def main():
     # in the _setup_ca module and also some others.
     options._subject_base = None
     options._ca_subject = None
-    options._random_serial_numbers = None
+    options._random_serial_numbers = False
 
     # set values ####################################################
 
