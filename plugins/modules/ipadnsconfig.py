@@ -173,7 +173,10 @@ def gen_args(module, state, action, dnsconfig, forwarders, forward_policy,
         _args['idnsforwardpolicy'] = forward_policy
 
     if allow_sync_ptr is not None:
-        _args['idnsallowsyncptr'] = 'TRUE' if allow_sync_ptr else 'FALSE'
+        if module.ipa_check_version("<", "4.9.10"):
+            _args['idnsallowsyncptr'] = "TRUE" if allow_sync_ptr else "FALSE"
+        else:
+            _args['idnsallowsyncptr'] = allow_sync_ptr
 
     return _args
 
