@@ -16,5 +16,5 @@ variables:
   # ipa_enabled_tests: >-
   ipa_disabled_modules: >-
     dnsconfig,
-    dnsforwardzone,
-  # ipa_disabled_tests: >-
+  ipa_disabled_tests: >-
+    test_dnsconfig_forwarders_ports

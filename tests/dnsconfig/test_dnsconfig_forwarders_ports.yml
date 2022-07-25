@@ -1,0 +1,81 @@
+---
+- name: Test dnsconfig forwarders with custom ports
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: true
+  gather_facts: no
+
+  tasks:
+  - block:
+    # Setup.
+    - name: Ensure forwarder with custom port is absent.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        forwarders:
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        state: absent
+        action: member
+
+    # Tests.
+
+    - name: Ensure forwarder with custom port is present.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        forwarders:
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        state: present
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure forwarder with custom port is present, again.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        forwarders:
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        state: present
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure forwarder with custom port is absent.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        forwarders:
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        state: absent
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure forwarder with custom port is absent, again.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        forwarders:
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        state: absent
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    always:
+
+    # Cleanup.
+    - name: Ensure forwarder with custom port is absent.
+      ipadnsconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        forwarders:
+          - ip_address: 2001:4860:4860::8888
+            port: 53
+        state: absent
+        action: member
