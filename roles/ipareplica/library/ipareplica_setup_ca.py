@@ -147,7 +147,7 @@ def main():
             _top_dir=dict(required=True),
             _ca_subject=dict(required=True),
             _subject_base=dict(required=True),
-            _random_serial_numbers=dict(required=True),
+            _random_serial_numbers=dict(required=True, type='bool'),
             dirman_password=dict(required=True, no_log=True),
             config_setup_ca=dict(required=True, type='bool'),
             config_master_host_name=dict(required=True),

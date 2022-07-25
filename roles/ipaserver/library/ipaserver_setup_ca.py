@@ -207,7 +207,7 @@ def main():
             ca_subject=dict(required=False),
             _ca_subject=dict(required=False),
             ca_signing_algorithm=dict(required=False),
-            _random_serial_numbers=dict(required=True),
+            _random_serial_numbers=dict(required=True, type='bool'),
             # dns
             reverse_zones=dict(required=False, type='list', default=[]),
             no_reverse=dict(required=False, type='bool', default=False),
