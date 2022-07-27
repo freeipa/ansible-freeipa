@@ -46,7 +46,8 @@ __all__ = ["contextlib", "dnsexception", "dnsresolver", "dnsreversename",
            "common_check", "current_domain_level",
            "check_domain_level_is_supported", "promotion_check_ipa_domain",
            "SSSDConfig", "CalledProcessError", "timeconf", "ntpinstance",
-           "dnsname", "kernel_keyring", "krbinstance", "getargspec"]
+           "dnsname", "kernel_keyring", "krbinstance", "getargspec",
+           "adtrustinstance"]
 
 import sys
 
@@ -127,6 +128,7 @@ else:
             adtrust, bindinstance, ca, certs, dns, dsinstance, httpinstance,
             installutils, kra, krbinstance,
             otpdinstance, custodiainstance, service, upgradeinstance)
+        from ipaserver.install import adtrustinstance
         try:
             from ipaserver.masters import (
                 find_providing_servers, find_providing_server)

@@ -191,6 +191,7 @@
       secondary_rid_base: "{{ ipaserver_secondary_rid_base | default(omit) }}"
       ### additional ###
       setup_ca: "{{ result_ipaserver_test.setup_ca }}"
+      sid_generation_always: "{{ result_ipaserver_test.sid_generation_always }}"
       random_serial_numbers: no
       _hostname_overridden: "{{ result_ipaserver_test._hostname_overridden }}"
     register: result_ipaserver_prepare
@@ -394,7 +395,8 @@
         adtrust_netbios_name: "{{ result_ipaserver_prepare.adtrust_netbios_name }}"
         adtrust_reset_netbios_name:
           "{{ result_ipaserver_prepare.adtrust_reset_netbios_name }}"
-      when: result_ipaserver_test.setup_adtrust
+      when: result_ipaserver_test.setup_adtrust or
+            result_ipaserver_test.sid_generation_always
 
     - name: Install - Set DS password
       ipaserver_set_ds_password:

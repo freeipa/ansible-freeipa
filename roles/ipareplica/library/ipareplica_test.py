@@ -143,7 +143,7 @@ from ansible.module_utils.ansible_ipa_replica import (
     ansible_module_get_parsed_ip_addresses, service,
     redirect_stdout, create_ipa_conf, ipautil,
     x509, validate_domain_name, common_check,
-    IPA_PYTHON_VERSION, getargspec
+    IPA_PYTHON_VERSION, getargspec, adtrustinstance
 )
 
 
@@ -269,6 +269,14 @@ def main():
     #    # else:
     #    #  options.setup_adtrust = False
     #    #  ansible_module.warn(msg="adtrust is not supported, disabling")
+
+    sid_generation_always = False
+    if not options.setup_adtrust:
+        # pylint: disable=deprecated-method
+        argspec = getargspec(adtrustinstance.ADTRUSTInstance.__init__)
+        # pylint: enable=deprecated-method
+        if "fulltrust" in argspec.args:
+            sid_generation_always = True
 
     # if options.setup_kra and not kra_imported:
     #    # if "kra" not in options._allow_missing:
@@ -471,6 +479,7 @@ def main():
         # additional
         client_enrolled=client_enrolled,
         change_master_for_certmonger=change_master_for_certmonger,
+        sid_generation_always=sid_generation_always
     )
 
 

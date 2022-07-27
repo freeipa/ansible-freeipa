@@ -141,6 +141,9 @@ options:
   setup_ca:
     description: Configure a dogtag CA
     required: yes
+  sid_generation_always:
+    description: Enable SID generation always
+    required: yes
   _hostname_overridden:
     description: The installer _hostname_overridden setting
     required: yes
@@ -215,6 +218,8 @@ def main():
             setup_ca=dict(required=False, type='bool', default=False),
             random_serial_numbers=dict(required=False, type='bool',
                                        default=False),
+            sid_generation_always=dict(required=False, type='bool',
+                                       default=False),
             _hostname_overridden=dict(required=False, type='bool',
                                       default=False),
         ),
@@ -285,6 +290,7 @@ def main():
         'random_serial_numbers')
     options._host_name_overridden = ansible_module.params.get(
         '_hostname_overridden')
+    sid_generation_always = ansible_module.params.get('sid_generation_always')
     options.kasp_db_file = None
 
     # init ##################################################################
@@ -377,7 +383,7 @@ def main():
             logger.debug('Starting Directory Server')
             services.knownservices.dirsrv.start(instance_name)
 
-        if options.setup_adtrust:
+        if options.setup_adtrust or sid_generation_always:
             with redirect_stdout(ansible_log):
                 adtrust.install_check(False, options, api)
 

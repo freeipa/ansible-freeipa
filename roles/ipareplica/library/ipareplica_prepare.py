@@ -182,6 +182,9 @@ options:
   skip_conncheck:
     description: Skip connection check to remote master
     required: yes
+  sid_generation_always:
+    description: Enable SID generation always
+    required: yes
 author:
     - Thomas Woerner
 '''
@@ -275,6 +278,8 @@ def main():
             # additional
             server=dict(required=True),
             skip_conncheck=dict(required=False, type='bool'),
+            sid_generation_always=dict(required=False, type='bool',
+                                       default=False),
         ),
         supports_check_mode=True,
     )
@@ -350,6 +355,7 @@ def main():
     #     '_hostname_overridden')
     options.server = ansible_module.params.get('server')
     options.skip_conncheck = ansible_module.params.get('skip_conncheck')
+    sid_generation_always = ansible_module.params.get('sid_generation_always')
 
     # random serial numbers are master_only, therefore setting to False
     options.random_serial_numbers = False
@@ -761,7 +767,7 @@ def main():
 
         ansible_log.debug("-- CHECK ADTRUST --")
 
-        if options.setup_adtrust:
+        if options.setup_adtrust or sid_generation_always:
             adtrust.install_check(False, options, remote_api)
 
     except errors.ACIError:
