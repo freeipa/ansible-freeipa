@@ -880,7 +880,6 @@ def main():
                     is_ipaddr = False
 
             if is_ipaddr:
-                logger.info()
                 logger.warning(
                     "It seems that you are using an IP address "
                     "instead of FQDN as an argument to --server. The "
