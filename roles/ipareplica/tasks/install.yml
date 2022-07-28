@@ -749,13 +749,15 @@
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
+      setup_adtrust: "{{ result_ipareplica_test.setup_adtrust }}"
       config_master_host_name:
         "{{ result_ipareplica_prepare.config_master_host_name }}"
       adtrust_netbios_name:
         "{{ result_ipareplica_prepare.adtrust_netbios_name }}"
       adtrust_reset_netbios_name:
         "{{ result_ipareplica_prepare.adtrust_reset_netbios_name }}"
-    when: result_ipareplica_test.setup_adtrust
+    when: result_ipareplica_test.setup_adtrust or
+          result_ipareplica_test.sid_generation_always
 
   - name: Install - Enable IPA
     ipareplica_enable_ipa:

@@ -71,6 +71,9 @@ options:
   setup_ca:
     description: Configure a dogtag CA
     required: no
+  setup_adtrust:
+    description: Configure AD trust capability
+    required: yes
   config_master_host_name:
     description: The config master_host_name setting
     required: no
@@ -112,6 +115,7 @@ def main():
             ccache=dict(required=True),
             _top_dir=dict(required=True),
             setup_ca=dict(required=True, type='bool'),
+            setup_adtrust=dict(required=True, type='bool'),
             config_master_host_name=dict(required=True),
         ),
         supports_check_mode=True,
@@ -140,6 +144,7 @@ def main():
     os.environ['KRB5CCNAME'] = ccache
     options._top_dir = ansible_module.params.get('_top_dir')
     options.setup_ca = ansible_module.params.get('setup_ca')
+    options.setup_adtrust = ansible_module.params.get('setup_adtrust')
     config_master_host_name = ansible_module.params.get(
         'config_master_host_name')
     adtrust.netbios_name = ansible_module.params.get('adtrust_netbios_name')

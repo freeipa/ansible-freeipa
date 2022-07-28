@@ -225,7 +225,7 @@ from ansible.module_utils.ansible_ipa_server import (
     read_cache, ca, tasks, check_ldap_conf, timeconf, httpinstance,
     check_dirsrv, ScriptError, get_fqdn, verify_fqdn, BadHostError,
     validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION,
-    encode_certificate, check_available_memory, getargspec
+    encode_certificate, check_available_memory, getargspec, adtrustinstance
 )
 from ansible.module_utils import six
 
@@ -394,12 +394,16 @@ def main():
 
     # version specific ######################################################
 
-    if options.setup_adtrust and not adtrust_imported:
-        # if "adtrust" not in options._allow_missing:
-        ansible_module.fail_json(msg="adtrust can not be imported")
-        # else:
-        #   options.setup_adtrust = False
-        #   ansible_module.warn(msg="adtrust is not supported, disabling")
+    sid_generation_always = False
+    if not options.setup_adtrust:
+        # pylint: disable=deprecated-method
+        argspec = getargspec(adtrustinstance.ADTRUSTInstance.__init__)
+        # pylint: enable=deprecated-method
+        if "fulltrust" in argspec.args:
+            sid_generation_always = True
+    else:
+        if not adtrust_imported:
+            ansible_module.fail_json(msg="adtrust can not be imported")
 
     if options.setup_kra and not kra_imported:
         # if "kra" not in options._allow_missing:
@@ -521,7 +525,8 @@ def main():
                     "You cannot specify an --enable-compat option without the "
                     "--setup-adtrust option")
 
-            if self.netbios_name:
+            # Deactivate test for new IPA SID generation
+            if self.netbios_name and not sid_generation_always:
                 raise RuntimeError(
                     "You cannot specify a --netbios-name option without the "
                     "--setup-adtrust option")
@@ -1078,7 +1083,8 @@ def main():
                              ntp_pool=options.ntp_pool,
                              # additional
                              _installation_cleanup=_installation_cleanup,
-                             domainlevel=options.domainlevel)
+                             domainlevel=options.domainlevel,
+                             sid_generation_always=sid_generation_always)
 
 
 if __name__ == '__main__':
