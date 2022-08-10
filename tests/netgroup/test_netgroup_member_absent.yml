@@ -1,0 +1,206 @@
+---
+- name: Netgroup member absent test
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  tasks:
+  - block:
+    - name: Get Domain from server name
+      set_fact:
+        ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+      when: ipaserver_domain is not defined
+
+    - name: Set host1_fqdn .. host2_fqdn
+      set_fact:
+        host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+        host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+
+    # CLEANUP TEST ITEMS
+    - name: Ensure users user1, user2 are absent
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: user1,user2
+        state: absent
+
+    - name: Ensure group group1 is absent
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        state: absent
+
+    - name: Ensure hosts are absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - "{{ host1_fqdn }}"
+          - "{{ host2_fqdn }}"
+        state: absent
+
+    - name: Ensure netgroups TestNetgroup1, admins are absent
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+        - TestNetgroup1,admins
+        state: absent
+
+    # CREATE TEST ITEMS
+    - name: Ensure users user1, user2 are present
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        users:
+        - name: user1
+          first: first1
+          last: last1
+        - name: user2
+          first: first2
+          last: last2
+
+    - name: Ensure group group1 is present
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+
+    - name: Ensure hosts "{{ 'host[1..2].' + ipaserver_domain }}" are present
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        hosts:
+        - name: "{{ host1_fqdn }}"
+          force: yes
+        - name: "{{ host2_fqdn }}"
+          force: yes
+
+    - name: Ensure netgroup admins is present
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: admins
+
+    - name: Ensure netgroup TestNetgroup1 is present
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: TestNetgroup1
+        description: Description for TestNetgroup1
+        nisdomain: "{{ ipaserver_domain }}"
+
+    - name: Ensure netgroup is present with members
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: TestNetgroup1
+        user: user1,user2
+        group: group1
+        host:
+          - "{{ host1_fqdn }}"
+          - "{{ host2_fqdn }}"
+        hostgroup: ipaservers
+        netgroup: admins
+        action: member
+
+    # TEST
+    - name: Ensure members are absent in netgroup
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: TestNetgroup1
+        user: user1
+        group: group1
+        host:
+          - "{{ host1_fqdn }}"
+          - host1
+        hostgroup: ipaservers
+        netgroup: admins
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure some members are still present in netgroup
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: TestNetgroup1
+        user: user2
+        host:
+          - "{{ host2_fqdn }}"
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure host was removed by hostname from netgroup
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: TestNetgroup1
+        host:
+          - host2
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure member user2 presents in netgroup
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: TestNetgroup1
+        user: user2
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure members from netgroups my_netgroup1,my_netgroup2 aren't
+        absent
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - my_netgroup1
+          - my_netgroup2
+        state: absent
+        action: member
+      register: result
+      failed_when: result.changed or not result.failed or
+        "Members can be removed only from one netgroup at a time." not in
+        result.msg
+
+    always:
+    # CLEANUP TEST ITEMS
+    - name: Ensure users user1, user2 are absent
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: user1,user2
+        state: absent
+
+    - name: Ensure group group1 is absent
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group1
+        state: absent
+
+    - name: Ensure hosts are absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - "{{ host1_fqdn }}"
+          - "{{ host2_fqdn }}"
+        state: absent
+
+    - name: Ensure netgroups TestNetgroup1, admins are absent
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+        - TestNetgroup1,admins
+        state: absent
