@@ -201,6 +201,7 @@
       ### additional ###
       server: "{{ result_ipareplica_test.server }}"
       skip_conncheck: "{{ ipareplica_skip_conncheck }}"
+      sid_generation_always: "{{ result_ipareplica_test.sid_generation_always }}"
     register: result_ipareplica_prepare
 
   - name: Install - Add to ipaservers
