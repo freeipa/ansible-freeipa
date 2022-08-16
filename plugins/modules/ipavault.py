@@ -525,7 +525,7 @@ def check_encryption_params(  # pylint: disable=unused-argument
 
         if (
             salt is not None
-            and not(
+            and not (
                 any([password, password_file])
                 and any([new_password, new_password_file])
             )
