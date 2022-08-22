@@ -3,9 +3,6 @@
 # For easier management of items to enable/disable,
 # use one test/module on each line, followed by a comma.
 #
-# If no variable is to be set, add 'empty: true', as the
-# 'variables' dict cannot be empty.
-#
 # Example:
 #
 # disabled_modules: >-

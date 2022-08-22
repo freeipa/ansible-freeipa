@@ -3,9 +3,6 @@
 # For easier management of items to enable/disable,
 # use one test/module on each line, followed by a comma.
 #
-# If no variable is to be set, add 'empty: true', as the
-# 'variables' dict cannot be empty.
-#
 # Example:
 #
 # disabled_modules: >-
@@ -15,8 +12,9 @@
 #
 ---
 variables:
-  empty: true
   # ipa_enabled_modules: >-
   # ipa_enabled_tests: >-
-  # ipa_disabled_modules: >-
-  # ipa_disabled_tests: >-
+  ipa_disabled_modules: >-
+    dnsforwardzone,
+  ipa_disabled_tests: >-
+    test_dnsconfig_forwarders_ports
