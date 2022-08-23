@@ -162,19 +162,19 @@ EXAMPLES = """
     hostgroup: cluster
     action: member
 
-# Ensure sudo rule for usercategory "all"
+# Ensure sudo rule for usercategory "all" is enabled
 - ipasudorule:
     ipaadmin_password: SomeADMINpassword
     name: allusers
     usercategory: all
-    action: enabled
+    state: enabled
 
-# Ensure sudo rule for hostcategory "all"
+# Ensure sudo rule for hostcategory "all" is enabled
 - ipasudorule:
     ipaadmin_password: SomeADMINpassword
     name: allhosts
     hostcategory: all
-    action: enabled
+    state: enabled
 
 # Ensure Sudo Rule tesrule1 is absent
 - ipasudorule:
