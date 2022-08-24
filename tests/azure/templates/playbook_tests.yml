@@ -53,6 +53,10 @@ jobs:
       ANSIBLE_LIBRARY: ./molecule
 
   - script: |
+      python utils/check_test_configuration.py ${{ parameters.scenario }}
+    displayName: Check scenario test configuration
+
+  - script: |
       pytest \
         -m "playbook" \
         --verbose \

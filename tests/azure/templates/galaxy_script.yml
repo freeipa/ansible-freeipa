@@ -51,6 +51,10 @@ jobs:
       ANSIBLE_LIBRARY: ./molecule
 
   - script: |
+      python utils/check_test_configuration.py ${{ parameters.scenario }}
+    displayName: Check scenario test configuration
+
+  - script: |
       cd ~/.ansible/collections/ansible_collections/freeipa/ansible_freeipa
       pytest \
         -m "playbook" \
