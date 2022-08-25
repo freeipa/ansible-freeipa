@@ -596,6 +596,9 @@ options:
     type: str
     choices: ["always", "on_create"]
     required: false
+  query_param:
+    description: The fields to query with state=query
+    required: false
   action:
     description: Work on user or member level
     type: str
@@ -607,7 +610,8 @@ options:
     default: present
     choices: ["present", "absent",
               "enabled", "disabled",
-              "unlocked", "undeleted"]
+              "unlocked", "undeleted",
+              "query"]
 author:
   - Thomas Woerner (@t-woerner)
 """
@@ -729,7 +733,7 @@ if six.PY3:
     unicode = str
 
 
-def find_user(module, name):
+def user_show(module, name):
     _args = {
         "all": True,
     }
@@ -746,6 +750,49 @@ def find_user(module, name):
     _result["usercertificate"] = [
         encode_certificate(x) for x in (_result.get("usercertificate") or [])
     ]
+    return _result
+
+
+def convert_result(res):
+    _res = {}
+    for key in res:
+        if key in ["manager", "krbprincipalname", "ipacertmapdata"]:
+            _res[key] = [to_text(x) for x in (res.get(key) or [])]
+        elif key == "usercertificate":
+            _res[key] = [encode_certificate(x) for x in (res.get(key) or [])]
+        elif isinstance(res[key], list) and len(res[key]) == 1:
+            # All single value parameters should not be lists
+            # This does not apply to manager, krbprincipalname,
+            # usercertificate and ipacertmapdata
+            _res[key] = to_text(res[key][0])
+        elif key in ["uidNumber", "gidNumber"]:
+            _res[key] = int(res[key])
+        else:
+            _res[key] = to_text(res[key])
+    return _res
+
+
+def user_find(module, name, sizelimit=None, timelimit=None):
+    _args = {"all": True}
+
+    if sizelimit is not None:
+        _args["sizelimit"] = sizelimit
+    if timelimit is not None:
+        _args["timelimit"] = timelimit
+
+    try:
+        if name:
+            _args["uid"] = name
+        _result = module.ipa_command_no_name("user_find", _args).get("result")
+        if _result:
+            if name:
+                _result = convert_result(_result[0])
+            else:
+                _result = [convert_result(res) for res in _result]
+
+    except ipalib_errors.NotFound:
+        return None
+
     return _result
 
 
@@ -881,6 +928,15 @@ def check_parameters(  # pylint: disable=unused-argument
                 invalid.extend(
                     ["principal", "manager", "certificate", "certmapdata"])
 
+        if state == "query":
+            invalid.append("users")
+
+            if action == "member":
+                module.fail_json(
+                    msg="Query is not possible with action=member")
+        else:
+            invalid.append("query_param")
+
         if state != "absent" and preserve is not None:
             module.fail_json(
                 msg="Preserve is only possible for state=absent")
@@ -1014,6 +1070,59 @@ def exception_handler(module, ex, errors, exit_args, single_user):
     return False
 
 
+query_param_settings = {
+    # password, randompassword and krbprincipalkey may not be in the returned
+    # information even in server context.
+    "ALL": [
+        "dn", "objectclass", "ipauniqueid", "ipantsecurityidentifier", "name",
+        "first", "last", "fullname", "displayname", "initials", "homedir",
+        "shell", "email", "principalexpiration", "passwordexpiration", "uid",
+        "gid", "city", "userstate", "postalcode", "phone", "mobile", "pager",
+        "fax", "orgunit", "title", "carlicense", "sshpubkey", "userauthtype",
+        "userclass", "radius", "radiususer", "departmentnumber",
+        "employeenumber", "employeetype", "preferredlanguage", "manager",
+        "principal", "certificate", "certmapdata", "gecos", "krblastpwdchange",
+        "krblastadminunlock", "krbextradata", "krbticketflags",
+        "krbloginfailedcount", "krblastsuccessfulauth", "has_password",
+        "has_keytab", "preserved", "memberof_group", "disabled"
+    ],
+    "BASE": [
+        "name", "first", "last", "shell", "principal", "uid", "gid",
+        "disabled"
+    ],
+    "mapping": {
+        "name": "uid",
+        "first": "givenname",
+        "last": "sn",
+        "fullname": "cn",
+        "homedir": "homedirectory",
+        "shell": "loginshell",
+        "email": "mail",
+        "principalexpiration": "krbprincipalexpiration",
+        "passwordexpiration": "krbpasswordexpiration",
+        "uid": "uidnumber",
+        "gid": "gidnumber",
+        "city": "l",
+        "userstate": "st",
+        "postalcode": "postalcode",
+        "phone": "telephonenumber",
+        "mobile": "mobile",
+        "pager": "pager",
+        "fax": "facsimiletelephonenumber",
+        "orgunit": "ou",
+        "sshpubkey": "ipasshpubkey",
+        "userauthtype": "ipauserauthtype",
+        "radius": "ipatokenradiusconfiglink",
+        "radiususer": "ipatokenradiususername",
+        "preferredlanguage": "preferredlanguage",
+        "principal": "krbprincipalname",
+        "certificate": "usercertificate",
+        "certmapdata": "ipacertmapdata",
+        "disabled": "nsaccountock"
+    }
+}
+
+
 def main():
     user_spec = dict(
         # present
@@ -1123,18 +1232,25 @@ def main():
             update_password=dict(type='str', default=None, no_log=False,
                                  choices=['always', 'on_create']),
 
+            # query
+            query_param=dict(type="list", default=None,
+                             choices=["ALL", "BASE"].extend(
+                                 query_param_settings["ALL"]),
+                             required=False),
+
             # general
             action=dict(type="str", default="user",
                         choices=["member", "user"]),
             state=dict(type="str", default="present",
                        choices=["present", "absent", "enabled", "disabled",
-                                "unlocked", "undeleted"]),
+                                "unlocked", "undeleted", "query"]),
 
             # Add user specific parameters for simple use case
             **user_spec
         ),
         mutually_exclusive=[["name", "users"]],
-        required_one_of=[["name", "users"]],
+        # Required one of [["name", "users"]] has been removed as there is
+        # an extra test below and it is not working with state=query
         supports_check_mode=True,
     )
 
@@ -1209,13 +1325,16 @@ def main():
     preserve = ansible_module.params_get("preserve")
     # mod
     update_password = ansible_module.params_get("update_password")
+    # query
+    query_param = ansible_module.params_get("query_param")
     # general
     action = ansible_module.params_get("action")
     state = ansible_module.params_get("state")
 
     # Check parameters
 
-    if (names is None or len(names) < 1) and \
+    if state != "query" and \
+       (names is None or len(names) < 1) and \
        (users is None or len(users) < 1):
         ansible_module.fail_json(msg="One of name and users is required")
 
@@ -1248,6 +1367,13 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
+
+        if state == "query":
+            exit_args = ansible_module.execute_query(
+                names, "users", "uid", query_param, user_find,
+                query_param_settings)
+
+            ansible_module.exit_json(changed=False, user=exit_args)
 
         # Check version specific settings
 
@@ -1421,7 +1547,7 @@ def main():
                     msg="Your IPA version does not support External IdP.")
 
             # Make sure user exists
-            res_find = find_user(ansible_module, name)
+            res_find = user_show(ansible_module, name)
 
             # Create command
             if state == "present":
@@ -1498,7 +1624,7 @@ def main():
                         principal_add, principal_del = gen_add_del_lists(
                             principal, res_find.get("krbprincipalname"))
                         # Principals are not returned as utf8 for IPA using
-                        # python2 using user_find, therefore we need to
+                        # python2 using user_show, therefore we need to
                         # convert the principals that we should remove.
                         principal_del = [to_text(x) for x in principal_del]
 

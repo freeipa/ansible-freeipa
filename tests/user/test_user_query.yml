@@ -1,0 +1,173 @@
+---
+- name: Test user query
+  hosts: ipaserver
+  become: true
+
+  tasks:
+
+  # CLEANUP
+
+  - name: Ensure users "testuser1" and "testuser2" are absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testuser1
+      - testuser2
+      - non-existing-user
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure users "testuser1" and "testuser2" are present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: testuser1
+        first: first1
+        last: last1
+      - name: testuser2
+        first: first2
+        last: last2
+
+  - name: Query user "non-existing-user"
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - non-existing-user
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result
+
+  - name: Fail on non empty query result
+    ansible.builtin.fail:
+      msg: "{{ result['user'] }} is not empty"
+    when: result['user'] | length > 0
+
+  - name: Query all users
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result
+
+  - name: Fail on missing "testuser1" in query result
+    ansible.builtin.fail:
+      msg: "'testuser1' not in query result {{ result['user']['users'] }}"
+    when: ("testuser1" not in result["user"]["users"])
+
+  - name: Fail on missing "testuser2" in query result
+    ansible.builtin.fail:
+      msg: "'testuser2' not in query result {{ result['user']['users'] }}"
+    when: ("testuser2" not in result["user"]["users"])
+
+  - name: Fail on "non-existing-user" in query result
+    ansible.builtin.fail:
+      msg: "'non-existing-user' in query result {{ result['user']['users'] }}"
+    when: ("non-existing-user" in result["user"]["users"])
+
+  - name: Query users "testuser1", "testuser2" and "non-existing-user"
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testuser1
+      - testuser2
+      - non-existing-user
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Fail on missing "testuser1" in query result
+    ansible.builtin.fail:
+      msg: "'testuser1' not in query result {{ result['user']['users'] }}"
+    when: ("testuser1" not in result["user"]["users"])
+
+  - name: Fail on missing "testuser2" in query result
+    ansible.builtin.fail:
+      msg: "'testuser2' not in query result {{ result['user']['users'] }}"
+    when: ("testuser2" not in result["user"]["users"])
+
+  - name: Fail on "non-existing-user" in query result
+    ansible.builtin.fail:
+      msg: "'non-existing-user' in query result {{ result['user']['users'] }}"
+    when: ("non-existing-user" in result["user"]["users"])
+
+  - name: Query all user parameters for "testuser1"
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testuser1
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result
+
+  - name: Fail on missing information in query result
+    ansible.builtin.fail:
+      msg: "Query result {{ result['user'] }} is incomplete"
+    when: (result["user"]["displayname"] != "first1 last1" or
+           result["user"]["first"] != "first1" or
+           result["user"]["fullname"] != "first1 last1" or
+           result["user"]["initials"] != "fl" or
+           result["user"]["last"] != "last1" or
+           result["user"]["name"] != "testuser1")
+
+  - name: Query "uid", "first" and "last" parameters for all users
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      query_param:
+      - uid
+      - first
+      - last
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result
+
+  - name: Fail on less than 3 users in result
+    ansible.builtin.fail:
+      msg: "{{ result['user'] }} is not empty"
+    when: result['user'] | length < 3
+
+  - name: Fail on missing "testuser1" information in query result
+    ansible.builtin.fail:
+      msg: "'testuser1' not in query result {{ result['user'] }}"
+    when: ("testuser1" not in result["user"] or
+           result["user"]["testuser1"]["first"] != "first1" or
+           result["user"]["testuser1"]["last"] != "last1" or
+           "uid" not in result["user"]["testuser1"] or
+           result["user"]["testuser1"] | length != 3)
+
+  - name: Fail on missing "testuser2" information in query result
+    ansible.builtin.fail:
+      msg: "'testuser2' not in query result {{ result['user'] }}"
+    when: ("testuser2" not in result["user"] or
+           result["user"]["testuser2"]["first"] != "first2" or
+           result["user"]["testuser2"]["last"] != "last2" or
+           "uid" not in result["user"]["testuser2"] or
+           result["user"]["testuser2"] | length != 3)
+
+  # CLEANUP
+
+  - name: Ensure users "testuser1" and "testuser2" are absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testuser1
+      - testuser2
+      state: absent
