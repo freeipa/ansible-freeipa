@@ -47,11 +47,11 @@ options:
         description: The user (internally uid).
         required: true
       first:
-        description: The first name
+        description: The first name. Required if user does not exist.
         required: false
         aliases: ["givenname"]
       last:
-        description: The last name
+        description: The last name. Required if user doesnot exst.
         required: false
         aliases: ["sn"]
       fullname:
@@ -212,11 +212,11 @@ options:
         type: bool
     required: false
   first:
-    description: The first name
+    description: The first name. Required if user does not exist.
     required: false
     aliases: ["givenname"]
   last:
-    description: The last name
+    description: The last name. Required if user does not exist.
     required: false
     aliases: ["sn"]
   fullname:

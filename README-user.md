@@ -381,8 +381,8 @@ Variable | Description | Required
 
 Variable | Description | Required
 -------- | ----------- | --------
-`first` \| `givenname` | The first name string. | no
-`last` \| `sn` | The last name string. | no
+`first` \| `givenname` | The first name string. Required if user does not exist. | no
+`last` \| `sn` | The last name string. Required if user does not exist. | no
 `fullname` \| `cn` | The full name string. | no
 `displayname` | The display name string. | no
 `homedir` | The home directory string. | no
