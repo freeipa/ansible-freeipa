@@ -50,6 +50,7 @@ utils/ansible-ipa-server-install shebang!skip
 utils/build-galaxy-release.sh shebang!skip
 utils/build-srpm.sh shebang!skip
 utils/changelog shebang!skip
+utils/check_test_configuration.py shebang!skip
 utils/galaxyfy-README.py shebang!skip
 utils/galaxyfy-module-EXAMPLES.py shebang!skip
 utils/galaxyfy-playbook.py shebang!skip

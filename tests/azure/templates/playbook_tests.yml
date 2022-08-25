@@ -24,6 +24,7 @@ jobs:
   timeoutInMinutes: 120
   variables:
   - template: variables.yaml
+  - template: variables_${{ parameters.scenario }}.yaml
   steps:
   - task: UsePythonVersion@0
     inputs:
@@ -50,6 +51,10 @@ jobs:
     displayName: Setup test container
     env:
       ANSIBLE_LIBRARY: ./molecule
+
+  - script: |
+      python utils/check_test_configuration.py ${{ parameters.scenario }}
+    displayName: Check scenario test configuration
 
   - script: |
       pytest \
