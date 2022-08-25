@@ -1358,7 +1358,7 @@ class IPAAnsibleModule(AnsibleModule):
         return changed
 
     def execute_query(self, names, prefix, name_ipa_param,
-                      query_param, query_command, query_param_settings):
+                      query_param, find_command, query_param_settings):
         """
         Execute query state.
 
@@ -1381,7 +1381,7 @@ class IPAAnsibleModule(AnsibleModule):
             mapping of the default module paramter name to IPA option name
             if it is not the same.
             Example: "uid" for user name of the user commands.
-        query_command: The Query function
+        find_command: The find function
             This is a module function that returns the structure(s) from
             the show or find command.
 
@@ -1421,13 +1421,15 @@ class IPAAnsibleModule(AnsibleModule):
         if names and isinstance(names, list):
             with_name = len(names) > 1
             for name in names:
-                result = query_command(self, name)
+                result = find_command(self, name,
+                                      pkey_only=query_param is None)
                 if result:
                     store_params(exit_args, name if with_name else None,
                                  prefix, name_ipa_param, result,
                                  query_param)
         else:
-            results = query_command(self, None)
+            results = find_command(self, None,
+                                   pkey_only=query_param is None)
             if results is not None:
                 for result in results:
                     name = result[name_ipa_param]

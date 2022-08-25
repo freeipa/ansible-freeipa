@@ -193,6 +193,9 @@ options:
     required: false
     type: list
     elements: str
+  query_param:
+    description: The fields to query with state=query
+    required: false
   action:
     description: Work on group or member level
     type: str
@@ -202,7 +205,8 @@ options:
     description: State to ensure
     type: str
     default: present
-    choices: ["present", "absent"]
+    choices: ["present", "absent",
+              "query"]
 author:
   - Thomas Woerner (@t-woerner)
 """
@@ -310,7 +314,7 @@ RETURN = """
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
-    gen_add_list, gen_intersection_list, api_check_param
+    gen_add_list, gen_intersection_list, api_check_param, ipalib_errors
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -327,28 +331,67 @@ else:
         "deepcopy" in baseldap.LDAPObject.__json__.__code__.co_names
 
 
-def find_group(module, name):
+def group_show(module, name):
     _args = {
         "all": True,
-        "cn": name,
     }
 
-    _result = module.ipa_command("group_find", name, _args)
+    try:
+        _result = module.ipa_command("group_show", name, _args).get("result")
+    except ipalib_errors.NotFound:
+        return None
 
-    if len(_result["result"]) > 1:
-        module.fail_json(
-            msg="There is more than one group '%s'" % (name))
-    elif len(_result["result"]) == 1:
-        _res = _result["result"][0]
-        # The returned services are of type ipapython.kerberos.Principal,
-        # also services are not case sensitive. Therefore services are
-        # converted to lowercase strings to be able to do the comparison.
-        if "member_service" in _res:
-            _res["member_service"] = \
-                [to_text(svc).lower() for svc in _res["member_service"]]
-        return _res
+    # The returned services are of type ipapython.kerberos.Principal,
+    # also services are not case sensitive. Therefore services are
+    # converted to lowercase strings to be able to do the comparison.
+    if "member_service" in _result:
+        _result["member_service"] = \
+            [to_text(svc).lower() for svc in _result["member_service"]]
+    return _result
 
-    return None
+
+def convert_result(res):
+    _res = {}
+    for key in res:
+        if isinstance(res[key], list):
+            # All single value parameters should not be lists
+            # This does not apply to manager, krbprincipalname,
+            # usercertificate and ipacertmapdata
+            if len(res[key]) == 1:
+                _res[key] = to_text(res[key][0])
+            else:
+                _res[key] = [to_text(item) for item in res[key]]
+        elif key in ["gidNumber"]:
+            _res[key] = int(res[key])
+        else:
+            _res[key] = to_text(res[key])
+    return _res
+
+
+def group_find(module, name, pkey_only=False, sizelimit=None, timelimit=None):
+    _args = {"all": True}
+
+    if name:
+        _args["cn"] = name
+    if pkey_only:
+        _args["pkey_only"] = True
+    if sizelimit is not None:
+        _args["sizelimit"] = sizelimit
+    if timelimit is not None:
+        _args["timelimit"] = timelimit
+
+    try:
+        _result = module.ipa_command_no_name("group_find", _args).get("result")
+        if _result:
+            if name:
+                _result = convert_result(_result[0])
+            else:
+                _result = [convert_result(res) for res in _result]
+
+    except ipalib_errors.NotFound:
+        return None
+
+    return _result
 
 
 def gen_args(description, gid, nomembers):
@@ -392,6 +435,11 @@ def check_parameters(module, state, action):
         if action == "group":
             invalid.extend(["user", "group", "service", "externalmember"])
 
+    if state == "query":
+        invalid.append("groups")
+    else:
+        invalid.append("query_param")
+
     module.params_fail_used_invalid(invalid, state, action)
 
 
@@ -420,6 +468,31 @@ def check_objectclass_args(module, res_find, posix, external):
             module.fail_json(
                 msg="Cannot change `external` group to `posix` or "
                 "`non-posix`.")
+
+
+query_param_settings = {
+    "ALL": [
+        "dn", "objectclass", "ipauniqueid", "ipantsecurityidentifier",
+        "name",
+        "description",
+        "gid",
+        "nomembers",
+        "user", "group", "service", "external",
+        "idoverrideuser"
+    ],
+    "BASE": [
+        "name", "description", "gid"
+    ],
+    "mapping": {
+        "name": "cn",
+        "gid": "gidnumber",
+        "user": "member_user",
+        "group": "member_group",
+        "service": "member_service",
+        "externalmember": "member_external",
+        "idoverrideuser": "member_idoverrideuser",
+    }
+}
 
 
 def main():
@@ -466,11 +539,16 @@ def main():
                         ),
                         elements='dict',
                         required=False),
+            # query
+            query_param=dict(type="list", default=None,
+                             choices=["ALL", "BASE"].extend(
+                                 query_param_settings["ALL"]),
+                             required=False),
             # general
             action=dict(type="str", default="group",
                         choices=["member", "group"]),
             state=dict(type="str", default="present",
-                       choices=["present", "absent"]),
+                       choices=["present", "absent", "query"]),
 
             # Add group specific parameters for simple use case
             **group_spec
@@ -479,7 +557,7 @@ def main():
         # same time
         mutually_exclusive=[['posix', 'nonposix', 'external'],
                             ["name", "groups"]],
-        required_one_of=[["name", "groups"]],
+        # required_one_of=[["name", "groups"]] is handled below
         supports_check_mode=True,
     )
 
@@ -506,13 +584,17 @@ def main():
     membermanager_user = ansible_module.params_get("membermanager_user")
     membermanager_group = ansible_module.params_get("membermanager_group")
     externalmember = ansible_module.params_get("externalmember")
+    # query
+    query_param = ansible_module.params_get("query_param")
+    # action
     action = ansible_module.params_get("action")
     # state
     state = ansible_module.params_get("state")
 
     # Check parameters
 
-    if (names is None or len(names) < 1) and \
+    if state != "query" and \
+       (names is None or len(names) < 1) and \
        (groups is None or len(groups) < 1):
         ansible_module.fail_json(msg="At least one name or groups is required")
 
@@ -520,6 +602,11 @@ def main():
         if names is not None and len(names) != 1:
             ansible_module.fail_json(
                 msg="Only one group can be added at a time using 'name'.")
+
+    if state == "query":
+        if action == "member":
+            ansible_module.fail_json(
+                msg="Query is not possible with action=query")
 
     check_parameters(ansible_module, state, action)
 
@@ -566,6 +653,13 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect(context=context):
+
+        if state == "query":
+            exit_args = ansible_module.execute_query(
+                names, "groups", "cn", query_param, group_find,
+                query_param_settings)
+
+            ansible_module.exit_json(changed=False, group=exit_args)
 
         has_add_member_service = ansible_module.ipa_command_param_exists(
             "group_add_member", "service")
@@ -643,7 +737,7 @@ def main():
                                          repr(group_name))
 
             # Make sure group exists
-            res_find = find_group(ansible_module, name)
+            res_find = group_show(ansible_module, name)
 
             user_add, user_del = [], []
             group_add, group_del = [], []

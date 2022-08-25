@@ -772,17 +772,19 @@ def convert_result(res):
     return _res
 
 
-def user_find(module, name, sizelimit=None, timelimit=None):
+def user_find(module, name, pkey_only=False, sizelimit=None, timelimit=None):
     _args = {"all": True}
 
+    if name:
+        _args["uid"] = name
+    if pkey_only:
+        _args["pkey_only"] = True
     if sizelimit is not None:
         _args["sizelimit"] = sizelimit
     if timelimit is not None:
         _args["timelimit"] = timelimit
 
     try:
-        if name:
-            _args["uid"] = name
         _result = module.ipa_command_no_name("user_find", _args).get("result")
         if _result:
             if name:

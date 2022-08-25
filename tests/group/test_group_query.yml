@@ -1,0 +1,252 @@
+---
+- name: Test group query
+  hosts: ipaserver
+  become: true
+
+  tasks:
+
+  # IPA facts
+
+  - name: Include FreeIPA facts.
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  # GET FQDN_AT_DOMAIN
+
+  - name: Get fqdn_at_domain
+    ansible.builtin.set_fact:
+      fqdn_at_domain: "{{ ansible_facts['fqdn'] + '@' + ipaserver_realm }}"
+
+  # CLEANUP
+
+  - name: Ensure groups "testgroup1" and "testgroup2" are absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testgroup1
+      - testgroup2
+      - non-existing-group
+      state: absent
+
+  - name: Ensure users "testuser1" and "testuser2" are absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testuser1
+      - testuser2
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure users "testuser1" and "testuser2" are present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: testuser1
+        first: first1
+        last: last1
+      - name: testuser2
+        first: first2
+        last: last2
+
+  - name: Ensure groups "testgroup1" is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup1
+      user: testuser1
+      description: test group 1
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure groups "testgroup1" has services (IPA 4.7.0+)
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup1
+      service:
+      - "{{ 'HTTP/' + fqdn_at_domain }}"
+      - "{{ 'ldap/' + fqdn_at_domain }}"
+    register: result
+    failed_when: not result.changed or result.failed
+    when: ipa_version is version('4.7.0', '>=')
+
+  - name: Ensure groups "testgroup2" is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: testgroup2
+      description: test group 2
+      user: testuser2
+      group: testgroup1
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # TESTS
+
+  - name: Query group "non-existing-group"
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - non-existing-group
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result
+
+  - name: Fail on non empty query result
+    ansible.builtin.fail:
+      msg: "{{ result['group'] }} is not empty"
+    when: result['group'] | length > 0
+
+  - name: Query all groups
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result
+
+  - name: Fail on missing "testgroup1" in query result
+    ansible.builtin.fail:
+      msg: "'testgroup1' not in query result {{ result['group']['groups'] }}"
+    when: ("testgroup1" not in result["group"]["groups"])
+
+  - name: Fail on missing "testgroup2" in query result
+    ansible.builtin.fail:
+      msg: "'testgroup2' not in query result {{ result['group']['groups'] }}"
+    when: ("testgroup2" not in result["group"]["groups"])
+
+  - name: Fail on "non-existing-group" in query result
+    ansible.builtin.fail:
+      msg: "'non-existing-group' in query result {{ result['group']['groups'] }}"
+    when: ("non-existing-group" in result["group"]["groups"])
+
+  - name: Query groups "testgroup1", "testgroup2" and "non-existing-group"
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testgroup1
+      - testgroup2
+      - non-existing-group
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Fail on missing "testgroup1" in query result
+    ansible.builtin.fail:
+      msg: "'testgroup1' not in query result {{ result['group']['groups'] }}"
+    when: ("testgroup1" not in result["group"]["groups"])
+
+  - name: Fail on missing "testgroup2" in query result
+    ansible.builtin.fail:
+      msg: "'testgroup2' not in query result {{ result['group']['groups'] }}"
+    when: ("testgroup2" not in result["group"]["groups"])
+
+  - name: Fail on "non-existing-group" in query result
+    ansible.builtin.fail:
+      msg: "'non-existing-group' in query result {{ result['group']['groups'] }}"
+    when: ("non-existing-group" in result["group"]["groups"])
+
+
+  - name: Query all group parameters for "testgroup1"
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testgroup1
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result
+
+  - name: Fail on missing information in query result
+    ansible.builtin.fail:
+      msg: "Query result {{ result['group'] }} is incomplete"
+    when: (result["group"]["description"] != "test group 1" or
+           result["group"]["user"] != "testuser1")
+
+  - name: Fail on missing services in query result (IPA 4.7.0+)
+    ansible.builtin.fail:
+      msg: "Query result {{ result['group'] }} is incomplete (no services)"
+    when: ipa_version is version('4.7.0', '>=') and
+          ('HTTP/'+fqdn_at_domain not in result["group"]["service"] or
+           'ldap/'+fqdn_at_domain not in result["group"]["service"])
+
+  - name: Query all group parameters for "testgroup2"
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testgroup2
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result
+
+  - name: Fail on missing information in query result
+    ansible.builtin.fail:
+      msg: "Query result {{ result['group'] }} is incomplete"
+    when: (result["group"]["description"] != "test group 2" or
+           result["group"]["group"] != "testgroup1" or
+           result["group"]["user"] != "testuser2")
+
+  - name: Query "gid", "user", "group" for all groups
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      query_param:
+      - gid
+      - user
+      - group
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result
+
+  - name: Fail on less than 3 groups in result
+    ansible.builtin.fail:
+      msg: "{{ result['group'] }} is not empty"
+    when: result['group'] | length < 3
+
+  - name: Fail on missing "testgroup1" information in query result
+    ansible.builtin.fail:
+      msg: "'testgroup1' not in query result {{ result['group'] }}"
+    when: ("testgroup1" not in result["group"] or
+           "gid" not in result["group"]["testgroup1"])
+
+  - name: Fail on missing "testgroup2" information in query result
+    ansible.builtin.fail:
+      msg: "'testgroup2' not in query result {{ result['group'] }}"
+    when: ("testgroup2" not in result["group"] or
+           "gid" not in result["group"]["testgroup2"] or
+           result["group"]["testgroup2"]["group"] != "testgroup1")
+
+  # CLEANUP
+
+  - name: Ensure groups "testgroup1" and "testgroup2" are absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testgroup1
+      - testgroup2
+      state: absent
+
+  - name: Ensure users "testuser1" and "testuser2" are absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - testuser1
+      - testuser2
+      state: absent
