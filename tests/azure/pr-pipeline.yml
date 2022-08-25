@@ -1,0 +1,74 @@
+---
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+
+# Fedora
+
+- stage: Fedora_Latest
+  dependsOn: []
+  jobs:
+  - template: templates/fast_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-latest
+      ansible_version: "-core >=2.12,<2.13"
+
+# Galaxy on Fedora
+
+- stage: Galaxy_Fedora_Latest
+  dependsOn: []
+  jobs:
+  - template: templates/fast_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-latest
+      ansible_version: "-core >=2.12,<2.13"
+
+# CentOS 9 Stream
+
+- stage: CentOS_9_Stream
+  dependsOn: []
+  jobs:
+  - template: templates/fast_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: c9s
+      ansible_version: "-core >=2.12,<2.13"
+
+# CentOS 8 Stream
+
+- stage: CentOS_8_Stream
+  dependsOn: []
+  jobs:
+  - template: templates/fast_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: c8s
+      ansible_version: "-core >=2.12,<2.13"
+
+# CentOS 7
+
+- stage: CentOS_7
+  dependsOn: []
+  jobs:
+  - template: templates/fast_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: centos-7
+      ansible_version: "-core >=2.12,<2.13"
+
+# Rawhide
+
+- stage: Fedora_Rawhide
+  dependsOn: []
+  jobs:
+  - template: templates/fast_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-rawhide
+      ansible_version: "-core >=2.12,<2.13"

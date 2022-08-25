@@ -2,5 +2,6 @@
 pytest>=2.7
 pytest-sourceorder>=0.5
 pytest-split>=0.8.0
+pytest-custom_exit_code>=0.3.0
 pytest-testinfra>=5.0
 pyyaml>=3
