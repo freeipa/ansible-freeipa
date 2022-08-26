@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_setup_adtrust
-short description: Setup trust ad
+short_description: Setup trust ad
 description: Setup trust ad
 options:
   hostname:

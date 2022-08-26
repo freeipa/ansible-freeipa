@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipapwpolicy
-short description: Manage FreeIPA pwpolicies
+short_description: Manage FreeIPA pwpolicies
 description: Manage FreeIPA pwpolicies
 options:
   ipaadmin_principal:

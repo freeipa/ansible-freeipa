@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_setup_ds
-short description: Configure directory server
+short_description: Configure directory server
 description: Configure directory server
 options:
   dm_password:

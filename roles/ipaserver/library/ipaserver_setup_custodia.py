@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_setup_custodia
-short description: Setup custodia
+short_description: Setup custodia
 description: Setup custodia
 options:
   realm:

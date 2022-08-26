@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 DOCUMENTATION = '''
 ---
 module: ipaclient_api
-short description:
+short_description:
   Create temporary NSS database, call IPA API for remaining enrollment parts
 description:
   Create temporary NSS database, call IPA API for remaining enrollment parts

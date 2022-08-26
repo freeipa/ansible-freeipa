@@ -33,7 +33,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipasudocmdgroup
-short description: Manage FreeIPA sudocmd groups
+short_description: Manage FreeIPA sudocmd groups
 description: Manage FreeIPA sudocmd groups
 extends_documentation_fragment:
   - ipamodule_base_docs

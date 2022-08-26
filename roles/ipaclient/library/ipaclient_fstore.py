@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_fstore
-short description: Backup files using IPA client sysrestore
+short_description: Backup files using IPA client sysrestore
 description: Backup files using IPA client sysrestore
 options:
   backup:

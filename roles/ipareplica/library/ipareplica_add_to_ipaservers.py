@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_add_to_ipaservers
-short description: Add to ipaservers
+short_description: Add to ipaservers
 description:
   Add to ipaservers
 options:

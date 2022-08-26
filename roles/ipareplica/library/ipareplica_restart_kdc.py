@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_restart_kdc
-short description: Restart KDC
+short_description: Restart KDC
 description:
   Restart KDC
 options:

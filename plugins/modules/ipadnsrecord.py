@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipadnsrecord
-short description: Manage FreeIPA DNS records
+short_description: Manage FreeIPA DNS records
 description: Manage FreeIPA DNS records
 extends_documentation_fragment:
   - ipamodule_base_docs

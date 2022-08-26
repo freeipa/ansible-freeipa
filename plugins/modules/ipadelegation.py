@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipadelegation
-short description: Manage FreeIPA delegations
+short_description: Manage FreeIPA delegations
 description: Manage FreeIPA delegations and delegation attributes
 extends_documentation_fragment:
   - ipamodule_base_docs

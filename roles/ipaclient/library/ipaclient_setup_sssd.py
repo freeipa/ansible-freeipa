@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_setup_ssd
-short description: Setup sssd for IPA client
+short_description: Setup sssd for IPA client
 description:
   Setup sssd for IPA client
 options:

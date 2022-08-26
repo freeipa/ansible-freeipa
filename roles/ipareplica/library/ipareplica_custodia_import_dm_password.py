@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_custodia_import_dm_password
-short description: Import dm password into custodia
+short_description: Import dm password into custodia
 description:
   Import dm password into custodia
 options:

@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_setup_dns
-short description: Setup DNS
+short_description: Setup DNS
 description: Setup DNS
 options:
   ip_addresses:

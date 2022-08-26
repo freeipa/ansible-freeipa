@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_set_ds_password
-short description: Set DS password
+short_description: Set DS password
 description: Set DS password
 options:
   dm_password:

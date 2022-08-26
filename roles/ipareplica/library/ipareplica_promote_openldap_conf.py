@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_promote_openldap_conf
-short description: Promote openldap.conf
+short_description: Promote openldap.conf
 description:
   Promote openldap.conf
 options:

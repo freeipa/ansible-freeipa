@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_test_keytab
-short description:
+short_description:
   Test if the krb5.keytab on the machine is valid and can be used.
 description:
   Test if the krb5.keytab on the machine is valid and can be used.

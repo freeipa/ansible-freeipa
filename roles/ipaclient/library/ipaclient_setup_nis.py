@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_setup_nis
-short description: Setup NIS for IPA client
+short_description: Setup NIS for IPA client
 description:
   Setup NIS for IPA client
 options:

@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipatopologysegment
-short description: Manage FreeIPA topology segments
+short_description: Manage FreeIPA topology segments
 description: Manage FreeIPA topology segments
 extends_documentation_fragment:
   - ipamodule_base_docs

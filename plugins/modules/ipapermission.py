@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipapermission
-short description: Manage FreeIPA permission
+short_description: Manage FreeIPA permission
 description: Manage FreeIPA permission and permission members
 extends_documentation_fragment:
   - ipamodule_base_docs

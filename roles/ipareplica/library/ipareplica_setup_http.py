@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_setup_http
-short description: Setup HTTP
+short_description: Setup HTTP
 description:
   Setup HTTP
 options:

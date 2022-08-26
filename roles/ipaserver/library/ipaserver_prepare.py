@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_prepare
-short description: Prepare IPA server deployment
+short_description: Prepare IPA server deployment
 description: Prepare IPA server deployment
 options:
   force:

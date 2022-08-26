@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipagroup
-short description: Manage FreeIPA groups
+short_description: Manage FreeIPA groups
 description: Manage FreeIPA groups
 extends_documentation_fragment:
   - ipamodule_base_docs

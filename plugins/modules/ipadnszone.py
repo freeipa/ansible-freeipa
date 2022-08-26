@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipadnszone
-short description: Manage FreeIPA dnszone
+short_description: Manage FreeIPA dnszone
 description: Manage FreeIPA dnszone
 extends_documentation_fragment:
   - ipamodule_base_docs

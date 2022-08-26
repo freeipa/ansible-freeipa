@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipahbacsvc
-short description: Manage FreeIPA HBAC Services
+short_description: Manage FreeIPA HBAC Services
 description: Manage FreeIPA HBAC Services
 extends_documentation_fragment:
   - ipamodule_base_docs

@@ -35,7 +35,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipaprivilege
-short description: Manage FreeIPA privilege
+short_description: Manage FreeIPA privilege
 description: Manage FreeIPA privilege and privilege members
 extends_documentation_fragment:
   - ipamodule_base_docs

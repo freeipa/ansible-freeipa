@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_load_cache
-short description: Load cache file
+short_description: Load cache file
 description: Load cache file
 options:
   dm_password:

@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_setup_ca
-short description: Setup CA
+short_description: Setup CA
 description:
   Setup CA
 options:

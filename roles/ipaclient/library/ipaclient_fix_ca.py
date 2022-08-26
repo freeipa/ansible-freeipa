@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 DOCUMENTATION = '''
 ---
 module: ipaclient_fix_ca
-short description: Fix IPA ca certificate
+short_description: Fix IPA ca certificate
 description: Repair Fix IPA ca certificate
 options:
   servers:

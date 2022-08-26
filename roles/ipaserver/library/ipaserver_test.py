@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_test
-short description: IPA server test
+short_description: IPA server test
 description: IPA server test
 options:
   force:

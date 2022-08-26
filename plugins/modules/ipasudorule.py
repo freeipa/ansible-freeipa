@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipasudorule
-short description: Manage FreeIPA sudo rules
+short_description: Manage FreeIPA sudo rules
 description: Manage FreeIPA sudo rules
 extends_documentation_fragment:
   - ipamodule_base_docs

@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipabackup_get_backup_dir
-short description:
+short_description:
   Get IPA_BACKUP_DIR from ipaplatform
 description:
   Get IPA_BACKUP_DIR from ipaplatform

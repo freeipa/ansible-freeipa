@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipasmartcard_client_get_vars
-short description:
+short_description:
   Get variables from ipaplatform and python interpreter used for the module.
 description:
   Get variables from ipaplatform and python interpreter used for the module.

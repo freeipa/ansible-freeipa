@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_install_ca_cert
-short description: Install CA certs
+short_description: Install CA certs
 description:
   Install CA certs
 options:

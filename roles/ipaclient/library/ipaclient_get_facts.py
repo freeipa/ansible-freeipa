@@ -7,7 +7,7 @@ __metaclass__ = type
 DOCUMENTATION = """
 ---
 module: ipaclient_get_facts
-short description: Get facts about IPA client and server configuration.
+short_description: Get facts about IPA client and server configuration.
 description: Get facts about IPA client and server configuration.
 author:
     - Thomas Woerner

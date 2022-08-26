@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_ds_apply_updates
-short description: DS apply updates
+short_description: DS apply updates
 description:
   DS apply updates
 options:

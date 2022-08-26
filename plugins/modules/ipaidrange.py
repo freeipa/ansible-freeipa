@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipaidrange
-short description: Manage FreeIPA idrange
+short_description: Manage FreeIPA idrange
 description: Manage FreeIPA idrange
 extends_documentation_fragment:
   - ipamodule_base_docs

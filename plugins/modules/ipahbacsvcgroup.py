@@ -33,7 +33,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipahbacsvcgroup
-short description: Manage FreeIPA hbacsvcgroups
+short_description: Manage FreeIPA hbacsvcgroups
 description: Manage FreeIPA hbacsvcgroups
 extends_documentation_fragment:
   - ipamodule_base_docs

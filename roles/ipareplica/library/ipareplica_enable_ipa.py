@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_enable_ipa
-short description: Enable IPA
+short_description: Enable IPA
 description: Enable IPA
   Enable IPA
 options:
