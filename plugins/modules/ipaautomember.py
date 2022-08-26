@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipaautomember
-short description: Add and delete FreeIPA Auto Membership Rules.
+short_description: Add and delete FreeIPA Auto Membership Rules.
 description: Add, modify and delete an IPA Auto Membership Rules.
 extends_documentation_fragment:
   - ipamodule_base_docs

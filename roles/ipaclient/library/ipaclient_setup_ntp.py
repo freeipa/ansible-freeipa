@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_setup_ntp
-short description: Setup NTP for IPA client
+short_description: Setup NTP for IPA client
 description:
   Setup NTP for IPA client
 options:

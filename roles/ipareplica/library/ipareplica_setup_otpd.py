@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_setup_otpd
-short description: Setup OTPD
+short_description: Setup OTPD
 description:
   Setup OTPD
 options:

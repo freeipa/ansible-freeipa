@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_test
-short description: Tries to discover IPA server
+short_description: Tries to discover IPA server
 description:
   Tries to discover IPA server using DNS or host name
 options:

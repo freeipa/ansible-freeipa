@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipavault
-short description: Manage vaults and secret vaults.
+short_description: Manage vaults and secret vaults.
 description: Manage vaults and secret vaults. KRA service must be enabled.
 extends_documentation_fragment:
   - ipamodule_base_docs

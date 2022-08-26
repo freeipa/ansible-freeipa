@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_ds_enable_ssl
-short description: DS enable SSL
+short_description: DS enable SSL
 description:
   DS enable SSL
 options:

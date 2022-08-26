@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_join
-short description:
+short_description:
   Join a machine to an IPA realm and get a keytab for the host service
   principal
 description:

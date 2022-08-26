@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_setup_krb
-short description: Setup KRB
+short_description: Setup KRB
 description:
   Setup KRB
 options:

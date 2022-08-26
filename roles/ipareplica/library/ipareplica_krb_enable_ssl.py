@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_krb_enable_ssl
-short description: KRB enable SSL
+short_description: KRB enable SSL
 description:
   KRB enable SSL
 options:

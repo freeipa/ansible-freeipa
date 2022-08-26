@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_setup_nss
-short description: Create IPA client NSS database
+short_description: Create IPA client NSS database
 description: Create IPA NSS database
 options:
   servers:

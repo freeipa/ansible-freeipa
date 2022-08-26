@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_setup_kra
-short description: Setup KRA
+short_description: Setup KRA
 description:
   Setup KRA
 options:

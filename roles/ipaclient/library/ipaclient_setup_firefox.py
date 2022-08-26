@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_setup_firefox
-short description: Setup firefox for IPA client
+short_description: Setup firefox for IPA client
 description:
   Setup firefox for IPA client
 options:

@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_prepare
-short description: Prepare ipa replica installation
+short_description: Prepare ipa replica installation
 description: |
   Prepare ipa replica installation: Create IPA configuration file, run install
   checks again and also update the host name and the hosts file if needed.

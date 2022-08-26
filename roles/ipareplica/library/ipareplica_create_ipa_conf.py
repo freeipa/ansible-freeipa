@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_create_ipa_conf
-short description: Create ipa.conf
+short_description: Create ipa.conf
 description:
   Create ipa.conf
 options:

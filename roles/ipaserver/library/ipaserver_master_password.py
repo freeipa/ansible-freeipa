@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_master_password
-short description: Generate kerberos master password if not given
+short_description: Generate kerberos master password if not given
 description:
   Generate kerberos master password if not given
 options:

@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_setup_krb5
-short description: Setup krb5 for IPA client
+short_description: Setup krb5 for IPA client
 description:
   Setup krb5 for IPA client
 options:

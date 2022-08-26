@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_setup_adtrust
-short description: Setup adtrust
+short_description: Setup adtrust
 description:
   Setup adtrust
 options:

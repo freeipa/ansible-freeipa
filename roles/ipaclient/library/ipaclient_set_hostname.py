@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_set_hostname
-short description: Backup and set hostname
+short_description: Backup and set hostname
 description:
   Backup and set hostname
 options:

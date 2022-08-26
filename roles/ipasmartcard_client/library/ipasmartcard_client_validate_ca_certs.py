@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipasmartcard_server_validate_ca_certs
-short description: Validate CA certs
+short_description: Validate CA certs
 description: Validate CA certs
 options:
   ca_cert_files:

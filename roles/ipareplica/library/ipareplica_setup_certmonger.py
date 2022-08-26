@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_setup_certmonger
-short description: Setup certmonger
+short_description: Setup certmonger
 description:
   Setup certmonger
 options:

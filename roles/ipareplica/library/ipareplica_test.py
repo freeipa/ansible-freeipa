@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_test
-short description: IPA replica deployment tests
+short_description: IPA replica deployment tests
 description: IPA replica deployment tests
 options:
   ip_addresses:

@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_promote_sssd
-short description: Promote sssd
+short_description: Promote sssd
 description:
   Promote sssd
 options:

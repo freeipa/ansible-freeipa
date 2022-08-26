@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipareplica_setup_ds
-short description: Setup DS
+short_description: Setup DS
 description:
   Setup DS
 options:

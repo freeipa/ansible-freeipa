@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaserver_setup_http
-short description: Setup HTTP
+short_description: Setup HTTP
 description: Setup HTTP
 options:
   dm_password:

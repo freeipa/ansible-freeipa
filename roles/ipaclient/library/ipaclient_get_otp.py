@@ -30,7 +30,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.0',
 DOCUMENTATION = '''
 ---
 module: ipaclient_get_otp
-short description: Manage IPA hosts
+short_description: Manage IPA hosts
 description:
   Manage hosts in a IPA domain.
   The operation needs to be authenticated with Kerberos either by providing

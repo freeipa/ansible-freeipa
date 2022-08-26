@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaclient_setup_ssh
-short description: Configure ssh and sshd for IPA client
+short_description: Configure ssh and sshd for IPA client
 description:
   Configure ssh and sshd for IPA client
 options:

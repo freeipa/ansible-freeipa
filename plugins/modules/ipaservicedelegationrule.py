@@ -32,7 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipaservicedelegationrule
-short description: Manage FreeIPA servicedelegationrule
+short_description: Manage FreeIPA servicedelegationrule
 description: |
   Manage FreeIPA servicedelegationrule and servicedelegationrule members
 extends_documentation_fragment:
