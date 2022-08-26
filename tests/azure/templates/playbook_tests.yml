@@ -61,9 +61,8 @@ jobs:
         -m "playbook" \
         --verbose \
         --color=yes \
-        --test-group-count=${{ parameters.number_of_groups }} \
-        --test-group=${{ parameters.group_number }} \
-        --test-group-random-seed=97943259814 \
+        --splits=${{ parameters.number_of_groups }} \
+        --group=${{ parameters.group_number }} \
         --junit-xml=TEST-results-group-${{ parameters.group_number }}.xml
     displayName: Run playbook tests
     env:

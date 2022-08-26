@@ -1,6 +1,6 @@
 -r requirements.txt
 pytest>=2.7
 pytest-sourceorder>=0.5
-pytest-split-tests>=1.0.3
+pytest-split>=0.8.0
 pytest-testinfra>=5.0
 pyyaml>=3
