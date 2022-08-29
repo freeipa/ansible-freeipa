@@ -428,7 +428,7 @@
         ipaclient_no_ntp:
           "{{ 'true' if result_ipaserver_test.ipa_python_version >= 40690
                else 'false' }}"
-        ipaclient_install_packages: "{{ ipaserver_install_packages }}"
+        ipaclient_install_packages: no
 
     - name: Install - Enable IPA
       ipaserver_enable_ipa:
