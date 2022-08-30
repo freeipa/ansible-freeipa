@@ -41,7 +41,7 @@ __all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
            "adtrustinstance", "IPAAPI_USER", "sync_time", "PKIIniLoader",
            "default_subject_base", "default_ca_subject_dn",
            "check_ldap_conf", "encode_certificate", "decode_certificate",
-           "check_available_memory", "getargspec"]
+           "check_available_memory", "getargspec", "get_min_idstart"]
 
 import sys
 
@@ -199,6 +199,11 @@ else:
         except ImportError:
             from ipalib.x509 import load_certificate
             load_pem_x509_certificate = None
+
+        try:
+            from ipaserver.install.server.install import get_min_idstart
+        except ImportError:
+            get_min_idstart = None
 
     else:
         # IPA version < 4.5
