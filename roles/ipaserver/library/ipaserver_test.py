@@ -225,7 +225,8 @@ from ansible.module_utils.ansible_ipa_server import (
     read_cache, ca, tasks, check_ldap_conf, timeconf, httpinstance,
     check_dirsrv, ScriptError, get_fqdn, verify_fqdn, BadHostError,
     validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION,
-    encode_certificate, check_available_memory, getargspec, adtrustinstance
+    encode_certificate, check_available_memory, getargspec, adtrustinstance,
+    get_min_idstart
 )
 from ansible.module_utils import six
 
@@ -578,6 +579,16 @@ def main():
                 raise RuntimeError(
                     "'--ignore-topology-disconnect/--ignore-last-of-role' "
                     "options can be used only during uninstallation")
+
+            if get_min_idstart is not None:
+                min_idstart = get_min_idstart()
+                if self.idstart < min_idstart:
+                    raise RuntimeError(
+                        "idstart (%i) must be larger than UID_MAX/GID_MAX "
+                        "(%i) setting in /etc/login.defs." % (
+                            self.idstart, min_idstart
+                        )
+                    )
 
             if self.idmax < self.idstart:
                 raise RuntimeError(
