@@ -1,0 +1,14 @@
+---
+- name: Playbook to manage sudorule member
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Ensure sudorule 'runasuser' do not have 'ipasuers' group as runas users.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      runasuser_group: ipausers
+      action: member
+      state: absent

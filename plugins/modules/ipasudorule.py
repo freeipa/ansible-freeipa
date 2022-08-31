@@ -138,6 +138,11 @@ options:
     required: false
     type: list
     elements: str
+  runasuser_group:
+    description: List of groups for Sudo to execute as.
+    required: false
+    type: list
+    elements: str
   runasgroup:
     description: List of groups for Sudo to execute as.
     required: false
@@ -214,6 +219,12 @@ EXAMPLES = """
     hostmask:
     - 192.168.122.1/24
     - 192.168.120.1/24
+
+# Ensure sudorule 'runasuser' has 'ipasuers' group as runas users.
+- ipasudorule:
+    ipaadmin_password: SomeADMINpassword
+    name: testrule1
+    runasuser_group: ipausers
     action: member
 
 # Ensure Sudo Rule tesrule1 is absent
@@ -315,6 +326,8 @@ def main():
                            default=None),
             runasgroup=dict(required=False, type="list", elements="str",
                             default=None),
+            runasuser_group=dict(required=False, type="list", elements="str",
+                                 default=None),
             order=dict(type="int", required=False, aliases=['sudoorder']),
             sudooption=dict(required=False, type='list', elements="str",
                             default=None, aliases=["options"]),
@@ -362,6 +375,7 @@ def main():
     sudooption = ansible_module.params_get("sudooption")
     order = ansible_module.params_get("order")
     runasuser = ansible_module.params_get_lowercase("runasuser")
+    runasuser_group = ansible_module.params_get_lowercase("runasuser_group")
     runasgroup = ansible_module.params_get_lowercase("runasgroup")
     action = ansible_module.params_get("action")
 
@@ -406,7 +420,8 @@ def main():
             invalid.extend(["host", "hostgroup", "hostmask", "user", "group",
                             "runasuser", "runasgroup", "allow_sudocmd",
                             "allow_sudocmdgroup", "deny_sudocmd",
-                            "deny_sudocmdgroup", "sudooption"])
+                            "deny_sudocmdgroup", "sudooption",
+                            "runasuser_group"])
 
     elif state in ["enabled", "disabled"]:
         if len(names) < 1:
@@ -420,7 +435,7 @@ def main():
                    "nomembers", "nomembers", "host", "hostgroup", "hostmask",
                    "user", "group", "allow_sudocmd", "allow_sudocmdgroup",
                    "deny_sudocmd", "deny_sudocmdgroup", "runasuser",
-                   "runasgroup", "order", "sudooption"]
+                   "runasgroup", "order", "sudooption", "runasuser_group"]
     else:
         ansible_module.fail_json(msg="Invalid state '%s'" % state)
 
@@ -453,6 +468,7 @@ def main():
         deny_cmdgroup_add, deny_cmdgroup_del = [], []
         sudooption_add, sudooption_del = [], []
         runasuser_add, runasuser_del = [], []
+        runasuser_group_add, runasuser_group_del = [], []
         runasgroup_add, runasgroup_del = [], []
 
         for name in names:
@@ -552,6 +568,12 @@ def main():
                             + res_find.get('ipasudorunasextuser', [])
                         )
                     )
+                    runasuser_group_add, runasuser_group_del = (
+                        gen_add_del_lists(
+                            runasuser_group,
+                            res_find.get('ipasudorunas_group', [])
+                        )
+                    )
 
                     # runasgroup attribute can be used with both IPA and
                     # non-IPA (external) groups. IPA will handle the correct
@@ -622,6 +644,11 @@ def main():
                             runasuser,
                             (list(res_find.get('ipasudorunas_user', []))
                              + list(res_find.get('ipasudorunasextuser', [])))
+                        )
+                    if runasuser_group is not None:
+                        runasuser_group_add = gen_add_list(
+                            runasuser_group,
+                            res_find.get('ipasudorunas_group', [])
                         )
                     # runasgroup attribute can be used with both IPA and
                     # non-IPA (external) groups, so we need to compare
@@ -702,6 +729,11 @@ def main():
                                 list(res_find.get('ipasudorunas_user', []))
                                 + list(res_find.get('ipasudorunasextuser', []))
                             )
+                        )
+                    if runasuser_group is not None:
+                        runasuser_group_del = gen_intersection_list(
+                            runasuser_group,
+                            res_find.get('ipasudorunas_group', [])
                         )
                     # runasgroup attribute can be used with both IPA and
                     # non-IPA (external) groups, so we need to compare
@@ -812,13 +844,19 @@ def main():
                     }
                 ])
             # Manage RunAS users
-            if runasuser_add:
+            if runasuser_add or runasuser_group_add:
+                # Can't use empty lists with command "sudorule_add_runasuser".
+                _args = {}
+                if runasuser_add:
+                    _args["user"] = runasuser_add
+                if runasuser_group_add:
+                    _args["group"] = runasuser_group_add
+                commands.append([name, "sudorule_add_runasuser", _args])
+            if runasuser_del or runasuser_group_del:
                 commands.append([
-                    name, "sudorule_add_runasuser", {"user": runasuser_add}
-                ])
-            if runasuser_del:
-                commands.append([
-                    name, "sudorule_remove_runasuser", {"user": runasuser_del}
+                    name,
+                    "sudorule_remove_runasuser",
+                    {"user": runasuser_del, "group": runasuser_group_del}
                 ])
 
             # Manage RunAS Groups

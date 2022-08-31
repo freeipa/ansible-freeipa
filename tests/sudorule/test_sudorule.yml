@@ -8,21 +8,7 @@
   tasks:
 
   # setup
-  - name: Ensure user is absent
-    ipauser:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: user01
-      state: absent
-
-  - name: Ensure group is absent
-    ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: group01
-      state: absent
-
-  - name: Ensure user is present
+  - name: Ensure test user is present
     ipauser:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -30,12 +16,18 @@
       first: user
       last: zeroone
 
-  - name: Ensure group is present, with user01 on it.
+  - name: Ensure group01 is present, with user01 on it.
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group01
       user: user01
+
+  - name: Ensure group02 is present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: group02
 
   - name: Ensure sudocmdgroup is absent
     ipasudocmdgroup:
@@ -152,6 +144,100 @@
       action: member
       state: absent
     register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure group01 is on the list of users sudorule execute as.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule1
+      runasuser_group:
+        - group01
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group01 is on the list of users sudorule execute as, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule1
+      runasuser_group:
+        - group01
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure group01 and group2 are on the list of users sudorule execute as.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule1
+      runasuser_group:
+        - group01
+        - group02
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group01 and group2 are on the list of users sudorule execute as, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule1
+      runasuser_group:
+        - group01
+        - group02
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Check if group02 is on the list of users sudorule execute as.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule1
+      runasuser_group:
+        - group02
+      action: member
+    register: result
+    check_mode: true
+    failed_when: result.changed or result.failed
+
+  - name: Ensure group01 is not on the list of users sudorule execute as.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule1
+      runasuser_group:
+        - group01
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure group01 is not on the list of users sudorule execute as, again.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule1
+      runasuser_group:
+        - group01
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Check if group02 is on the list of users sudorule execute as.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule1
+      runasuser_group:
+        - group02
+      action: member
+    register: result
+    check_mode: true
     failed_when: result.changed or result.failed
 
   - name: Ensure group01 is on the list of group sudorule execute as.
@@ -1154,4 +1240,20 @@
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: cluster
+      state: absent
+
+  - name: Ensure groups are absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name:
+        - group01
+        - group02
+      state: absent
+
+  - name: Ensure user is absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: user01
       state: absent
