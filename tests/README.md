@@ -138,6 +138,35 @@ molecule destroy -s c8s
 See [Running the tests](#running-the-tests) section for more information on available options.
 
 
+## Running local tests with upstream CI images
+
+To run tests locally using the same images used by upstream CI use `utils/run-tests.sh`.
+
+```
+utils/run-tests.sh tests/config/test_config.yml
+```
+
+To run all tests for a single plugin, use the `-s` option with plugin directory name. This will search, recursively for playbooks named with the pattern `test_*.yml`. To run all playbook tests for `ipauser`:
+
+```
+utils/run-tests.sh -s user
+```
+
+When executed, `utils/run-tests.sh` will create a container (either using `docker` or `podman`) using one of the testing ansible-freeipa images (https://quay.io/repository/ansible-freeipa/upstream-tests?tab=tags), run the selected tests against the container, and remove the container after tests are executed. If a test fails the container is not removed, so the failure can be investigated.
+
+It is possible to keep the container after the execution, even if tests succeed, using the `-C` option:
+
+```
+utils/run-tests.sh -s config -C
+```
+
+By default the tests are executed against the latest version of the Fedora image (`fedora-latest`). The testing image can be selected with the `-i` option. Use `-l` to list the available image names.
+
+```
+utils/run-tests.sh -i c9s tests/host/test_host.yml
+```
+
+
 ## Upcoming/desired improvements:
 
 * A script to pre-config the complete test environment using virsh.

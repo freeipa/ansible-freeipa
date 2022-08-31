@@ -10,6 +10,8 @@ exclude_paths:
   - molecule/
   - tests/azure/
   - meta/runtime.yml
+  - requirements-docker.yml
+  - requirements-podman.yml
 
 kinds:
   - playbook: '**/tests/**/test_*.yml'
