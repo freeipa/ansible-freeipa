@@ -383,6 +383,31 @@
       loop_var: server_backup_data
       label: server_backup_data.path
 
+  # Test issue #900
+  - name: Remove all backup from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: absent
+      ipabackup_name: all
+
+  - name: Test issue 900 fix.
+    block:
+      - name: Invalid role configuration that should not produce a backup on the server.
+        ansible.builtin.include_role:
+          name: ipabackup
+        vars:
+          state: present
+          ipabackup_name: this_must_fail
+    rescue:
+      - name: List all existing backups on server
+        ansible.builtin.find:
+          path: /var/lib/ipa/backup
+          recurse: no
+          file_type: directory
+        register: server_backups
+        failed_when: server_backups.files
+
   # CLEANUP
 
   - name: List all existing backups on controller
