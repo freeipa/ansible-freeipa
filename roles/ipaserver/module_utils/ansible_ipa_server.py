@@ -255,6 +255,10 @@ else:
         def info(self, msg):
             self.module.debug(msg)
 
+        @staticmethod
+        def isatty():
+            return False
+
         def write(self, msg):
             self.module.debug(msg)
             # self.module.warn(msg)
