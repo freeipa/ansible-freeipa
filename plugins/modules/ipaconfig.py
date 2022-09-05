@@ -148,6 +148,24 @@ options:
         required: false
         type: list
         aliases: ["ipadomainresolutionorder"]
+    enable_sid:
+        description: >
+          New users and groups automatically get a SID assigned.
+          Requires IPA 4.9.8+.
+        required: false
+        type: bool
+    netbios_name:
+        description: >
+          NetBIOS name of the IPA domain.
+          Requires IPA 4.9.8+ and 'enable_sid: yes'.
+        required: false
+        type: string
+    add_sids:
+        description: >
+          Add SIDs for existing users and groups.
+          Requires IPA 4.9.8+ and 'enable_sid: yes'.
+        required: false
+        type: bool
 '''
 
 EXAMPLES = '''
@@ -169,6 +187,24 @@ EXAMPLES = '''
         ipaadmin_password: SomeADMINpassword
         defaultshell: /bin/bash
         maxusername: 64
+
+- name: Playbook to enable SID and generate users and groups SIDs
+  hosts: ipaserver
+  tasks:
+    - name: Enable SID and generate users and groups SIDS
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        enable_sid: yes
+        add_sids: yes
+
+- name: Playbook to change IPA domain netbios name
+  hosts: ipaserver
+  tasks:
+    - name: Enable SID and generate users and groups SIDS
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        enable_sid: yes
+        netbios_name: IPADOM
 '''
 
 RETURN = '''
@@ -247,6 +283,14 @@ config:
     domain_resolution_order:
         description: list of domains used for short name qualification
         returned: always
+    enable_sid:
+        description: >
+          new users and groups automatically get a SID assigned.
+          Requires IPA 4.9.8+.
+        returned: always
+    netbios_name:
+        description: NetBIOS name of the IPA domain. Requires IPA 4.9.8+.
+        returned: if enable_sid is True
 '''
 
 
@@ -258,6 +302,28 @@ def config_show(module):
     _result = module.ipa_command_no_name("config_show", {"all": True})
 
     return _result["result"]
+
+
+def get_netbios_name(module):
+    try:
+        _result = module.ipa_command_no_name("trustconfig_show", {"all": True})
+    except Exception:  # pylint: disable=broad-except
+        return None
+    else:
+        return _result["result"]["ipantflatname"][0]
+
+
+def is_enable_sid(module):
+    """When 'enable-sid' is true admin user and admins group have SID set."""
+    _result = module.ipa_command("user_show", "admin", {"all": True})
+    sid = _result["result"].get("ipantsecurityidentifier", [""])
+    if not sid[0].endswith("-500"):
+        return False
+    _result = module.ipa_command("group_show", "admins", {"all": True})
+    sid = _result["result"].get("ipantsecurityidentifier", [""])
+    if not sid[0].endswith("-512"):
+        return False
+    return True
 
 
 def main():
@@ -313,7 +379,10 @@ def main():
                                 aliases=["ipauserauthtype"]),
             ca_renewal_master_server=dict(type="str", required=False),
             domain_resolution_order=dict(type="list", required=False,
-                                         aliases=["ipadomainresolutionorder"])
+                                         aliases=["ipadomainresolutionorder"]),
+            enable_sid=dict(type="bool", required=False),
+            add_sids=dict(type="bool", required=False),
+            netbios_name=dict(type="str", required=False),
         ),
         supports_check_mode=True,
     )
@@ -344,7 +413,10 @@ def main():
         "pac_type": "ipakrbauthzdata",
         "user_auth_type": "ipauserauthtype",
         "ca_renewal_master_server": "ca_renewal_master_server",
-        "domain_resolution_order": "ipadomainresolutionorder"
+        "domain_resolution_order": "ipadomainresolutionorder",
+        "enable_sid": "enable_sid",
+        "netbios_name": "netbios_name",
+        "add_sids": "add_sids",
     }
     allow_empty_string = ["pac_type", "user_auth_type", "configstring"]
     reverse_field_map = {v: k for k, v in field_map.items()}
@@ -394,11 +466,47 @@ def main():
     changed = False
     exit_args = {}
 
-    # Connect to IPA API
-    with ansible_module.ipa_connect():
+    # Connect to IPA API (enable-sid requires context == 'client')
+    with ansible_module.ipa_connect(context="client"):
+        has_enable_sid = ansible_module.ipa_command_param_exists(
+            "config_mod", "enable_sid")
 
         result = config_show(ansible_module)
+
         if params:
+            netbios_name = params.get("netbios_name")
+            if netbios_name:
+                netbios_name = netbios_name.upper()
+            add_sids = params.get("add_sids")
+            enable_sid = params.get("enable_sid")
+            required_sid = any([netbios_name, add_sids])
+            if required_sid and not enable_sid:
+                ansible_module.fail_json(
+                    "'enable-sid: yes' required for 'netbios_name' "
+                    "and 'add-sids'."
+                )
+            if enable_sid:
+                if not has_enable_sid:
+                    ansible_module.fail_json(
+                        "This version of IPA does not support 'enable-sid'.")
+                if (
+                    netbios_name
+                    and netbios_name == get_netbios_name(ansible_module)
+                ):
+                    del params["netbios_name"]
+                    netbios_name = None
+                if not add_sids and "add_sids" in params:
+                    del params["add_sids"]
+                if (
+                    not any([netbios_name, add_sids])
+                    and is_enable_sid(ansible_module)
+                ):
+                    del params["enable_sid"]
+            else:
+                for param in ["enable_sid", "netbios_name", "add_sids"]:
+                    if param in params:
+                        del params[params]
+
             params = {
                 k: v for k, v in params.items()
                 if k not in result or result[k] != v
@@ -458,6 +566,10 @@ def main():
             # Add empty domain_resolution_order if it is not set
             if "domain_resolution_order" not in exit_args:
                 exit_args["domain_resolution_order"] = []
+            # Set enable_sid
+            if has_enable_sid:
+                exit_args["enable_sid"] = is_enable_sid(ansible_module)
+                exit_args["netbios_name"] = get_netbios_name(ansible_module)
 
     # Done
     ansible_module.exit_json(changed=changed, config=exit_args)

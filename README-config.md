@@ -65,6 +65,9 @@ Example playbook to read config options:
         maxusername: 64
 ```
 
+
+Example playbook to set global configuration options:
+
 ```yaml
 ---
 - name: Playbook to ensure some config options are set
@@ -78,6 +81,40 @@ Example playbook to read config options:
         maxusername: 64
 ```
 
+
+Example playbook to enable SID and generate users and groups SIDs:
+
+```yaml
+---
+- name: Playbook to ensure SIDs are enabled and users and groups have SIDs
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Enable SID and generate users and groups SIDS
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        enable_sid: yes
+        add_sids: yes
+```
+
+Example playbook to change IPA domain NetBIOS name:
+
+```yaml
+---
+- name: Playbook to change IPA domain netbios name
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Set IPA domain netbios name
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        enable_sid: yes
+        netbios_name: IPADOM
+```
 
 Variables
 =========
@@ -111,6 +148,9 @@ Variable | Description | Required
 `user_auth_type` \| `ipauserauthtype` |  set default types of supported user authentication (choices: `password`, `radius`, `otp`, `disabled`). Use `""` to clear this variable. | no
 `domain_resolution_order` \| `ipadomainresolutionorder` | Set list of domains used for short name qualification | no
 `ca_renewal_master_server` \| `ipacarenewalmasterserver`| Renewal master for IPA certificate authority. | no
+`enable_sid` | New users and groups automatically get a SID assigned. Requires IPA 4.9.8+. (bool) | no
+`netbios_name` | NetBIOS name of the IPA domain. Requires IPA 4.9.8+ and 'enable_sid: yes'. | no
+`add_sids` | Add SIDs for existing users and groups. Requires IPA 4.9.8+ and 'enable_sid: yes'. (bool) | no
 
 
 Return Values
@@ -140,6 +180,8 @@ Variable | Description | Returned When
 &nbsp; | `user_auth_type` | &nbsp;
 &nbsp; | `domain_resolution_order` | &nbsp;
 &nbsp; | `ca_renewal_master_server` | &nbsp;
+&nbsp; | `enable_sid` | &nbsp;
+&nbsp; | `netbios_name` | &nbsp;
 
 All returned fields take the same form as their namesake input parameters
 
