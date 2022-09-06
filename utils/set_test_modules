@@ -1,0 +1,44 @@
+#!/bin/bash -eu
+# This file shoud be source'd (. set_test_modules) rather than executed.
+
+#
+# Set "BASE_BRANCH" to a different branch to compare. 
+#
+
+RED="\033[31;1m"
+RST="\033[0m"
+
+die() {
+    echo -e "${RED}${*}${RST}" >&2
+}
+
+TOPDIR="$(dirname "${BASH_SOURCE[0]}")/.."
+
+pushd "${TOPDIR}" >/dev/null 2>&1 || die "Failed to change directory."
+
+files_list=$(mktemp)
+
+BASE_BRANCH=${BASE_BRANCH:-"master"}
+git diff "${BASE_BRANCH}" --name-only > "${files_list}"
+
+# Get all modules that should have tests executed
+enabled_modules="$(python utils/get_test_modules.py $(cat "${files_list}"))"
+[ -z "${enabled_modules}" ] && enabled_modules="None"
+
+# Get individual tests that should be executed
+mapfile -t tests < <(sed -n "s#.*/\(test_[^/]*\).yml#\1#p" "${files_list}" | tr -d " ")
+[ ${#tests[@]} -gt 0 ] && enabled_tests=$(IFS=, ; echo "${tests[*]}")
+[ -z "${enabled_tests}" ] && enabled_tests="None"
+
+[ -n "${enabled_tests}" ] && IPA_ENABLED_TESTS="${enabled_tests},${IPA_ENABLED_TESTS}"
+[ -n "${enabled_modules}" ] && IPA_ENABLED_MODULES="${enabled_modules},${IPA_ENABLED_MODULES}"
+
+rm -f "${files_list}"
+
+export IPA_ENABLED_MODULES
+export IPA_ENABLED_TESTS
+
+echo "IPA_ENABLED_MODULES = [${IPA_ENABLED_MODULES}]"
+echo "IPA_ENABLED_TESTS = [${IPA_ENABLED_TESTS}]"
+
+popd >/dev/null 2>&1 || die "Failed to change back to original directory."

@@ -15,6 +15,7 @@ REPO_ROOT = os.path.join(os.path.dirname(__file__), "..")
 
 def get_tests():
     """Retrieve a list of modules and its tests."""
+
     def get_module(root):
         if root != _test_dir:
             while True:
@@ -95,9 +96,26 @@ def main():
         disabled = {}
         enabled = {}
         for res, state in [(disabled, "disabled"), (enabled, "enabled")]:
-            for module in config.get(f"ipa_{state}_modules", []):
-                res[module] = set(all_tests[module])
-            for test in config.get(f"ipa_{state}_tests", []):
+            items = [
+                x.strip()
+                for x in
+                os.environ.get(f"ipa_{state}_modules".upper(), "").split(",")
+                if x.strip()
+            ] if scenario == "All" else []
+            modules = config.get(f"ipa_{state}_modules", []) + items
+            for module in modules:
+                if module != "None":
+                    res[module] = set(all_tests[module])
+            items = [
+                x.strip()
+                for x in
+                os.environ.get(f"ipa_{state}_tests".upper(), "").split(",")
+                if x.strip()
+            ] if scenario == "All" else []
+            test_list = config.get(f"ipa_{state}_tests", []) + items
+            for test in test_list:
+                if test == "None":
+                    continue
                 for module, tests in all_tests.items():
                     if test in tests:
                         mod = res.setdefault(module, set())
