@@ -1,0 +1,412 @@
+---
+- name: Test ansible-freeipa backup role
+  hosts: ipaserver
+  become: yes
+  gather_facts: yes
+
+  tasks:
+  - name: List all directories on server backup directory
+    ansible.builtin.find:
+      path: /var/lib/ipa/backup
+      file_type: directory
+    register: backup_dirs
+
+  - name: List all files on server backup directory
+    ansible.builtin.find:
+      path: /var/lib/ipa/backup
+      file_type: file
+    register: backup_files
+
+  - name: Remove all files and directories on server backup directory
+    ansible.builtin.file:
+      path: "{{ item.path }}"
+      state: absent
+    loop: "{{ backup_dirs.files + backup_files.files }}"
+    loop_control:
+      label: "{{ item.path }}"
+
+  - name: List all existing backups on controller
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    delegate_to: localhost
+    become: no
+
+  - name: Remove all existing backups on controller
+    ansible.builtin.file:
+      path: "{{ item.path }}"
+      state: absent
+    loop: "{{ backups.files }}"
+    loop_control:
+      label: "{{ item.path }}"
+    delegate_to: localhost
+    become: no
+
+  # TESTS
+
+  # Test simple backup on server
+  - name: Remove all backup from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: absent
+      ipabackup_name: all
+
+  - name: Backup ipaserver and leave data files on server
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: present
+
+  - name: Verify backup on server.
+    ansible.builtin.find:
+      paths: /var/lib/ipa/backup/
+      recurse: no
+      file_type: directory
+    register: result
+    failed_when: not result.files
+
+  # Test backup and copy to controller, don't keep copy on server
+  - name: Remove all backup from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: absent
+      ipabackup_name: all
+
+  - name: List all existing backups on controller
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    delegate_to: localhost
+    become: no
+
+  - name: Remove all existing backups on controller
+    ansible.builtin.file:
+      path: "{{ item.path }}"
+      state: absent
+    loop: "{{ backups.files }}"
+    loop_control:
+      label: "{{ item.path }}"
+    delegate_to: localhost
+    become: no
+
+  - name: Backup ipaserver copying files to controller
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: present
+      ipabackup_to_controller: yes
+
+  - name: Verify backup on server.
+    ansible.builtin.find:
+      paths: /var/lib/ipa/backup
+      recurse: no
+      file_type: directory
+    register: backups
+    failed_when: backups.files
+
+  - name: Verify backup on controller.
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    failed_when: not backups.files
+    delegate_to: localhost
+    become: no
+
+    # Test backup and copy to controller, keep copy on server
+  - name: Remove all backup from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: absent
+      ipabackup_name: all
+
+  - name: List all existing backups on controller
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    delegate_to: localhost
+    become: no
+
+  - name: Remove all existing backups on controller
+    ansible.builtin.file:
+      path: "{{ item.path }}"
+      state: absent
+    loop: "{{ backups.files }}"
+    loop_control:
+      label: "{{ item.path }}"
+    delegate_to: localhost
+    become: no
+
+  - name: Backup ipaserver copying files to controller, keep copy on server
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: present
+      ipabackup_to_controller: yes
+      ipabackup_keep_on_server: yes
+
+  - name: Verify backup on server.
+    ansible.builtin.find:
+      paths: /var/lib/ipa/backup
+      recurse: no
+      file_type: directory
+    register: result
+    failed_when: not result.files
+
+  - name: Verify backup on controller.
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    failed_when: not backups.files
+    delegate_to: localhost
+    become: no
+
+  # Copy all backups from server
+  - name: list all existing backups on server
+    ansible.builtin.find:
+      path: /var/lib/ipa/backup
+      recurse: no
+      file_type: directory
+    register: server_backups
+
+  - name: List all existing backups on controller
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    delegate_to: localhost
+    become: no
+
+  - name: Remove all existing backups on controller
+    ansible.builtin.file:
+      path: "{{ item.path }}"
+      state: absent
+    loop: "{{ backups.files }}"
+    loop_control:
+      label: "{{ item.path }}"
+    delegate_to: localhost
+    become: no
+
+  - name: Copy all backups from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: copied
+      ipabackup_name: all
+      ipabackup_to_controller: yes
+
+  - name: Check all existing backups on controller
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    failed_when: not backups.files
+    delegate_to: localhost
+    become: no
+
+  # Copy backup from controller to server
+  - name: Remove all backup from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: absent
+      ipabackup_name: all
+
+  - name: List all existing backups on controller
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    failed_when: not backups.files
+    delegate_to: localhost
+    become: no
+
+  - name: Copy backup from controller to server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: copied
+      ipabackup_name: "{{ ipa_backup_data.path | split('/') | last }}"
+      ipabackup_from_controller: yes
+    with_items: "{{ backups.files }}"
+    loop_control:
+      loop_var: ipa_backup_data
+
+  - name: Check all existing backups on server
+    ansible.builtin.find:
+      path: /var/lib/ipa/backup
+      file_type: directory
+    register: backups
+    failed_when: not backups.files
+
+  # Copy backup from server to controller
+  - name: List all existing backups on controller
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    delegate_to: localhost
+    become: no
+
+  - name: Remove all existing backups on controller
+    ansible.builtin.file:
+      path: "{{ item.path }}"
+      state: absent
+    loop: "{{ backups.files }}"
+    loop_control:
+      label: "{{ item.path }}"
+    delegate_to: localhost
+    become: no
+
+  - name: List all existing backups on server
+    ansible.builtin.find:
+      path: /var/lib/ipa/backup
+      recurse: no
+      file_type: directory
+    register: server_backups
+    failed_when: not server_backups.files
+
+  - name: Copy backup from server to controller.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: copied
+      ipabackup_name: "{{ server_backup_data.path | split('/') | last }}"
+      ipabackup_to_controller: yes
+    loop: "{{ server_backups.files }}"
+    loop_control:
+      loop_var: server_backup_data
+      label: server_backup_data.path
+
+  - name: List all existing backups on controller
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    failed_when: not backups.files
+    delegate_to: localhost
+    become: no
+
+  # Remove all backups from server
+  - name: list all existing backups on server
+    ansible.builtin.find:
+      path: /var/lib/ipa/backup
+      recurse: no
+      file_type: directory
+    register: backups
+    failed_when: not backups.files
+
+  - name: Remov all backup from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: absent
+      ipabackup_name: all
+
+  - name: list all existing backups on server
+    ansible.builtin.find:
+      path: /var/lib/ipa/backup
+      recurse: no
+      file_type: directory
+    register: backups
+    failed_when: backups.files
+
+  # Remove all backups from server
+  - name: Create a backup on the server
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: present
+
+  - name: Remove all backup from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: absent
+      ipabackup_name: all
+
+  - name: list all existing backups on server
+    ansible.builtin.find:
+      path: /var/lib/ipa/backup
+      recurse: no
+      file_type: directory
+    register: backups
+    failed_when: backups.files
+
+  # Remove all backup from server
+  - name: Remove all backup from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: absent
+      ipabackup_name: all
+
+  - name: Create a backup on the server
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: present
+
+  - name: List all existing backups on server
+    ansible.builtin.find:
+      path: /var/lib/ipa/backup
+      recurse: no
+      file_type: directory
+    register: server_backups
+    failed_when: not server_backups.files
+
+  - name: Remove backup from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: absent
+      ipabackup_name: "{{ server_backup_data.path | split('/') | last }}"
+    loop: "{{ server_backups.files }}"
+    loop_control:
+      loop_var: server_backup_data
+      label: server_backup_data.path
+
+  # CLEANUP
+
+  - name: List all existing backups on controller
+    ansible.builtin.find:
+      path: "{{ lookup('env', 'PWD') }}"
+      pattern: "{{ ansible_facts.fqdn }}*"
+      file_type: directory
+    register: backups
+    delegate_to: localhost
+    become: no
+
+  - name: Remove all existing backups on controller
+    ansible.builtin.file:
+      path: "{{ item.path }}"
+      state: absent
+    loop: "{{ backups.files }}"
+    loop_control:
+      label: "{{ item.path }}"
+    delegate_to: localhost
+    become: no
+
+  - name: Remove all backup from server.
+    ansible.builtin.include_role:
+      name: ipabackup
+    vars:
+      state: absent
+      ipabackup_name: all
