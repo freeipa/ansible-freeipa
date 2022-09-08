@@ -18,13 +18,11 @@ pushd "${TOPDIR}" >/dev/null 2>&1 || die "Failed to change directory."
 
 files_list=$(mktemp)
 
-if [ -z "$BASE_BRANCH" ]
-then
-    git remote add  _temp https://github.com/freeipa/ansible-freeipa
-    git fetch --prune --no-tags --quiet _temp
-    BASE_BRANCH="master"
-fi
-git diff "${BASE_BRANCH}" --name-only > "${files_list}"
+remote="$(basename $(mktemp -u remote_XXXXXX))"
+git remote add ${remote} https://github.com/freeipa/ansible-freeipa
+git fetch --prune --no-tags --quiet ${remote}
+git diff "${remote}/master" --name-only > "${files_list}"
+git remote remove ${remote}
 
 # Get all modules that should have tests executed
 enabled_modules="$(python utils/get_test_modules.py $(cat "${files_list}"))"
