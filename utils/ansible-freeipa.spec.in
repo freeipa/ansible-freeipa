@@ -3,6 +3,8 @@
 # the python version used in the node
 %define __brp_python_bytecompile %{nil}
 
+%global python %{__python3}
+
 Summary: Roles and playbooks to deploy FreeIPA servers, replicas and clients
 Name: ansible-freeipa
 Version: @@VERSION@@
@@ -13,19 +15,101 @@ Source: %{name}-%{version}-@@RELEASE@@.tar.bz2
 BuildArch: noarch
 
 %description
-ansible-freeipa provides Ansible roles and playbooks to install and uninstall
-FreeIPA servers, replicas and clients. Also modules for group, host, topology
-and user management.
+Ansible roles to install and uninstall FreeIPA servers, replicas and clients,
+roles for backups and SmartCard configuration, modules for management and also
+playbooks for all roles and modules.
 
-Note: The ansible playbooks and roles require a configured ansible environment
-where the ansible nodes are reachable and are properly set up to have an IP
+Note: The Ansible playbooks and roles require a configured Ansible environment
+where the Ansible nodes are reachable and are properly set up to have an IP
 address and a working package manager.
+
+Features
+
+- Server, replica and client deployment
+- Cluster deployments: Server, replicas and clients in one playbook
+- One-time-password (OTP) support for client installation
+- Repair mode for clients
+- Backup and restore, also to and from controller
+- Smartcard setup for servers and clients
+- Modules for automembership rule management
+- Modules for automount key management
+- Modules for automount location management
+- Modules for automount map management
+- Modules for config management
+- Modules for delegation management
+- Modules for dns config management
+- Modules for dns forwarder management
+- Modules for dns record management
+- Modules for dns zone management
+- Modules for group management
+- Modules for hbacrule management
+- Modules for hbacsvc management
+- Modules for hbacsvcgroup management
+- Modules for host management
+- Modules for hostgroup management
+- Modules for idrange management
+- Modules for location management
+- Modules for permission management
+- Modules for privilege management
+- Modules for pwpolicy management
+- Modules for role management
+- Modules for self service management
+- Modules for server management
+- Modules for service management
+- Modules for service delegation rule management
+- Modules for service delegation target management
+- Modules for sudocmd management
+- Modules for sudocmdgroup management
+- Modules for sudorule management
+- Modules for topology management
+- Modules for trust management
+- Modules for user management
+- Modules for vault management
+
+Supported FreeIPA Versions
+
+FreeIPA versions 4.6 and up are supported by all roles.
+
+The client role supports versions 4.4 and up, the server role is working with
+versions 4.5 and up, the replica role is currently only working with versions
+4.6 and up.
+
+Supported Distributions
+
+- RHEL/CentOS 7.4+
+- Fedora 26+
+- Ubuntu
+- Debian 10+ (ipaclient only, no server or replica!)
+
+Requirements
+
+  Controller
+  - Ansible version: 2.8+ (ansible-freeipa is an Ansible Collection)
+  - /usr/bin/kinit is required on the controller if a one time password (OTP)
+    is used
+
+  Node
+  - Supported FreeIPA version (see above)
+  - Supported distribution (needed for package installation only, see above)
+
+Limitations
+
+External signed CA is now supported. But the currently needed two step process
+is an issue for the processing in a simple playbook.
+Work is planned to have a new method to handle CSR for external signed CAs in
+a separate step before starting the server installation.
+
 
 %package tests
 Summary: ansible-freeipa tests
-Requires: %{name}
+Requires: %{name} = %{version}-%{release}
 
 %description tests
+ansible-freeipa tests.
+
+Please have a look at %{_datadir}/ansible-freeipa/requirements-tests.txt
+to get the needed requrements to run the tests.
+
 
 %prep
 %setup -q -n ansible-freeipa-%{version}-@@RELEASE@@
@@ -38,6 +122,13 @@ for i in roles/ipa*/library/*.py roles/ipa*/module_utils/*.py plugins/*/*.py; do
     chmod a-x $i
 done
 
+for i in utils/*.py utils/ansible-ipa-*-install utils/new_module \
+         utils/changelog utils/ansible-doc-test;
+do
+    sed -i '{s@/usr/bin/python*@%{python}@}' $i
+done
+
+
 %build
 
 %install
@@ -48,10 +139,19 @@ cp -rp roles/ipareplica %{buildroot}%{_datadir}/ansible/roles/
 cp -rp roles/ipareplica/README.md README-replica.md
 cp -rp roles/ipaclient %{buildroot}%{_datadir}/ansible/roles/
 cp -rp roles/ipaclient/README.md README-client.md
+cp -rp roles/ipabackup %{buildroot}%{_datadir}/ansible/roles/
+cp -rp roles/ipabackup/README.md README-backup.md
+cp -rp roles/ipasmartcard_server %{buildroot}%{_datadir}/ansible/roles/
+cp -rp roles/ipasmartcard_server/README.md README-smartcard_server.md
+cp -rp roles/ipasmartcard_client %{buildroot}%{_datadir}/ansible/roles/
+cp -rp roles/ipasmartcard_client/README.md README-smartcard_client.md
 install -m 755 -d %{buildroot}%{_datadir}/ansible/plugins/
 cp -rp plugins/* %{buildroot}%{_datadir}/ansible/plugins/
 
 
+install -m 755 -d %{buildroot}%{_datadir}/ansible-freeipa
+cp requirements*.txt %{buildroot}%{_datadir}/ansible-freeipa/
+cp -rp utils %{buildroot}%{_datadir}/ansible-freeipa/
 install -m 755 -d %{buildroot}%{_datadir}/ansible-freeipa/tests
 cp -rp tests %{buildroot}%{_datadir}/ansible-freeipa/
 
@@ -60,13 +160,21 @@ cp -rp tests %{buildroot}%{_datadir}/ansible-freeipa/
 %{_datadir}/ansible/roles/ipaserver
 %{_datadir}/ansible/roles/ipareplica
 %{_datadir}/ansible/roles/ipaclient
+%{_datadir}/ansible/roles/ipabackup
+%{_datadir}/ansible/roles/ipasmartcard_server
+%{_datadir}/ansible/roles/ipasmartcard_client
+%{_datadir}/ansible/plugins/doc_fragments
 %{_datadir}/ansible/plugins/module_utils
 %{_datadir}/ansible/plugins/modules
 %doc README*.md
 %doc playbooks
+%{_datadir}/ansible-freeipa/requirements.txt
+%{_datadir}/ansible-freeipa/requirements-dev.txt
+%{_datadir}/ansible-freeipa/utils
 
 %files tests
-%{_datadir}/ansible-freeipa
+%{_datadir}/ansible-freeipa/tests
+%{_datadir}/ansible-freeipa/requirements-tests.txt
 
 %changelog
 * @@DATE@@ Thomas Woerner <twoerner@redhat.com> - @@VERSION@@-@@RELEASE@@
