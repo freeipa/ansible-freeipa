@@ -26,18 +26,18 @@
   fail: msg="ipabackup_from_controller and ipabackup_to_controller are set"
   when: ipabackup_from_controller | bool and ipabackup_to_controller | bool
 
+- name: Fail for given ipabackup_name if state is not copied, restored or absent
+  fail: msg="ipabackup_name is given and state is not copied, restored or absent"
+  when: state is not defined or
+        (state != "copied" and state != "restored" and state != "absent") and
+        ipabackup_name is defined
+
 - name: Get ipabackup_dir from IPA installation
   include_tasks: "{{ role_path }}/tasks/get_ipabackup_dir.yml"
 
 - name: Backup IPA server
   include_tasks: "{{ role_path }}/tasks/backup.yml"
   when: state|default("present") == "present"
-
-- name: Fail for given ipabackup_name if state is not copied, restored or absent
-  fail: msg="ipabackup_name is given and state is not copied, restored or absent"
-  when: state is not defined or
-        (state != "copied" and state != "restored" and state != "absent") and
-        ipabackup_name is defined
 
 - name: Fail on missing ipabackup_name
   fail: msg="ipabackup_name is not set"
