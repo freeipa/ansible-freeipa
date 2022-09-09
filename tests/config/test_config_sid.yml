@@ -1,0 +1,70 @@
+---
+- name: Test config
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  tasks:
+
+  # GET CURRENT CONFIG
+
+  - name: Return current values of the global configuration options
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    register: previous
+
+  # TESTS
+  - block:
+    - name: Ensure SID is enabled.
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        enable_sid: yes
+      register: result
+      failed_when: result.failed or previous.config.enable_sid == result.changed
+
+    - name: Ensure SID is enabled, again.
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        enable_sid: yes
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure netbios_name is "IPATESTPLAY"
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        enable_sid: yes
+        netbios_name: IPATESTPLAY
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure netbios_name is "IPATESTPLAY", again
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        enable_sid: yes
+        netbios_name: IPATESTPLAY
+      register: result
+      failed_when: result.failed or result.changed
+
+    # add_sids is not idempotent as it always tries to generate the missing
+    # SIDs for users and groups.
+    - name: Add SIDs to users and groups.
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        enable_sid: yes
+        add_sids: yes
+
+    # REVERT TO PREVIOUS CONFIG
+    always:
+    # Once SID is enabled, it cannot be reverted.
+    - name: Revert netbios_name to original configuration
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        netbios_name: "{{ previous.config.netbios_name | default(omit) }}"
+        enable_sid: yes

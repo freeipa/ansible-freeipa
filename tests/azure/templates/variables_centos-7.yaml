@@ -12,8 +12,7 @@
 #
 ---
 variables:
-  empty: true
-#   ipa_enabled_modules: >-
-#   ipa_enabled_tests: >-
-#   ipa_disabled_modules: >-
-#   ipa_disabled_tests: >-
+  # ipa_enabled_modules: >-
+  # ipa_enabled_tests: >-
+  # ipa_disabled_modules: >-
+  ipa_disabled_tests: test_config_sid

@@ -1,0 +1,12 @@
+---
+- name: Playbook to ensure SIDs are enabled and users and groups have SIDs
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Enable SID and generate users and groups SIDS
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        enable_sid: yes
+        add_sids: yes

@@ -1,0 +1,12 @@
+---
+- name: Playbook to change IPA domain netbios name
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: Set IPA domain netbios name
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        enable_sid: yes
+        netbios_name: IPADOM
