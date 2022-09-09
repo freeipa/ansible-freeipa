@@ -1,5 +1,5 @@
 ---
-- name: Playbook to handle global DNS configuration
+- name: Playbook to handle global IPA configuration
   hosts: ipaserver
   become: no
   gather_facts: no
