@@ -15,9 +15,8 @@
 # one item is needed in the set.
 ---
 variables:
+  empty: true
   # ipa_enabled_modules: >-
   # ipa_enabled_tests: >-
-  ipa_disabled_modules: >-
-    dnsforwardzone,
-  ipa_disabled_tests: >-
-    test_dnsconfig_forwarders_ports
+  # ipa_disabled_modules: >-
+  # ipa_disabled_tests: >-
