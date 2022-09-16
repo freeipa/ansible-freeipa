@@ -5,11 +5,13 @@
 #
 # Example:
 #
-# disabled_modules: >-
+# ipa_disabled_modules: >-
 #   dnsconfig,
 #   group,
 #   hostgroup
 #
+# If no variables are set, set "empty: true" as at least
+# one item is needed in the set.
 ---
 variables:
   empty: true
