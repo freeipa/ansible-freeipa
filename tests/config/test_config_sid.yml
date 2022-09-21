@@ -6,6 +6,9 @@
 
   tasks:
 
+  - name: Set FreeIPA facts.
+    include_tasks: ../env_freeipa_facts.yml
+
   # GET CURRENT CONFIG
 
   - name: Return current values of the global configuration options
@@ -31,6 +34,14 @@
         enable_sid: yes
       register: result
       failed_when: result.failed or result.changed
+
+    - name: Try to Ensure SID is disabled.
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        enable_sid: no
+      register: result
+      failed_when: not result.failed or "SID cannot be disabled." not in result.msg
 
     - name: Ensure netbios_name is "IPATESTPLAY"
       ipaconfig:
@@ -59,6 +70,8 @@
         enable_sid: yes
         add_sids: yes
 
+    # only run tests if version supports enable-sid
+    when: ipa_version is version("4.9.8", ">=")
     # REVERT TO PREVIOUS CONFIG
     always:
     # Once SID is enabled, it cannot be reverted.
