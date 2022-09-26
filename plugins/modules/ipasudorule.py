@@ -143,6 +143,11 @@ options:
     required: false
     type: list
     elements: str
+  hostmask:
+    description: Host masks of allowed hosts.
+    required: false
+    type: list
+    elements: str
   action:
     description: Work on sudorule or member level
     type: str
@@ -202,6 +207,15 @@ EXAMPLES = """
     hostcategory: all
     state: enabled
 
+# Ensure sudo rule applies for hosts with hostmasks
+- ipasudorule:
+    ipaadmin_password: SomeADMINpassword
+    name: testrule1
+    hostmask:
+    - 192.168.122.1/24
+    - 192.168.120.1/24
+    action: member
+
 # Ensure Sudo Rule tesrule1 is absent
 - ipasudorule:
     ipaadmin_password: SomeADMINpassword
@@ -214,7 +228,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, api_get_domain, ensure_fqdn
+    gen_intersection_list, api_get_domain, ensure_fqdn, netaddr, to_text
 
 
 def find_sudorule(module, name):
@@ -275,6 +289,8 @@ def main():
                       default=None),
             hostgroup=dict(required=False, type='list', elements="str",
                            default=None),
+            hostmask=dict(required=False, type='list', elements="str",
+                          default=None),
             user=dict(required=False, type='list', elements="str",
                       default=None),
             group=dict(required=False, type='list', elements="str",
@@ -334,6 +350,7 @@ def main():
     nomembers = ansible_module.params_get("nomembers")  # noqa
     host = ansible_module.params_get("host")
     hostgroup = ansible_module.params_get_lowercase("hostgroup")
+    hostmask = ansible_module.params_get("hostmask")
     user = ansible_module.params_get_lowercase("user")
     group = ansible_module.params_get_lowercase("group")
     allow_sudocmd = ansible_module.params_get('allow_sudocmd')
@@ -350,6 +367,10 @@ def main():
 
     # state
     state = ansible_module.params_get("state")
+
+    # ensure hostmasks are network cidr
+    if hostmask is not None:
+        hostmask = [to_text(netaddr.IPNetwork(x).cidr) for x in hostmask]
 
     # Check parameters
     invalid = []
@@ -382,7 +403,7 @@ def main():
                    "cmdcategory", "runasusercategory",
                    "runasgroupcategory", "nomembers", "order"]
         if action == "sudorule":
-            invalid.extend(["host", "hostgroup", "user", "group",
+            invalid.extend(["host", "hostgroup", "hostmask", "user", "group",
                             "runasuser", "runasgroup", "allow_sudocmd",
                             "allow_sudocmdgroup", "deny_sudocmd",
                             "deny_sudocmdgroup", "sudooption"])
@@ -396,7 +417,7 @@ def main():
                 "disabled")
         invalid = ["description", "usercategory", "hostcategory",
                    "cmdcategory", "runasusercategory", "runasgroupcategory",
-                   "nomembers", "nomembers", "host", "hostgroup",
+                   "nomembers", "nomembers", "host", "hostgroup", "hostmask",
                    "user", "group", "allow_sudocmd", "allow_sudocmdgroup",
                    "deny_sudocmd", "deny_sudocmdgroup", "runasuser",
                    "runasgroup", "order", "sudooption"]
@@ -425,6 +446,7 @@ def main():
         user_add, user_del = [], []
         group_add, group_del = [], []
         hostgroup_add, hostgroup_del = [], []
+        hostmask_add, hostmask_del = [], []
         allow_cmd_add, allow_cmd_del = [], []
         allow_cmdgroup_add, allow_cmdgroup_del = [], []
         deny_cmd_add, deny_cmd_del = [], []
@@ -489,6 +511,9 @@ def main():
 
                     hostgroup_add, hostgroup_del = gen_add_del_lists(
                         hostgroup, res_find.get('memberhost_hostgroup', []))
+
+                    hostmask_add, hostmask_del = gen_add_del_lists(
+                        hostmask, res_find.get('hostmask', []))
 
                     user_add, user_del = gen_add_del_lists(
                         user, res_find.get('memberuser_user', []))
@@ -556,6 +581,9 @@ def main():
                     if hostgroup is not None:
                         hostgroup_add = gen_add_list(
                             hostgroup, res_find.get("memberhost_hostgroup"))
+                    if hostmask is not None:
+                        hostmask_add = gen_add_list(
+                            hostmask, res_find.get("hostmask"))
                     if user is not None:
                         user_add = gen_add_list(
                             user, res_find.get("memberuser_user"))
@@ -627,6 +655,10 @@ def main():
                     if hostgroup is not None:
                         hostgroup_del = gen_intersection_list(
                             hostgroup, res_find.get("memberhost_hostgroup"))
+
+                    if hostmask is not None:
+                        hostmask_del = gen_intersection_list(
+                            hostmask, res_find.get("hostmask"))
 
                     if user is not None:
                         user_del = gen_intersection_list(
@@ -719,18 +751,19 @@ def main():
 
             # Manage members.
             # Manage hosts and hostgroups
-            if host_add or hostgroup_add:
-                commands.append([name, "sudorule_add_host",
-                                 {
-                                     "host": host_add,
-                                     "hostgroup": hostgroup_add,
-                                 }])
-            if host_del or hostgroup_del:
-                commands.append([name, "sudorule_remove_host",
-                                 {
-                                     "host": host_del,
-                                     "hostgroup": hostgroup_del,
-                                 }])
+            if any([host_add, hostgroup_add, hostmask_add]):
+                params = {"host": host_add, "hostgroup": hostgroup_add}
+                # An empty Hostmask cannot be used, or IPA API will fail.
+                if hostmask_add:
+                    params["hostmask"] = hostmask_add
+                commands.append([name, "sudorule_add_host", params])
+
+            if any([host_del, hostgroup_del, hostmask_del]):
+                params = {"host": host_del, "hostgroup": hostgroup_del}
+                # An empty Hostmask cannot be used, or IPA API will fail.
+                if hostmask_del:
+                    params["hostmask"] = hostmask_del
+                commands.append([name, "sudorule_remove_host", params])
 
             # Manage users and groups
             if user_add or group_add:
