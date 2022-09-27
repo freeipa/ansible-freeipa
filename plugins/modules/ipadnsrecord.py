@@ -866,8 +866,13 @@ RETURN = """
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, is_ipv4_addr, is_ipv6_addr, ipalib_errors
-import dns.reversename
-import dns.resolver
+try:
+    import dns.reversename
+    import dns.resolver
+except ImportError as _err:
+    MODULE_IMPORT_ERROR = str(_err)
+else:
+    MODULE_IMPORT_ERROR = None
 
 from ansible.module_utils import six
 
@@ -1130,6 +1135,9 @@ def configure_module():
     )
 
     ansible_module._ansible_debug = True
+
+    if MODULE_IMPORT_ERROR is not None:
+        ansible_module.fail_json(msg=MODULE_IMPORT_ERROR)
 
     return ansible_module
 

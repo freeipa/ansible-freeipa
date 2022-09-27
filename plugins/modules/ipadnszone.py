@@ -201,7 +201,6 @@ dnszone:
       returned: always
 """
 
-from ipapython.dnsutil import DNSName  # noqa: E402
 from ansible.module_utils.ansible_freeipa_module import (
     IPAAnsibleModule,
     is_ip_address,
@@ -210,8 +209,9 @@ from ansible.module_utils.ansible_freeipa_module import (
     ipalib_errors,
     compare_args_ipa,
     IPAParamMapping,
+    DNSName,
+    netaddr
 )  # noqa: E402
-import netaddr
 from ansible.module_utils import six
 
 
