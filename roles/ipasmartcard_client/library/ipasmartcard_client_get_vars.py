@@ -64,7 +64,13 @@ python_interpreter:
 
 import sys
 from ansible.module_utils.basic import AnsibleModule
-from ipaplatform.paths import paths
+try:
+    from ipaplatform.paths import paths
+except ImportError as _err:
+    MODULE_IMPORT_ERROR = str(_err)
+    paths = None
+else:
+    MODULE_IMPORT_ERROR = None
 
 
 def main():
@@ -72,6 +78,9 @@ def main():
         argument_spec={},
         supports_check_mode=False,
     )
+
+    if MODULE_IMPORT_ERROR is not None:
+        ansible_module.fail_json(msg=MODULE_IMPORT_ERROR)
 
     ansible_module.exit_json(changed=False,
                              NSS_DB_DIR=paths.NSS_DB_DIR,
