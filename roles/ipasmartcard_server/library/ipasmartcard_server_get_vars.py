@@ -116,22 +116,29 @@ python_interpreter:
 
 import sys
 from ansible.module_utils.basic import AnsibleModule
-from ipaplatform.paths import paths
 try:
-    from ipaserver.install.httpinstance import OCSP_ENABLED, OCSP_DIRECTIVE
-    NSS_OCSP_ENABLED = ""
-    NSS_OCSP_DIRECTIVE = ""
-    NSS_NICKNAME_DIRECTIVE = ""
-except ImportError:
-    from ipaserver.install.httpinstance import NSS_OCSP_ENABLED
-    NSS_OCSP_DIRECTIVE = "NSSOCSP"
-    NSS_NICKNAME_DIRECTIVE = "NSSNickname"
-    OCSP_ENABLED = ""
-    OCSP_DIRECTIVE = ""
-try:
-    from ipaclient.install.client import sssd_enable_ifp
-except ImportError:
+    from ipaplatform.paths import paths
+    try:
+        from ipaserver.install.httpinstance import OCSP_ENABLED, OCSP_DIRECTIVE
+        NSS_OCSP_ENABLED = ""
+        NSS_OCSP_DIRECTIVE = ""
+        NSS_NICKNAME_DIRECTIVE = ""
+    except ImportError:
+        from ipaserver.install.httpinstance import NSS_OCSP_ENABLED
+        NSS_OCSP_DIRECTIVE = "NSSOCSP"
+        NSS_NICKNAME_DIRECTIVE = "NSSNickname"
+        OCSP_ENABLED = ""
+        OCSP_DIRECTIVE = ""
+    try:
+        from ipaclient.install.client import sssd_enable_ifp
+    except ImportError:
+        sssd_enable_ifp = None
+except ImportError as _err:
+    MODULE_IMPORT_ERROR = str(_err)
+    paths = None
     sssd_enable_ifp = None
+else:
+    MODULE_IMPORT_ERROR = None
 
 
 def main():
@@ -139,6 +146,9 @@ def main():
         argument_spec={},
         supports_check_mode=False,
     )
+
+    if MODULE_IMPORT_ERROR is not None:
+        ansible_module.fail_json(msg=MODULE_IMPORT_ERROR)
 
     ansible_module.exit_json(changed=False,
                              NSS_OCSP_ENABLED=NSS_OCSP_ENABLED,
