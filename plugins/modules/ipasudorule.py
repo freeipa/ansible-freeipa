@@ -2,8 +2,9 @@
 
 # Authors:
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,29 +40,39 @@ extends_documentation_fragment:
 options:
   name:
     description: The sudorule name
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
   description:
     description: The sudorule description
+    type: str
     required: false
   user:
     description: List of users assigned to the sudo rule.
+    type: list
+    elements: str
     required: false
   usercategory:
     description: User category the sudo rule applies to
+    type: str
     required: false
     choices: ["all", ""]
     aliases: ["usercat"]
   group:
     description: List of user groups assigned to the sudo rule.
+    type: list
+    elements: str
     required: false
   runasgroupcategory:
     description: RunAs Group category applied to the sudo rule.
+    type: str
     required: false
     choices: ["all", ""]
     aliases: ["runasgroupcat"]
   runasusercategory:
     description: RunAs User category applied to the sudorule.
+    type: str
     required: false
     choices: ["all", ""]
     aliases: ["runasusercat"]
@@ -73,12 +84,15 @@ options:
     description: List of host names assigned to this sudorule.
     required: false
     type: list
+    elements: str
   hostgroup:
     description: List of host groups assigned to this sudorule.
     required: false
     type: list
+    elements: str
   hostcategory:
     description: Host category the sudo rule applies to.
+    type: str
     required: false
     choices: ["all", ""]
     aliases: ["hostcat"]
@@ -86,20 +100,25 @@ options:
     description: List of allowed sudocmds assigned to this sudorule.
     required: false
     type: list
+    elements: str
   allow_sudocmdgroup:
     description: List of allowed sudocmd groups assigned to this sudorule.
     required: false
     type: list
+    elements: str
   deny_sudocmd:
     description: List of denied sudocmds assigned to this sudorule.
     required: false
     type: list
+    elements: str
   deny_sudocmdgroup:
     description: List of denied sudocmd groups assigned to this sudorule.
     required: false
     type: list
+    elements: str
   cmdcategory:
     description: Command category the sudo rule applies to
+    type: str
     required: false
     choices: ["all", ""]
     aliases: ["cmdcat"]
@@ -107,29 +126,36 @@ options:
     description: Order to apply this rule.
     required: false
     type: int
+    aliases: ["sudoorder"]
   sudooption:
     description: List of sudo options.
     required: false
     type: list
+    elements: str
     aliases: ["options"]
   runasuser:
     description: List of users for Sudo to execute as.
     required: false
     type: list
+    elements: str
   runasgroup:
     description: List of groups for Sudo to execute as.
     required: false
     type: list
+    elements: str
   action:
     description: Work on sudorule or member level
+    type: str
     default: sudorule
     choices: ["member", "sudorule"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent", "enabled", "disabled"]
 author:
-    - Rafael Jeffman
+  - Rafael Guterres Jeffman (@rjeffman)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -236,7 +262,7 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
             # present
             description=dict(required=False, type="str", default=None),
@@ -245,14 +271,22 @@ def main():
             hostcategory=dict(required=False, type="str", default=None,
                               choices=["all", ""], aliases=['hostcat']),
             nomembers=dict(required=False, type='bool', default=None),
-            host=dict(required=False, type='list', default=None),
-            hostgroup=dict(required=False, type='list', default=None),
-            user=dict(required=False, type='list', default=None),
-            group=dict(required=False, type='list', default=None),
-            allow_sudocmd=dict(required=False, type="list", default=None),
-            deny_sudocmd=dict(required=False, type="list", default=None),
-            allow_sudocmdgroup=dict(required=False, type="list", default=None),
-            deny_sudocmdgroup=dict(required=False, type="list", default=None),
+            host=dict(required=False, type='list', elements="str",
+                      default=None),
+            hostgroup=dict(required=False, type='list', elements="str",
+                           default=None),
+            user=dict(required=False, type='list', elements="str",
+                      default=None),
+            group=dict(required=False, type='list', elements="str",
+                       default=None),
+            allow_sudocmd=dict(required=False, type="list", elements="str",
+                               default=None),
+            deny_sudocmd=dict(required=False, type="list", elements="str",
+                              default=None),
+            allow_sudocmdgroup=dict(required=False, type="list",
+                                    elements="str", default=None),
+            deny_sudocmdgroup=dict(required=False, type="list", elements="str",
+                                   default=None),
             cmdcategory=dict(required=False, type="str", default=None,
                              choices=["all", ""], aliases=['cmdcat']),
             runasusercategory=dict(required=False, type="str", default=None,
@@ -261,11 +295,13 @@ def main():
             runasgroupcategory=dict(required=False, type="str", default=None,
                                     choices=["all", ""],
                                     aliases=['runasgroupcat']),
-            runasuser=dict(required=False, type="list", default=None),
-            runasgroup=dict(required=False, type="list", default=None),
+            runasuser=dict(required=False, type="list", elements="str",
+                           default=None),
+            runasgroup=dict(required=False, type="list", elements="str",
+                            default=None),
             order=dict(type="int", required=False, aliases=['sudoorder']),
-            sudooption=dict(required=False, type='list', default=None,
-                            aliases=["options"]),
+            sudooption=dict(required=False, type='list', elements="str",
+                            default=None, aliases=["options"]),
             action=dict(type="str", default="sudorule",
                         choices=["member", "sudorule"]),
             # state
