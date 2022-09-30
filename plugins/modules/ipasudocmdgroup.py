@@ -2,8 +2,9 @@
 
 # Authors:
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,10 +41,13 @@ extends_documentation_fragment:
 options:
   name:
     description: The sudocmodgroup name
-    required: false
+    type: list
+    elements: str
+    required: true
     aliases: ["cn"]
   description:
     description: The sudocmdgroup description
+    type: str
     required: false
   nomembers:
     description: Suppress processing of membership attributes
@@ -53,16 +57,20 @@ options:
     description: List of sudocmds assigned to this sudocmdgroup.
     required: false
     type: list
+    elements: str
   action:
     description: Work on sudocmdgroup or member level
-    default: hostgroup
+    type: str
+    default: sudocmdgroup
     choices: ["member", "sudocmdgroup"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent"]
 author:
-    - Rafael Guterres Jeffman
+  - Rafael Guterres Jeffman (@rjeffman)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -140,12 +148,13 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
             # present
             description=dict(type="str", default=None),
             nomembers=dict(required=False, type='bool', default=None),
-            sudocmd=dict(required=False, type='list', default=None),
+            sudocmd=dict(required=False, type='list', elements="str",
+                         default=None),
             action=dict(type="str", default="sudocmdgroup",
                         choices=["member", "sudocmdgroup"]),
             # state
