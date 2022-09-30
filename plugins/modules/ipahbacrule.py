@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,23 +39,29 @@ extends_documentation_fragment:
 options:
   name:
     description: The hbacrule name
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
   description:
     description: The hbacrule description
+    type: str
     required: false
   usercategory:
     description: User category the rule applies to
+    type: str
     required: false
     aliases: ["usercat"]
     choices: ["all", ""]
   hostcategory:
     description: Host category the rule applies to
+    type: str
     required: false
     aliases: ["hostcat"]
     choices: ["all", ""]
   servicecategory:
     description: Service category the rule applies to
+    type: str
     required: false
     aliases: ["servicecat"]
     choices: ["all", ""]
@@ -67,36 +73,44 @@ options:
     description: List of host names assigned to this hbacrule.
     required: false
     type: list
+    elements: str
   hostgroup:
     description: List of host groups assigned to this hbacrule.
     required: false
     type: list
+    elements: str
   hbacsvc:
     description: List of HBAC service names assigned to this hbacrule.
     required: false
     type: list
+    elements: str
   hbacsvcgroup:
     description: List of HBAC service names assigned to this hbacrule.
     required: false
     type: list
+    elements: str
   user:
     description: List of user names assigned to this hbacrule.
     required: false
     type: list
+    elements: str
   group:
     description: List of user groups assigned to this hbacrule.
     required: false
     type: list
+    elements: str
   action:
     description: Work on hbacrule or member level
+    type: str
     default: hbacrule
     choices: ["member", "hbacrule"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent", "enabled", "disabled"]
 author:
-    - Thomas Woerner
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -198,7 +212,7 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
             # present
             description=dict(type="str", default=None),
@@ -209,12 +223,18 @@ def main():
             servicecategory=dict(type="str", default=None,
                                  aliases=["servicecat"], choices=["all", ""]),
             nomembers=dict(required=False, type='bool', default=None),
-            host=dict(required=False, type='list', default=None),
-            hostgroup=dict(required=False, type='list', default=None),
-            hbacsvc=dict(required=False, type='list', default=None),
-            hbacsvcgroup=dict(required=False, type='list', default=None),
-            user=dict(required=False, type='list', default=None),
-            group=dict(required=False, type='list', default=None),
+            host=dict(required=False, type='list', elements="str",
+                      default=None),
+            hostgroup=dict(required=False, type='list', elements="str",
+                           default=None),
+            hbacsvc=dict(required=False, type='list', elements="str",
+                         default=None),
+            hbacsvcgroup=dict(required=False, type='list', elements="str",
+                              default=None),
+            user=dict(required=False, type='list', elements="str",
+                      default=None),
+            group=dict(required=False, type='list', elements="str",
+                       default=None),
             action=dict(type="str", default="hbacrule",
                         choices=["member", "hbacrule"]),
             # state
