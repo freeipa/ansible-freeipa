@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2021 Red Hat
+# Copyright (C) 2021-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,8 @@ extends_documentation_fragment:
 options:
   name:
     description: The list of server name strings.
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
   location:
@@ -46,6 +48,7 @@ options:
       The server location string.
       "" for location reset.
       Only in state: present.
+    type: str
     required: false
     aliases: ["ipalocation_location"]
   service_weight:
@@ -96,9 +99,12 @@ options:
     type: bool
   state:
     description: The state to ensure.
+    type: str
     choices: ["present", "absent"]
     default: present
-    required: true
+    required: false
+author:
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -244,8 +250,8 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"],
-                      default=None, required=True),
+            name=dict(type="list", elements="str", aliases=["cn"],
+                      required=True),
             # present
             location=dict(required=False, type='str',
                           aliases=["ipalocation_location"], default=None),
