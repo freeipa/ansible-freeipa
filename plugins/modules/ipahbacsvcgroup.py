@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,29 +40,35 @@ extends_documentation_fragment:
 options:
   name:
     description: The hbacsvcgroup name
-    required: false
+    type: list
+    elements: str
+    required: true
     aliases: ["cn"]
   description:
     description: The hbacsvcgroup description
+    type: str
     required: false
   hbacsvc:
     description: List of hbacsvc names assigned to this hbacsvcgroup.
     required: false
     type: list
+    elements: str
   nomembers:
     description: Suppress processing of membership attributes
     required: false
     type: bool
   action:
     description: Work on hbacsvcgroup or member level
+    type: str
     default: hbacsvcgroup
     choices: ["member", "hbacsvcgroup"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent"]
 author:
-    - Thomas Woerner
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -159,12 +165,13 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
             # present
             description=dict(type="str", default=None),
             nomembers=dict(required=False, type='bool', default=None),
-            hbacsvc=dict(required=False, type='list', default=None),
+            hbacsvc=dict(required=False, type='list', elements="str",
+                         default=None),
             action=dict(type="str", default="hbacsvcgroup",
                         choices=["member", "hbacsvcgroup"]),
             # state
