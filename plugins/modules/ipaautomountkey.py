@@ -3,8 +3,9 @@
 
 # Authors:
 #   Chris Procter <cprocter@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2021 Red Hat
+# Copyright (C) 2021-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,39 +35,43 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaautomountkey
-author: chris procter
+author:
+  - Chris Procter (@chr15p))
+  - Thomas Woerner (@t-woerner)
 short_description: Manage FreeIPA autommount map
 description:
 - Add, delete, and modify an IPA automount map
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: False
   location:
     description: automount location map is in
+    type: str
     required: True
-    choices: ["automountlocationcn", "automountlocation"]
+    aliases: ["automountlocationcn", "automountlocation"]
   mapname:
     description: automount map to be managed
-    choices: ["map", "automountmapname", "automountmap"]
+    type: str
+    aliases: ["map", "automountmapname", "automountmap"]
     required: True
   key:
     description: automount key to be managed
+    type: str
     required: True
-    choices: ["name", "automountkey"]
-  newkey:
+    aliases: ["name", "automountkey"]
+  rename:
     description: key to change to if state is 'renamed'
-    required: True
-    choices: ["newname", "newautomountkey"]
+    type: str
+    required: False
+    aliases: ["new_name", "newautomountkey"]
   info:
     description: Mount information for the key
-    required: True
-    choices: ["information", "automountinformation"]
+    type: str
+    required: False
+    aliases: ["information", "automountinformation"]
   state:
     description: State to ensure
+    type: str
     required: False
     default: present
     choices: ["present", "absent", "renamed"]
@@ -193,7 +198,7 @@ def main():
             state=dict(
                 type='str',
                 choices=['present', 'absent', 'renamed'],
-                required=None,
+                required=False,
                 default='present',
             ),
             location=dict(
@@ -215,6 +220,7 @@ def main():
                 type="str",
                 aliases=["name", "automountkey"],
                 required=True,
+                no_log=False,
             ),
             info=dict(
                 type="str",
