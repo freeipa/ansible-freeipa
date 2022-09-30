@@ -2,8 +2,9 @@
 
 # Authors:
 #   Chris Procter <cprocter@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -32,53 +33,68 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ipa_dnsforwardzone
-author: chris procter
+module: ipadnsforwardzone
+author:
+  - Chris Procter (@chr15p)
+  - Thomas Woerner (@t-woerner)
 short_description: Manage FreeIPA DNS Forwarder Zones
 description:
-- Add and delete an IPA DNS Forwarder Zones using IPA API
+  - Add and delete an IPA DNS Forwarder Zones using IPA API
 extends_documentation_fragment:
   - ipamodule_base_docs
 options:
   name:
     description:
     - The DNS zone name which needs to be managed.
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
+  action:
+    description: |
+      Work on dnsforwardzone or member level. It can be one of `member` or
+      `dnsforwardzone`.
+    type: str
+    default: "dnsforwardzone"
+    choices: ["member", "dnsforwardzone"]
   state:
     description: State to ensure
+    type: str
     required: false
     default: present
     choices: ["present", "absent", "enabled", "disabled"]
   forwarders:
     description:
     - List of the DNS servers to forward to
+    type: list
+    elements: dict
     aliases: ["idnsforwarders"]
-    options:
+    suboptions:
       ip_address:
         description: Forwarder IP address (either IPv4 or IPv6).
-        required: false
-        type: string
+        required: true
+        type: str
       port:
         description: Forwarder port.
         required: false
         type: int
   forwardpolicy:
     description: Per-zone conditional forwarding policy
+    type: str
     required: false
-    default: only
     choices: ["only", "first", "none"]
-    aliases: ["idnsforwarders", "forward_policy"]
+    aliases: ["idnsforwardpolicy", "forward_policy"]
   skip_overlap_check:
     description:
     - Force DNS zone creation even if it will overlap with an existing zone.
+    type: bool
     required: false
-    default: false
   permission:
     description:
     - Allow DNS Forward Zone to be managed.
     required: false
     type: bool
+    aliases: ["managedby"]
 '''
 
 EXAMPLES = '''
@@ -180,7 +196,7 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
             forwarders=dict(type="list", default=None, required=False,
                             aliases=["idnsforwarders"], elements='dict',
