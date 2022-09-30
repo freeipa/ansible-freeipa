@@ -40,6 +40,8 @@ extends_documentation_fragment:
 options:
   name:
     description: The list of servicedelegationtarget name strings.
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
   principal:
@@ -49,17 +51,23 @@ options:
       host/fqdn@REALM, alias$, alias$@REALM, where fqdn and fqdn@REALM
       are host principals and the same as host/fqdn and host/fqdn@REALM.
       Host princpals are only usable with IPA versions 4.9.0 and up.
+    type: list
+    elements: str
     required: false
   action:
     description: Work on servicedelegationtarget or member level.
+    type: str
     choices: ["servicedelegationtarget", "member"]
     default: servicedelegationtarget
     required: false
   state:
     description: The state to ensure.
+    type: str
     choices: ["present", "absent"]
     default: present
-    required: true
+    required: false
+author:
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -121,10 +129,11 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
             # present
-            principal=dict(required=False, type='list', default=None),
+            principal=dict(required=False, type='list', elements="str",
+                           default=None),
 
             action=dict(type="str", default="servicedelegationtarget",
                         choices=["member", "servicedelegationtarget"]),
