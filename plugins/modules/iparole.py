@@ -3,8 +3,9 @@
 
 # Authors:
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2020 Red Hat
+# Copyright (C) 2020-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,42 +40,66 @@ description: Manage FreeIPA role
 extends_documentation_fragment:
   - ipamodule_base_docs
 options:
-  role:
+  name:
     description: The list of role name strings.
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
   description:
     description: A description for the role.
+    type: str
     required: false
   rename:
     description: Rename the role object.
+    type: str
     required: false
     aliases: ["new_name"]
+  privilege:
+    description: List of privileges
+    type: list
+    elements: str
+    required: false
   user:
     description: List of users.
+    type: list
+    elements: str
     required: false
   group:
     description: List of groups.
+    type: list
+    elements: str
     required: false
   host:
     description: List of hosts.
+    type: list
+    elements: str
     required: false
   hostgroup:
     description: List of hostgroups.
+    type: list
+    elements: str
     required: false
   service:
     description: List of services.
+    type: list
+    elements: str
     required: false
   action:
     description: Work on role or member level.
+    type: str
     choices: ["role", "member"]
     default: role
     required: false
   state:
     description: The state to ensure.
+    type: str
     choices: ["present", "absent", "renamed"]
     default: present
-    required: true
+    required: false
+author:
+  - Rafael Guterres Jeffman (@rjeffman)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -394,19 +419,25 @@ def create_module():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # generalgroups
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
             # present
             description=dict(required=False, type="str", default=None),
             rename=dict(required=False, type="str", default=None,
                         aliases=["new_name"]),
             # members
-            privilege=dict(required=False, type='list', default=None),
-            user=dict(required=False, type='list', default=None),
-            group=dict(required=False, type='list', default=None),
-            host=dict(required=False, type='list', default=None),
-            hostgroup=dict(required=False, type='list', default=None),
-            service=dict(required=False, type='list', default=None),
+            privilege=dict(required=False, type='list', elements="str",
+                           default=None),
+            user=dict(required=False, type='list', elements="str",
+                      default=None),
+            group=dict(required=False, type='list', elements="str",
+                       default=None),
+            host=dict(required=False, type='list', elements="str",
+                      default=None),
+            hostgroup=dict(required=False, type='list', elements="str",
+                           default=None),
+            service=dict(required=False, type='list', elements="str",
+                         default=None),
 
             # state
             action=dict(type="str", default="role",
