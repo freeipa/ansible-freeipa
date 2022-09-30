@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 # Authors:
 #   Chris Procter <cprocter@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2021 Red Hat
+# Copyright (C) 2021-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -33,31 +34,34 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaautomountmap
-author: Chris Procter
+author:
+  - Chris Procter (@chr15p)
+  - Thomas Woerner (@t-woerner)
 short_description: Manage FreeIPA autommount map
 description:
 - Add, delete, and modify an IPA automount map
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal.
-    default: admin
-  ipaadmin_password:
-    description: The admin password.
-    required: false
   automountlocation:
     description: automount location map is anchored to
-    choices: ["location", "automountlocationcn"]
+    type: str
+    aliases: ["location", "automountlocationcn"]
     required: True
   name:
     description: automount map to be managed.
-    choices: ["mapname", "map", "automountmapname"]
+    type: list
+    elements: str
+    aliases: ["mapname", "map", "automountmapname"]
     required: True
   desc:
     description: description of automount map.
-    choices: ["description"]
+    type: str
+    aliases: ["description"]
     required: false
   state:
     description: State to ensure
+    type: str
     required: false
     default: present
     choices: ["present", "absent"]
@@ -169,12 +173,10 @@ def main():
                        ),
             location=dict(type="str",
                           aliases=["automountlocation", "automountlocationcn"],
-                          default=None,
                           required=True
                           ),
-            name=dict(type="list",
+            name=dict(type="list", elements="str",
                       aliases=["mapname", "map", "automountmapname"],
-                      default=None,
                       required=True
                       ),
             desc=dict(type="str",
