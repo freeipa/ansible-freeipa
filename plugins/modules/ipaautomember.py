@@ -3,8 +3,9 @@
 # Authors:
 #   Mark Hahl <mhahl@redhat.com>
 #   Jake Reynolds <jakealexis@gmail.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2021 Red Hat
+# Copyright (C) 2021-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -41,14 +42,17 @@ extends_documentation_fragment:
 options:
   name:
     description: The automember rule
-    required: true
+    required: false
+    type: list
+    elements: str
     aliases: ["cn"]
   description:
     description: A description of this auto member rule
     required: false
+    type: str
   automember_type:
     description: Grouping to which the rule applies
-    required: true
+    required: false
     type: str
     choices: ["group", "hostgroup"]
   exclusive:
@@ -56,7 +60,7 @@ options:
     type: list
     elements: dict
     aliases: ["automemberexclusiveregex"]
-    options:
+    suboptions:
       key:
         description: The attribute of the regex
         type: str
@@ -70,7 +74,7 @@ options:
     type: list
     elements: dict
     aliases: ["automemberinclusiveregex"]
-    options:
+    suboptions:
       key:
         description: The attribute of the regex
         type: str
@@ -82,10 +86,12 @@ options:
   users:
     description: Users to rebuild membership for.
     type: list
+    elements: str
     required: false
   hosts:
     description: Hosts to rebuild membership for.
     type: list
+    elements: str
     required: false
   no_wait:
     description: Don't wait for rebuilding membership.
@@ -95,16 +101,18 @@ options:
     type: str
   action:
     description: Work on automember or member level
+    type: str
     default: automember
     choices: ["member", "automember"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent", "rebuilt", "orphans_removed"]
 author:
-    - Mark Hahl
-    - Jake Reynolds
-    - Thomas Woerner
+  - Mark Hahl (@mhahl)
+  - Jake Reynolds (@jake2184)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -207,7 +215,6 @@ EXAMPLES = """
 
 RETURN = """
 """
-
 
 from ansible.module_utils.ansible_freeipa_module import (
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, ipalib_errors, DN
@@ -315,7 +322,8 @@ def main():
                            aliases=["automemberinclusiveregex"],
                            default=None,
                            options=dict(
-                               key=dict(type="str", required=True),
+                               key=dict(type="str", required=True,
+                                        no_log=False),
                                expression=dict(type="str", required=True)
                            ),
                            elements="dict",
@@ -324,12 +332,13 @@ def main():
                            aliases=["automemberexclusiveregex"],
                            default=None,
                            options=dict(
-                               key=dict(type="str", required=True),
+                               key=dict(type="str", required=True,
+                                        no_log=False),
                                expression=dict(type="str", required=True)
                            ),
                            elements="dict",
                            required=False),
-            name=dict(type="list", aliases=["cn"],
+            name=dict(type="list", elements="str", aliases=["cn"],
                       default=None, required=False),
             description=dict(type="str", default=None),
             automember_type=dict(type='str', required=False,
@@ -341,8 +350,8 @@ def main():
             state=dict(type="str", default="present",
                        choices=["present", "absent", "rebuilt",
                                 "orphans_removed"]),
-            users=dict(type="list", default=None),
-            hosts=dict(type="list", default=None),
+            users=dict(type="list", elements="str", default=None),
+            hosts=dict(type="list", elements="str", default=None),
         ),
         supports_check_mode=True,
     )
