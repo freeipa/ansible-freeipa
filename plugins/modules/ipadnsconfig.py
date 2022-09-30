@@ -2,8 +2,9 @@
 
 # Authors:
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -41,20 +42,25 @@ options:
   forwarders:
     description: The list of global DNS forwarders.
     required: false
-    options:
+    type: list
+    elements: dict
+    suboptions:
       ip_address:
         description: The forwarder nameserver IP address list (IPv4 and IPv6).
+        type: str
         required: true
       port:
         description: The port to forward requests to.
+        type: int
         required: false
   forward_policy:
     description:
       Global forwarding policy. Set to "none" to disable any configured
       global forwarders.
+    type: str
     required: false
     choices: ['only', 'first', 'none']
-    alias: ["forwardpolicy"]
+    aliases: ["forwardpolicy"]
   allow_sync_ptr:
     description:
       Allow synchronization of forward (A, AAAA) and reverse (PTR) records.
@@ -64,14 +70,19 @@ options:
     description: |
       Work on dnsconfig or member level. It can be one of `member` or
       `dnsconfig`. Only `forwarders` can be managed with `action: member`.
+    type: str
     default: "dnsconfig"
     choices: ["member", "dnsconfig"]
   state:
     description: |
       The state to ensure. It can be one of `present` or `absent`.
       `absent` can only be used with `action: member` and `forwarders`.
+    type: str
     default: present
     choices: ["present", "absent"]
+author:
+  - Rafael Guterres Jeffman (@rjeffman)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -183,14 +194,15 @@ def gen_args(module, state, action, dnsconfig, forwarders, forward_policy,
 
 def main():
     forwarder_spec = dict(
-        ip_address=dict(type=str, required=True),
-        port=dict(type=int, required=False, default=None)
+        ip_address=dict(type="str", required=True),
+        port=dict(type="int", required=False, default=None)
     )
 
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # dnsconfig
-            forwarders=dict(type='list', default=None, required=False,
+            forwarders=dict(type='list', elements="dict", default=None,
+                            required=False,
                             options=dict(**forwarder_spec)),
             forward_policy=dict(type='str', required=False, default=None,
                                 choices=['only', 'first', 'none'],
