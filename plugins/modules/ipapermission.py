@@ -2,8 +2,9 @@
 
 # Authors:
 #   Seth Kress <kresss@gmail.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2020 Red Hat
+# Copyright (C) 2020-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,6 +40,8 @@ extends_documentation_fragment:
 options:
   name:
     description: The permission name string.
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
   right:
@@ -46,52 +49,64 @@ options:
     required: false
     choices: ["read", "search", "compare", "write", "add", "delete", "all"]
     type: list
+    elements: str
     aliases: ["ipapermright"]
   attrs:
     description: All attributes to which the permission applies
     required: false
     type: list
+    elements: str
   bindtype:
     description: Bind rule type
     required: false
-    choices: ["permission", "all", "anonymous"]
+    type: str
+    choices: ["permission", "all", "anonymous", "self"]
     aliases: ["ipapermbindruletype"]
   subtree:
     description: Subtree to apply permissions to
+    type: str
     required: false
     aliases: ["ipapermlocation"]
-  filter:
+  extra_target_filter:
     description: Extra target filter
     required: false
     type: list
-    aliases: ["extratargetfilter"]
+    elements: str
+    aliases: ["filter", "extratargetfilter"]
   rawfilter:
     description: All target filters
     required: false
     type: list
+    elements: str
     aliases: ["ipapermtargetfilter"]
   target:
     description: Optional DN to apply the permission to
+    type: str
     required: false
     aliases: ["ipapermtarget"]
   targetto:
     description: Optional DN subtree where an entry can be moved to
+    type: str
     required: false
     aliases: ["ipapermtargetto"]
   targetfrom:
     description: Optional DN subtree from where an entry can be moved
+    type: str
     required: false
     aliases: ["ipapermtargetfrom"]
   memberof:
     description: Target members of a group (sets memberOf targetfilter)
     required: false
     type: list
+    elements: str
   targetgroup:
     description: User group to apply permissions to (sets target)
+    type: str
     required: false
     aliases: ["targetgroup"]
   object_type:
     description: Type of IPA object (sets subtree and objectClass targetfilter)
+    type: str
     required: false
     aliases: ["type"]
   no_members:
@@ -100,18 +115,24 @@ options:
     type: bool
   rename:
     description: Rename the permission object
+    type: str
     required: false
     aliases: ["new_name"]
   action:
     description: Work on permission or member privilege level.
+    type: str
     choices: ["permission", "member"]
     default: permission
     required: false
   state:
     description: The state to ensure.
+    type: str
     choices: ["present", "absent", "renamed"]
     default: present
-    required: true
+    required: false
+author:
+  - Seth Kress (@kresss)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -203,24 +224,26 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"],
-                      default=None, required=True),
+            name=dict(type="list", elements="str", aliases=["cn"],
+                      required=True),
             # present
-            right=dict(type="list", aliases=["ipapermright"], default=None,
-                       required=False,
+            right=dict(type="list", elements="str", aliases=["ipapermright"],
+                       default=None, required=False,
                        choices=["read", "search", "compare", "write", "add",
                                 "delete", "all"]),
-            attrs=dict(type="list", default=None, required=False),
+            attrs=dict(type="list", elements="str", default=None,
+                       required=False),
             # Note: bindtype has a default of permission for Adds.
             bindtype=dict(type="str", aliases=["ipapermbindruletype"],
-                          default=None, require=False, choices=["permission",
+                          default=None, required=False, choices=["permission",
                           "all", "anonymous", "self"]),
             subtree=dict(type="str", aliases=["ipapermlocation"], default=None,
                          required=False),
-            extra_target_filter=dict(type="list", aliases=["filter",
-                                     "extratargetfilter"], default=None,
-                                     required=False),
-            rawfilter=dict(type="list", aliases=["ipapermtargetfilter"],
+            extra_target_filter=dict(type="list", elements="str",
+                                     aliases=["filter", "extratargetfilter"],
+                                     default=None, required=False),
+            rawfilter=dict(type="list", elements="str",
+                           aliases=["ipapermtargetfilter"],
                            default=None, required=False),
             target=dict(type="str", aliases=["ipapermtarget"], default=None,
                         required=False),
@@ -228,11 +251,12 @@ def main():
                           default=None, required=False),
             targetfrom=dict(type="str", aliases=["ipapermtargetfrom"],
                             default=None, required=False),
-            memberof=dict(type="list", default=None, required=False),
+            memberof=dict(type="list", elements="str", default=None,
+                          required=False),
             targetgroup=dict(type="str", default=None, required=False),
             object_type=dict(type="str", aliases=["type"], default=None,
                              required=False),
-            no_members=dict(type=bool, default=None, require=False),
+            no_members=dict(type="bool", default=None, required=False),
             rename=dict(type="str", default=None, required=False,
                         aliases=["new_name"]),
             action=dict(type="str", default="permission",
