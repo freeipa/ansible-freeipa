@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # Authors:
 #   Chris Procter <cprocter@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2021 Red Hat
+# Copyright (C) 2021-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -32,7 +33,9 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ipaautomountlocation
-author: chris procter
+author:
+  - Chris Procter (@chr15p)
+  - Thomas Woerner (@t-woerner)
 short_description: Manage FreeIPA autommount locations
 description:
 - Add and delete an IPA automount location
@@ -42,10 +45,13 @@ options:
   name:
     description: The automount location to be managed
     required: true
+    type: list
+    elements: str
     aliases: ["cn","location"]
   state:
     description: State to ensure
     required: false
+    type: str
     default: present
     choices: ["present", "absent"]
 '''
@@ -116,9 +122,8 @@ def main():
                        default='present',
                        choices=['present', 'absent']
                        ),
-            name=dict(type="list",
+            name=dict(type="list", elements="str",
                       aliases=["cn", "location"],
-                      default=None,
                       required=True
                       ),
         ),
