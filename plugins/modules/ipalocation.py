@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2020 Red Hat
+# Copyright (C) 2020-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,16 +39,22 @@ extends_documentation_fragment:
 options:
   name:
     description: The list of location name strings.
+    type: list
+    elements: str
     required: true
     aliases: ["idnsname"]
   description:
     description: The IPA location string
+    type: str
     required: false
   state:
     description: The state to ensure.
+    type: str
     choices: ["present", "absent"]
     default: present
-    required: true
+    required: false
+author:
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -94,8 +100,8 @@ def gen_args(description):
 def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
-            name=dict(type="list", aliases=["idnsname"],
-                      default=None, required=True),
+            name=dict(type="list", elements="str", aliases=["idnsname"],
+                      required=True),
             # present
             description=dict(required=False, type='str', default=None),
             # state
