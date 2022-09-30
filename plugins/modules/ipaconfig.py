@@ -2,8 +2,9 @@
 
 # Authors:
 #   Chris Procter <cprocter@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2020 Red Hat
+# Copyright (C) 2020-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -32,8 +33,10 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ipa_config
-author: chris procter
+module: ipaconfig
+author:
+  - Chris Procter (@chr15p)
+  - Thomas Woerner (@t-woerner)
 short_description: Modify IPA global config options
 description:
 - Modify IPA global config options
@@ -43,48 +46,60 @@ options:
     maxusername:
         description: Set the maximum username length between 1-255
         required: false
+        type: int
         aliases: ['ipamaxusernamelength']
     maxhostname:
         description: Set the maximum hostname length between 64-255
         required: false
+        type: int
         aliases: ['ipamaxhostnamelength']
     homedirectory:
         description: Set the default location of home directories
         required: false
+        type: str
         aliases: ['ipahomesrootdir']
     defaultshell:
         description: Set the default shell for new users
         required: false
+        type: str
         aliases: ['ipadefaultloginshell', 'loginshell']
     defaultgroup:
         description: Set the default group for new users
         required: false
+        type: str
         aliases: ['ipadefaultprimarygroup']
     emaildomain:
         description: Set the default e-mail domain
         required: false
+        type: str
         aliases: ['ipadefaultemaildomain']
     searchtimelimit:
         description:
         - Set maximum amount of time (seconds) for a search
         - values -1 to 2147483647 (-1 or 0 is unlimited)
         required: false
+        type: int
         aliases: ['ipasearchtimelimit']
     searchrecordslimit:
         description:
         - Set maximum number of records to search
         - values -1 to 2147483647 (-1 or 0 is unlimited)
         required: false
+        type: int
         aliases: ['ipasearchrecordslimit']
     usersearch:
         description:
         - Set comma-separated list of fields to search for user search
         required: false
+        type: list
+        elements: str
         aliases: ['ipausersearchfields']
     groupsearch:
         description:
         - Set comma-separated list of fields to search for group search
         required: false
+        type: list
+        elements: str
         aliases: ['ipagroupsearchfields']
     enable_migration:
         description: Enable migration mode
@@ -95,22 +110,26 @@ options:
         description: Set default group objectclasses (comma-separated list)
         required: false
         type: list
+        elements: str
         aliases: ['ipagroupobjectclasses']
     userobjectclasses:
         description: Set default user objectclasses (comma-separated list)
         required: false
         type: list
+        elements: str
         aliases: ['ipauserobjectclasses']
     pwdexpnotify:
         description:
         - Set number of days's notice of impending password expiration
         - values 0 to 2147483647
         required: false
+        type: int
         aliases: ['ipapwdexpadvnotify']
     configstring:
         description: Set extra hashes to generate in password plug-in
         required: false
         type: list
+        elements: str
         choices:
         - "AllowNThash"
         - "KDC:Disable Last Success"
@@ -122,31 +141,36 @@ options:
         description: Set order in increasing priority of SELinux users
         required: false
         type: list
+        elements: str
         aliases: ['ipaselinuxusermaporder']
     selinuxusermapdefault:
         description: Set default SELinux user when no match found in map rule
         required: false
+        type: str
         aliases: ['ipaselinuxusermapdefault']
     pac_type:
         description: set default types of PAC supported for services
         required: false
         type: list
+        elements: str
         choices: ["MS-PAC", "PAD", "nfs:NONE", ""]
         aliases: ["ipakrbauthzdata"]
     user_auth_type:
         description: set default types of supported user authentication
         required: false
         type: list
+        elements: str
         choices: ["password", "radius", "otp", "disabled", ""]
         aliases: ["ipauserauthtype"]
     ca_renewal_master_server:
         description: Renewal master for IPA certificate authority.
         required: false
-        type: string
+        type: str
     domain_resolution_order:
         description: set list of domains used for short name qualification
         required: false
         type: list
+        elements: str
         aliases: ["ipadomainresolutionorder"]
     enable_sid:
         description: >
@@ -159,7 +183,7 @@ options:
           NetBIOS name of the IPA domain.
           Requires IPA 4.9.8+ and 'enable_sid: yes'.
         required: false
-        type: string
+        type: str
     add_sids:
         description: >
           Add SIDs for existing users and groups.
@@ -212,38 +236,48 @@ config:
   description: Dict of all global config options
   returned: When no options are set
   type: dict
-  options:
+  contains:
     maxusername:
         description: maximum username length
+        type: int
         returned: always
     maxhostname:
         description: maximum hostname length
+        type: int
         returned: always
     homedirectory:
         description: default location of home directories
+        type: str
         returned: always
     defaultshell:
         description: default shell for new users
+        type: str
         returned: always
     defaultgroup:
         description: default group for new users
+        type: str
         returned: always
     emaildomain:
         description: default e-mail domain
+        type: str
         returned: always
     searchtimelimit:
         description: maximum amount of time (seconds) for a search
+        type: int
         returned: always
     searchrecordslimit:
         description: maximum number of records to search
+        type: int
         returned: always
     usersearch:
-        description: comma-separated list of fields to search in user search
+        description: list of fields to search in user search
         type: list
+        elements: str
         returned: always
     groupsearch:
-        description: comma-separated list of fields to search in group search
+        description: list of fields to search in group search
         type: list
+        elements: str
         returned: always
     enable_migration:
         description: Enable migration mode
@@ -252,44 +286,58 @@ config:
     groupobjectclasses:
         description: default group objectclasses (comma-separated list)
         type: list
+        elements: str
         returned: always
     userobjectclasses:
         description: default user objectclasses (comma-separated list)
         type: list
+        elements: str
         returned: always
     pwdexpnotify:
         description: number of days's notice of impending password expiration
+        type: str
         returned: always
     configstring:
         description: extra hashes to generate in password plug-in
         type: list
+        elements: str
         returned: always
     selinuxusermaporder:
         description: order in increasing priority of SELinux users
+        type: list
+        elements: str
         returned: always
     selinuxusermapdefault:
         description: default SELinux user when no match is found in map rule
+        type: str
         returned: always
     pac_type:
         description: default types of PAC supported for services
         type: list
+        elements: str
         returned: always
     user_auth_type:
         description: default types of supported user authentication
+        type: str
         returned: always
     ca_renewal_master_server:
         description: master for IPA certificate authority.
+        type: str
         returned: always
     domain_resolution_order:
         description: list of domains used for short name qualification
+        type: list
+        elements: str
         returned: always
     enable_sid:
         description: >
           new users and groups automatically get a SID assigned.
           Requires IPA 4.9.8+.
+        type: str
         returned: always
     netbios_name:
         description: NetBIOS name of the IPA domain. Requires IPA 4.9.8+.
+        type: str
         returned: if enable_sid is True
 '''
 
@@ -347,38 +395,41 @@ def main():
                                  aliases=['ipasearchtimelimit']),
             searchrecordslimit=dict(type="int", required=False,
                                     aliases=['ipasearchrecordslimit']),
-            usersearch=dict(type="list", required=False,
+            usersearch=dict(type="list", elements="str", required=False,
                             aliases=['ipausersearchfields']),
-            groupsearch=dict(type="list", required=False,
+            groupsearch=dict(type="list", elements="str", required=False,
                              aliases=['ipagroupsearchfields']),
             enable_migration=dict(type="bool", required=False,
                                   aliases=['ipamigrationenabled']),
-            groupobjectclasses=dict(type="list", required=False,
+            groupobjectclasses=dict(type="list", elements="str",
+                                    required=False,
                                     aliases=['ipagroupobjectclasses']),
-            userobjectclasses=dict(type="list", required=False,
+            userobjectclasses=dict(type="list", elements="str", required=False,
                                    aliases=['ipauserobjectclasses']),
             pwdexpnotify=dict(type="int", required=False,
                               aliases=['ipapwdexpadvnotify']),
-            configstring=dict(type="list", required=False,
+            configstring=dict(type="list", elements="str", required=False,
                               aliases=['ipaconfigstring'],
                               choices=["AllowNThash",
                                        "KDC:Disable Last Success",
                                        "KDC:Disable Lockout",
                                        "KDC:Disable Default Preauth for SPNs",
                                        ""]),  # noqa E128
-            selinuxusermaporder=dict(type="list", required=False,
+            selinuxusermaporder=dict(type="list", elements="str",
+                                     required=False,
                                      aliases=['ipaselinuxusermaporder']),
             selinuxusermapdefault=dict(type="str", required=False,
                                        aliases=['ipaselinuxusermapdefault']),
-            pac_type=dict(type="list", required=False,
+            pac_type=dict(type="list", elements="str", required=False,
                           aliases=["ipakrbauthzdata"],
                           choices=["MS-PAC", "PAD", "nfs:NONE", ""]),
-            user_auth_type=dict(type="list", required=False,
+            user_auth_type=dict(type="list", elements="str", required=False,
                                 choices=["password", "radius", "otp",
                                          "disabled", ""],
                                 aliases=["ipauserauthtype"]),
             ca_renewal_master_server=dict(type="str", required=False),
-            domain_resolution_order=dict(type="list", required=False,
+            domain_resolution_order=dict(type="list", elements="str",
+                                         required=False,
                                          aliases=["ipadomainresolutionorder"]),
             enable_sid=dict(type="bool", required=False),
             add_sids=dict(type="bool", required=False),
