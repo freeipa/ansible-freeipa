@@ -2,6 +2,7 @@
 
 # Authors:
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
 # Copyright (C) 2022 Red Hat
 # see file 'COPYING' for use and warranty information
@@ -40,6 +41,8 @@ extends_documentation_fragment:
 options:
   name:
     description: The list of idrange name strings.
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
   base_id:
@@ -64,33 +67,37 @@ options:
     aliases: ["ipasecondarybaserid"]
   idrange_type:
     description: ID range type.
-    type: string
+    type: str
     required: false
     choices: ["ipa-ad-trust", "ipa-ad-trust-posix", "ipa-local"]
     aliases: ["iparangetype"]
   dom_sid:
     description: Domain SID of the trusted domain.
-    type: string
+    type: str
     required: false
     aliases: ["ipanttrusteddomainsid"]
   dom_name:
     description: |
       Domain name of the trusted domain. Can only be used when
       `ipaapi_context: server`.
-    type: string
+    type: str
     required: false
     aliases: ["ipanttrusteddomainname"]
   auto_private_groups:
     description: Auto creation of private groups.
-    type: string
+    type: str
     required: false
     choices: ["true", "false", "hybrid"]
     aliases: ["ipaautoprivategroups"]
   state:
     description: The state to ensure.
+    type: str
     choices: ["present", "absent"]
     default: present
-    required: true
+    required: false
+author:
+  - Rafael Guterres Jeffman (@rjeffman)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -184,8 +191,8 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"],
-                      default=None, required=True),
+            name=dict(type="list", elements="str", aliases=["cn"],
+                      required=True),
             # present
             base_id=dict(required=False, type='int',
                          aliases=["ipabaseid"], default=None),
