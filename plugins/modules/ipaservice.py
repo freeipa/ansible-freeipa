@@ -2,8 +2,9 @@
 
 # Authors:
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,21 +41,27 @@ extends_documentation_fragment:
 options:
   name:
     description: The service to manage
+    type: list
+    elements: str
     required: true
     aliases: ["service"]
   certificate:
     description: Base-64 encoded service certificate.
     required: false
     type: list
+    elements: str
     aliases: ["usercertificate"]
   pac_type:
     description: Supported PAC type.
     required: false
     choices: ["MS-PAC", "PAD", "NONE", ""]
     type: list
+    elements: str
     aliases: ["pac_type", "ipakrbauthzdata"]
   auth_ind:
     description: Defines a whitelist for Authentication Indicators.
+    type: list
+    elements: str
     required: false
     choices: ["otp", "radius", "pkinit", "hardened", ""]
     aliases: ["krbprincipalauthind"]
@@ -70,24 +77,22 @@ options:
     description: Pre-authentication is required for the service.
     required: false
     type: bool
-    default: False
     aliases: ["ipakrbrequirespreauth"]
   ok_as_delegate:
     description: Client credentials may be delegated to the service.
     required: false
     type: bool
-    default: False
     aliases: ["ipakrbokasdelegate"]
   ok_to_auth_as_delegate:
     description: Allow service to authenticate on behalf of a client.
     required: false
     type: bool
-    default: False
     aliases: ["ipakrboktoauthasdelegate"]
   principal:
     description: List of principal aliases for the service.
     required: false
     type: list
+    elements: str
     aliases: ["krbprincipalname"]
   smb:
     description: Add a SMB service.
@@ -101,63 +106,75 @@ options:
     description: Host that can manage the service.
     required: false
     type: list
+    elements: str
     aliases: ["managedby_host"]
   allow_create_keytab_user:
     description: Users allowed to create a keytab of this host.
     required: false
     type: list
+    elements: str
     aliases: ["ipaallowedtoperform_write_keys_user"]
   allow_create_keytab_group:
     description: Groups allowed to create a keytab of this host.
     required: false
     type: list
+    elements: str
     aliases: ["ipaallowedtoperform_write_keys_group"]
   allow_create_keytab_host:
     description: Hosts allowed to create a keytab of this host.
     required: false
     type: list
+    elements: str
     aliases: ["ipaallowedtoperform_write_keys_host"]
   allow_create_keytab_hostgroup:
     description: Host group allowed to create a keytab of this host.
     required: false
     type: list
+    elements: str
     aliases: ["ipaallowedtoperform_write_keys_hostgroup"]
   allow_retrieve_keytab_user:
     description: User allowed to retrieve a keytab of this host.
     required: false
     type: list
+    elements: str
     aliases: ["ipaallowedtoperform_read_keys_user"]
   allow_retrieve_keytab_group:
     description: Groups allowed to retrieve a keytab of this host.
     required: false
     type: list
+    elements: str
     aliases: ["ipaallowedtoperform_read_keys_group"]
   allow_retrieve_keytab_host:
     description: Hosts allowed to retrieve a keytab of this host.
     required: false
     type: list
+    elements: str
     aliases: ["ipaallowedtoperform_read_keys_host"]
   allow_retrieve_keytab_hostgroup:
     description: Host groups allowed to retrieve a keytab of this host.
     required: false
     type: list
+    elements: str
     aliases: ["ipaallowedtoperform_read_keys_hostgroup"]
-  continue:
+  delete_continue:
     description:
       Continuous mode. Don't stop on errors. Valid only if `state` is `absent`.
     required: false
-    default: True
     type: bool
+    aliases: ["continue"]
   action:
     description: Work on service or member level
+    type: str
     default: service
     choices: ["member", "service"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent", "disabled"]
 author:
-    - Rafael Jeffman
+  - Rafael Guterres Jeffman (@rjeffman)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -346,18 +363,20 @@ def init_ansible_module():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["service"], default=None,
+            name=dict(type="list", elements="str", aliases=["service"],
                       required=True),
             # service attributesstr
-            certificate=dict(type="list", aliases=['usercertificate'],
+            certificate=dict(type="list", elements="str",
+                             aliases=['usercertificate'],
                              default=None, required=False),
-            principal=dict(type="list", aliases=["krbprincipalname"],
-                           default=None),
+            principal=dict(type="list", elements="str",
+                           aliases=["krbprincipalname"], default=None),
             smb=dict(type="bool", required=False),
             netbiosname=dict(type="str", required=False),
-            pac_type=dict(type="list", aliases=["ipakrbauthzdata"],
+            pac_type=dict(type="list", elements="str",
+                          aliases=["ipakrbauthzdata"],
                           choices=["MS-PAC", "PAD", "NONE", ""]),
-            auth_ind=dict(type="list",
+            auth_ind=dict(type="list", elements="str",
                           aliases=["krbprincipalauthind"],
                           choices=["otp", "radius", "pkinit", "hardened", ""]),
             skip_host_check=dict(type="bool"),
@@ -367,30 +386,31 @@ def init_ansible_module():
             ok_as_delegate=dict(type="bool", aliases=["ipakrbokasdelegate"]),
             ok_to_auth_as_delegate=dict(type="bool",
                                         aliases=["ipakrboktoauthasdelegate"]),
-            host=dict(type="list", aliases=["managedby_host"], required=False),
+            host=dict(type="list", elements="str", aliases=["managedby_host"],
+                      required=False),
             allow_create_keytab_user=dict(
-                type="list", required=False,
+                type="list", elements="str", required=False, no_log=False,
                 aliases=['ipaallowedtoperform_write_keys_user']),
             allow_retrieve_keytab_user=dict(
-                type="list", required=False,
+                type="list", elements="str", required=False, no_log=False,
                 aliases=['ipaallowedtoperform_read_keys_user']),
             allow_create_keytab_group=dict(
-                type="list", required=False,
+                type="list", elements="str", required=False, no_log=False,
                 aliases=['ipaallowedtoperform_write_keys_group']),
             allow_retrieve_keytab_group=dict(
-                type="list", required=False,
+                type="list", elements="str", required=False, no_log=False,
                 aliases=['ipaallowedtoperform_read_keys_group']),
             allow_create_keytab_host=dict(
-                type="list", required=False,
+                type="list", elements="str", required=False, no_log=False,
                 aliases=['ipaallowedtoperform_write_keys_host']),
             allow_retrieve_keytab_host=dict(
-                type="list", required=False,
+                type="list", elements="str", required=False, no_log=False,
                 aliases=['ipaallowedtoperform_read_keys_host']),
             allow_create_keytab_hostgroup=dict(
-                type="list", required=False,
+                type="list", elements="str", required=False, no_log=False,
                 aliases=['ipaallowedtoperform_write_keys_hostgroup']),
             allow_retrieve_keytab_hostgroup=dict(
-                type="list", required=False,
+                type="list", elements="str", required=False, no_log=False,
                 aliases=['ipaallowedtoperform_read_keys_hostgroup']),
             delete_continue=dict(type="bool", required=False,
                                  aliases=['continue']),
