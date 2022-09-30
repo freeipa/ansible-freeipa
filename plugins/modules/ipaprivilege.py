@@ -2,8 +2,9 @@
 
 # Authors:
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2020 Red Hat
+# Copyright (C) 2020-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -42,28 +43,39 @@ extends_documentation_fragment:
 options:
   name:
     description: The list of privilege name strings.
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
   description:
     description: Privilege description
+    type: str
     required: false
   rename:
     description: Rename the privilege object.
+    type: str
     required: false
     aliases: ["new_name"]
   permission:
     description: Permissions to be added to the privilege.
+    type: list
+    elements: str
     required: false
   action:
     description: Work on privilege or member level.
+    type: str
     choices: ["privilege", "member"]
     default: privilege
     required: false
   state:
     description: The state to ensure.
+    type: str
     choices: ["present", "absent", "renamed"]
     default: present
-    required: true
+    required: false
+author:
+  - Rafael Guterres Jeffman (@rjeffman)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -134,13 +146,14 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"],
-                      default=None, required=True),
+            name=dict(type="list", elements="str", aliases=["cn"],
+                      required=True),
             # present
             description=dict(required=False, type='str', default=None),
             rename=dict(required=False, type='str', default=None,
                         aliases=["new_name"], ),
-            permission=dict(required=False, type='list', default=None),
+            permission=dict(required=False, type='list', elements="str",
+                            default=None),
             action=dict(type="str", default="privilege",
                         choices=["member", "privilege"]),
             # state
