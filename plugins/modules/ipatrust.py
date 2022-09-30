@@ -2,8 +2,9 @@
 
 # Authors:
 #   Rob Verduijn <rob.verduijn@gmail.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 By Rob Verduijn
+# Copyright (C) 2019-2022 By Rob Verduijn
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,62 +40,75 @@ options:
   realm:
     description:
     - Realm name
+    type: str
     required: true
   trust_type:
     description:
     - Trust type (ad for Active Directory, default)
+    type: str
     default: ad
     required: false
     choices: ["ad"]
   admin:
     description:
     - Active Directory domain administrator
+    type: str
     required: false
   password:
     description:
     - Active Directory domain administrator's password
+    type: str
     required: false
   server:
     description:
     - Domain controller for the Active Directory domain (optional)
+    type: str
     required: false
   trust_secret:
     description:
     - Shared secret for the trust
+    type: str
     required: false
   base_id:
     description:
     - First Posix ID of the range reserved for the trusted domain
+    type: int
     required: false
   range_size:
     description:
     - Size of the ID range reserved for the trusted domain
+    type: int
+    default: 200000
   range_type:
     description:
     - Type of trusted domain ID range, one of ipa-ad-trust, ipa-ad-trust-posix
+    type: str
+    choices: ["ipa-ad-trust-posix", "ipa-ad-trust"]
     default: ipa-ad-trust
     required: false
   two_way:
     description:
     - Establish bi-directional trust. By default trust is inbound one-way only.
+    type: bool
     default: false
     required: false
-    choices: ["true", "false"]
   external:
     description:
     - Establish external trust to a domain in another forest.
     - The trust is not transitive beyond the domain.
+    type: bool
     default: false
     required: false
-    choices: ["true", "false"]
   state:
     description: State to ensure
+    type: str
     default: present
-    required: true
+    required: false
     choices: ["present", "absent"]
 
 author:
-    - Rob Verduijn
+  - Rob Verduijn (@RobVerduijn)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -188,7 +202,7 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            realm=dict(type="str", default=None, required=True),
+            realm=dict(type="str", required=True),
             # state
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
