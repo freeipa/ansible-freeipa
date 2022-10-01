@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,13 +39,17 @@ extends_documentation_fragment:
 options:
   name:
     description: The group name
-    required: false
+    type: list
+    elements: str
+    required: true
     aliases: ["cn"]
   description:
     description: The group description
+    type: str
     required: false
   gid:
     description: The GID
+    type: int
     required: false
     aliases: ["gidnumber"]
   nonposix:
@@ -69,49 +73,58 @@ options:
     description: List of user names assigned to this group.
     required: false
     type: list
+    elements: str
   group:
     description: List of group names assigned to this group.
     required: false
     type: list
+    elements: str
   service:
     description:
     - List of service names assigned to this group.
     - Only usable with IPA versions 4.7 and up.
     required: false
     type: list
+    elements: str
   membermanager_user:
     description:
     - List of member manager users assigned to this group.
     - Only usable with IPA versions 4.8.4 and up.
     required: false
     type: list
+    elements: str
   membermanager_group:
     description:
     - List of member manager groups assigned to this group.
     - Only usable with IPA versions 4.8.4 and up.
     required: false
     type: list
+    elements: str
   externalmember:
     description:
     - List of members of a trusted domain in DOM\\name or name@domain form.
     required: false
     type: list
-    ailases: ["ipaexternalmember", "external_member"]
+    elements: str
+    aliases: ["ipaexternalmember", "external_member"]
   idoverrideuser:
     description:
     - User ID overrides to add
     required: false
     type: list
+    elements: str
   action:
     description: Work on group or member level
+    type: str
     default: group
     choices: ["member", "group"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent"]
 author:
-    - Thomas Woerner
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -275,7 +288,7 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
             # present
             description=dict(type="str", default=None),
@@ -284,14 +297,20 @@ def main():
             external=dict(required=False, type='bool', default=None),
             posix=dict(required=False, type='bool', default=None),
             nomembers=dict(required=False, type='bool', default=None),
-            user=dict(required=False, type='list', default=None),
-            group=dict(required=False, type='list', default=None),
-            service=dict(required=False, type='list', default=None),
-            idoverrideuser=dict(required=False, type='list', default=None),
-            membermanager_user=dict(required=False, type='list', default=None),
+            user=dict(required=False, type='list', elements="str",
+                      default=None),
+            group=dict(required=False, type='list', elements="str",
+                       default=None),
+            service=dict(required=False, type='list', elements="str",
+                         default=None),
+            idoverrideuser=dict(required=False, type='list', elements="str",
+                                default=None),
+            membermanager_user=dict(required=False, type='list',
+                                    elements="str", default=None),
             membermanager_group=dict(required=False, type='list',
-                                     default=None),
-            externalmember=dict(required=False, type='list', default=None,
+                                     elements="str", default=None),
+            externalmember=dict(required=False, type='list', elements="str",
+                                default=None,
                                 aliases=[
                                     "ipaexternalmember",
                                     "external_member"
