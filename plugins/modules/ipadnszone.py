@@ -2,8 +2,9 @@
 
 # Authors:
 #   Sergio Oliveira Campos <seocam@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2020 Red Hat
+# Copyright (C) 2020-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,9 +40,10 @@ extends_documentation_fragment:
 options:
   name:
     description: The zone name string.
-    required: true
+    required: false
     type: list
-    alises: ["zone_name"]
+    elements: str
+    aliases: ["zone_name"]
   name_from_ip:
     description: |
       Derive zone name from reverse of IP (PTR).
@@ -51,17 +53,22 @@ options:
   forwarders:
     description: The list of global DNS forwarders.
     required: false
-    options:
+    type: list
+    elements: dict
+    suboptions:
       ip_address:
         description: The forwarder nameserver IP address list (IPv4 and IPv6).
+        type: str
         required: true
       port:
         description: The port to forward requests to.
+        type: int
         required: false
   forward_policy:
     description:
       Global forwarding policy. Set to "none" to disable any configured
       global forwarders.
+    type: str
     required: false
     choices: ['only', 'first', 'none']
   allow_sync_ptr:
@@ -71,6 +78,7 @@ options:
     type: bool
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent", "enabled", "disabled"]
   name_server:
@@ -89,7 +97,7 @@ options:
     description: Allow dynamic updates
     required: false
     type: bool
-    alises: ["dynamicupdate"]
+    aliases: ["dynamicupdate"]
   dnssec:
     description: Allow inline DNSSEC signing of records in the zone
     required: false
@@ -97,11 +105,13 @@ options:
   allow_transfer:
     description: List of IP addresses or networks which are allowed to transfer the zone
     required: false
-    type: bool
+    type: list
+    elements: str
   allow_query:
     description: List of IP addresses or networks which are allowed to issue queries
     required: false
-    type: bool
+    type: list
+    elements: str
   refresh:
     description: SOA record refresh time
     required: false
@@ -141,6 +151,9 @@ options:
     description: Force DNS zone creation even if nameserver is not resolvable
     required: false
     type: bool
+author:
+  - Sergio Oliveira Campos (@seocam)
+  - Thomas Woerner (@t-woerner)
 """  # noqa: E501
 
 EXAMPLES = """
@@ -195,9 +208,11 @@ dnszone:
   description: DNS Zone dict with zone name infered from `name_from_ip`.
   returned:
     If `state` is `present`, `name_from_ip` is used, and a zone was created.
-  options:
+  type: dict
+  contains:
     name:
       description: The name of the zone created, inferred from `name_from_ip`.
+      type: str
       returned: always
 """
 
@@ -487,8 +502,8 @@ class DNSZoneModule(IPAAnsibleModule):
 
 def get_argument_spec():
     forwarder_spec = dict(
-        ip_address=dict(type=str, required=True),
-        port=dict(type=int, required=False, default=None),
+        ip_address=dict(type="str", required=True),
+        port=dict(type="int", required=False, default=None),
     )
 
     return dict(
@@ -500,11 +515,13 @@ def get_argument_spec():
         ipaadmin_principal=dict(type="str", default="admin"),
         ipaadmin_password=dict(type="str", required=False, no_log=True),
         name=dict(
-            type="list", default=None, required=False, aliases=["zone_name"]
+            type="list", elements="str", default=None, required=False,
+            aliases=["zone_name"]
         ),
         name_from_ip=dict(type="str", default=None, required=False),
         forwarders=dict(
             type="list",
+            elements="dict",
             default=None,
             required=False,
             options=dict(**forwarder_spec),
@@ -526,8 +543,10 @@ def get_argument_spec():
             aliases=["dynamicupdate"],
         ),
         dnssec=dict(type="bool", required=False, default=None),
-        allow_transfer=dict(type="list", required=False, default=None),
-        allow_query=dict(type="list", required=False, default=None),
+        allow_transfer=dict(type="list", elements="str", required=False,
+                            default=None),
+        allow_query=dict(type="list", elements="str", required=False,
+                         default=None),
         refresh=dict(type="int", required=False, default=None),
         retry=dict(type="int", required=False, default=None),
         expire=dict(type="int", required=False, default=None),
