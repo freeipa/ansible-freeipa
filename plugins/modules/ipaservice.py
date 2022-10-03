@@ -59,7 +59,7 @@ options:
     elements: str
     aliases: ["pac_type", "ipakrbauthzdata"]
   auth_ind:
-    description: Defines a whitelist for Authentication Indicators.
+    description: Defines an allow list for Authentication Indicators.
     type: list
     elements: str
     required: false

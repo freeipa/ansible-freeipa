@@ -143,10 +143,11 @@ options:
         required: false
       auth_ind:
         description:
-          Defines a whitelist for Authentication Indicators. Use 'otp' to allow
-          OTP-based 2FA authentications. Use 'radius' to allow RADIUS-based 2FA
-          authentications. Other values may be used for custom configurations.
-          Use empty string to reset auth_ind to the initial value.
+          Defines an allow list for Authentication Indicators. Use 'otp'
+          to allow OTP-based 2FA authentications. Use 'radius' to allow
+          RADIUS-based 2FA authentications. Other values may be used
+          for custom configurations. Use empty string to reset auth_ind
+          to the initial value.
         type: list
         aliases: ["krbprincipalauthind"]
         choices: ["radius", "otp", "pkinit", "hardened", ""]
@@ -279,10 +280,11 @@ options:
     required: false
   auth_ind:
     description:
-      Defines a whitelist for Authentication Indicators. Use 'otp' to allow
-      OTP-based 2FA authentications. Use 'radius' to allow RADIUS-based 2FA
-      authentications. Other values may be used for custom configurations.
-      Use empty string to reset auth_ind to the initial value.
+      Defines an allow list for Authentication Indicators. Use 'otp'
+      to allow OTP-based 2FA authentications. Use 'radius' to allow
+      RADIUS-based 2FA authentications. Other values may be used
+      for custom configurations. Use empty string to reset auth_ind
+      to the initial value.
     type: list
     aliases: ["krbprincipalauthind"]
     choices: ["radius", "otp", "pkinit", "hardened", ""]
