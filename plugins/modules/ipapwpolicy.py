@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,15 +34,13 @@ DOCUMENTATION = """
 module: ipapwpolicy
 short_description: Manage FreeIPA pwpolicies
 description: Manage FreeIPA pwpolicies
+extends_documentation_fragment:
+  - ipamodule_base_docs
 options:
-  ipaadmin_principal:
-    description: The admin principal
-    default: admin
-  ipaadmin_password:
-    description: The admin password
-    required: false
   name:
     description: The group name
+    type: list
+    elements: str
     required: false
     aliases: ["cn"]
   maxlife:
@@ -92,10 +90,11 @@ options:
     aliases: ["krbpwdlockoutduration"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent"]
 author:
-    - Thomas Woerner
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -164,8 +163,8 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"], default=None,
-                      required=False),
+            name=dict(type="list", elements="str", aliases=["cn"],
+                      default=None, required=False),
             # present
 
             maxlife=dict(type="int", aliases=["krbmaxpwdlife"], default=None),
