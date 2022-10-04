@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,14 +39,16 @@ extends_documentation_fragment:
 options:
   suffix:
     description: Topology suffix
+    type: str
     required: true
     choices: ["domain", "ca"]
   state:
     description: State to ensure
+    type: str
     default: verified
     choices: ["verified"]
 author:
-    - Thomas Woerner
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -65,7 +67,7 @@ from ansible.module_utils.ansible_freeipa_module import IPAAnsibleModule
 def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
-            suffix=dict(choices=["domain", "ca"], required=True),
+            suffix=dict(type="str", choices=["domain", "ca"], required=True),
             state=dict(type="str", default="verified",
                        choices=["verified"]),
         ),
