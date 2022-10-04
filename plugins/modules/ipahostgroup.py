@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,10 +40,13 @@ extends_documentation_fragment:
 options:
   name:
     description: The hostgroup name
-    required: false
+    type: list
+    elements: str
+    required: true
     aliases: ["cn"]
   description:
     description: The hostgroup description
+    type: str
     required: false
   nomembers:
     description: Suppress processing of membership attributes
@@ -53,38 +56,45 @@ options:
     description: List of host names assigned to this hostgroup.
     required: false
     type: list
+    elements: str
   hostgroup:
     description: List of hostgroup names assigned to this hostgroup.
     required: false
     type: list
+    elements: str
   membermanager_user:
     description:
     - List of member manager users assigned to this hostgroup.
     - Only usable with IPA versions 4.8.4 and up.
     required: false
     type: list
+    elements: str
   membermanager_group:
     description:
     - List of member manager groups assigned to this hostgroup.
     - Only usable with IPA versions 4.8.4 and up.
     required: false
     type: list
+    elements: str
   rename:
     description:
     - Rename hostgroup to the given name.
     - Only usable with IPA versions 4.8.7 and up.
+    type: str
     required: false
     aliases: ["new_name"]
   action:
     description: Work on hostgroup or member level
+    type: str
     default: hostgroup
     choices: ["member", "hostgroup"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent", "renamed"]
 author:
-    - Thomas Woerner
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -185,16 +195,19 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
             # present
             description=dict(type="str", default=None),
             nomembers=dict(required=False, type='bool', default=None),
-            host=dict(required=False, type='list', default=None),
-            hostgroup=dict(required=False, type='list', default=None),
-            membermanager_user=dict(required=False, type='list', default=None),
+            host=dict(required=False, type='list', elements="str",
+                      default=None),
+            hostgroup=dict(required=False, type='list', elements="str",
+                           default=None),
+            membermanager_user=dict(required=False, type='list',
+                                    elements="str", default=None),
             membermanager_group=dict(required=False, type='list',
-                                     default=None),
+                                     elements="str", default=None),
             rename=dict(required=False, type='str', default=None,
                         aliases=["new_name"]),
             action=dict(type="str", default="hostgroup",
