@@ -2,8 +2,9 @@
 
 # Authors:
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,17 +41,22 @@ extends_documentation_fragment:
 options:
   name:
     description: The sudo command
+    type: list
+    elements: str
     required: true
     aliases: ["sudocmd"]
   description:
     description: The command description
+    type: str
     required: false
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent"]
 author:
-    - Rafael Jeffman
+  - Rafael Guterres Jeffman (@rjeffman)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -103,7 +109,7 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["sudocmd"], default=None,
+            name=dict(type="list", elements="str", aliases=["sudocmd"],
                       required=True),
             # present
             description=dict(type="str", default=None),
