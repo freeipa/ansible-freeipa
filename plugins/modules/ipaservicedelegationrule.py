@@ -40,6 +40,8 @@ extends_documentation_fragment:
 options:
   name:
     description: The list of servicedelegationrule name strings.
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
   principal:
@@ -49,22 +51,30 @@ options:
       host/fqdn@REALM, alias$, alias$@REALM, where fqdn and fqdn@REALM
       are host principals and the same as host/fqdn and host/fqd
       Host princpals are only usable with IPA versions 4.9.0 and up.
+    type: list
+    elements: str
     required: false
   target:
     description: |
       The list of service delegation targets.
+    type: list
+    elements: str
     required: false
     aliases: ["servicedelegationtarget"]
   action:
     description: Work on servicedelegationrule or member level.
+    type: str
     choices: ["servicedelegationrule", "member"]
     default: servicedelegationrule
     required: false
   state:
     description: The state to ensure.
+    type: str
     choices: ["present", "absent"]
     default: present
-    required: true
+    required: false
+author:
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -161,11 +171,12 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
             # present
-            principal=dict(required=False, type='list', default=None),
-            target=dict(required=False, type='list',
+            principal=dict(required=False, type='list', elements="str",
+                           default=None),
+            target=dict(required=False, type='list', elements="str",
                         aliases=["servicedelegationtarget"], default=None),
 
             action=dict(type="str", default="servicedelegationrule",
