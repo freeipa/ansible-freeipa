@@ -119,8 +119,8 @@ Variable | Description | Required
 `ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
 `name` \| `ALIAS` | The list of $name name strings. | yes
-`PARAMETER1` \| `API_PARAMETER_NAME` | DESCRIPTION | BOOL
-`PARAMETER2` \| `API_PARAMETER_NAME` | DESCRIPTION | BOOL
+`PARAMETER1` \| `API_PARAMETER_NAME` | DESCRIPTION | TYPE
+`PARAMETER2` \| `API_PARAMETER_NAME` | DESCRIPTION | TYPE
 `action` | Work on $name or member level. It can be on of `member` or `$name` and defaults to `$name`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, default: `present`. | no
 
