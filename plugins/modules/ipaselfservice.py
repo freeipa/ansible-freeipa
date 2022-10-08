@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2020 Red Hat
+# Copyright (C) 2020-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,26 +39,36 @@ extends_documentation_fragment:
 options:
   name:
     description: The list of selfservice name strings.
+    type: list
+    elements: str
     required: true
     aliases: ["aciname"]
   permission:
     description: Permissions to grant (read, write). Default is write.
+    type: list
+    elements: str
     required: false
     aliases: ["permissions"]
   attribute:
     description: Attribute list to which the selfservice applies
+    type: list
+    elements: str
     required: false
     aliases: ["attrs"]
   action:
     description: Work on selfservice or member level.
+    type: str
     choices: ["selfservice", "member"]
     default: selfservice
     required: false
   state:
     description: The state to ensure.
+    type: str
     choices: ["present", "absent"]
     default: present
-    required: true
+    required: false
+author:
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -130,13 +140,13 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["aciname"], default=None,
+            name=dict(type="list", elements="str", aliases=["aciname"],
                       required=True),
             # present
-            permission=dict(required=False, type='list',
+            permission=dict(required=False, type='list', elements="str",
                             aliases=["permissions"], default=None),
-            attribute=dict(required=False, type='list', aliases=["attrs"],
-                           default=None),
+            attribute=dict(required=False, type='list', elements="str",
+                           aliases=["attrs"], default=None),
             action=dict(type="str", default="selfservice",
                         choices=["member", "selfservice"]),
             # state
