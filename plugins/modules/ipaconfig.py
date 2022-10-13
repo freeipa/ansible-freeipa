@@ -533,13 +533,14 @@ def main():
             required_sid = any([netbios_name, add_sids])
             if required_sid and not enable_sid:
                 ansible_module.fail_json(
-                    "'enable-sid: yes' required for 'netbios_name' "
-                    "and 'add-sids'."
+                    msg="'enable-sid: yes' required for 'netbios_name' "
+                        "and 'add-sids'."
                 )
             if enable_sid:
                 if not has_enable_sid:
                     ansible_module.fail_json(
-                        "This version of IPA does not support 'enable-sid'.")
+                        msg="This version of IPA does not support enable-sid."
+                    )
                 if (
                     netbios_name
                     and netbios_name == get_netbios_name(ansible_module)
