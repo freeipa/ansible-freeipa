@@ -175,7 +175,7 @@ options:
     enable_sid:
         description: >
           New users and groups automatically get a SID assigned.
-          Requires IPA 4.9.8+.
+          Cannot be deactivated once activated. Requires IPA 4.9.8+.
         required: false
         type: bool
     netbios_name:
@@ -525,11 +525,16 @@ def main():
         result = config_show(ansible_module)
 
         if params:
+            enable_sid = params.get("enable_sid")
+            sid_is_enabled = has_enable_sid and is_enable_sid(ansible_module)
+
+            if sid_is_enabled and enable_sid is False:
+                ansible_module.fail_json(msg="SID cannot be disabled.")
+
             netbios_name = params.get("netbios_name")
             if netbios_name:
                 netbios_name = netbios_name.upper()
             add_sids = params.get("add_sids")
-            enable_sid = params.get("enable_sid")
             required_sid = any([netbios_name, add_sids])
             if required_sid and not enable_sid:
                 ansible_module.fail_json(
@@ -551,13 +556,9 @@ def main():
                     del params["add_sids"]
                 if (
                     not any([netbios_name, add_sids])
-                    and is_enable_sid(ansible_module)
+                    and sid_is_enabled
                 ):
                     del params["enable_sid"]
-            else:
-                for param in ["enable_sid", "netbios_name", "add_sids"]:
-                    if param in params:
-                        del params[params]
 
             params = {
                 k: v for k, v in params.items()

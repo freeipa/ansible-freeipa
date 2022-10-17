@@ -148,7 +148,7 @@ Variable | Description | Required
 `user_auth_type` \| `ipauserauthtype` |  set default types of supported user authentication (choices: `password`, `radius`, `otp`, `disabled`). Use `""` to clear this variable. | no
 `domain_resolution_order` \| `ipadomainresolutionorder` | Set list of domains used for short name qualification | no
 `ca_renewal_master_server` \| `ipacarenewalmasterserver`| Renewal master for IPA certificate authority. | no
-`enable_sid` | New users and groups automatically get a SID assigned. Requires IPA 4.9.8+. (bool) | no
+`enable_sid` | New users and groups automatically get a SID assigned. Cannot be deactivated once activated. Requires IPA 4.9.8+. (bool) | no
 `netbios_name` | NetBIOS name of the IPA domain. Requires IPA 4.9.8+ and 'enable_sid: yes'. | no
 `add_sids` | Add SIDs for existing users and groups. Requires IPA 4.9.8+ and 'enable_sid: yes'. (bool) | no
 
