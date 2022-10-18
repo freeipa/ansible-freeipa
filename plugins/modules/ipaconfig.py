@@ -180,14 +180,14 @@ options:
         type: bool
     netbios_name:
         description: >
-          NetBIOS name of the IPA domain.
-          Requires IPA 4.9.8+ and 'enable_sid: yes'.
+          NetBIOS name of the IPA domain. Requires IPA 4.9.8+
+          and SID generation to be activated.
         required: false
         type: str
     add_sids:
         description: >
-          Add SIDs for existing users and groups.
-          Requires IPA 4.9.8+ and 'enable_sid: yes'.
+          Add SIDs for existing users and groups. Requires IPA 4.9.8+
+          and SID generation to be activated.
         required: false
         type: bool
 '''
@@ -362,7 +362,7 @@ def get_netbios_name(module):
 
 
 def is_enable_sid(module):
-    """When 'enable-sid' is true admin user and admins group have SID set."""
+    """When 'enable_sid' is true admin user and admins group have SID set."""
     _result = module.ipa_command("user_show", "admin", {"all": True})
     sid = _result["result"].get("ipantsecurityidentifier", [""])
     if not sid[0].endswith("-500"):
@@ -517,7 +517,7 @@ def main():
     changed = False
     exit_args = {}
 
-    # Connect to IPA API (enable-sid requires context == 'client')
+    # Connect to IPA API (enable_sid requires context == 'client')
     with ansible_module.ipa_connect(context="client"):
         has_enable_sid = ansible_module.ipa_command_param_exists(
             "config_mod", "enable_sid")
@@ -532,20 +532,8 @@ def main():
                 ansible_module.fail_json(msg="SID cannot be disabled.")
 
             netbios_name = params.get("netbios_name")
-            if netbios_name:
-                netbios_name = netbios_name.upper()
             add_sids = params.get("add_sids")
-            required_sid = any([netbios_name, add_sids])
-            if required_sid and not enable_sid:
-                ansible_module.fail_json(
-                    msg="'enable-sid: yes' required for 'netbios_name' "
-                        "and 'add-sids'."
-                )
-            if enable_sid:
-                if not has_enable_sid:
-                    ansible_module.fail_json(
-                        msg="This version of IPA does not support enable-sid."
-                    )
+            if has_enable_sid:
                 if (
                     netbios_name
                     and netbios_name == get_netbios_name(ansible_module)
@@ -554,12 +542,27 @@ def main():
                     netbios_name = None
                 if not add_sids and "add_sids" in params:
                     del params["add_sids"]
-                if (
-                    not any([netbios_name, add_sids])
-                    and sid_is_enabled
-                ):
-                    del params["enable_sid"]
+                if any([netbios_name, add_sids]):
+                    if sid_is_enabled:
+                        params["enable_sid"] = True
+                    else:
+                        if not enable_sid:
+                            ansible_module.fail_json(
+                                msg="SID generation must be enabled for "
+                                    "'netbios_name' and 'add_sids'. Use "
+                                    "'enable_sid: yes'."
+                            )
+                else:
+                    if sid_is_enabled and "enable_sid" in params:
+                        del params["enable_sid"]
 
+            else:
+                if any([enable_sid, netbios_name, add_sids is not None]):
+                    ansible_module.fail_json(
+                        msg="This version of IPA does not support enable_sid, "
+                            "add_sids or netbios_name setting through the "
+                            "config module"
+                    )
             params = {
                 k: v for k, v in params.items()
                 if k not in result or result[k] != v
