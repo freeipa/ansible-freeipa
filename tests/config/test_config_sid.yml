@@ -19,6 +19,32 @@
 
   # TESTS
   - block:
+    - name: Check if SID is enabled.
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        enable_sid: yes
+      check_mode: yes
+      register: sid_disabled
+
+    - name: Ensure netbios_name can't be changed without SID enabled.
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        netbios_name: IPATESTPLAY
+      register: result
+      failed_when: not result.failed and "SID generation must be enabled" in result.msg
+      when: sid_disabled.changed
+
+    - name: Ensure SIDs can't be changed without SID enabled.
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        add_sids: yes
+      register: result
+      failed_when: not result.failed and "SID generation must be enabled" in result.msg
+      when: sid_disabled.changed
+
     - name: Ensure SID is enabled.
       ipaconfig:
         ipaadmin_password: SomeADMINpassword
@@ -56,10 +82,29 @@
       ipaconfig:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
-        enable_sid: yes
         netbios_name: IPATESTPLAY
       register: result
       failed_when: result.failed or result.changed
+
+    - name: Ensure netbios_name cannot be set with lowercase characters
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        netbios_name: IPATESTplay
+      register: result
+      failed_when:
+        (not result.failed
+         and "Up to 15 characters and only uppercase ASCII letters, digits and dashes are allowed" not in result.message)
+
+    - name: Ensure netbios_name cannot be set different lowercase characters
+      ipaconfig:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        netbios_name: otherPLAY
+      register: result
+      failed_when:
+        (not result.failed
+         and "Up to 15 characters and only uppercase ASCII letters, digits and dashes are allowed" not in result.message)
 
     # add_sids is not idempotent as it always tries to generate the missing
     # SIDs for users and groups.
@@ -67,7 +112,6 @@
       ipaconfig:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
-        enable_sid: yes
         add_sids: yes
 
     # only run tests if version supports enable-sid
