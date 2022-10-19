@@ -41,20 +41,27 @@ options:
   name:
     description: The list of $name name strings.
     required: true
+    type: list
+    elements: str
     aliases: ["API_PARAMETER_NAME"]
   PARAMETER1:
     description: DESCRIPTION
     required: REQUIRED
+    type: str
     aliases: ["API_PARAMETER_NAME"]
   PARAMETER2:
     description: DESCRIPTION
     required: REQUIRED
+    type: list
+    elements: str
     aliases: ["API_PARAMETER_NAME"]
   state:
     description: The state to ensure.
     choices: ["present", "absent"]
     default: present
-    required: true
+    type: str
+author:
+  - $author (@$github)
 """
 
 EXAMPLES = """
@@ -113,15 +120,15 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["API_PARAMETER_NAME"],
-                      default=None, required=True),
+            name=dict(type="list", elements="str", required=True,
+                      aliases=["API_PARAMETER_NAME"],
             # present
             PARAMETER1=dict(required=False, type='str',
                             aliases=["API_PARAMETER_NAME"], default=None),
-            PARAMETER2=dict(required=False, type='list',
+            PARAMETER2=dict(required=False, type='list', elements='str',
                             aliases=["API_PARAMETER_NAME"], default=None),
             # state
-            state=dict(type="str", default="present",
+            state=dict(type="str", default="present", type="str",
                        choices=["present", "absent"]),
         ),
         supports_check_mode=True,
