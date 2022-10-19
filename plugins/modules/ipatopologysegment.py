@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,29 +39,37 @@ extends_documentation_fragment:
 options:
   suffix:
     description: Topology suffix
+    type: str
     required: true
     choices: ["domain", "ca", "domain+ca"]
   name:
     description: Topology segment name, unique identifier.
+    type: str
     required: false
     aliases: ["cn"]
   left:
     description: Left replication node - an IPA server
+    type: str
+    required: false
     aliases: ["leftnode"]
   right:
     description: Right replication node - an IPA server
+    type: str
+    required: false
     aliases: ["rightnode"]
   direction:
     description: The direction a segment will be reinitialized
+    type: str
     required: false
     choices: ["left-to-right", "right-to-left"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent", "enabled", "disabled", "reinitialized",
               "checked" ]
 author:
-    - Thomas Woerner
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -178,7 +186,8 @@ def find_left_right_cn(module, suffix, left, right, name):
 def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
-            suffix=dict(choices=["domain", "ca", "domain+ca"], required=True),
+            suffix=dict(type="str", choices=["domain", "ca", "domain+ca"],
+                        required=True),
             name=dict(type="str", aliases=["cn"], default=None),
             left=dict(type="str", aliases=["leftnode"], default=None),
             right=dict(type="str", aliases=["rightnode"], default=None),
