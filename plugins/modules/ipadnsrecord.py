@@ -2,8 +2,9 @@
 
 # Authors:
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2020 Red Hat
+# Copyright (C) 2020-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -42,19 +43,24 @@ options:
   records:
     description: The list of user dns records dicts
     required: false
-    options:
+    type: list
+    elements: dict
+    suboptions:
       name:
         description: The DNS record name to manage.
+        type: str
         aliases: ["record_name"]
         required: true
       zone_name:
         description: |
           The DNS zone name to which DNS record needs to be managed.
           Required if not provided globally.
+        type: str
         aliases: ["dnszone"]
         required: false
       record_type:
         description: The type of DNS record.
+        type: str
         choices: ["A", "AAAA", "A6", "AFSDB", "CERT", "CNAME", "DLV", "DNAME",
                   "DS", "KX", "LOC", "MX", "NAPTR", "NS", "PTR", "SRV",
                   "SSHFP", "TLSA", "TXT", "URI"]
@@ -63,6 +69,7 @@ options:
         description: Manage DNS record name with these values.
         required: false
         type: list
+        elements: str
       record_ttl:
         description: Set the TTL for the record.
         required: false
@@ -73,92 +80,132 @@ options:
         type: bool
       a_rec:
         description: Raw A record.
+        type: list
+        elements: str
         required: false
         aliases: ["a_record"]
       aaaa_rec:
         description: Raw AAAA record.
+        type: list
+        elements: str
         required: false
         aliases: ["aaaa_record"]
       a6_rec:
         description: Raw A6 record.
+        type: list
+        elements: str
         required: false
         aliases: ["a6_record"]
       afsdb_rec:
         description: Raw AFSDB record.
+        type: list
+        elements: str
         required: false
         aliases: ["afsdb_record"]
       cert_rec:
         description: Raw CERT record.
+        type: list
+        elements: str
         required: false
         aliases: ["cert_record"]
       cname_rec:
         description: Raw CNAME record.
+        type: list
+        elements: str
         required: false
         aliases: ["cname_record"]
       dlv_rec:
         description: Raw DLV record.
+        type: list
+        elements: str
         required: false
         aliases: ["dlv_record"]
       dname_rec:
         description: Raw DNAM record.
+        type: list
+        elements: str
         required: false
         aliases: ["dname_record"]
       ds_rec:
         description: Raw DS record.
+        type: list
+        elements: str
         required: false
         aliases: ["ds_record"]
       kx_rec:
         description: Raw KX record.
+        type: list
+        elements: str
         required: false
         aliases: ["kx_record"]
       loc_rec:
         description: Raw LOC record.
+        type: list
+        elements: str
         required: false
         aliases: ["loc_record"]
       mx_rec:
         description: Raw MX record.
+        type: list
+        elements: str
         required: false
         aliases: ["mx_record"]
       naptr_rec:
         description: Raw NAPTR record.
+        type: list
+        elements: str
         required: false
         aliases: ["naptr_record"]
       ns_rec:
         description: Raw NS record.
+        type: list
+        elements: str
         required: false
         aliases: ["ns_record"]
       ptr_rec:
         description: Raw PTR record.
+        type: list
+        elements: str
         required: false
         aliases: ["ptr_record"]
       srv_rec:
         description: Raw SRV record.
+        type: list
+        elements: str
         required: false
         aliases: ["srv_record"]
       sshfp_rec:
         description: Raw SSHFP record.
+        type: list
+        elements: str
         required: false
         aliases: ["sshfp_record"]
       tlsa_rec:
         description: Raw TLSA record.
+        type: list
+        elements: str
         required: false
         aliases: ["tlsa_record"]
       txt_rec:
         description: Raw TXT record.
+        type: list
+        elements: str
         required: false
         aliases: ["txt_record"]
       uri_rec:
         description: Raw URI record.
+        type: list
+        elements: str
         required: false
         aliases: ["uri_record"]
       ip_address:
         description: IP adresses for A or AAAA records.
         required: false
-        type: string
+        type: str
       a_ip_address:
         description: IP adresses for A records.
         required: false
-        type: string
+        type: str
       a_create_reverse:
         description: |
           Create reverse record for A records.
@@ -168,7 +215,7 @@ options:
       aaaa_ip_address:
         description: IP adresses for AAAA records.
         required: false
-        type: string
+        type: str
       aaaa_create_reverse:
         description: |
           Create reverse record for AAAA records.
@@ -185,6 +232,7 @@ options:
       a6_data:
         description: A6 record data.
         required: false
+        type: str
       afsdb_subtype:
         description: AFSDB Subtype
         required: false
@@ -192,7 +240,7 @@ options:
       afsdb_hostname:
         description: AFSDB Hostname
         required: false
-        type: string
+        type: str
       cert_type:
         description: CERT Certificate Type
         required: false
@@ -208,13 +256,13 @@ options:
       cert_certificate_or_crl:
         description: CERT Certificate or Certificate Revocation List (CRL).
         required: false
-        type: string
+        type: str
       cname_hostname:
         description: A hostname which this alias hostname points to.
         required: false
-        type: string
+        type: str
       dlv_key_tag:
-        description: DS Key Tag
+        description: DLV Key Tag
         required: false
         type: int
       dlv_algorithm:
@@ -228,11 +276,11 @@ options:
       dlv_digest:
         description: DLV Digest
         required: false
-        type: string
+        type: str
       dname_target:
         description: DNAME Target
         required: false
-        type: string
+        type: str
       ds_key_tag:
         description: DS Key Tag
         required: false
@@ -248,7 +296,7 @@ options:
       ds_digest:
         description: DS Digest
         required: false
-        type: string
+        type: str
       kx_preference:
         description: |
           Preference given to this exchanger. Lower values are more preferred.
@@ -257,7 +305,7 @@ options:
       kx_exchanger:
         description: A host willing to act as a key exchanger.
         required: false
-        type: string
+        type: str
       loc_lat_deg:
         description: LOC Degrees Latitude
         required: false
@@ -274,6 +322,7 @@ options:
         description: LOC Direction Latitude
         required: false
         choices: ["N", "S"]
+        type: str
       loc_lon_deg:
         description: LOC Degrees Longitude
         required: false
@@ -290,6 +339,7 @@ options:
         description: LOC Direction Longitude
         required: false
         choices: ["E", "W"]
+        type: str
       loc_altitude:
         description: LOC Altitude
         required: false
@@ -314,7 +364,7 @@ options:
       mx_exchanger:
         description: A host willing to act as a mail exchanger.
         required: false
-        type: string
+        type: str
       naptr_order:
         description: NAPTR Order
         required: false
@@ -326,27 +376,27 @@ options:
       naptr_flags:
         description: NAPTR Flags
         required: false
-        type: string
+        type: str
       naptr_service:
         description: NAPTR Service
         required: false
-        type: string
+        type: str
       naptr_regexp:
         description: NAPTR Regular Expression
         required: false
-        type: string
+        type: str
       naptr_replacement:
         description: NAPTR Replacement
         required: false
-        type: string
+        type: str
       ns_hostname:
         description: NS Hostname
         required: false
-        type: string
+        type: str
       ptr_hostname:
         description: The hostname this reverse record points to.
         required: false
-        type: string
+        type: str
       srv_priority:
         description: |
           Lower number means higher priority. Clients will attempt to contact
@@ -366,7 +416,7 @@ options:
           The domain name of the target host or '.' if the service is decidedly
           not available at this domain.
         required: false
-        type: string
+        type: str
       sshfp_algorithm:
         description: SSHFP Algorithm
         required: False
@@ -378,11 +428,11 @@ options:
       sshfp_fingerprint:
         description: SSHFP Fingerprint
         required: False
-        type: string
+        type: str
       txt_data:
         description: TXT Text Data
         required: false
-        type: string
+        type: str
       tlsa_cert_usage:
         description: TLSA Certificate Usage
         required: false
@@ -398,11 +448,11 @@ options:
       tlsa_cert_association_data:
         description: TLSA Certificate Association Data
         required: false
-        type: string
+        type: str
       uri_target:
         description: Target Uniform Resource Identifier according to RFC 3986.
         required: false
-        type: string
+        type: str
       uri_priority:
         description: |
           Lower number means higher priority. Clients will attempt to contact
@@ -413,27 +463,31 @@ options:
         description: Relative weight for entries with the same priority.
         required: false
         type: int
+  name:
+    description: The DNS record name to manage.
+    type: list
+    elements: str
+    aliases: ["record_name"]
+    required: false
   zone_name:
     description: |
       The DNS zone name to which DNS record needs to be managed.
       Required if not provided globally.
+    type: str
     aliases: ["dnszone"]
     required: false
-  name:
-    description: The DNS record name to manage.
-    aliases: ["record_name"]
-    required: true
   record_type:
     description: The type of DNS record.
-    required: false
+    type: str
     choices: ["A", "AAAA", "A6", "AFSDB", "CERT", "CNAME", "DLV", "DNAME",
-              "DS", "KX", "LOC", "MX", "NAPTR", "NS", "PTR", "SRV", "SSHFP",
-              "TLSA", "TXT", "URI"]
+              "DS", "KX", "LOC", "MX", "NAPTR", "NS", "PTR", "SRV",
+              "SSHFP", "TLSA", "TXT", "URI"]
     default: "A"
   record_value:
-    description: Manage DNS record name with this values.
+    description: Manage DNS record name with these values.
     required: false
     type: list
+    elements: str
   record_ttl:
     description: Set the TTL for the record.
     required: false
@@ -444,99 +498,132 @@ options:
     type: bool
   a_rec:
     description: Raw A record.
+    type: list
+    elements: str
     required: false
     aliases: ["a_record"]
   aaaa_rec:
     description: Raw AAAA record.
+    type: list
+    elements: str
     required: false
     aliases: ["aaaa_record"]
   a6_rec:
     description: Raw A6 record.
+    type: list
+    elements: str
     required: false
     aliases: ["a6_record"]
   afsdb_rec:
     description: Raw AFSDB record.
+    type: list
+    elements: str
     required: false
     aliases: ["afsdb_record"]
   cert_rec:
     description: Raw CERT record.
+    type: list
+    elements: str
     required: false
     aliases: ["cert_record"]
   cname_rec:
     description: Raw CNAME record.
+    type: list
+    elements: str
     required: false
     aliases: ["cname_record"]
   dlv_rec:
     description: Raw DLV record.
+    type: list
+    elements: str
     required: false
     aliases: ["dlv_record"]
   dname_rec:
     description: Raw DNAM record.
+    type: list
+    elements: str
     required: false
     aliases: ["dname_record"]
   ds_rec:
     description: Raw DS record.
+    type: list
+    elements: str
     required: false
     aliases: ["ds_record"]
   kx_rec:
     description: Raw KX record.
+    type: list
+    elements: str
     required: false
     aliases: ["kx_record"]
   loc_rec:
     description: Raw LOC record.
+    type: list
+    elements: str
     required: false
     aliases: ["loc_record"]
   mx_rec:
     description: Raw MX record.
+    type: list
+    elements: str
     required: false
     aliases: ["mx_record"]
   naptr_rec:
     description: Raw NAPTR record.
+    type: list
+    elements: str
     required: false
     aliases: ["naptr_record"]
   ns_rec:
     description: Raw NS record.
+    type: list
+    elements: str
     required: false
     aliases: ["ns_record"]
   ptr_rec:
     description: Raw PTR record.
+    type: list
+    elements: str
     required: false
     aliases: ["ptr_record"]
   srv_rec:
     description: Raw SRV record.
+    type: list
+    elements: str
     required: false
     aliases: ["srv_record"]
   sshfp_rec:
     description: Raw SSHFP record.
+    type: list
+    elements: str
     required: false
     aliases: ["sshfp_record"]
   tlsa_rec:
     description: Raw TLSA record.
+    type: list
+    elements: str
     required: false
     aliases: ["tlsa_record"]
   txt_rec:
     description: Raw TXT record.
+    type: list
+    elements: str
     required: false
     aliases: ["txt_record"]
   uri_rec:
     description: Raw URI record.
+    type: list
+    elements: str
     required: false
     aliases: ["uri_record"]
   ip_address:
-    description: IP adresses for A ar AAAA.
+    description: IP adresses for A or AAAA records.
     required: false
-    type: string
-  create_reverse:
-    description: |
-      Create reverse record for A or AAAA record types.
-      There is no equivalent to remove reverse records.
-    type: bool
-    required: false
-    aliases: ["reverse"]
+    type: str
   a_ip_address:
     description: IP adresses for A records.
     required: false
-    type: string
+    type: str
   a_create_reverse:
     description: |
       Create reverse record for A records.
@@ -546,13 +633,24 @@ options:
   aaaa_ip_address:
     description: IP adresses for AAAA records.
     required: false
-    type: string
+    type: str
   aaaa_create_reverse:
     description: |
       Create reverse record for AAAA records.
       There is no equivalent to remove reverse records.
     type: bool
     required: false
+  create_reverse:
+    description: |
+      Create reverse record for A or AAAA record types.
+      There is no equivalent to remove reverse records.
+    type: bool
+    required: false
+    aliases: ["reverse"]
+  a6_data:
+    description: A6 record data.
+    required: false
+    type: str
   afsdb_subtype:
     description: AFSDB Subtype
     required: false
@@ -560,7 +658,7 @@ options:
   afsdb_hostname:
     description: AFSDB Hostname
     required: false
-    type: string
+    type: str
   cert_type:
     description: CERT Certificate Type
     required: false
@@ -574,13 +672,13 @@ options:
     required: false
     type: int
   cert_certificate_or_crl:
-    description: CERT Certificate/CRL
+    description: CERT Certificate or Certificate Revocation List (CRL).
     required: false
-    type: string
+    type: str
   cname_hostname:
     description: A hostname which this alias hostname points to.
     required: false
-    type: string
+    type: str
   dlv_key_tag:
     description: DS Key Tag
     required: false
@@ -596,11 +694,11 @@ options:
   dlv_digest:
     description: DLV Digest
     required: false
-    type: string
+    type: str
   dname_target:
     description: DNAME Target
     required: false
-    type: string
+    type: str
   ds_key_tag:
     description: DS Key Tag
     required: false
@@ -616,7 +714,7 @@ options:
   ds_digest:
     description: DS Digest
     required: false
-    type: string
+    type: str
   kx_preference:
     description: |
       Preference given to this exchanger. Lower values are more preferred.
@@ -625,7 +723,7 @@ options:
   kx_exchanger:
     description: A host willing to act as a key exchanger.
     required: false
-    type: string
+    type: str
   loc_lat_deg:
     description: LOC Degrees Latitude
     required: false
@@ -642,6 +740,7 @@ options:
     description: LOC Direction Latitude
     required: false
     choices: ["N", "S"]
+    type: str
   loc_lon_deg:
     description: LOC Degrees Longitude
     required: false
@@ -658,6 +757,7 @@ options:
     description: LOC Direction Longitude
     required: false
     choices: ["E", "W"]
+    type: str
   loc_altitude:
     description: LOC Altitude
     required: false
@@ -682,7 +782,7 @@ options:
   mx_exchanger:
     description: A host willing to act as a mail exchanger.
     required: false
-    type: string
+    type: str
   naptr_order:
     description: NAPTR Order
     required: false
@@ -694,31 +794,31 @@ options:
   naptr_flags:
     description: NAPTR Flags
     required: false
-    type: string
+    type: str
   naptr_service:
     description: NAPTR Service
     required: false
-    type: string
+    type: str
   naptr_regexp:
     description: NAPTR Regular Expression
     required: false
-    type: string
+    type: str
   naptr_replacement:
     description: NAPTR Replacement
     required: false
-    type: string
+    type: str
   ns_hostname:
     description: NS Hostname
     required: false
-    type: string
+    type: str
   ptr_hostname:
     description: The hostname this reverse record points to.
     required: false
-    type: string
+    type: str
   srv_priority:
     description: |
-      Lower number means higher priority. Clients will attempt to contact the
-      server with the lowest-numbered priority they can reach.
+      Lower number means higher priority. Clients will attempt to contact
+      the server with the lowest-numbered priority they can reach.
     required: false
     type: int
   srv_weight:
@@ -731,26 +831,26 @@ options:
     type: int
   srv_target:
     description: |
-      The domain name of the target host or '.' if the service is decidedly not
-      available at this domain.
+      The domain name of the target host or '.' if the service is decidedly
+      not available at this domain.
     required: false
-    type: string
+    type: str
   sshfp_algorithm:
     description: SSHFP Algorithm
-    required: false
+    required: False
     type: int
   sshfp_fp_type:
     description: SSHFP Fingerprint Type
-    required: false
+    required: False
     type: int
   sshfp_fingerprint:
     description: SSHFP Fingerprint
-    required: false
-    type: string
+    required: False
+    type: str
   txt_data:
     description: TXT Text Data
     required: false
-    type: string
+    type: str
   tlsa_cert_usage:
     description: TLSA Certificate Usage
     required: false
@@ -766,15 +866,15 @@ options:
   tlsa_cert_association_data:
     description: TLSA Certificate Association Data
     required: false
-    type: string
+    type: str
   uri_target:
     description: Target Uniform Resource Identifier according to RFC 3986.
     required: false
-    type: string
+    type: str
   uri_priority:
     description: |
-      Lower number means higher priority. Clients will attempt to contact the
-      URI with the lowest-numbered priority they can reach.
+      Lower number means higher priority. Clients will attempt to contact
+      the URI with the lowest-numbered priority they can reach.
     required: false
     type: int
   uri_weight:
@@ -783,11 +883,12 @@ options:
     type: int
   state:
     description: State to ensure
+    type: str
     default: present
-    choices: ["present", "absent"]
-
+    choices: ["present", "absent", "disabled"]
 author:
-    - Rafael Guterres Jeffman
+  - Rafael Guterres Jeffman (@rjeffman)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -1020,29 +1121,49 @@ def configure_module():
                                   "DLV", "DNAME", "DS", "KX", "LOC", "MX",
                                   "NAPTR", "NS", "PTR", "SRV", "SSHFP", "TLSA",
                                   "TXT", "URI"]),
-        record_value=dict(type='list', required=False),
+        record_value=dict(type='list', elements='str', required=False),
         record_ttl=dict(type='int', required=False),
         del_all=dict(type='bool', required=False),
-        a_rec=dict(type='list', required=False, aliases=['a_record']),
-        aaaa_rec=dict(type='list', required=False, aliases=['aaaa_record']),
-        a6_rec=dict(type='list', required=False, aliases=['a6_record']),
-        afsdb_rec=dict(type='list', required=False, aliases=['afsdb_record']),
-        cert_rec=dict(type='list', required=False, aliases=['cert_record']),
-        cname_rec=dict(type='list', required=False, aliases=['cname_record']),
-        dlv_rec=dict(type='list', required=False, aliases=['dlv_record']),
-        dname_rec=dict(type='list', required=False, aliases=['dname_record']),
-        ds_rec=dict(type='list', required=False, aliases=['ds_record']),
-        kx_rec=dict(type='list', required=False, aliases=['kx_record']),
-        loc_rec=dict(type='list', required=False, aliases=['loc_record']),
-        mx_rec=dict(type='list', required=False, aliases=['mx_record']),
-        naptr_rec=dict(type='list', required=False, aliases=['naptr_record']),
-        ns_rec=dict(type='list', required=False, aliases=['ns_record']),
-        ptr_rec=dict(type='list', required=False, aliases=['ptr_record']),
-        srv_rec=dict(type='list', required=False, aliases=['srv_record']),
-        sshfp_rec=dict(type='list', required=False, aliases=['sshfp_record']),
-        tlsa_rec=dict(type='list', required=False, aliases=['tlsa_record']),
-        txt_rec=dict(type='list', required=False, aliases=['txt_record']),
-        uri_rec=dict(type='list', required=False, aliases=['uri_record']),
+        a_rec=dict(type='list', elements='str', required=False,
+                   aliases=['a_record']),
+        aaaa_rec=dict(type='list', elements='str', required=False,
+                      aliases=['aaaa_record']),
+        a6_rec=dict(type='list', elements='str', required=False,
+                    aliases=['a6_record']),
+        afsdb_rec=dict(type='list', elements='str', required=False,
+                       aliases=['afsdb_record']),
+        cert_rec=dict(type='list', elements='str', required=False,
+                      aliases=['cert_record']),
+        cname_rec=dict(type='list', elements='str', required=False,
+                       aliases=['cname_record']),
+        dlv_rec=dict(type='list', elements='str', required=False,
+                     aliases=['dlv_record']),
+        dname_rec=dict(type='list', elements='str', required=False,
+                       aliases=['dname_record']),
+        ds_rec=dict(type='list', elements='str', required=False,
+                    aliases=['ds_record']),
+        kx_rec=dict(type='list', elements='str', required=False,
+                    aliases=['kx_record']),
+        loc_rec=dict(type='list', elements='str', required=False,
+                     aliases=['loc_record']),
+        mx_rec=dict(type='list', elements='str', required=False,
+                    aliases=['mx_record']),
+        naptr_rec=dict(type='list', elements='str', required=False,
+                       aliases=['naptr_record']),
+        ns_rec=dict(type='list', elements='str', required=False,
+                    aliases=['ns_record']),
+        ptr_rec=dict(type='list', elements='str', required=False,
+                     aliases=['ptr_record']),
+        srv_rec=dict(type='list', elements='str', required=False,
+                     aliases=['srv_record']),
+        sshfp_rec=dict(type='list', elements='str', required=False,
+                       aliases=['sshfp_record']),
+        tlsa_rec=dict(type='list', elements='str', required=False,
+                      aliases=['tlsa_record']),
+        txt_rec=dict(type='list', elements='str', required=False,
+                     aliases=['txt_record']),
+        uri_rec=dict(type='list', elements='str', required=False,
+                     aliases=['uri_record']),
         ip_address=dict(type='str', required=False),
         create_reverse=dict(type='bool', required=False, aliases=['reverse']),
         a_ip_address=dict(type='str', required=False),
@@ -1053,16 +1174,16 @@ def configure_module():
         afsdb_subtype=dict(type='int', required=False),
         afsdb_hostname=dict(type='str', required=False),
         cert_type=dict(type='int', required=False),
-        cert_key_tag=dict(type='int', required=False),
+        cert_key_tag=dict(type='int', required=False, no_log=True),
         cert_algorithm=dict(type='int', required=False),
         cert_certificate_or_crl=dict(type='str', required=False),
         cname_hostname=dict(type='str', required=False),
-        dlv_key_tag=dict(type='int', required=False),
+        dlv_key_tag=dict(type='int', required=False, no_log=True),
         dlv_algorithm=dict(type='int', required=False),
         dlv_digest_type=dict(type='int', required=False),
         dlv_digest=dict(type='str', required=False),
         dname_target=dict(type='str', required=False),
-        ds_key_tag=dict(type='int', required=False),
+        ds_key_tag=dict(type='int', required=False, no_log=True),
         ds_algorithm=dict(type='int', required=False),
         ds_digest_type=dict(type='int', required=False),
         ds_digest=dict(type='str', required=False),
@@ -1071,11 +1192,11 @@ def configure_module():
         loc_lat_deg=dict(type='int', required=False),
         loc_lat_min=dict(type='int', required=False),
         loc_lat_sec=dict(type='float', required=False),
-        loc_lat_dir=dict(type='str', required=False),
+        loc_lat_dir=dict(type='str', required=False, choices=["N", "S"]),
         loc_lon_deg=dict(type='int', required=False),
         loc_lon_min=dict(type='int', required=False),
         loc_lon_sec=dict(type='float', required=False),
-        loc_lon_dir=dict(type='str', required=False),
+        loc_lon_dir=dict(type='str', required=False, choices=["E", "W"]),
         loc_altitude=dict(type='float', required=False),
         loc_size=dict(type='float', required=False),
         loc_h_precision=dict(type='float', required=False),
@@ -1110,10 +1231,14 @@ def configure_module():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["record_name"], default=None,
-                      required=False),
+            name=dict(type="list", elements="str", aliases=["record_name"],
+                      default=None, required=False),
 
+            # Use elements="str" and not elements="dict" for records:
+            # elements="dict" will create dicts with all unused parameters
+            # set to None. This breaks the module logic.
             records=dict(type="list",
+                         elements="dict",
                          default=None,
                          options=dict(
                              # Here name is a simple string
@@ -1444,6 +1569,14 @@ def main():
                 msg="Only one record can be added at a time.")
 
     if records is not None:
+        # Remove all keys that have a None value from the dicts in records
+        # list.
+        # This is needed after setting elements="dict" for records and makes
+        # it behave like before with elements=None.
+        for record in records:
+            for key in list(record):
+                if record[key] is None:
+                    del record[key]
         names = records
 
     # Init
