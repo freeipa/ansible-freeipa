@@ -30,15 +30,18 @@ options:
   ipaadmin_principal:
     description: The admin principal.
     default: admin
+    type: str
   ipaadmin_password:
     description: The admin password.
     required: false
+    type: str
   ipaapi_context:
     description: |
       The context in which the module will execute. Executing in a
       server context is preferred. If not provided context will be
       determined by the execution environment.
     choices: ["server", "client"]
+    type: str
     required: false
   ipaapi_ldap_cache:
     description: Use LDAP cache for IPA connection.
