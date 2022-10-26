@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,43 +39,61 @@ extends_documentation_fragment:
 options:
   name:
     description: The list of users (internally uid).
+    type: list
+    elements: str
     required: false
+    aliases: ["login"]
   users:
     description: The list of user dicts (internally uid).
-    options:
+    type: list
+    elements: dict
+    suboptions:
       name:
         description: The user (internally uid).
+        type: str
         required: true
+        aliases: ["login"]
       first:
         description: The first name. Required if user does not exist.
+        type: str
         required: false
         aliases: ["givenname"]
       last:
         description: The last name. Required if user doesnot exst.
+        type: str
         required: false
         aliases: ["sn"]
       fullname:
         description: The full name
+        type: str
         required: false
         aliases: ["cn"]
       displayname:
         description: The display name
+        type: str
         required: false
       initials:
         description: Initials
+        type: str
         required: false
       homedir:
         description: The home directory
+        type: str
         required: false
       shell:
         description: The login shell
+        type: str
         required: false
         aliases: ["loginshell"]
       email:
         description: List of email addresses
+        type: list
+        elements: str
         required: false
       principal:
         description: The kerberos principal
+        type: list
+        elements: str
         required: false
         aliases: ["principalname", "krbprincipalname"]
       principalexpiration:
@@ -84,6 +102,7 @@ options:
           (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
           YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
           YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
+        type: str
         required: false
         aliases: ["krbprincipalexpiration"]
       passwordexpiration:
@@ -93,10 +112,12 @@ options:
           YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
           YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
           Only usable with IPA versions 4.7 and up.
+        type: str
         required: false
         aliases: ["krbpasswordexpiration"]
       password:
         description: The user password
+        type: str
         required: false
       random:
         description: Generate a random user password
@@ -104,57 +125,81 @@ options:
         type: bool
       uid:
         description: The UID
+        type: int
         required: false
         aliases: ["uidnumber"]
       gid:
         description: The GID
+        type: int
         required: false
         aliases: ["gidnumber"]
       city:
         description: City
+        type: str
         required: false
       userstate:
         description: State/Province
+        type: str
         required: false
         aliases: ["st"]
       postalcode:
         description: Postalcode/ZIP
+        type: str
         required: false
         aliases: ["zip"]
       phone:
         description: List of telephone numbers
+        type: list
+        elements: str
         required: false
         aliases: ["telephonenumber"]
       mobile:
         description: List of mobile telephone numbers
+        type: list
+        elements: str
         required: false
       pager:
         description: List of pager numbers
+        type: list
+        elements: str
         required: false
       fax:
         description: List of fax numbers
+        type: list
+        elements: str
         required: false
         aliases: ["facsimiletelephonenumber"]
       orgunit:
         description: Org. Unit
+        type: str
         required: false
+        aliases: ["ou"]
       title:
         description: The job title
+        type: str
         required: false
       manager:
         description: List of managers
+        type: list
+        elements: str
         required: false
       carlicense:
         description: List of car licenses
+        type: list
+        elements: str
         required: false
       sshpubkey:
         description: List of SSH public keys
         required: false
+        type: list
+        elements: str
         aliases: ["ipasshpubkey"]
       userauthtype:
         description:
           List of supported user authentication types
           Use empty string to reset userauthtype to the initial value.
+        type: list
+        elements: str
         choices: ['password', 'radius', 'otp', '']
         required: false
         aliases: ["ipauserauthtype"]
@@ -162,44 +207,65 @@ options:
         description:
         - User category
         - (semantics placed on this attribute are for local interpretation)
+        type: list
+        elements: str
         required: false
+        aliases: ["class"]
       radius:
         description: RADIUS proxy configuration
+        type: str
         required: false
+        aliases: ["ipatokenradiusconfiglink"]
       radiususer:
         description: RADIUS proxy username
+        type: str
         required: false
+        aliases: ["radiususername", "ipatokenradiususername"]
       departmentnumber:
         description: Department Number
+        type: list
+        elements: str
         required: false
       employeenumber:
         description: Employee Number
+        type: str
         required: false
       employeetype:
         description: Employee Type
+        type: str
         required: false
       preferredlanguage:
         description: Preferred Language
+        type: str
         required: false
       certificate:
         description: List of base-64 encoded user certificates
+        type: list
+        elements: str
         required: false
+        aliases: ["usercertificate"]
       certmapdata:
         description:
         - List of certificate mappings
         - Only usable with IPA versions 4.5 and up.
-        options:
+        type: list
+        elements: dict
+        suboptions:
           certificate:
             description: Base-64 encoded user certificate
+            type: str
             required: false
           issuer:
             description: Issuer of the certificate
+            type: str
             required: false
           subject:
             description: Subject of the certificate
+            type: str
             required: false
           data:
             description: Certmap data
+            type: str
             required: false
         required: false
       noprivate:
@@ -213,34 +279,45 @@ options:
     required: false
   first:
     description: The first name. Required if user does not exist.
+    type: str
     required: false
     aliases: ["givenname"]
   last:
-    description: The last name. Required if user does not exist.
+    description: The last name. Required if user doesnot exst.
+    type: str
     required: false
     aliases: ["sn"]
   fullname:
     description: The full name
+    type: str
     required: false
     aliases: ["cn"]
   displayname:
     description: The display name
+    type: str
     required: false
   initials:
     description: Initials
+    type: str
     required: false
   homedir:
     description: The home directory
+    type: str
     required: false
   shell:
     description: The login shell
+    type: str
     required: false
     aliases: ["loginshell"]
   email:
     description: List of email addresses
+    type: list
+    elements: str
     required: false
   principal:
     description: The kerberos principal
+    type: list
+    elements: str
     required: false
     aliases: ["principalname", "krbprincipalname"]
   principalexpiration:
@@ -249,6 +326,7 @@ options:
       (possible formats: YYYYMMddHHmmssZ, YYYY-MM-ddTHH:mm:ssZ,
       YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
       YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
+    type: str
     required: false
     aliases: ["krbprincipalexpiration"]
   passwordexpiration:
@@ -258,10 +336,12 @@ options:
       YYYY-MM-ddTHH:mmZ, YYYY-MM-ddZ, YYYY-MM-dd HH:mm:ssZ,
       YYYY-MM-dd HH:mmZ) The trailing 'Z' can be skipped.
       Only usable with IPA versions 4.7 and up.
+    type: str
     required: false
     aliases: ["krbpasswordexpiration"]
   password:
     description: The user password
+    type: str
     required: false
   random:
     description: Generate a random user password
@@ -269,57 +349,81 @@ options:
     type: bool
   uid:
     description: The UID
+    type: int
     required: false
     aliases: ["uidnumber"]
   gid:
     description: The GID
+    type: int
     required: false
     aliases: ["gidnumber"]
   city:
     description: City
+    type: str
     required: false
   userstate:
     description: State/Province
+    type: str
     required: false
     aliases: ["st"]
   postalcode:
-    description: ZIP
+    description: Postalcode/ZIP
+    type: str
     required: false
     aliases: ["zip"]
   phone:
     description: List of telephone numbers
+    type: list
+    elements: str
     required: false
     aliases: ["telephonenumber"]
   mobile:
     description: List of mobile telephone numbers
+    type: list
+    elements: str
     required: false
   pager:
     description: List of pager numbers
+    type: list
+    elements: str
     required: false
   fax:
     description: List of fax numbers
+    type: list
+    elements: str
     required: false
     aliases: ["facsimiletelephonenumber"]
   orgunit:
     description: Org. Unit
+    type: str
     required: false
+    aliases: ["ou"]
   title:
     description: The job title
+    type: str
     required: false
   manager:
     description: List of managers
+    type: list
+    elements: str
     required: false
   carlicense:
     description: List of car licenses
+    type: list
+    elements: str
     required: false
   sshpubkey:
     description: List of SSH public keys
     required: false
+    type: list
+    elements: str
     aliases: ["ipasshpubkey"]
   userauthtype:
     description:
       List of supported user authentication types
       Use empty string to reset userauthtype to the initial value.
+    type: list
+    elements: str
     choices: ['password', 'radius', 'otp', '']
     required: false
     aliases: ["ipauserauthtype"]
@@ -327,44 +431,65 @@ options:
     description:
     - User category
     - (semantics placed on this attribute are for local interpretation)
+    type: list
+    elements: str
     required: false
+    aliases: ["class"]
   radius:
     description: RADIUS proxy configuration
+    type: str
     required: false
+    aliases: ["ipatokenradiusconfiglink"]
   radiususer:
     description: RADIUS proxy username
+    type: str
     required: false
+    aliases: ["radiususername", "ipatokenradiususername"]
   departmentnumber:
     description: Department Number
+    type: list
+    elements: str
     required: false
   employeenumber:
     description: Employee Number
+    type: str
     required: false
   employeetype:
     description: Employee Type
+    type: str
     required: false
   preferredlanguage:
     description: Preferred Language
+    type: str
     required: false
   certificate:
     description: List of base-64 encoded user certificates
+    type: list
+    elements: str
     required: false
+    aliases: ["usercertificate"]
   certmapdata:
     description:
     - List of certificate mappings
     - Only usable with IPA versions 4.5 and up.
-    options:
+    type: list
+    elements: dict
+    suboptions:
       certificate:
         description: Base-64 encoded user certificate
+        type: str
         required: false
       issuer:
         description: Issuer of the certificate
+        type: str
         required: false
       subject:
         description: Subject of the certificate
+        type: str
         required: false
       data:
         description: Certmap data
+        type: str
         required: false
     required: false
   noprivate:
@@ -378,24 +503,27 @@ options:
   preserve:
     description: Delete a user, keeping the entry available for future use
     required: false
+    type: bool
   update_password:
     description:
       Set password for a user in present state only on creation or always
-    default: "always"
+    type: str
     choices: ["always", "on_create"]
     required: false
   action:
     description: Work on user or member level
+    type: str
     default: "user"
     choices: ["member", "user"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent",
               "enabled", "disabled",
               "unlocked", "undeleted"]
 author:
-    - Thomas Woerner
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -457,17 +585,19 @@ user:
   description: User dict with random password
   returned: If random is yes and user did not exist or update_password is yes
   type: dict
-  options:
+  contains:
     randompassword:
       description: The generated random password
+      type: str
       returned: If only one user is handled by the module
     name:
       description: The user name of the user that got a new random password
       returned: If several users are handled by the module
       type: dict
-      options:
+      contains:
         randompassword:
           description: The generated random password
+          type: str
           returned: always
 """
 
@@ -752,16 +882,16 @@ def main():
         initials=dict(type="str", default=None),
         homedir=dict(type="str", default=None),
         shell=dict(type="str", aliases=["loginshell"], default=None),
-        email=dict(type="list", default=None),
-        principal=dict(type="list", aliases=["principalname",
-                                             "krbprincipalname"],
+        email=dict(type="list", elements="str", default=None),
+        principal=dict(type="list", elements="str",
+                       aliases=["principalname", "krbprincipalname"],
                        default=None),
         principalexpiration=dict(type="str",
                                  aliases=["krbprincipalexpiration"],
                                  default=None),
         passwordexpiration=dict(type="str",
                                 aliases=["krbpasswordexpiration"],
-                                default=None),
+                                default=None, no_log=False),
         password=dict(type="str", default=None, no_log=True),
         random=dict(type='bool', default=None),
         uid=dict(type="int", aliases=["uidnumber"], default=None),
@@ -769,33 +899,34 @@ def main():
         city=dict(type="str", default=None),
         userstate=dict(type="str", aliases=["st"], default=None),
         postalcode=dict(type="str", aliases=["zip"], default=None),
-        phone=dict(type="list", aliases=["telephonenumber"], default=None),
-        mobile=dict(type="list", default=None),
-        pager=dict(type="list", default=None),
-        fax=dict(type="list", aliases=["facsimiletelephonenumber"],
-                 default=None),
+        phone=dict(type="list", elements="str", aliases=["telephonenumber"],
+                   default=None),
+        mobile=dict(type="list", elements="str", default=None),
+        pager=dict(type="list", elements="str", default=None),
+        fax=dict(type="list", elements="str",
+                 aliases=["facsimiletelephonenumber"], default=None),
         orgunit=dict(type="str", aliases=["ou"], default=None),
         title=dict(type="str", default=None),
-        manager=dict(type="list", default=None),
-        carlicense=dict(type="list", default=None),
-        sshpubkey=dict(type="list", aliases=["ipasshpubkey"],
+        manager=dict(type="list", elements="str", default=None),
+        carlicense=dict(type="list", elements="str", default=None),
+        sshpubkey=dict(type="list", elements="str", aliases=["ipasshpubkey"],
                        default=None),
-        userauthtype=dict(type='list', aliases=["ipauserauthtype"],
-                          default=None,
+        userauthtype=dict(type='list', elements="str",
+                          aliases=["ipauserauthtype"], default=None,
                           choices=['password', 'radius', 'otp', '']),
-        userclass=dict(type="list", aliases=["class"],
+        userclass=dict(type="list", elements="str", aliases=["class"],
                        default=None),
         radius=dict(type="str", aliases=["ipatokenradiusconfiglink"],
                     default=None),
         radiususer=dict(type="str", aliases=["radiususername",
                                              "ipatokenradiususername"],
                         default=None),
-        departmentnumber=dict(type="list", default=None),
+        departmentnumber=dict(type="list", elements="str", default=None),
         employeenumber=dict(type="str", default=None),
         employeetype=dict(type="str", default=None),
         preferredlanguage=dict(type="str", default=None),
-        certificate=dict(type="list", aliases=["usercertificate"],
-                         default=None),
+        certificate=dict(type="list", elements="str",
+                         aliases=["usercertificate"], default=None),
         certmapdata=dict(type="list", default=None,
                          options=dict(
                              # Here certificate is a simple string
@@ -812,14 +943,14 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["login"], default=None,
-                      required=False),
+            name=dict(type="list", elements="str", aliases=["login"],
+                      default=None, required=False),
             users=dict(type="list",
-                       aliases=["login"],
                        default=None,
                        options=dict(
                            # Here name is a simple string
-                           name=dict(type="str", required=True),
+                           name=dict(type="str", required=True,
+                                     aliases=["login"]),
                            # Add user specific parameters
                            **user_spec
                        ),
