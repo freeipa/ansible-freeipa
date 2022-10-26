@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,106 +39,139 @@ extends_documentation_fragment:
 options:
   name:
     description: The full qualified domain name.
+    type: list
+    elements: str
     aliases: ["fqdn"]
-    required: true
-
+    required: false
   hosts:
     description: The list of user host dicts
     required: false
-    options:
+    type: list
+    elements: dict
+    suboptions:
       name:
         description: The host (internally uid).
+        type: str
         aliases: ["fqdn"]
         required: true
       description:
         description: The host description
+        type: str
         required: false
       locality:
         description: Host locality (e.g. "Baltimore, MD")
+        type: str
         required: false
       location:
         description: Host location (e.g. "Lab 2")
+        type: str
         aliases: ["ns_host_location"]
         required: false
       platform:
         description: Host hardware platform (e.g. "Lenovo T61")
+        type: str
         aliases: ["ns_hardware_platform"]
         required: false
       os:
         description: Host operating system and version (e.g. "Fedora 9")
+        type: str
         aliases: ["ns_os_version"]
         required: false
       password:
         description: Password used in bulk enrollment
+        type: str
         aliases: ["user_password", "userpassword"]
         required: false
       random:
         description:
           Initiate the generation of a random password to be used in bulk
           enrollment
+        type: bool
         aliases: ["random_password"]
         required: false
       certificate:
         description: List of base-64 encoded host certificates
         type: list
+        elements: str
         aliases: ["usercertificate"]
         required: false
       managedby_host:
         description: List of hosts that can manage this host
         type: list
-        aliases: ["principalname", "krbprincipalname"]
+        elements: str
         required: false
       principal:
         description: List of principal aliases for this host
         type: list
+        elements: str
         aliases: ["principalname", "krbprincipalname"]
         required: false
       allow_create_keytab_user:
         description: Users allowed to create a keytab of this host
+        type: list
+        elements: str
         aliases: ["ipaallowedtoperform_write_keys_user"]
         required: false
       allow_create_keytab_group:
         description: Groups allowed to create a keytab of this host
+        type: list
+        elements: str
         aliases: ["ipaallowedtoperform_write_keys_group"]
         required: false
       allow_create_keytab_host:
         description: Hosts allowed to create a keytab of this host
+        type: list
+        elements: str
         aliases: ["ipaallowedtoperform_write_keys_host"]
         required: false
       allow_create_keytab_hostgroup:
         description: Hostgroups allowed to create a keytab of this host
+        type: list
+        elements: str
         aliases: ["ipaallowedtoperform_write_keys_hostgroup"]
         required: false
       allow_retrieve_keytab_user:
         description: Users allowed to retrieve a keytab of this host
+        type: list
+        elements: str
         aliases: ["ipaallowedtoperform_read_keys_user"]
         required: false
       allow_retrieve_keytab_group:
         description: Groups allowed to retrieve a keytab of this host
+        type: list
+        elements: str
         aliases: ["ipaallowedtoperform_read_keys_group"]
         required: false
       allow_retrieve_keytab_host:
         description: Hosts allowed to retrieve a keytab of this host
+        type: list
+        elements: str
         aliases: ["ipaallowedtoperform_read_keys_host"]
         required: false
       allow_retrieve_keytab_hostgroup:
         description: Hostgroups allowed to retrieve a keytab of this host
+        type: list
+        elements: str
         aliases: ["ipaallowedtoperform_read_keys_hostgroup"]
         required: false
       mac_address:
         description: List of hardware MAC addresses.
         type: list
+        elements: str
         aliases: ["macaddress"]
         required: false
       sshpubkey:
         description: List of SSH public keys
         type: list
+        elements: str
         aliases: ["ipasshpubkey"]
         required: false
       userclass:
         description:
           Host category (semantics placed on this attribute are for local
           interpretation)
+        type: list
+        elements: str
         aliases: ["class"]
         required: false
       auth_ind:
@@ -149,6 +182,7 @@ options:
           for custom configurations. Use empty string to reset auth_ind
           to the initial value.
         type: list
+        elements: str
         aliases: ["krbprincipalauthind"]
         choices: ["radius", "otp", "pkinit", "hardened", ""]
         required: false
@@ -170,15 +204,18 @@ options:
         required: false
       force:
         description: Force host name even if not in DNS
+        type: bool
         required: false
       reverse:
         description: Reverse DNS detection
-        default: true
+        type: bool
         required: false
       ip_address:
         description:
           The host IP address list (IPv4 and IPv6). No IP address conflict
           check will be done.
+        type: list
+        elements: str
         aliases: ["ipaddress"]
         required: false
       update_dns:
@@ -186,96 +223,127 @@ options:
           Controls the update of the DNS SSHFP records for existing hosts and
           the removal of all DNS entries if a host gets removed with state
           absent.
+        type: bool
+        aliases: ["updatedns"]
         required: false
   description:
     description: The host description
+    type: str
     required: false
   locality:
     description: Host locality (e.g. "Baltimore, MD")
+    type: str
     required: false
   location:
     description: Host location (e.g. "Lab 2")
+    type: str
     aliases: ["ns_host_location"]
     required: false
   platform:
     description: Host hardware platform (e.g. "Lenovo T61")
+    type: str
     aliases: ["ns_hardware_platform"]
     required: false
   os:
     description: Host operating system and version (e.g. "Fedora 9")
+    type: str
     aliases: ["ns_os_version"]
     required: false
   password:
     description: Password used in bulk enrollment
+    type: str
     aliases: ["user_password", "userpassword"]
     required: false
   random:
     description:
       Initiate the generation of a random password to be used in bulk
       enrollment
+    type: bool
     aliases: ["random_password"]
     required: false
   certificate:
     description: List of base-64 encoded host certificates
     type: list
+    elements: str
     aliases: ["usercertificate"]
     required: false
   managedby_host:
     description: List of hosts that can manage this host
     type: list
-    aliases: ["principalname", "krbprincipalname"]
+    elements: str
     required: false
   principal:
     description: List of principal aliases for this host
     type: list
+    elements: str
     aliases: ["principalname", "krbprincipalname"]
     required: false
   allow_create_keytab_user:
     description: Users allowed to create a keytab of this host
+    type: list
+    elements: str
     aliases: ["ipaallowedtoperform_write_keys_user"]
     required: false
   allow_create_keytab_group:
     description: Groups allowed to create a keytab of this host
+    type: list
+    elements: str
     aliases: ["ipaallowedtoperform_write_keys_group"]
     required: false
   allow_create_keytab_host:
     description: Hosts allowed to create a keytab of this host
+    type: list
+    elements: str
     aliases: ["ipaallowedtoperform_write_keys_host"]
     required: false
   allow_create_keytab_hostgroup:
     description: Hostgroups allowed to create a keytab of this host
+    type: list
+    elements: str
     aliases: ["ipaallowedtoperform_write_keys_hostgroup"]
     required: false
   allow_retrieve_keytab_user:
     description: Users allowed to retrieve a keytab of this host
+    type: list
+    elements: str
     aliases: ["ipaallowedtoperform_read_keys_user"]
     required: false
   allow_retrieve_keytab_group:
     description: Groups allowed to retrieve a keytab of this host
+    type: list
+    elements: str
     aliases: ["ipaallowedtoperform_read_keys_group"]
     required: false
   allow_retrieve_keytab_host:
     description: Hosts allowed to retrieve a keytab of this host
+    type: list
+    elements: str
     aliases: ["ipaallowedtoperform_read_keys_host"]
     required: false
   allow_retrieve_keytab_hostgroup:
     description: Hostgroups allowed to retrieve a keytab of this host
+    type: list
+    elements: str
     aliases: ["ipaallowedtoperform_read_keys_hostgroup"]
     required: false
   mac_address:
     description: List of hardware MAC addresses.
     type: list
+    elements: str
     aliases: ["macaddress"]
     required: false
   sshpubkey:
     description: List of SSH public keys
     type: list
+    elements: str
     aliases: ["ipasshpubkey"]
     required: false
   userclass:
     description:
       Host category (semantics placed on this attribute are for local
       interpretation)
+    type: list
+    elements: str
     aliases: ["class"]
     required: false
   auth_ind:
@@ -286,6 +354,7 @@ options:
       for custom configurations. Use empty string to reset auth_ind
       to the initial value.
     type: list
+    elements: str
     aliases: ["krbprincipalauthind"]
     choices: ["radius", "otp", "pkinit", "hardened", ""]
     required: false
@@ -300,21 +369,25 @@ options:
     aliases: ["ipakrbokasdelegate"]
     required: false
   ok_to_auth_as_delegate:
-    description: The service is allowed to authenticate on behalf of a client
+    description:
+      The service is allowed to authenticate on behalf of a client
     type: bool
     aliases: ["ipakrboktoauthasdelegate"]
     required: false
   force:
     description: Force host name even if not in DNS
+    type: bool
     required: false
   reverse:
     description: Reverse DNS detection
-    default: true
+    type: bool
     required: false
   ip_address:
     description:
       The host IP address list (IPv4 and IPv6). No IP address conflict
       check will be done.
+    type: list
+    elements: str
     aliases: ["ipaddress"]
     required: false
   update_dns:
@@ -322,23 +395,27 @@ options:
       Controls the update of the DNS SSHFP records for existing hosts and
       the removal of all DNS entries if a host gets removed with state
       absent.
+    type: bool
+    aliases: ["updatedns"]
     required: false
   update_password:
     description:
       Set password for a host in present state only on creation or always
-    default: 'always'
+    type: str
     choices: ["always", "on_create"]
   action:
     description: Work on host or member level
+    type: str
     default: "host"
     choices: ["member", "host"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent",
               "disabled"]
 author:
-    - Thomas Woerner
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -391,17 +468,19 @@ host:
   description: Host dict with random password
   returned: If random is yes and user did not exist or update_password is yes
   type: dict
-  options:
+  contains:
     randompassword:
       description: The generated random password
+      type: str
       returned: If only one user is handled by the module
     name:
       description: The user name of the user that got a new random password
       returned: If several users are handled by the module
       type: dict
-      options:
+      contains:
         randompassword:
           description: The generated random password
+          type: str
           returned: always
 """
 
@@ -628,52 +707,52 @@ def main():
                       default=None, no_log=True),
         random=dict(type="bool", aliases=["random_password"],
                     default=None),
-        certificate=dict(type="list", aliases=["usercertificate"],
-                         default=None),
-        managedby_host=dict(type="list",
-                            default=None),
-        principal=dict(type="list", aliases=["krbprincipalname"],
+        certificate=dict(type="list", elements="str",
+                         aliases=["usercertificate"], default=None),
+        managedby_host=dict(type="list", elements="str", default=None),
+        principal=dict(type="list", elements="str",
+                       aliases=["principalname", "krbprincipalname"],
                        default=None),
         allow_create_keytab_user=dict(
-            type="list",
+            type="list", elements="str",
             aliases=["ipaallowedtoperform_write_keys_user"],
-            default=None),
+            default=None, no_log=False),
         allow_create_keytab_group=dict(
-            type="list",
+            type="list", elements="str",
             aliases=["ipaallowedtoperform_write_keys_group"],
-            default=None),
+            default=None, no_log=False),
         allow_create_keytab_host=dict(
-            type="list",
+            type="list", elements="str",
             aliases=["ipaallowedtoperform_write_keys_host"],
-            default=None),
+            default=None, no_log=False),
         allow_create_keytab_hostgroup=dict(
-            type="list",
+            type="list", elements="str",
             aliases=["ipaallowedtoperform_write_keys_hostgroup"],
-            default=None),
+            default=None, no_log=False),
         allow_retrieve_keytab_user=dict(
-            type="list",
-            aliases=["ipaallowedtoperform_write_keys_user"],
-            default=None),
+            type="list", elements="str",
+            aliases=["ipaallowedtoperform_read_keys_user"],
+            default=None, no_log=False),
         allow_retrieve_keytab_group=dict(
-            type="list",
-            aliases=["ipaallowedtoperform_write_keys_group"],
-            default=None),
+            type="list", elements="str",
+            aliases=["ipaallowedtoperform_read_keys_group"],
+            default=None, no_log=False),
         allow_retrieve_keytab_host=dict(
-            type="list",
-            aliases=["ipaallowedtoperform_write_keys_host"],
-            default=None),
+            type="list", elements="str",
+            aliases=["ipaallowedtoperform_read_keys_host"],
+            default=None, no_log=False),
         allow_retrieve_keytab_hostgroup=dict(
-            type="list",
-            aliases=["ipaallowedtoperform_write_keys_hostgroup"],
-            default=None),
-        mac_address=dict(type="list", aliases=["macaddress"],
+            type="list", elements="str",
+            aliases=["ipaallowedtoperform_read_keys_hostgroup"],
+            default=None, no_log=False),
+        mac_address=dict(type="list", elements="str", aliases=["macaddress"],
                          default=None),
-        sshpubkey=dict(type="str", aliases=["ipasshpubkey"],
+        sshpubkey=dict(type="list", elements="str", aliases=["ipasshpubkey"],
                        default=None),
-        userclass=dict(type="list", aliases=["class"],
+        userclass=dict(type="list", elements="str", aliases=["class"],
                        default=None),
-        auth_ind=dict(type='list', aliases=["krbprincipalauthind"],
-                      default=None,
+        auth_ind=dict(type='list', elements="str",
+                      aliases=["krbprincipalauthind"], default=None,
                       choices=['radius', 'otp', 'pkinit', 'hardened', '']),
         requires_pre_auth=dict(type="bool", aliases=["ipakrbrequirespreauth"],
                                default=None),
@@ -684,7 +763,7 @@ def main():
                                     default=None),
         force=dict(type='bool', default=None),
         reverse=dict(type='bool', default=None),
-        ip_address=dict(type="list", aliases=["ipaddress"],
+        ip_address=dict(type="list", elements="str", aliases=["ipaddress"],
                         default=None),
         update_dns=dict(type="bool", aliases=["updatedns"],
                         default=None),
@@ -697,8 +776,8 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
-            name=dict(type="list", aliases=["fqdn"], default=None,
-                      required=False),
+            name=dict(type="list", elements="str", aliases=["fqdn"],
+                      default=None, required=False),
 
             hosts=dict(type="list", default=None,
                        options=dict(
@@ -764,7 +843,8 @@ def main():
     allow_retrieve_keytab_hostgroup = ansible_module.params_get(
         "allow_retrieve_keytab_hostgroup")
     mac_address = ansible_module.params_get("mac_address")
-    sshpubkey = ansible_module.params_get("sshpubkey")
+    sshpubkey = ansible_module.params_get("sshpubkey",
+                                          allow_empty_string=True)
     userclass = ansible_module.params_get("userclass")
     auth_ind = ansible_module.params_get("auth_ind", allow_empty_string=True)
     requires_pre_auth = ansible_module.params_get("requires_pre_auth")
