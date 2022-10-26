@@ -222,8 +222,8 @@ Variable | Description | Required
 `password_file` \| `vault_password_file` \| `old_password_file`| File containing Base64 encoded Vault password. | no
 `new_password` | Vault new password. | no
 `new_password_file` | File containing Base64 encoded new Vault password. | no
-`public_key ` \| `vault_public_key` \| `ipavaultpublickey` | Base64 encoded vault public key. | no
-`public_key_file` \| `vault_public_key_file` | Path to file with public key. | no
+`public_key ` \| `vault_public_key` \| `ipavaultpublickey` \| `new_public_key` | Base64 encoded vault public key. | no
+`public_key_file` \| `vault_public_key_file` \| `new_public_key_file` | Path to file with public key. | no
 `private_key `\| `vault_private_key` \| `ipavaultprivatekey` | Base64 encoded vault private key. Used only to retrieve data. | no
 `private_key_file` \| `vault_private_key_file` | Path to file with private key. Used only to retrieve data. | no
 `salt` \| `vault_salt` \| `ipavaultsalt` | Vault salt. | no

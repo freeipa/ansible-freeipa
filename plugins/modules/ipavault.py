@@ -2,8 +2,9 @@
 
 # Authors:
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
+#   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2019 Red Hat
+# Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,123 +40,135 @@ extends_documentation_fragment:
 options:
   name:
     description: The vault name
+    type: list
+    elements: str
     required: true
     aliases: ["cn"]
   description:
     description: The vault description
+    type: str
     required: false
-  public_key:
+  vault_public_key:
     description: Base64 encode public key.
     required: false
-    type: string
-    aliases: ["ipavaultpublickey", "vault_public_key"]
-  public_key_file:
+    type: str
+    aliases: ["ipavaultpublickey", "public_key", "new_public_key"]
+  vault_public_key_file:
     description: Path to file with public key.
     required: false
-    type: string
-    aliases: ["vault_public_key_file"]
+    type: str
+    aliases: ["public_key_file", "new_public_key_file"]
   private_key:
     description: Base64 encode private key.
     required: false
-    type: string
+    type: str
     aliases: ["ipavaultprivatekey", "vault_private_key"]
   private_key_file:
     description: Path to file with private key.
     required: false
-    type: string
+    type: str
     aliases: ["vault_private_key_file"]
   password:
     description: password to be used on symmetric vault.
     required: false
-    type: string
+    type: str
     aliases: ["ipavaultpassword", "vault_password", "old_password"]
   password_file:
     description: file with password to be used on symmetric vault.
     required: false
-    type: string
+    type: str
     aliases: ["vault_password_file", "old_password_file"]
   new_password:
     description: new password to be used on symmetric vault.
     required: false
-    type: string
+    type: str
   new_password_file:
     description: file with new password to be used on symmetric vault.
     required: false
-    type: string
-  salt:
+    type: str
+  vault_salt:
     description: Vault salt.
     required: false
-    type: list
-    aliases: ["ipavaultsalt", "vault_salt"]
+    type: str
+    aliases: ["ipavaultsalt", "salt"]
   vault_type:
     description: Vault types are based on security level.
-    required: true
-    default: symmetric
+    type: str
+    required: false
     choices: ["standard", "symmetric", "asymmetric"]
     aliases: ["ipavaulttype"]
   service:
     description: Any service can own one or more service vaults.
     required: false
-    type: list
+    type: str
   username:
     description: Any user can own one or more user vaults.
     required: false
-    type: string
+    type: str
     aliases: ["user"]
   shared:
     description: Vault is shared.
     required: false
-    type: boolean
+    type: bool
   users:
     description: Users that are member of the vault.
     required: false
     type: list
+    elements: str
   groups:
     description: Groups that are member of the vault.
     required: false
     type: list
+    elements: str
   owners:
     description: Users that are owners of the vault.
     required: false
     type: list
+    elements: str
     aliases: ["ownerusers"]
   ownergroups:
     description: Groups that are owners of the vault.
     required: false
     type: list
+    elements: str
   ownerservices:
     description: Services that are owners of the vault.
     required: false
     type: list
+    elements: str
   services:
     description: Services that are member of the container.
     required: false
     type: list
+    elements: str
   data:
     description: Data to be stored in the vault.
     required: false
-    type: string
+    type: str
     aliases: ["ipavaultdata", "vault_data"]
   in:
     description: Path to file with data to be stored in the vault.
     required: false
-    type: string
+    type: str
     aliases: ["datafile_in"]
   out:
     description: Path to file to store data retrieved from the vault.
     required: false
-    type: string
+    type: str
     aliases: ["datafile_out"]
   action:
     description: Work on vault or member level.
+    type: str
     default: vault
-    choices: ["vault", "member"]
+    choices: ["vault", "data", "member"]
   state:
     description: State to ensure
+    type: str
     default: present
     choices: ["present", "absent", "retrieved"]
 author:
-    - Rafael Jeffman
+  - Rafael Guterres Jeffman (@rjeffman)
+  - Thomas Woerner (@t-woerner)
 """
 
 EXAMPLES = """
@@ -307,11 +320,11 @@ vault:
   description: Vault dict with archived data.
   returned: If state is `retrieved`.
   type: dict
-  options:
+  contains:
     data:
       description: The vault data.
       returned: always
-      type: string
+      type: str
 """
 
 import os
@@ -587,7 +600,7 @@ def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # generalgroups
-            name=dict(type="list", aliases=["cn"], default=None,
+            name=dict(type="list", elements="str", aliases=["cn"],
                       required=True),
 
             description=dict(required=False, type="str", default=None),
@@ -614,13 +627,19 @@ def main():
             service=dict(type="str", required=False, default=None),
             shared=dict(type="bool", required=False, default=None),
 
-            users=dict(required=False, type='list', default=None),
-            groups=dict(required=False, type='list', default=None),
-            services=dict(required=False, type='list', default=None),
-            owners=dict(required=False, type='list', default=None,
+            users=dict(required=False, type="list", elements="str",
+                       default=None),
+            groups=dict(required=False, type="list", elements="str",
+                        default=None),
+            services=dict(required=False, type="list", elements="str",
+                          default=None),
+            owners=dict(required=False, type="list", elements="str",
+                        default=None,
                         aliases=['ownerusers']),
-            ownergroups=dict(required=False, type='list', default=None),
-            ownerservices=dict(required=False, type='list', default=None),
+            ownergroups=dict(required=False, type="list", elements="str",
+                             default=None),
+            ownerservices=dict(required=False, type="list", elements="str",
+                               default=None),
             vault_data=dict(type="str", required=False, default=None,
                             no_log=True, aliases=['ipavaultdata', 'data']),
             datafile_in=dict(type="str", required=False, default=None,
