@@ -3,7 +3,7 @@
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
-# Copyright (C) 2021  Red Hat
+# Copyright (C) 2021-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -36,9 +36,8 @@ short_description:
   Get IPA_BACKUP_DIR from ipaplatform
 description:
   Get IPA_BACKUP_DIR from ipaplatform
-options:
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
