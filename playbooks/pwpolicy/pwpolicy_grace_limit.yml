@@ -1,0 +1,11 @@
+---
+- name: Playbook to manage password policy
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Set password policy grace limit.
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      gracelimit: 3

@@ -87,6 +87,36 @@ Example playbook to ensure maxlife is set to 49 in global policy:
       maxlife: 49
 ```
 
+Example playbook to ensure password grace period is set to 3 in global policy:
+
+```yaml
+---
+- name: Playbook to handle pwpolicies
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure maxlife is set to 49 in global policy
+  - ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      gracelimit: 3
+```
+
+Example playbook to ensure password grace period is set to unlimited in global policy:
+
+```yaml
+---
+- name: Playbook to handle pwpolicies
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Ensure maxlife is set to 49 in global policy
+  - ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      gracelimit: -1
+```
+
 
 Variables
 =========
@@ -107,6 +137,11 @@ Variable | Description | Required
 `maxfail` \| `krbpwdmaxfailure` | Consecutive failures before lockout. (int) | no
 `failinterval` \| `krbpwdfailurecountinterval` | Period after which failure count will be reset in seconds. (int) | no
 `lockouttime` \| `krbpwdlockoutduration` | Period for which lockout is enforced in seconds. (int) | no
+`maxrepeat` \| `ipapwdmaxrepeat` | Maximum number of same consecutive characters. Requires IPA 4.9+ (int) | no
+`maxsequence` \| `ipapwdmaxsequence` |  The maximum length of monotonic character sequences (abcd). Requires IPA 4.9+ (int) | no
+`dictcheck` \| `ipapwdictcheck` | Check if the password is a dictionary word. Requires IPA 4.9+ (int) | no
+`usercheck` \| `ipapwdusercheck` | Check if the password contains the username. Requires IPA 4.9+ (int) | no
+`gracelimit` \| `passwordgracelimit` |  Number of LDAP authentications allowed after expiration. Requires IPA 4.9.10 (int) | no
 `state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. | yes
 
 
