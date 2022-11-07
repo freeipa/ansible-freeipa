@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -33,60 +33,75 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ipaclient_setup_ssd
+module: ipaclient_setup_sssd
 short_description: Setup sssd for IPA client
 description:
   Setup sssd for IPA client
 options:
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: no
+    type: list
+    elements: str
+    required: yes
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: no
+    type: str
+    required: yes
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: no
+    type: str
+    required: yes
   hostname:
     description: Fully qualified name of this host
-    required: no
+    type: str
+    required: yes
   on_master:
     description: Whether the configuration is done on the master or not
-    required: yes
+    type: bool
+    required: no
   no_ssh:
     description: Do not configure OpenSSH client
-    required: yes
+    type: bool
+    required: no
   no_sshd:
     description: Do not configure OpenSSH server
-    required: yes
+    type: bool
+    required: no
   no_sudo:
     description: Do not configure SSSD as data source for sudo
-    required: yes
+    type: bool
+    required: no
   all_ip_addresses:
     description:
       All routable IP addresses configured on any interface will be added
       to DNS
-    required: yes
+    type: bool
+    required: no
   fixed_primary:
     description: Configure sssd to use fixed server as primary IPA server
-    required: yes
+    type: bool
+    required: no
   permit:
     description: Disable access rules by default, permit all access
-    required: yes
+    type: bool
+    required: no
   enable_dns_updates:
     description:
       Configures the machine to attempt dns updates when the ip address
       changes
-    required: yes
+    type: bool
+    required: no
   preserve_sssd:
     description: Preserve old SSSD configuration if possible
-    required: yes
+    type: bool
+    required: no
   no_krb5_offline_passwords:
     description:
       Configure SSSD not to store user password when the server is offline
-    required: yes
+    type: bool
+    required: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -104,17 +119,18 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging, options, sysrestore, paths, configure_sssd_conf, logger
+    setup_logging, check_imports, options, sysrestore, paths,
+    configure_sssd_conf, logger
 )
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            servers=dict(required=True, type='list'),
-            domain=dict(required=True),
-            realm=dict(required=True),
-            hostname=dict(required=True),
+            servers=dict(required=True, type='list', elements='str'),
+            domain=dict(required=True, type='str'),
+            realm=dict(required=True, type='str'),
+            hostname=dict(required=True, type='str'),
             on_master=dict(required=False, type='bool'),
             no_ssh=dict(required=False, type='bool'),
             no_sshd=dict(required=False, type='bool'),
@@ -127,12 +143,13 @@ def main():
             preserve_sssd=dict(required=False, type='bool'),
             no_krb5_offline_passwords=dict(required=False, type='bool'),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
     # ansible_log = AnsibleModuleLog(module, logger)
     # options.set_logger(ansible_log)
 
     module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     cli_server = module.params.get('servers')
