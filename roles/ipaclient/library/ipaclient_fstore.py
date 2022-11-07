@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,9 +39,10 @@ description: Backup files using IPA client sysrestore
 options:
   backup:
     description: File to backup
-    required: no
+    type: str
+    required: yes
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -55,18 +56,19 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging, paths, sysrestore
+    setup_logging, check_imports, paths, sysrestore
 )
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            backup=dict(required=True),
+            backup=dict(required=True, type='str'),
         ),
     )
 
     module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     backup = module.params.get('backup')
