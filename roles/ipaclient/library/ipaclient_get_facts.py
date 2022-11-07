@@ -1,5 +1,26 @@
 # -*- coding: utf-8 -*-
 
+# Authors:
+#   Thomas Woerner <twoerner@redhat.com>
+#
+# Based on ipa-client-install code
+#
+# Copyright (C) 2018-2022  Red Hat
+# see file 'COPYING' for use and warranty information
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
@@ -10,7 +31,60 @@ module: ipaclient_get_facts
 short_description: Get facts about IPA client and server configuration.
 description: Get facts about IPA client and server configuration.
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
+"""
+
+EXAMPLES = """
+"""
+
+RETURN = """
+ipa:
+  description: IPA configuration
+  returned: always
+  type: complex
+  contains:
+    packages:
+      description: IPA lib and server bindings
+      type: dict
+      returned: always
+      contains:
+        ipalib:
+          description: Whether ipalib.api binding could be imported.
+          type: bool
+          returned: always
+        ipaserver:
+          description: Whether ipaserver binding could be imported.
+          type: bool
+          returned: always
+    configured:
+      description: IPA components
+      type: dict
+      returned: always
+      contains:
+        client:
+          description: Whether client is configured
+          type: bool
+          returned: always
+        server:
+          description: Whether server is configured
+          type: bool
+          returned: always
+        dns:
+          description: Whether dns is configured
+          type: bool
+          returned: always
+        ca:
+          description: Whether ca is configured
+          type: bool
+          returned: always
+        kra:
+          description: Whether kra is configured
+          type: bool
+          returned: always
+        ntpd:
+          description: Whether ntpd is configured
+          type: bool
+          returned: always
 """
 
 import os
