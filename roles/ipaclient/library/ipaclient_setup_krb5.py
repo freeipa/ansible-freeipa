@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2018  Red Hat
+# Copyright (C) 2018-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,33 +40,46 @@ description:
 options:
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: yes
+    type: str
+    required: no
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: yes
+    type: list
+    elements: str
+    required: no
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: yes
+    type: str
+    required: no
   hostname:
     description: Fully qualified name of this host
-    required: yes
+    type: str
+    required: no
   kdc:
     description: The name or address of the host running the KDC
-    required: yes
+    type: str
+    required: no
   dnsok:
     description: The installer dnsok setting
-    required: yes
+    type: bool
+    required: no
+    default: no
   client_domain:
     description: Primary DNS domain of the IPA deployment
-    required: yes
+    type: str
+    required: no
   sssd:
     description: The installer sssd setting
-    required: yes
+    type: bool
+    required: no
+    default: no
   force:
     description: Installer force parameter
-    required: yes
+    type: bool
+    required: no
+    default: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -84,28 +97,31 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging, sysrestore, paths, configure_krb5_conf, logger
+    setup_logging, check_imports, sysrestore, paths, configure_krb5_conf,
+    logger
 )
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            domain=dict(required=False, default=None),
-            servers=dict(required=False, type='list', default=None),
-            realm=dict(required=False, default=None),
-            hostname=dict(required=False, default=None),
-            kdc=dict(required=False, default=None),
+            domain=dict(required=False, type='str', default=None),
+            servers=dict(required=False, type='list', elements='str',
+                         default=None),
+            realm=dict(required=False, type='str', default=None),
+            hostname=dict(required=False, type='str', default=None),
+            kdc=dict(required=False, type='str', default=None),
             dnsok=dict(required=False, type='bool', default=False),
-            client_domain=dict(required=False, default=None),
+            client_domain=dict(required=False, type='str', default=None),
             sssd=dict(required=False, type='bool', default=False),
             force=dict(required=False, type='bool', default=False),
             # on_master=dict(required=False, type='bool', default=False),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     servers = module.params.get('servers')
