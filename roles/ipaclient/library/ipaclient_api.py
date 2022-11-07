@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,18 +39,24 @@ description:
 options:
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: no
+    type: list
+    elements: str
+    required: yes
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: no
+    type: str
+    required: yes
   hostname:
     description: Fully qualified name of this host
-    required: no
+    type: str
+    required: yes
   debug:
     description: Turn on extra debugging
-    required: yes
+    type: bool
+    required: no
+    default: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -70,7 +76,7 @@ ca_enabled:
 subject_base:
   description: The subject base, needed for certmonger
   returned: always
-  type: string
+  type: str
   sample: O=EXAMPLE.COM
 '''
 
@@ -78,7 +84,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging,
+    setup_logging, check_imports,
     paths, x509, NUM_VERSION, serialization, certdb, api,
     delete_persistent_client_session_data, write_tmp_file,
     ipa_generate_password, CalledProcessError, errors, disable_ra, DN,
@@ -89,15 +95,16 @@ from ansible.module_utils.ansible_ipa_client import (
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            servers=dict(required=True, type='list'),
-            realm=dict(required=True),
-            hostname=dict(required=True),
+            servers=dict(required=True, type='list', elements='str'),
+            realm=dict(required=True, type='str'),
+            hostname=dict(required=True, type='str'),
             debug=dict(required=False, type='bool', default="false"),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     realm = module.params.get('realm')
