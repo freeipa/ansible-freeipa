@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -42,24 +42,31 @@ description:
 options:
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: no
+    type: list
+    elements: str
+    required: yes
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: no
+    type: str
+    required: yes
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: no
+    type: str
+    required: yes
   hostname:
     description: Fully qualified name of this host
-    required: no
+    type: str
+    required: yes
   kdc:
     description: The name or address of the host running the KDC
-    required: no
+    type: str
+    required: yes
   kinit_attempts:
     description: Repeat the request for host Kerberos ticket X times
-    required: yes
+    type: int
+    default: 5
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -91,6 +98,7 @@ krb5_keytab_ok:
 ca_crt_exists:
   description: The flag describes if ca.crt exists.
   returned: always
+  type: str
 krb5_conf_ok:
   description: The flag describes if krb5.conf on the host is usable.
   returned: always
@@ -106,7 +114,7 @@ import tempfile
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging,
+    setup_logging, check_imports,
     SECURE_PATH, paths, kinit_keytab, run, GSSError, configure_krb5_conf
 )
 
@@ -114,17 +122,18 @@ from ansible.module_utils.ansible_ipa_client import (
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            servers=dict(required=True, type='list'),
-            domain=dict(required=True),
-            realm=dict(required=True),
-            hostname=dict(required=True),
-            kdc=dict(required=True),
+            servers=dict(required=True, type='list', elements='str'),
+            domain=dict(required=True, type='str'),
+            realm=dict(required=True, type='str'),
+            hostname=dict(required=True, type='str'),
+            kdc=dict(required=True, type='str'),
             kinit_attempts=dict(required=False, type='int', default=5),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     servers = module.params.get('servers')
