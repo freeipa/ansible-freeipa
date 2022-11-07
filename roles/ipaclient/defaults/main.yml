@@ -13,6 +13,7 @@ ipaclient_ssh_trust_dns: no
 ipaclient_no_ssh: no
 ipaclient_no_sshd: no
 ipaclient_no_sudo: no
+ipaclient_subid: no
 ipaclient_no_dns_sshfp: no
 ipaclient_force: no
 ipaclient_force_ntpd: no

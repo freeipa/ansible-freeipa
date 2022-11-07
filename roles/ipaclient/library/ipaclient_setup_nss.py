@@ -125,6 +125,10 @@ options:
     description: Do not configure SSSD as data source for sudo
     type: bool
     required: no
+  subid:
+    description: Configure SSSD as data source for subid
+    type: bool
+    required: no
   fixed_primary:
     description: Configure sssd to use fixed server as primary IPA server
     type: bool
@@ -208,6 +212,7 @@ def main():
             no_ssh=dict(required=False, type='bool'),
             no_sshd=dict(required=False, type='bool'),
             no_sudo=dict(required=False, type='bool'),
+            subid=dict(required=False, type='bool'),
             fixed_primary=dict(required=False, type='bool'),
             permit=dict(required=False, type='bool'),
             no_krb5_offline_passwords=dict(required=False, type='bool'),
@@ -251,6 +256,7 @@ def main():
     options.conf_sshd = not options.no_sshd
     options.no_sudo = module.params.get('no_sudo')
     options.conf_sudo = not options.no_sudo
+    options.subid = module.params.get('subid')
     options.primary = module.params.get('fixed_primary')
     options.permit = module.params.get('permit')
     options.no_krb5_offline_passwords = module.params.get(
@@ -430,19 +436,17 @@ def main():
             # Modify nsswitch/pam stack
             # pylint: disable=deprecated-method
             argspec = getargspec(tasks.modify_nsswitch_pam_stack)
+            the_options = {
+                "sssd": options.sssd,
+                "mkhomedir": options.mkhomedir,
+                "statestore": statestore,
+            }
             if "sudo" in argspec.args:
-                tasks.modify_nsswitch_pam_stack(
-                    sssd=options.sssd,
-                    mkhomedir=options.mkhomedir,
-                    statestore=statestore,
-                    sudo=options.conf_sudo
-                )
-            else:
-                tasks.modify_nsswitch_pam_stack(
-                    sssd=options.sssd,
-                    mkhomedir=options.mkhomedir,
-                    statestore=statestore
-                )
+                the_options["sudo"] = options.conf_sudo
+            if "subid" in argspec.args:
+                the_options["subid"] = options.subid
+
+            tasks.modify_nsswitch_pam_stack(**the_options)
 
             if hasattr(paths, "AUTHSELECT") and paths.AUTHSELECT is not None:
                 # authselect is used
