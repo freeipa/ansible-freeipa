@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,88 +39,117 @@ description: Create IPA NSS database
 options:
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: no
+    type: list
+    elements: str
+    required: yes
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: no
+    type: str
+    required: yes
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: no
+    type: str
+    required: yes
   hostname:
     description: Fully qualified name of this host
-    required: no
+    type: str
+    required: yes
   basedn:
     description: The basedn of the IPA server (of the form dc=example,dc=com)
-    required: no
+    type: str
+    required: yes
   principal:
     description:
       User Principal allowed to promote replicas and join IPA realm
-    required: yes
+    type: str
+    required: no
   subject_base:
     description: |
       The certificate subject base (default O=<realm-name>).
       RDNs are in LDAP order (most specific RDN first).
-    required: no
+    type: str
+    required: yes
   ca_enabled:
     description: Whether the Certificate Authority is enabled or not
-    required: no
+    type: bool
+    required: yes
   mkhomedir:
     description: Create home directories for users on their first login
-    required: yes
+    type: bool
+    required: no
   on_master:
     description: Whether the configuration is done on the master or not
-    required: yes
+    type: bool
+    required: no
   dnsok:
     description: The installer dnsok setting
-    required: yes
+    type: bool
+    required: no
+    default: no
   enable_dns_updates:
     description: |
       Configures the machine to attempt dns updates when the ip address
       changes
-    required: yes
+    type: bool
+    required: no
   all_ip_addresses:
     description: |
       All routable IP addresses configured on any interface will be added
       to DNS
-    required: yes
+    type: bool
+    required: no
+    default: no
   ip_addresses:
     description: List of Master Server IP Addresses
-    required: yes
+    type: list
+    elements: str
+    required: no
   request_cert:
     description: Request certificate for the machine
-    required: yes
+    type: bool
+    required: no
+    default: no
   preserve_sssd:
     description: Preserve old SSSD configuration if possible
-    required: yes
+    type: bool
+    required: no
   no_ssh:
     description: Do not configure OpenSSH client
-    required: yes
+    type: bool
+    required: no
   no_sshd:
     description: Do not configure OpenSSH server
-    required: yes
+    type: bool
+    required: no
   no_sudo:
     description: Do not configure SSSD as data source for sudo
-    required: yes
+    type: bool
+    required: no
   fixed_primary:
     description: Configure sssd to use fixed server as primary IPA server
-    required: yes
+    type: bool
+    required: no
   permit:
     description: Disable access rules by default, permit all access
-    required: yes
+    type: bool
+    required: no
   no_krb5_offline_passwords:
     description:
       Configure SSSD not to store user password when the server is offline
-    required: yes
+    type: bool
+    required: no
   no_dns_sshfp:
     description: Do not automatically create DNS SSHFP records
-    required: yes
+    type: bool
+    required: no
+    default: no
   nosssd_files:
     description: >
       The dist of nss_ldap or nss-pam-ldapd files if sssd is disabled
     required: yes
     type: dict
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -144,7 +173,7 @@ import time
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging,
+    setup_logging, check_imports,
     options, sysrestore, paths, ansible_module_get_parsed_ip_addresses,
     api, errors, create_ipa_nssdb, ipautil, ScriptError, CLIENT_INSTALL_ERROR,
     get_certs_from_ldap, DN, certstore, x509, logger, certdb,
@@ -158,13 +187,13 @@ from ansible.module_utils.ansible_ipa_client import (
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            servers=dict(required=True, type='list'),
-            domain=dict(required=True),
-            realm=dict(required=True),
-            hostname=dict(required=True),
-            basedn=dict(required=True),
-            principal=dict(required=False),
-            subject_base=dict(required=True),
+            servers=dict(required=True, type='list', elements='str'),
+            domain=dict(required=True, type='str'),
+            realm=dict(required=True, type='str'),
+            hostname=dict(required=True, type='str'),
+            basedn=dict(required=True, type='str'),
+            principal=dict(required=False, type='str'),
+            subject_base=dict(required=True, type='str'),
             ca_enabled=dict(required=True, type='bool'),
             mkhomedir=dict(required=False, type='bool'),
             on_master=dict(required=False, type='bool'),
@@ -172,7 +201,8 @@ def main():
 
             enable_dns_updates=dict(required=False, type='bool'),
             all_ip_addresses=dict(required=False, type='bool', default=False),
-            ip_addresses=dict(required=False, type='list', default=None),
+            ip_addresses=dict(required=False, type='list', elements='str',
+                              default=None),
             request_cert=dict(required=False, type='bool', default=False),
             preserve_sssd=dict(required=False, type='bool'),
             no_ssh=dict(required=False, type='bool'),
@@ -184,10 +214,11 @@ def main():
             no_dns_sshfp=dict(required=False, type='bool', default=False),
             nosssd_files=dict(required=True, type='dict'),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     cli_server = module.params.get('servers')
