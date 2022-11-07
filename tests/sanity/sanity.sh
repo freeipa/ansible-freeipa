@@ -6,7 +6,7 @@ pushd "${TOPDIR}" >/dev/null || exit 1
 VENV=/tmp/ansible-test-venv
 ANSIBLE_COLLECTION=freeipa-ansible_freeipa
 
-use_docker=$(which docker >/dev/null 2>&1 && echo "True" || echo "False")
+use_docker=$(docker -v >/dev/null 2>&1 && echo "True" || echo "False")
 
 virtualenv "$VENV"
 # shellcheck disable=SC1091
