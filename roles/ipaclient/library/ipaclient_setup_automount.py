@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,15 +40,20 @@ description:
 options:
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: no
+    type: list
+    elements: str
+    required: yes
   sssd:
     description: The installer sssd setting
-    required: yes
+    type: bool
+    required: no
+    default: yes
   automount_location:
     description: The automount location
-    required: yes
+    type: str
+    required: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -63,23 +68,24 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging, options, configure_automount
+    setup_logging, check_imports, options, configure_automount
 )
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            servers=dict(required=True, type='list'),
+            servers=dict(required=True, type='list', elements='str'),
             sssd=dict(required=False, type='bool', default='yes'),
-            automount_location=dict(required=False, default=None),
+            automount_location=dict(required=False, type='str', default=None),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     # os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
 
     module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     options.servers = module.params.get('servers')
