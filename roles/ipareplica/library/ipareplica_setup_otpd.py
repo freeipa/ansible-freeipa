@@ -5,7 +5,7 @@
 #
 # Based on ipa-replica-install code
 #
-# Copyright (C) 2018  Red Hat
+# Copyright (C) 2018-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,38 +40,48 @@ description:
 options:
   setup_ca:
     description: Configure a dogtag CA
-    required: yes
+    type: bool
+    required: no
   setup_kra:
     description: Configure a dogtag KRA
-    required: yes
+    type: bool
+    required: no
   no_pkinit:
     description: Disable pkinit setup steps
-    required: yes
+    type: bool
+    required: no
   no_ui_redirect:
     description: Do not automatically redirect to the Web UI
-    required: yes
+    type: bool
+    required: no
   subject_base:
     description:
       The certificate subject base (default O=<realm-name>).
       RDNs are in LDAP order (most specific RDN first).
-    required: no
+    type: str
+    required: yes
   config_master_host_name:
     description: The config master_host_name setting
-    required: no
+    type: str
+    required: yes
   ccache:
     description: The local ccache
-    required: no
+    type: str
+    required: yes
   _ca_file:
     description: The installer _ca_file setting
-    required: yes
+    type: str
+    required: no
   _top_dir:
     description: The installer _top_dir setting
-    required: no
+    type: str
+    required: yes
   dirman_password:
     description: Directory Manager (master) password
-    required: no
+    type: str
+    required: yes
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -84,7 +94,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
-    AnsibleModuleLog, setup_logging, installer, DN, paths,
+    check_imports, AnsibleModuleLog, setup_logging, installer, DN, paths,
     gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
     gen_ReplicaConfig, gen_remote_api, api, redirect_stdout, otpdinstance,
     ipautil
@@ -100,18 +110,19 @@ def main():
             no_pkinit=dict(required=False, type='bool'),
             no_ui_redirect=dict(required=False, type='bool'),
             # certificate system
-            subject_base=dict(required=True),
+            subject_base=dict(required=True, type='str'),
             # additional
-            config_master_host_name=dict(required=True),
-            ccache=dict(required=True),
-            _ca_file=dict(required=False),
-            _top_dir=dict(required=True),
-            dirman_password=dict(required=True, no_log=True),
+            config_master_host_name=dict(required=True, type='str'),
+            ccache=dict(required=True, type='str'),
+            _ca_file=dict(required=False, type='str'),
+            _top_dir=dict(required=True, type='str'),
+            dirman_password=dict(required=True, type='str', no_log=True),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
