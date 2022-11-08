@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,116 +39,176 @@ description: Prepare IPA server deployment
 options:
   force:
     description: Installer force parameter
-    required: yes
+    type: bool
+    default: no
+    required: no
   dm_password:
     description: Directory Manager password
-    required: no
+    type: str
+    required: yes
   password:
     description: Admin user kerberos password
-    required: no
+    type: str
+    required: yes
   ip_addresses:
     description: List of Master Server IP Addresses
-    required: yes
+    type: list
+    elements: str
+    required: no
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: no
+    type: str
+    required: yes
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: no
+    type: str
+    required: yes
   hostname:
     description: Fully qualified name of this host
-    required: yes
+    type: str
+    required: no
   ca_cert_files:
     description:
       List of files containing CA certificates for the service certificate
       files
-    required: yes
+    type: list
+    elements: str
+    required: no
   no_host_dns:
     description: Do not use DNS for hostname lookup during installation
-    required: yes
+    type: bool
+    default: no
+    required: no
   setup_adtrust:
     description: Configure AD trust capability
-    required: yes
+    type: bool
+    default: no
+    required: no
   setup_kra:
     description: Configure a dogtag KRA
-    required: yes
+    type: bool
+    default: no
+    required: no
   setup_dns:
     description: Configure bind with our zone
-    required: yes
+    type: bool
+    default: no
+    required: no
   external_ca:
     description: External ca setting
-    required: yes
+    type: bool
+    required: no
   external_ca_type:
     description: Type of the external CA
-    required: yes
+    type: str
+    required: no
   external_ca_profile:
     description:
       Specify the certificate profile/template to use at the external CA
-    required: yes
+    type: str
+    required: no
   external_cert_files:
     description:
       File containing the IPA CA certificate and the external CA certificate
       chain
-    required: yes
+    type: list
+    elements: str
+    required: no
   subject_base:
     description:
       The certificate subject base (default O=<realm-name>).
       RDNs are in LDAP order (most specific RDN first).
-    required: yes
+    type: str
+    required: no
   ca_subject:
     description: The installer ca_subject setting
-    required: yes
+    type: str
+    required: no
   allow_zone_overlap:
     description: Create DNS zone even if it already exists
-    required: yes
+    type: bool
+    default: no
+    required: no
   reverse_zones:
     description: The reverse DNS zones to use
-    required: yes
+    type: list
+    elements: str
+    required: no
   no_reverse:
     description: Do not create new reverse DNS zone
-    required: yes
+    type: bool
+    default: no
+    required: no
   auto_reverse:
     description: Create necessary reverse zones
-    required: yes
+    type: bool
+    default: no
+    required: no
   forwarders:
     description: Add DNS forwarders
-    required: yes
+    type: list
+    elements: str
+    required: no
   no_forwarders:
     description: Do not add any DNS forwarders, use root servers instead
-    required: yes
+    type: bool
+    default: no
+    required: no
   auto_forwarders:
     description: Use DNS forwarders configured in /etc/resolv.conf
-    required: yes
+    type: bool
+    default: no
+    required: no
   forward_policy:
     description: DNS forwarding policy for global forwarders
-    required: yes
+    type: str
+    choices: ['first', 'only']
+    required: no
   no_dnssec_validation:
     description: Disable DNSSEC validation
-    required: yes
+    type: bool
+    default: no
+    required: no
   enable_compat:
     description: Enable support for trusted domains for old clients
-    required: yes
+    type: bool
+    default: no
+    required: no
   netbios_name:
     description: NetBIOS name of the IPA domain
-    required: yes
+    type: str
+    required: no
   rid_base:
     description: Start value for mapping UIDs and GIDs to RIDs
-    required: yes
+    type: int
+    required: no
   secondary_rid_base:
     description:
       Start value of the secondary range for mapping UIDs and GIDs to RIDs
-    required: yes
+    type: int
+    required: no
   setup_ca:
     description: Configure a dogtag CA
-    required: yes
+    type: bool
+    default: no
+    required: no
+  random_serial_numbers:
+    description: Enable random serial numbers
+    type: bool
+    default: no
+    required: no
   sid_generation_always:
     description: Enable SID generation always
-    required: yes
+    type: bool
+    default: no
+    required: no
   _hostname_overridden:
     description: The installer _hostname_overridden setting
-    required: yes
+    type: bool
+    default: no
+    required: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -161,8 +221,8 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, setup_logging, options, sysrestore, paths,
-    ansible_module_get_parsed_ip_addresses,
+    check_imports, AnsibleModuleLog, setup_logging, options, sysrestore,
+    paths, ansible_module_get_parsed_ip_addresses,
     redirect_stdout, adtrust, api, default_subject_base,
     default_ca_subject_dn, ipautil, installutils, ca, kra, dns,
     get_server_ip_address, no_matching_interface_for_ip_address_warning,
@@ -175,13 +235,15 @@ def main():
         argument_spec=dict(
             # basic
             force=dict(required=False, type='bool', default=False),
-            dm_password=dict(required=True, no_log=True),
-            password=dict(required=True, no_log=True),
-            ip_addresses=dict(required=False, type='list', default=[]),
-            domain=dict(required=True),
-            realm=dict(required=True),
-            hostname=dict(required=False),
-            ca_cert_files=dict(required=False, type='list', default=[]),
+            dm_password=dict(required=True, type='str', no_log=True),
+            password=dict(required=True, type='str', no_log=True),
+            ip_addresses=dict(required=False, type='list', elements='str',
+                              default=[]),
+            domain=dict(required=True, type='str'),
+            realm=dict(required=True, type='str'),
+            hostname=dict(required=False, type='str'),
+            ca_cert_files=dict(required=False, type='list', elements='str',
+                               default=[]),
             no_host_dns=dict(required=False, type='bool', default=False),
             # server
             setup_adtrust=dict(required=False, type='bool', default=False),
@@ -191,26 +253,30 @@ def main():
             # client
             # certificate system
             external_ca=dict(required=False, type='bool'),
-            external_ca_type=dict(required=False),
-            external_ca_profile=dict(required=False),
-            external_cert_files=dict(required=False, type='list', default=[]),
-            subject_base=dict(required=False),
-            ca_subject=dict(required=False),
+            external_ca_type=dict(required=False, type='str'),
+            external_ca_profile=dict(required=False, type='str'),
+            external_cert_files=dict(required=False, type='list',
+                                     elements='str', default=[]),
+            subject_base=dict(required=False, type='str'),
+            ca_subject=dict(required=False, type='str'),
             # dns
             allow_zone_overlap=dict(required=False, type='bool',
                                     default=False),
-            reverse_zones=dict(required=False, type='list', default=[]),
+            reverse_zones=dict(required=False, type='list', elements='str',
+                               default=[]),
             no_reverse=dict(required=False, type='bool', default=False),
             auto_reverse=dict(required=False, type='bool', default=False),
-            forwarders=dict(required=False, type='list', default=[]),
+            forwarders=dict(required=False, type='list', elements='str',
+                            default=[]),
             no_forwarders=dict(required=False, type='bool', default=False),
             auto_forwarders=dict(required=False, type='bool', default=False),
-            forward_policy=dict(default=None, choices=['first', 'only']),
+            forward_policy=dict(required=False, type='str',
+                                choices=['first', 'only'], default=None),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
             # ad trust
             enable_compat=dict(required=False, type='bool', default=False),
-            netbios_name=dict(required=False),
+            netbios_name=dict(required=False, type='str'),
             rid_base=dict(required=False, type='int'),
             secondary_rid_base=dict(required=False, type='int'),
 
@@ -223,10 +289,11 @@ def main():
             _hostname_overridden=dict(required=False, type='bool',
                                       default=False),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
