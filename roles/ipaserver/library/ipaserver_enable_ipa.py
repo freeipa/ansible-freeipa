@@ -5,7 +5,7 @@
 #
 # Based on ipa-server-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,15 +39,18 @@ description: Enable IPA
 options:
   hostname:
     description: Fully qualified name of this host
-    required: yes
+    type: str
+    required: no
   setup_dns:
     description: Configure bind with our zone
-    required: no
+    type: bool
+    required: yes
   setup_ca:
     description: Configure a dogtag CA
-    required: no
+    type: bool
+    required: yes
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -58,6 +61,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
+    check_imports,
     AnsibleModuleLog, setup_logging, options, paths, api, sysrestore, tasks,
     service, bindinstance, redirect_stdout, services
 )
@@ -66,13 +70,14 @@ from ansible.module_utils.ansible_ipa_server import (
 def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
-            hostname=dict(required=False),
+            hostname=dict(required=False, type='str'),
             setup_dns=dict(required=True, type='bool'),
             setup_ca=dict(required=True, type='bool'),
         ),
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
