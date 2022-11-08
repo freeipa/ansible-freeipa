@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,15 +39,19 @@ description: Setup custodia
 options:
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: no
+    type: str
+    required: yes
   hostname:
     description: Fully qualified name of this host
-    required: yes
+    type: str
+    required: no
   setup_ca:
     description: Configure a dogtag CA
-    required: yes
+    type: bool
+    default: no
+    required: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -58,7 +62,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    setup_logging, AnsibleModuleLog, options,
+    check_imports, setup_logging, AnsibleModuleLog, options,
     api_Backend_ldap2,
     custodiainstance, redirect_stdout
 )
@@ -68,13 +72,14 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
             # basic
-            realm=dict(required=True),
-            hostname=dict(required=False),
+            realm=dict(required=True, type='str'),
+            hostname=dict(required=False, type='str'),
             setup_ca=dict(required=False, type='bool', default=False),
         ),
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
