@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,42 +39,61 @@ description: Setup DNS
 options:
   ip_addresses:
     description: List of Master Server IP Addresses
-    required: yes
+    type: list
+    elements: str
+    required: no
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: no
+    type: str
+    required: yes
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: no
+    type: str
+    required: yes
   hostname:
     description: Fully qualified name of this host
-    required: no
+    type: str
+    required: yes
   setup_dns:
     description: Configure bind with our zone
-    required: no
+    type: bool
+    required: yes
   setup_ca:
     description: Configure a dogtag CA
-    required: no
+    type: bool
+    required: yes
   zonemgr:
     description: DNS zone manager e-mail address. Defaults to hostmaster@DOMAIN
-    required: yes
+    type: str
+    required: no
   forwarders:
     description: Add DNS forwarders
-    required: no
+    type: list
+    elements: str
+    required: yes
   forward_policy:
     description: DNS forwarding policy for global forwarders
-    required: yes
+    type: str
+    choices: ['first', 'only']
+    default: 'first'
+    required: no
   no_dnssec_validation:
     description: Disable DNSSEC validation
-    required: yes
+    type: bool
+    default: no
+    required: no
   dns_ip_addresses:
     description: The dns ip_addresses setting
-    required: no
+    type: list
+    elements: str
+    required: yes
   dns_reverse_zones:
     description: The dns reverse_zones setting
-    required: no
+    type: list
+    elements: str
+    required: yes
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -85,7 +104,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, setup_logging, options, paths, dns,
+    check_imports, AnsibleModuleLog, setup_logging, options, paths, dns,
     ansible_module_get_parsed_ip_addresses, sysrestore, api_Backend_ldap2,
     redirect_stdout, bindinstance
 )
@@ -95,26 +114,29 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
             # basic
-            ip_addresses=dict(required=False, type='list', default=[]),
-            domain=dict(required=True),
-            realm=dict(required=True),
-            hostname=dict(required=True),
+            ip_addresses=dict(required=False, type='list', elements='str',
+                              default=[]),
+            domain=dict(required=True, type='str'),
+            realm=dict(required=True, type='str'),
+            hostname=dict(required=True, type='str'),
             # server
             setup_dns=dict(required=True, type='bool'),
             setup_ca=dict(required=True, type='bool'),
             # dns
-            zonemgr=dict(required=False),
-            forwarders=dict(required=True, type='list'),
-            forward_policy=dict(default='first', choices=['first', 'only']),
+            zonemgr=dict(required=False, type='str'),
+            forwarders=dict(required=True, type='list', elements='str'),
+            forward_policy=dict(required=False, choices=['first', 'only'],
+                                default='first'),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
             # additional
-            dns_ip_addresses=dict(required=True, type='list'),
-            dns_reverse_zones=dict(required=True, type='list'),
+            dns_ip_addresses=dict(required=True, type='list', elements='str'),
+            dns_reverse_zones=dict(required=True, type='list', elements='str'),
         ),
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
