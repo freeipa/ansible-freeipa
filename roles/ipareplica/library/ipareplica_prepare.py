@@ -5,7 +5,7 @@
 #
 # Based on ipa-replica-install code
 #
-# Copyright (C) 2018  Red Hat
+# Copyright (C) 2018-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -42,151 +42,216 @@ description: |
 options:
   dm_password:
     description: Directory Manager password
-    required: yes
+    type: str
+    required: no
   password:
     description: Admin user kerberos password
-    required: yes
+    type: str
+    required: no
   ip_addresses:
     description: List of Master Server IP Addresses
-    required: yes
+    type: list
+    elements: str
+    required: no
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: yes
+    type: str
+    required: no
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: yes
+    type: str
+    required: no
   hostname:
     description: Fully qualified name of this host
-    required: yes
+    type: str
+    required: no
   principal:
     description:
       User Principal allowed to promote replicas and join IPA realm
-    required: no
+    type: str
+    required: yes
   ca_cert_files:
     description:
       List of files containing CA certificates for the service certificate
       files
-    required: yes
+    type: list
+    elements: str
+    required: no
   no_host_dns:
     description: Do not use DNS for hostname lookup during installation
-    required: yes
+    type: bool
+    default: no
+    required: no
   setup_adtrust:
     description: Configure AD trust capability
-    required: yes
+    type: bool
+    required: no
   setup_ca:
     description: Configure a dogtag CA
-    required: yes
+    type: bool
+    required: no
   setup_kra:
     description: Configure a dogtag KRA
-    required: yes
+    type: bool
+    required: no
   setup_dns:
     description: Configure bind with our zone
-    required: yes
+    type: bool
+    required: no
   dirsrv_cert_files:
     description:
       Files containing the Directory Server SSL certificate and private key
-    required: yes
+    type: list
+    elements: str
+    required: no
   dirsrv_cert_name:
     description: Name of the Directory Server SSL certificate to install
-    required: yes
+    type: str
+    required: no
   dirsrv_pin:
     description: The password to unlock the Directory Server private key
-    required: yes
+    type: str
+    required: no
   http_cert_files:
     description:
       File containing the Apache Server SSL certificate and private key
-    required: yes
+    type: list
+    elements: str
+    required: no
   http_cert_name:
     description: Name of the Apache Server SSL certificate to install
-    required: yes
+    type: str
+    required: no
   http_pin:
     description: The password to unlock the Apache Server private key
-    required: yes
+    type: str
+    required: no
   pkinit_cert_files:
     description:
       File containing the Kerberos KDC SSL certificate and private key
-    required: yes
+    type: list
+    elements: str
+    required: no
   pkinit_cert_name:
     description: Name of the Kerberos KDC SSL certificate to install
-    required: yes
+    type: str
+    required: no
   pkinit_pin:
     description: The password to unlock the Kerberos KDC private key
-    required: yes
+    type: str
+    required: no
   keytab:
     description: Path to backed up keytab from previous enrollment
-    required: yes
+    type: str
+    required: no
   mkhomedir:
     description: Create home directories for users on their first login
-    required: yes
+    type: bool
+    required: no
   force_join:
     description: Force client enrollment even if already enrolled
-    required: yes
+    type: bool
+    required: no
   no_ntp:
     description: Do not configure ntp
-    required: yes
+    type: bool
+    required: no
   ssh_trust_dns:
     description: Configure OpenSSH client to trust DNS SSHFP records
-    required: yes
+    type: bool
+    required: no
   no_ssh:
     description: Do not configure OpenSSH client
-    required: yes
+    type: bool
+    required: no
   no_sshd:
     description: Do not configure OpenSSH server
-    required: yes
+    type: bool
+    required: no
   no_dns_sshfp:
     description: Do not automatically create DNS SSHFP records
-    required: yes
+    type: bool
+    required: no
   allow_zone_overlap:
     description: Create DNS zone even if it already exists
-    required: yes
+    type: bool
+    default: no
+    required: no
   reverse_zones:
     description: The reverse DNS zones to use
-    required: yes
+    type: list
+    elements: str
+    required: no
   no_reverse:
     description: Do not create new reverse DNS zone
-    required: yes
+    type: bool
+    default: no
+    required: no
   auto_reverse:
     description: Create necessary reverse zones
-    required: yes
+    type: bool
+    default: no
+    required: no
   forwarders:
     description: Add DNS forwarders
-    required: yes
+    type: list
+    elements: str
+    required: no
   no_forwarders:
     description: Do not add any DNS forwarders, use root servers instead
-    required: yes
+    type: bool
+    default: no
+    required: no
   auto_forwarders:
     description: Use DNS forwarders configured in /etc/resolv.conf
-    required: yes
+    type: bool
+    default: no
+    required: no
   forward_policy:
     description: DNS forwarding policy for global forwarders
-    required: yes
+    type: str
+    choices: ['first', 'only']
+    required: no
   no_dnssec_validation:
     description: Disable DNSSEC validation
-    required: yes
+    type: bool
+    default: no
+    required: no
   enable_compat:
     description: Enable support for trusted domains for old clients
-    required: yes
+    type: bool
+    default: no
+    required: no
   netbios_name:
     description: NetBIOS name of the IPA domain
-    required: yes
+    type: str
+    required: no
   rid_base:
     description: Start value for mapping UIDs and GIDs to RIDs
-    required: yes
+    type: int
+    default: 1000
+    required: no
   secondary_rid_base:
     description:
       Start value of the secondary range for mapping UIDs and GIDs to RIDs
-    required: yes
+    type: int
+    default: 100000000
+    required: no
   server:
     description: Fully qualified name of IPA server to enroll to
-    required: no
+    type: str
+    required: yes
   skip_conncheck:
     description: Skip connection check to remote master
-    required: yes
+    type: bool
+    required: no
   sid_generation_always:
     description: Enable SID generation always
-    required: yes
+    type: bool
+    default: no
+    required: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -202,7 +267,7 @@ from shutil import copyfile
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
-    AnsibleModuleLog, options, installer, DN, paths, sysrestore,
+    check_imports, AnsibleModuleLog, options, installer, DN, paths, sysrestore,
     ansible_module_get_parsed_ip_addresses, Env, ipautil, ipaldap,
     installutils, ReplicaConfig, load_pkcs12, kinit_keytab, create_api,
     rpc_client, check_remote_version, parse_version, check_remote_fips_mode,
@@ -222,14 +287,16 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
             # basic
-            dm_password=dict(required=False, no_log=True),
-            password=dict(required=False, no_log=True),
-            ip_addresses=dict(required=False, type='list', default=[]),
-            domain=dict(required=False),
-            realm=dict(required=False),
-            hostname=dict(required=False),
-            principal=dict(required=True),
-            ca_cert_files=dict(required=False, type='list', default=[]),
+            dm_password=dict(required=False, type='str', no_log=True),
+            password=dict(required=False, type='str', no_log=True),
+            ip_addresses=dict(required=False, type='list', elements='str',
+                              default=[]),
+            domain=dict(required=False, type='str'),
+            realm=dict(required=False, type='str'),
+            hostname=dict(required=False, type='str'),
+            principal=dict(required=True, type='str'),
+            ca_cert_files=dict(required=False, type='list', elements='str',
+                               default=[]),
             no_host_dns=dict(required=False, type='bool', default=False),
             # server
             setup_adtrust=dict(required=False, type='bool'),
@@ -237,17 +304,20 @@ def main():
             setup_kra=dict(required=False, type='bool'),
             setup_dns=dict(required=False, type='bool'),
             # ssl certificate
-            dirsrv_cert_files=dict(required=False, type='list', default=[]),
-            dirsrv_cert_name=dict(required=False),
-            dirsrv_pin=dict(required=False),
-            http_cert_files=dict(required=False, type='list', default=[]),
-            http_cert_name=dict(required=False),
-            http_pin=dict(required=False),
-            pkinit_cert_files=dict(required=False, type='list', default=[]),
-            pkinit_cert_name=dict(required=False),
-            pkinit_pin=dict(required=False),
+            dirsrv_cert_files=dict(required=False, type='list', elements='str',
+                                   default=[]),
+            dirsrv_cert_name=dict(required=False, type='str'),
+            dirsrv_pin=dict(required=False, type='str'),
+            http_cert_files=dict(required=False, type='list', elements='str',
+                                 default=[]),
+            http_cert_name=dict(required=False, type='str'),
+            http_pin=dict(required=False, type='str'),
+            pkinit_cert_files=dict(required=False, type='list', elements='str',
+                                   default=[]),
+            pkinit_cert_name=dict(required=False, type='str'),
+            pkinit_pin=dict(required=False, type='str'),
             # client
-            keytab=dict(required=False),
+            keytab=dict(required=False, type='str', no_log=False),
             mkhomedir=dict(required=False, type='bool'),
             force_join=dict(required=False, type='bool'),
             no_ntp=dict(required=False, type='bool'),
@@ -260,31 +330,35 @@ def main():
             # dns
             allow_zone_overlap=dict(required=False, type='bool',
                                     default=False),
-            reverse_zones=dict(required=False, type='list', default=[]),
+            reverse_zones=dict(required=False, type='list', elements='str',
+                               default=[]),
             no_reverse=dict(required=False, type='bool', default=False),
             auto_reverse=dict(required=False, type='bool', default=False),
-            forwarders=dict(required=False, type='list', default=[]),
+            forwarders=dict(required=False, type='list', elements='str',
+                            default=[]),
             no_forwarders=dict(required=False, type='bool', default=False),
             auto_forwarders=dict(required=False, type='bool', default=False),
-            forward_policy=dict(default=None, choices=['first', 'only']),
+            forward_policy=dict(required=False, type='str',
+                                choices=['first', 'only'], default=None),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
             # ad trust
             enable_compat=dict(required=False, type='bool', default=False),
-            netbios_name=dict(required=False),
+            netbios_name=dict(required=False, type='str'),
             rid_base=dict(required=False, type='int', default=1000),
             secondary_rid_base=dict(required=False, type='int',
                                     default=100000000),
             # additional
-            server=dict(required=True),
+            server=dict(required=True, type='str'),
             skip_conncheck=dict(required=False, type='bool'),
             sid_generation_always=dict(required=False, type='bool',
                                        default=False),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
