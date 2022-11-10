@@ -99,9 +99,10 @@ try:
 
     try:
         from ipalib.x509 import load_pem_x509_certificate
+        certificate_loader = load_pem_x509_certificate
     except ImportError:
         from ipalib.x509 import load_certificate
-        load_pem_x509_certificate = None
+        certificate_loader = load_certificate
 
     # Try to import is_ipa_configured or use a fallback implementation.
     try:
@@ -147,7 +148,6 @@ except ImportError as _err:
     uuid = None
     netaddr = None
     is_ipa_configured = None
-    load_certificate = None
     kerberos = None
     ipaserver = None  # pylint: disable=C0103
 else:
@@ -588,10 +588,7 @@ def load_cert_from_str(cert):
     if not cert.endswith("-----END CERTIFICATE-----"):
         cert += "\n-----END CERTIFICATE-----"
 
-    if load_pem_x509_certificate is not None:
-        cert = load_pem_x509_certificate(cert.encode('utf-8'))
-    else:
-        cert = load_certificate(cert.encode('utf-8'))
+    cert = certificate_loader(cert.encode('utf-8'))
     return cert
 
 

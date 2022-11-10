@@ -196,9 +196,10 @@ else:
 
         try:
             from ipalib.x509 import load_pem_x509_certificate
+            certificate_loader = load_pem_x509_certificate
         except ImportError:
             from ipalib.x509 import load_certificate
-            load_pem_x509_certificate = None
+            certificate_loader = load_certificate
 
         try:
             from ipaserver.install.server.install import get_min_idstart
@@ -426,10 +427,7 @@ else:
             if not cert.endswith("-----END CERTIFICATE-----"):
                 cert += "\n-----END CERTIFICATE-----"
 
-            if load_pem_x509_certificate is not None:
-                cert = load_pem_x509_certificate(cert.encode('utf-8'))
-            else:
-                cert = load_certificate(cert.encode('utf-8'))
+            cert = certificate_loader(cert.encode('utf-8'))
         else:
             cert = base64.b64decode(cert)
         return cert
