@@ -68,7 +68,7 @@ jobs:
           python-version: "3.x"
       - name: Run pylint
         run: |
-            pip install pylint==2.12.2
+            pip install pylint==2.13.7 wrapt==1.14.0
             pylint plugins roles --disable=import-error
 
   shellcheck:
