@@ -150,7 +150,8 @@ from ansible.module_utils.ansible_ipa_client import (
     get_certs_from_ldap, DN, certstore, x509, logger, certdb,
     CalledProcessError, tasks, client_dns, configure_certmonger, services,
     update_ssh_keys, save_state, configure_ldap_conf, configure_nslcd_conf,
-    configure_openldap_conf, hardcode_ldap_server, getargspec
+    configure_openldap_conf, hardcode_ldap_server, getargspec, NUM_VERSION,
+    serialization
 )
 
 
@@ -271,6 +272,17 @@ def main():
                 ca_subject = DN(('CN', 'Certificate Authority'), subject_base)
             else:
                 ca_subject = None
+
+            # Set ca_certs
+            # Copied from ipaclient_api
+            ca_certs = x509.load_certificate_list_from_file(paths.IPA_CA_CRT)
+            if 40500 <= NUM_VERSION < 40590:
+                ca_certs = [cert.public_bytes(serialization.Encoding.DER)
+                            for cert in ca_certs]
+            elif NUM_VERSION < 40500:
+                ca_certs = [cert.der_data for cert in ca_certs]
+            # Copied from ipaclient_api
+
             ca_certs = certstore.make_compat_ca_certs(ca_certs, cli_realm,
                                                       ca_subject)
         ca_certs_trust = [(c, n,
