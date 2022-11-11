@@ -1,0 +1,12 @@
+---
+- name: Netgroup present example
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Ensure netgroup my_netgroup1 is present
+    ipanetgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: my_netgroup1
+      description: My netgroup 1

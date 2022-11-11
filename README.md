@@ -31,6 +31,7 @@ Features
 * Modules for hostgroup management
 * Modules for idrange management
 * Modules for location management
+* Modules for netgroup management
 * Modules for permission management
 * Modules for privilege management
 * Modules for pwpolicy management
@@ -450,6 +451,7 @@ Modules in plugin/modules
 * [ipahostgroup](README-hostgroup.md)
 * [idrange](README-idrange.md)
 * [ipalocation](README-location.md)
+* [ipanetgroup](README-netgroup.md)
 * [ipapermission](README-permission.md)
 * [ipaprivilege](README-privilege.md)
 * [ipapwpolicy](README-pwpolicy.md)

@@ -1,0 +1,14 @@
+---
+- name: Netgroup absent example
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Ensure netgroup user, "user1", is absent
+    ipanetgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: TestNetgroup1
+      user: "user1"
+      action: member
+      state: absent
