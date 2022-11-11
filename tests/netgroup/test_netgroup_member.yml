@@ -45,7 +45,8 @@
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name:
-        - TestNetgroup1,admins
+        - TestNetgroup1
+        - admins
         state: absent
 
     # CREATE TEST ITEMS
@@ -155,5 +156,6 @@
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name:
-        - TestNetgroup1,admins
+        - TestNetgroup1
+        - admins
         state: absent
