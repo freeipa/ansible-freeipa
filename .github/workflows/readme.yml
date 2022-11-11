@@ -8,7 +8,7 @@ jobs:
     name: Verify readme
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.1.0
       - name: Run readme test
         run: |
           error=0

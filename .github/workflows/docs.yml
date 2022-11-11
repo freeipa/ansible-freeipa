@@ -8,8 +8,8 @@ jobs:
     name: Check Ansible Documentation with Ansible 2.9.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-python@v4.3.0
         with:
           python-version: '3.x'
       - name: Install Ansible 2.9
@@ -23,8 +23,8 @@ jobs:
     name: Check Ansible Documentation with ansible-core 2.11.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-python@v4.3.0
         with:
           python-version: '3.x'
       - name: Install Ansible 2.11
@@ -38,8 +38,8 @@ jobs:
     name: Check Ansible Documentation with ansible-core 2.12.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-python@v4.3.0
         with:
           python-version: '3.x'
       - name: Install Ansible 2.12
@@ -54,8 +54,8 @@ jobs:
     name: Check Ansible Documentation with latest Ansible version.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-python@v4.3.0
         with:
           python-version: '3.x'
       - name: Install Ansible-latest
