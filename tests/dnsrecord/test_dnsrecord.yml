@@ -1549,11 +1549,8 @@
   - name: Cleanup test environment.
     include_tasks: env_cleanup.yml
 
-  - name: Remove certificate files.
-    shell:
-      cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
+  - name: Remove certificate files.  # noqa: deprecated-command-syntax
+    ansible.builtin.shell: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
     with_items: [1]
     become: no
     delegate_to: localhost
-    args:
-      warn: no  # suppres warning for not using the `file` module.
