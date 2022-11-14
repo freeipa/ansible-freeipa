@@ -37,7 +37,7 @@ def module_EXAMPLES(module_in, project_prefix, collection_prefix):
                 example = True
                 out_lines.append(line)
                 continue
-            elif example and stripped in ["'''", '"""']:
+            if example and stripped in ["'''", '"""']:
                 _out_lines, _changed = \
                     galaxyfy_playbook(project_prefix, collection_prefix,
                                       example_lines)
