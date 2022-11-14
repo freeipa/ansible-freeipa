@@ -8,8 +8,8 @@ jobs:
     name: Verify ansible-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-python@v4.3.0
         with:
           python-version: "3.x"
       - name: Run ansible-lint
@@ -25,8 +25,8 @@ jobs:
     name: Verify yamllint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-python@v4.3.0
         with:
           python-version: "3.x"
       - name: Run yaml-lint
@@ -36,8 +36,8 @@ jobs:
     name: Verify pydocstyle
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-python@v4.3.0
         with:
           python-version: "3.x"
       - name: Run pydocstyle
@@ -49,8 +49,8 @@ jobs:
     name: Verify flake8
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-python@v4.3.0
         with:
           python-version: "3.x"
       - name: Run flake8
@@ -62,8 +62,8 @@ jobs:
     name: Verify pylint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3.1.0
+      - uses: actions/setup-python@v4.3.0
         with:
           python-version: "3.x"
       - name: Run pylint
@@ -75,6 +75,6 @@ jobs:
     name: Shellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.1.0
       - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@1.1.0
+        uses: ludeeus/action-shellcheck@master
