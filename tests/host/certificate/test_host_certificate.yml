@@ -99,11 +99,9 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Remove certificate files.
+  - name: Remove certificate files.  # noqa: deprecated-command-syntax
     shell:
       cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
     with_items: [1, 2, 3]
     become: no
     delegate_to: localhost
-    args:
-      warn: no  # suppres warning for not using the `file` module.
