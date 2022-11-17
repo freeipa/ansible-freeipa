@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -33,24 +33,29 @@ DOCUMENTATION = '''
 ---
 module: ipaclient_fix_ca
 short_description: Fix IPA ca certificate
-description: Repair Fix IPA ca certificate
+description: Fix IPA ca certificate
 options:
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: no
+    type: list
+    elements: str
+    required: yes
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: no
+    type: str
+    required: yes
   basedn:
     description: The basedn of the IPA server (of the form dc=example,dc=com)
-    required: no
+    type: str
+    required: yes
   allow_repair:
     description: |
       Allow repair of already joined hosts. Contrary to ipaclient_force_join
       the host entry will not be changed on the server
-    required: no
+    type: bool
+    required: yes
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -69,7 +74,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging,
+    setup_logging, check_imports,
     SECURE_PATH, paths, sysrestore, options, NUM_VERSION, get_ca_cert,
     get_ca_certs, errors
 )
@@ -78,14 +83,15 @@ from ansible.module_utils.ansible_ipa_client import (
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            servers=dict(required=True, type='list'),
-            realm=dict(required=True),
-            basedn=dict(required=True),
+            servers=dict(required=True, type='list', elements='str'),
+            realm=dict(required=True, type='str'),
+            basedn=dict(required=True, type='str'),
             allow_repair=dict(required=True, type='bool'),
         ),
     )
 
     module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     servers = module.params.get('servers')

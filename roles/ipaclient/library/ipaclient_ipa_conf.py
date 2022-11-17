@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2018  Red Hat
+# Copyright (C) 2018-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,21 +40,27 @@ description:
 options:
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: no
+    type: str
+    required: yes
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: no
+    type: list
+    elements: str
+    required: yes
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: no
+    type: str
+    required: yes
   hostname:
     description: Fully qualified name of this host
-    required: no
+    type: str
+    required: yes
   basedn:
     description: The basedn of the IPA server (of the form dc=example,dc=com)
-    required: no
+    type: str
+    required: yes
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -73,23 +79,24 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging, paths, sysrestore, configure_ipa_conf
+    setup_logging, check_imports, paths, sysrestore, configure_ipa_conf
 )
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            domain=dict(required=True, default=None),
-            servers=dict(required=True, type='list', default=None),
-            realm=dict(required=True, default=None),
-            hostname=dict(required=True, default=None),
-            basedn=dict(required=True),
+            domain=dict(required=True, type='str'),
+            servers=dict(required=True, type='list', elements='str'),
+            realm=dict(required=True, type='str'),
+            hostname=dict(required=True, type='str'),
+            basedn=dict(required=True, type='str'),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     servers = module.params.get('servers')

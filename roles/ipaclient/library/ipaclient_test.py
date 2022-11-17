@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,70 +40,99 @@ description:
 options:
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: yes
+    type: str
+    required: no
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: yes
+    type: list
+    elements: str
+    required: no
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: yes
+    type: str
+    required: no
   hostname:
     description: Fully qualified name of this host
-    required: yes
+    type: str
+    required: no
   ntp_servers:
     description: ntp servers to use
-    required: yes
+    type: list
+    elements: str
+    required: no
   ntp_pool:
     description: ntp server pool to use
-    required: yes
+    type: str
+    required: no
   no_ntp:
     description: Do not configure ntp
-    required: yes
+    type: bool
+    required: no
+    default: no
   force_ntpd:
     description:
       Stop and disable any time&date synchronization services besides ntpd
       Deprecated since 4.7
-    required: yes
+    type: bool
+    required: no
+    default: no
   nisdomain:
     description: The NIS domain name
-    required: yes
+    type: str
+    required: no
   no_nisdomain:
     description: Do not configure NIS domain name
-    required: yes
+    type: bool
+    required: no
+    default: no
   kinit_attempts:
     description: Repeat the request for host Kerberos ticket X times
-    required: yes
+    type: int
+    required: no
   ca_cert_files:
     description:
       List of files containing CA certificates for the service certificate
       files
-    required: yes
+    type: list
+    elements: str
+    required: no
   configure_firefox:
     description: Configure Firefox to use IPA domain credentials
-    required: yes
+    type: bool
+    required: no
+    default: no
   firefox_dir:
     description:
       Specify directory where Firefox is installed (for example
       '/usr/lib/firefox')
-    required: yes
+    type: str
+    required: no
   ip_addresses:
     description: List of Master Server IP Addresses
-    required: yes
+    type: list
+    elements: str
+    required: no
   all_ip_addresses:
     description:
       All routable IP addresses configured on any interface will be added
       to DNS
-    required: yes
+    type: bool
+    required: no
+    default: no
   on_master:
     description: Whether the configuration is done on the master or not
-    required: yes
+    type: bool
+    required: no
+    default: no
   enable_dns_updates:
     description:
       Configures the machine to attempt dns updates when the ip address
       changes
-    required: yes
+    type: bool
+    required: no
+    default: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -142,36 +171,37 @@ servers:
   description: The list of detected or passed in IPA servers.
   returned: always
   type: list
+  elements: str
   sample: ["server1.example.com","server2.example.com"]
 domain:
   description: The DNS domain of the detected or passed in IPA deployment.
   returned: always
-  type: string
+  type: str
   sample: example.com
 realm:
   description: The Kerberos realm of the detected or passed in IPA deployment.
   returned: always
-  type: string
+  type: str
   sample: EXAMPLE.COM
 kdc:
   description: The detected KDC server name.
   returned: always
-  type: string
+  type: str
   sample: server1.example.com
 basedn:
   description: The basedn of the detected IPA server.
   returned: always
-  type: string
+  type: str
   sample: dc=example,dc=com
 hostname:
   description: The detected or passed in FQDN hostname of the client.
   returned: always
-  type: string
+  type: str
   sample: client1.example.com
 client_domain:
   description: The domain name of the client.
   returned: always
-  type: string
+  type: str
   sample: example.com
 dnsok:
   description: True if DNS discovery worked and not passed in any servers.
@@ -181,6 +211,7 @@ ntp_servers:
   description: The list of detected NTP servers.
   returned: always
   type: list
+  elements: str
   sample: ["ntp.example.com"]
 ipa_python_version:
   description: >
@@ -192,7 +223,9 @@ ipa_python_version:
 nosssd_files:
   description: >
     The dist of nss_ldap or nss-pam-ldapd files if sssd is disabled
+  returned: always
   type: list
+  elements: str
 '''
 
 import os
@@ -205,7 +238,7 @@ except ImportError:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging,
+    setup_logging, check_imports,
     paths, sysrestore, options, CheckedIPAddress, validate_domain_name,
     logger, x509, normalize_hostname, installer, version, ScriptError,
     CLIENT_INSTALL_ERROR, tasks, check_ldap_conf, timeconf, constants,
@@ -270,31 +303,36 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             # basic
-            domain=dict(required=False, default=None),
-            servers=dict(required=False, type='list', default=None),
-            realm=dict(required=False, default=None),
-            hostname=dict(required=False, default=None),
-            ntp_servers=dict(required=False, type='list', default=None),
-            ntp_pool=dict(required=False, default=None),
+            domain=dict(required=False, type='str', default=None),
+            servers=dict(required=False, type='list', elements='str',
+                         default=None),
+            realm=dict(required=False, type='str', default=None),
+            hostname=dict(required=False, type='str', default=None),
+            ntp_servers=dict(required=False, type='list', elements='str',
+                             default=None),
+            ntp_pool=dict(required=False, type='str', default=None),
             no_ntp=dict(required=False, type='bool', default=False),
             force_ntpd=dict(required=False, type='bool', default=False),
-            nisdomain=dict(required=False, default=None),
+            nisdomain=dict(required=False, type='str', default=None),
             no_nisdomain=dict(required=False, type='bool', default='no'),
             kinit_attempts=dict(required=False, type='int'),
-            ca_cert_files=dict(required=False, type='list', default=None),
+            ca_cert_files=dict(required=False, type='list', elements='str',
+                               default=None),
             configure_firefox=dict(required=False, type='bool', default=False),
-            firefox_dir=dict(required=False),
-            ip_addresses=dict(required=False, type='list', default=None),
+            firefox_dir=dict(required=False, type='str'),
+            ip_addresses=dict(required=False, type='list', elements='str',
+                              default=None),
             all_ip_addresses=dict(required=False, type='bool', default=False),
             on_master=dict(required=False, type='bool', default=False),
             # sssd
             enable_dns_updates=dict(required=False, type='bool',
                                     default=False),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     # module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     options.domain_name = module.params.get('domain')

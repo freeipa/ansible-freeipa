@@ -3,7 +3,7 @@
 # Authors:
 #   Florence Blanc-Renaud <frenaud@redhat.com>
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,31 +40,44 @@ options:
   principal:
     description:
       User Principal allowed to promote replicas and join IPA realm
-    required: yes
+    type: str
+    required: no
+    default: admin
   ccache:
     description: The local ccache
-    required: yes
+    type: path
+    required: no
   fqdn:
     description:
       The fully-qualified hostname of the host to add/modify/remove
-    required: no
+    type: str
+    required: yes
   certificates:
     description: A list of host certificates
-    required: yes
+    type: list
+    elements: str
+    required: no
   sshpubkey:
     description: The SSH public key for the host
-    required: yes
+    type: str
+    required: no
   ipaddress:
     description: The IP address for the host
-    required: yes
+    type: str
+    required: no
   random:
     description: Generate a random password to be used in bulk enrollment
-    required: yes
+    type: bool
+    required: no
+    default: no
   state:
     description: The desired host state
-    required: yes
+    type: str
+    choices: ['present', 'absent']
+    default: present
+    required: no
 author:
-    - "Florence Blanc-Renaud"
+    - Florence Blanc-Renaud (@flo-renaud)
 '''
 
 EXAMPLES = '''
@@ -87,11 +100,11 @@ host:
   contains:
     dn:
       description: the DN of the host entry
-      type: string
+      type: str
       returned: always
     fqdn:
       description: the fully qualified host name
-      type: string
+      type: str
       returned: always
     has_keytab:
       description: whether the host entry contains a keytab
@@ -107,19 +120,20 @@ host:
       returned: always
     randompassword:
       description: the OneTimePassword generated for this host
-      type: string
+      type: str
       returned: changed
     certificates:
       description: the list of host certificates
       type: list
+      elements: str
       returned: when present
     sshpubkey:
       description: the SSH public key for the host
-      type: string
+      type: str
       returned: when present
     ipaddress:
       description: the IP address for the host
-      type: string
+      type: str
       returned: when present
 '''
 
@@ -128,9 +142,9 @@ import os
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils import six
 
-from ipalib import api, errors
-from ipaplatform.paths import paths
-from ipapython.ipautil import run
+from ansible.module_utils.ansible_ipa_client import (
+    check_imports, api, errors, paths, run
+)
 
 if six.PY3:
     unicode = str
@@ -276,17 +290,20 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            principal=dict(default='admin'),
+            principal=dict(required=False, type='str', default='admin'),
             ccache=dict(required=False, type='path'),
-            fqdn=dict(required=True),
-            certificates=dict(required=False, type='list'),
-            sshpubkey=dict(required=False),
-            ipaddress=dict(required=False),
-            random=dict(default=False, type='bool'),
-            state=dict(default='present', choices=['present', 'absent']),
+            fqdn=dict(required=True, type='str'),
+            certificates=dict(required=False, type='list', elements='str'),
+            sshpubkey=dict(required=False, type='str'),
+            ipaddress=dict(required=False, type='str'),
+            random=dict(required=False, type='bool', default=False),
+            state=dict(required=False, type='str',
+                       choices=['present', 'absent'], default='present'),
         ),
         supports_check_mode=True,
     )
+
+    check_imports(module)
 
     ccache = module.params.get('ccache')
     fqdn = unicode(module.params.get('fqdn'))

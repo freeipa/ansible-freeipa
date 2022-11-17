@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2018  Red Hat
+# Copyright (C) 2018-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,9 +40,10 @@ description:
 options:
   hostname:
     description: Fully qualified name of this host
-    required: no
+    type: str
+    required: yes
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -57,19 +58,20 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging, sysrestore, paths, tasks
+    setup_logging, check_imports, sysrestore, paths, tasks
 )
 
 
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            hostname=dict(required=True),
+            hostname=dict(required=True, type='str'),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     hostname = module.params.get('hostname')

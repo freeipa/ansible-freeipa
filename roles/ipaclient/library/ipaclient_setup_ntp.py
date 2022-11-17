@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,24 +40,34 @@ description:
 options:
   ntp_servers:
     description: ntp servers to use
-    required: yes
+    type: list
+    elements: str
+    required: no
   ntp_pool:
     description: ntp server pool to use
-    required: yes
+    type: str
+    required: no
   no_ntp:
     description: Do not configure ntp
-    required: yes
+    type: bool
+    required: no
+    default: no
   on_master:
     description: Whether the configuration is done on the master or not
-    required: yes
+    type: bool
+    required: no
+    default: no
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: yes
+    type: list
+    elements: str
+    required: no
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: yes
+    type: str
+    required: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -68,7 +78,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging,
+    setup_logging, check_imports,
     options, sysrestore, paths, sync_time, logger, ipadiscovery,
     timeconf, getargspec
 )
@@ -78,19 +88,22 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             # basic
-            ntp_servers=dict(required=False, type='list', default=None),
-            ntp_pool=dict(required=False, default=None),
+            ntp_servers=dict(required=False, type='list', elements='str',
+                             default=None),
+            ntp_pool=dict(required=False, type='str', default=None),
             no_ntp=dict(required=False, type='bool', default=False),
             # force_ntpd=dict(required=False, type='bool', default=False),
             on_master=dict(required=False, type='bool', default=False),
             # additional
-            servers=dict(required=False, type='list', default=None),
-            domain=dict(required=False, default=None),
+            servers=dict(required=False, type='list', elements='str',
+                         default=None),
+            domain=dict(required=False, type='str', default=None),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     # module._ansible_debug = True
+    check_imports(module)
     setup_logging()
 
     options.ntp_servers = module.params.get('ntp_servers')
