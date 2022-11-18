@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,24 +39,30 @@ description: Setup KRA
 options:
   dm_password:
     description: Directory Manager password
-    required: no
+    type: str
+    required: yes
   hostname:
     description: Fully qualified name of this host
-    required: no
+    type: str
+    required: yes
   setup_ca:
     description: Configure a dogtag CA
-    required: no
+    type: bool
+    required: yes
   setup_kra:
     description: Configure a dogtag KRA
-    required: no
+    type: bool
+    required: yes
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: no
+    type: str
+    required: yes
   pki_config_override:
     description: Path to ini file with config overrides
-    required: yes
+    type: str
+    required: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -67,7 +73,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, setup_logging, options,
+    check_imports, AnsibleModuleLog, setup_logging, options,
     api_Backend_ldap2, redirect_stdout, api, custodiainstance, kra
 )
 
@@ -76,16 +82,17 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
             # basic
-            dm_password=dict(required=True, no_log=True),
-            hostname=dict(required=True),
+            dm_password=dict(required=True, type='str', no_log=True),
+            hostname=dict(required=True, type='str'),
             setup_ca=dict(required=True, type='bool'),
             setup_kra=dict(required=True, type='bool'),
-            realm=dict(required=True),
-            pki_config_override=dict(required=False),
+            realm=dict(required=True, type='str'),
+            pki_config_override=dict(required=False, type='str'),
         ),
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 

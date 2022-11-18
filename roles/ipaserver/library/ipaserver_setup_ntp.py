@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,12 +39,15 @@ description: Setup NTP
 options:
   ntp_servers:
     description: ntp servers to use
-    required: yes
+    type: list
+    elements: str
+    required: no
   ntp_pool:
     description: ntp server pool to use
-    required: yes
+    type: str
+    required: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -55,7 +58,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, setup_logging, options, sysrestore, paths,
+    check_imports, AnsibleModuleLog, setup_logging, options, sysrestore, paths,
     redirect_stdout, time_service, sync_time, ntpinstance, timeconf,
     getargspec
 )
@@ -64,12 +67,14 @@ from ansible.module_utils.ansible_ipa_server import (
 def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
-            ntp_servers=dict(required=False, type='list', default=None),
-            ntp_pool=dict(required=False, default=None),
+            ntp_servers=dict(required=False, type='list', elements='str',
+                             default=None),
+            ntp_pool=dict(required=False, type='str', default=None),
         ),
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 

@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,9 +39,10 @@ description: Load cache file
 options:
   dm_password:
     description: Directory Manager password
-    required: no
+    type: str
+    required: yes
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -54,7 +55,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    setup_logging, options, paths, read_cache
+    check_imports, setup_logging, options, paths, read_cache
 )
 
 
@@ -62,11 +63,12 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
             # basic
-            dm_password=dict(required=True, no_log=True),
+            dm_password=dict(required=True, type='str', no_log=True),
         ),
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
 
     # set values ############################################################

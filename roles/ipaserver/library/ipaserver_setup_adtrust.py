@@ -5,7 +5,7 @@
 #
 # Based on ipa-client-install code
 #
-# Copyright (C) 2017  Red Hat
+# Copyright (C) 2017-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,31 +39,42 @@ description: Setup trust ad
 options:
   hostname:
     description: Fully qualified name of this host
-    required: yes
+    type: str
+    required: no
   setup_ca:
     description: Configure a dogtag CA
-    required: yes
+    type: bool
+    default: no
+    required: no
   setup_adtrust:
     description: Configure AD trust capability
-    required: yes
+    type: bool
+    default: no
+    required: no
   enable_compat:
     description: Enable support for trusted domains for old clients
-    required: yes
+    type: bool
+    default: no
+    required: no
   rid_base:
     description: Start value for mapping UIDs and GIDs to RIDs
-    required: yes
+    type: int
+    required: no
   secondary_rid_base:
     description:
       Start value of the secondary range for mapping UIDs and GIDs to RIDs
-    required: yes
+    type: int
+    required: no
   adtrust_netbios_name:
     description: The adtrust netbios_name setting
-    required: no
+    type: str
+    required: yes
   adtrust_reset_netbios_name:
     description: The adtrust reset_netbios_name setting
-    required: no
+    type: bool
+    required: yes
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -74,7 +85,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    AnsibleModuleLog, setup_logging, options, sysrestore, paths,
+    check_imports, AnsibleModuleLog, setup_logging, options, sysrestore, paths,
     api_Backend_ldap2, redirect_stdout, adtrust, api
 )
 
@@ -83,7 +94,7 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
             # basic
-            hostname=dict(required=False),
+            hostname=dict(required=False, type='str'),
             setup_ca=dict(required=False, type='bool', default=False),
             setup_adtrust=dict(required=False, type='bool', default=False),
             # ad trust
@@ -91,12 +102,13 @@ def main():
             rid_base=dict(required=False, type='int'),
             secondary_rid_base=dict(required=False, type='int'),
             # additional
-            adtrust_netbios_name=dict(required=True),
+            adtrust_netbios_name=dict(required=True, type='str'),
             adtrust_reset_netbios_name=dict(required=True, type='bool'),
         ),
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
