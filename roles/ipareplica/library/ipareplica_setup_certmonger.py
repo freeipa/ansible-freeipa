@@ -5,7 +5,7 @@
 #
 # Based on ipa-replica-install code
 #
-# Copyright (C) 2018  Red Hat
+# Copyright (C) 2018-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -37,9 +37,8 @@ module: ipareplica_setup_certmonger
 short_description: Setup certmonger
 description:
   Setup certmonger
-options:
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -50,6 +49,7 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
+    check_imports,
     AnsibleModuleLog, setup_logging, redirect_stdout, configure_certmonger
 )
 
@@ -57,10 +57,11 @@ from ansible.module_utils.ansible_ipa_replica import (
 def main():
     ansible_module = AnsibleModule(
         argument_spec={},
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 

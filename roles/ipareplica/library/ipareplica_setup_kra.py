@@ -5,7 +5,7 @@
 #
 # Based on ipa-replica-install code
 #
-# Copyright (C) 2018  Red Hat
+# Copyright (C) 2018-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,92 +40,127 @@ description:
 options:
   dm_password:
     description: Directory Manager password
-    required: yes
+    type: str
+    required: no
   password:
     description: Admin user kerberos password
-    required: yes
+    type: str
+    required: no
   ip_addresses:
     description: List of Master Server IP Addresses
-    required: yes
+    type: list
+    elements: str
+    required: no
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: yes
+    type: str
+    required: no
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: yes
+    type: str
+    required: no
   hostname:
     description: Fully qualified name of this host
-    required: yes
+    type: str
+    required: no
   ca_cert_files:
     description:
       List of files containing CA certificates for the service certificate
       files
-    required: yes
+    type: list
+    elements: str
+    required: no
   no_host_dns:
     description: Do not use DNS for hostname lookup during installation
-    required: yes
+    type: bool
+    default: no
+    required: no
   pki_config_override:
     description: Path to ini file with config overrides
-    required: yes
+    type: str
+    required: no
   setup_adtrust:
     description: Configure AD trust capability
-    required: yes
+    type: bool
+    required: no
   setup_ca:
     description: Configure a dogtag CA
-    required: yes
+    type: bool
+    required: no
   setup_kra:
     description: Configure a dogtag KRA
-    required: yes
+    type: bool
+    required: no
   setup_dns:
     description: Configure bind with our zone
-    required: yes
+    type: bool
+    required: no
   dirsrv_cert_files:
     description:
       Files containing the Directory Server SSL certificate and private key
-    required: yes
+    type: list
+    elements: str
+    required: no
   force_join:
     description: Force client enrollment even if already enrolled
-    required: yes
+    type: bool
+    required: no
   subject_base:
     description:
       The certificate subject base (default O=<realm-name>).
       RDNs are in LDAP order (most specific RDN first).
-    required: no
+    type: str
+    required: yes
   server:
     description: Fully qualified name of IPA server to enroll to
-    required: no
+    type: str
+    required: yes
   config_master_host_name:
     description: The config master_host_name setting
-    required: no
+    type: str
+    required: yes
   installer_ccache:
     description: The installer ccache setting
-    required: no
+    type: str
+    required: yes
   _ca_enabled:
     description: The installer _ca_enabled setting
-    required: yes
+    type: bool
+    required: no
   _kra_enabled:
     description: The installer _kra_enabled setting
-    required: yes
+    type: bool
+    required: no
   _kra_host_name:
     description: The installer _kra_host_name setting
-    required: yes
+    type: str
+    required: no
+  _ca_host_name:
+    description: The installer _ca_host_name setting
+    type: str
+    required: no
   _top_dir:
     description: The installer _top_dir setting
-    required: no
+    type: str
+    required: yes
   _add_to_ipaservers:
     description: The installer _add_to_ipaservers setting
-    required: no
+    type: bool
+    required: yes
   _ca_subject:
     description: The installer _ca_subject setting
-    required: no
+    type: str
+    required: yes
   _subject_base:
     description: The installer _subject_base setting
-    required: no
+    type: str
+    required: yes
   dirman_password:
     description: Directory Manager (master) password
-    required: no
+    type: str
+    required: yes
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -138,7 +173,7 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
-    AnsibleModuleLog, setup_logging, installer, DN, paths,
+    check_imports, AnsibleModuleLog, setup_logging, installer, DN, paths,
     ansible_module_get_parsed_ip_addresses,
     gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
     gen_ReplicaConfig, gen_remote_api, api, redirect_stdout, custodiainstance,
@@ -150,44 +185,48 @@ def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
             # basic
-            dm_password=dict(required=False, no_log=True),
-            password=dict(required=False, no_log=True),
-            ip_addresses=dict(required=False, type='list', default=[]),
-            domain=dict(required=False),
-            realm=dict(required=False),
-            hostname=dict(required=False),
-            ca_cert_files=dict(required=False, type='list', default=[]),
+            dm_password=dict(required=False, type='str', no_log=True),
+            password=dict(required=False, type='str', no_log=True),
+            ip_addresses=dict(required=False, type='list', elements='str',
+                              default=[]),
+            domain=dict(required=False, type='str'),
+            realm=dict(required=False, type='str'),
+            hostname=dict(required=False, type='str'),
+            ca_cert_files=dict(required=False, type='list', elements='str',
+                               default=[]),
             no_host_dns=dict(required=False, type='bool', default=False),
-            pki_config_override=dict(required=False),
+            pki_config_override=dict(required=False, type='str'),
             # server
             setup_adtrust=dict(required=False, type='bool'),
             setup_ca=dict(required=False, type='bool'),
             setup_kra=dict(required=False, type='bool'),
             setup_dns=dict(required=False, type='bool'),
             # ssl certificate
-            dirsrv_cert_files=dict(required=False, type='list', default=[]),
+            dirsrv_cert_files=dict(required=False, type='list', elements='str',
+                                   default=[]),
             # client
             force_join=dict(required=False, type='bool'),
             # certificate system
-            subject_base=dict(required=True),
+            subject_base=dict(required=True, type='str'),
             # additional
-            server=dict(required=True),
-            config_master_host_name=dict(required=True),
-            installer_ccache=dict(required=True),
+            server=dict(required=True, type='str'),
+            config_master_host_name=dict(required=True, type='str'),
+            installer_ccache=dict(required=True, type='str'),
             _ca_enabled=dict(required=False, type='bool'),
             _kra_enabled=dict(required=False, type='bool'),
-            _kra_host_name=dict(required=False),
-            _ca_host_name=dict(required=False),
-            _top_dir=dict(required=True),
+            _kra_host_name=dict(required=False, type='str'),
+            _ca_host_name=dict(required=False, type='str'),
+            _top_dir=dict(required=True, type='str'),
             _add_to_ipaservers=dict(required=True, type='bool'),
-            _ca_subject=dict(required=True),
-            _subject_base=dict(required=True),
-            dirman_password=dict(required=True, no_log=True),
+            _ca_subject=dict(required=True, type='str'),
+            _subject_base=dict(required=True, type='str'),
+            dirman_password=dict(required=True, type='str', no_log=True),
         ),
-        supports_check_mode=True,
+        supports_check_mode=False,
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 

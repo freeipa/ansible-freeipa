@@ -5,7 +5,7 @@
 #
 # Based on ipa-replica-install code
 #
-# Copyright (C) 2018  Red Hat
+# Copyright (C) 2018-2022  Red Hat
 # see file 'COPYING' for use and warranty information
 #
 # This program is free software; you can redistribute it and/or modify
@@ -39,94 +39,142 @@ description: IPA replica deployment tests
 options:
   ip_addresses:
     description: List of Master Server IP Addresses
-    required: yes
+    type: list
+    elements: str
+    required: no
   domain:
     description: Primary DNS domain of the IPA deployment
-    required: yes
+    type: str
+    required: no
   servers:
     description: Fully qualified name of IPA servers to enroll to
-    required: yes
+    type: list
+    elements: str
+    required: no
   realm:
     description: Kerberos realm name of the IPA deployment
-    required: yes
+    type: str
+    required: no
   hostname:
     description: Fully qualified name of this host
-    required: yes
+    type: str
+    required: no
   ca_cert_files:
     description:
       List of files containing CA certificates for the service certificate
       files
-    required: yes
+    type: list
+    elements: str
+    required: no
   hidden_replica:
     description: Install a hidden replica
-    required: yes
+    type: bool
+    default: no
+    required: no
   skip_mem_check:
     description: Skip checking for minimum required memory
-    required: yes
+    type: bool
+    default: no
+    required: no
   setup_adtrust:
     description: Configure AD trust capability
-    required: yes
+    type: bool
+    default: no
+    required: no
   setup_ca:
     description: Configure a dogtag CA
-    required: yes
+    type: bool
+    required: no
   setup_kra:
     description: Configure a dogtag KRA
-    required: yes
+    type: bool
+    default: no
+    required: no
   setup_dns:
     description: Configure bind with our zone
-    required: yes
+    type: bool
+    default: no
+    required: no
   no_pkinit:
     description: Disable pkinit setup steps
-    required: yes
+    type: bool
+    default: no
+    required: no
   dirsrv_config_file:
     description:
       The path to LDIF file that will be used to modify configuration of
       dse.ldif during installation of the directory server instance
-    required: yes
+    type: str
+    required: no
   dirsrv_cert_files:
     description:
       Files containing the Directory Server SSL certificate and private key
-    required: yes
+    type: list
+    elements: str
+    required: no
   http_cert_files:
     description:
       File containing the Apache Server SSL certificate and private key
-    required: yes
+    type: list
+    elements: str
+    required: no
   pkinit_cert_files:
     description:
       File containing the Kerberos KDC SSL certificate and private key
-    required: yes
+    type: list
+    elements: str
+    required: no
   no_ntp:
     description: Do not configure ntp
-    required: yes
+    type: bool
+    default: no
+    required: no
   ntp_servers:
     description: ntp servers to use
-    required: yes
+    type: list
+    elements: str
+    required: no
   ntp_pool:
     description: ntp server pool to use
-    required: yes
+    type: str
+    required: no
   no_reverse:
     description: Do not create new reverse DNS zone
-    required: yes
+    type: bool
+    default: no
+    required: no
   auto_reverse:
     description: Create necessary reverse zones
-    required: yes
+    type: bool
+    default: no
+    required: no
   forwarders:
     description: Add DNS forwarders
-    required: yes
+    type: list
+    elements: str
+    required: no
   no_forwarders:
     description: Do not add any DNS forwarders, use root servers instead
-    required: yes
+    type: bool
+    default: no
+    required: no
   auto_forwarders:
     description: Use DNS forwarders configured in /etc/resolv.conf
-    required: yes
+    type: bool
+    default: no
+    required: no
   forward_policy:
     description: DNS forwarding policy for global forwarders
-    required: yes
+    type: str
+    choices: ['first', 'only']
+    required: no
   no_dnssec_validation:
     description: Disable DNSSEC validation
-    required: yes
+    type: bool
+    default: no
+    required: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -139,8 +187,8 @@ import os
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
-    AnsibleModuleLog, setup_logging, options, installer, paths, sysrestore,
-    ansible_module_get_parsed_ip_addresses, service,
+    check_imports, AnsibleModuleLog, setup_logging, options, installer,
+    paths, sysrestore, ansible_module_get_parsed_ip_addresses, service,
     redirect_stdout, create_ipa_conf, ipautil,
     x509, validate_domain_name, common_check,
     IPA_PYTHON_VERSION, getargspec, adtrustinstance
@@ -153,12 +201,15 @@ def main():
             # basic
             # dm_password=dict(required=False, no_log=True),
             # password=dict(required=False, no_log=True),
-            ip_addresses=dict(required=False, type='list', default=[]),
-            domain=dict(required=False),
-            servers=dict(required=False, type='list', default=[]),
-            realm=dict(required=False),
-            hostname=dict(required=False),
-            ca_cert_files=dict(required=False, type='list', default=[]),
+            ip_addresses=dict(required=False, type='list', elements='str',
+                              default=[]),
+            domain=dict(required=False, type='str'),
+            servers=dict(required=False, type='list', elements='str',
+                         default=[]),
+            realm=dict(required=False, type='str'),
+            hostname=dict(required=False, type='str'),
+            ca_cert_files=dict(required=False, type='list', elements='str',
+                               default=[]),
             hidden_replica=dict(required=False, type='bool', default=False),
             skip_mem_check=dict(required=False, type='bool', default=False),
             # server
@@ -167,28 +218,35 @@ def main():
             setup_kra=dict(required=False, type='bool', default=False),
             setup_dns=dict(required=False, type='bool', default=False),
             no_pkinit=dict(required=False, type='bool', default=False),
-            dirsrv_config_file=dict(required=False),
+            dirsrv_config_file=dict(required=False, type='str'),
             # ssl certificate
-            dirsrv_cert_files=dict(required=False, type='list', default=[]),
-            http_cert_files=dict(required=False, type='list', default=[]),
-            pkinit_cert_files=dict(required=False, type='list', default=[]),
+            dirsrv_cert_files=dict(required=False, type='list', elements='str',
+                                   default=[]),
+            http_cert_files=dict(required=False, type='list', elements='str',
+                                 default=[]),
+            pkinit_cert_files=dict(required=False, type='list', elements='str',
+                                   default=[]),
             # client
             no_ntp=dict(required=False, type='bool', default=False),
-            ntp_servers=dict(required=False, type='list', default=[]),
-            ntp_pool=dict(required=False),
+            ntp_servers=dict(required=False, type='list', elements='str',
+                             default=[]),
+            ntp_pool=dict(required=False, type='str'),
             # dns
             no_reverse=dict(required=False, type='bool', default=False),
             auto_reverse=dict(required=False, type='bool', default=False),
-            forwarders=dict(required=False, type='list', default=[]),
+            forwarders=dict(required=False, type='list', elements='str',
+                            default=[]),
             no_forwarders=dict(required=False, type='bool', default=False),
             auto_forwarders=dict(required=False, type='bool', default=False),
-            forward_policy=dict(default=None, choices=['first', 'only']),
+            forward_policy=dict(required=False, type='str',
+                                choices=['first', 'only'], default=None),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
         ),
     )
 
     ansible_module._ansible_debug = True
+    check_imports(ansible_module)
     setup_logging()
     ansible_log = AnsibleModuleLog(ansible_module)
 
