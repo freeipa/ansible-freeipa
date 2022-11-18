@@ -36,9 +36,8 @@ short_description:
   Get variables from ipaplatform and python interpreter used for the module.
 description:
   Get variables from ipaplatform and python interpreter used for the module.
-options:
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
