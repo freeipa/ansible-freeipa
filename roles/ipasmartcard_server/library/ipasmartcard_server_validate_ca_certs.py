@@ -41,9 +41,11 @@ options:
     description:
       List of files containing CA certificates for the service certificate
       files
-    required: yes
+    type: list
+    elements: str
+    required: no
 author:
-    - Thomas Woerner
+    - Thomas Woerner (@t-woerner)
 '''
 
 EXAMPLES = '''
@@ -63,7 +65,8 @@ except ImportError:
 def main():
     ansible_module = AnsibleModule(
         argument_spec=dict(
-            ca_cert_files=dict(required=False, type='list', default=[]),
+            ca_cert_files=dict(required=False, type='list', elements='str',
+                               default=[]),
         ),
         supports_check_mode=False,
     )
