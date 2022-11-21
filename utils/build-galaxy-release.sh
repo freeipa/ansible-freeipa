@@ -123,10 +123,12 @@ sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.${c
     ln -sf ../../roles/*/library/*.py .
 })
 
-[ ! -x plugins/action ] && mkdir plugins/action
-(cd plugins/action && {
-    ln -sf ../../roles/*/action_plugins/*.py .
-})
+# There are no action plugins anymore in the roles, therefore this section
+# is commneted out.
+#[ ! -x plugins/action ] && mkdir plugins/action
+#(cd plugins/action && {
+#    ln -sf ../../roles/*/action_plugins/*.py .
+#})
 
 for doc_fragment in plugins/doc_fragments/*.py; do
     fragment=$(basename -s .py "$doc_fragment")
