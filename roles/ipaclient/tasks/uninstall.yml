@@ -11,6 +11,11 @@
   failed_when: uninstall.rc != 0 and uninstall.rc != 2
   changed_when: uninstall.rc == 0
 
+- name: Uninstall - Unconfigure DNS resolver
+  ipaclient_configure_dns_resolver:
+    state: absent
+  when: ipaclient_cleanup_dns_resolver | bool
+
 #- name: Remove IPA client package
 #  package:
 #    name: "{{ ipaclient_packages }}"
