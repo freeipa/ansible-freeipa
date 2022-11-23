@@ -15,11 +15,11 @@ repos:
   hooks:
   - id: yamllint
     files: \.(yaml|yml)$
-- repo: https://gitlab.com/pycqa/flake8
+- repo: https://github.com/pycqa/flake8
   rev: 3.9.2
   hooks:
   - id: flake8
-- repo: https://gitlab.com/pycqa/pydocstyle
+- repo: https://github.com/pycqa/pydocstyle
   rev: 6.1.1
   hooks:
   - id: pydocstyle
