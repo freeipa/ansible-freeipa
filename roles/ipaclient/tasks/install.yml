@@ -18,9 +18,9 @@
   when: ipaclient_no_dns_lookup | bool and groups.ipaserver is defined and
         ipaclient_servers is not defined
 
-- name: Install - Check that either principal or keytab is set
-  fail: msg="ipaadmin_principal and ipaadmin_keytab cannot be used together"
-  when: ipaadmin_keytab is defined and ipaadmin_principal is defined
+- name: Install - Check that either password or keytab is set
+  fail: msg="ipaadmin_password and ipaadmin_keytab cannot be used together"
+  when: ipaadmin_keytab is defined and ipaadmin_password is defined
 
 - name: Install - Set default principal if no keytab is given
   set_fact:
@@ -99,35 +99,44 @@
           not ipaclient_force_join | bool
 
   # The following block is executed when using OTP to enroll IPA client and
-  # the OTP isn't predefined, ie when ipaclient_use_otp is set and ipaclient_otp
-  # is not set.
+  # the OTP isn't predefined, ie when ipaclient_use_otp is set and
+  # ipaclient_otp is not set.
   # It connects to ipaserver and add the host with --random option in order
   # to create a OneTime Password
   # If a keytab is specified in the hostent, then the hostent will be disabled
   # if ipaclient_use_otp is set.
   - block:
     - name: Install - Keytab or password is required for getting otp
-      fail: msg="Keytab or password is required for getting otp"
+      ansible.builtin.fail:
+        msg: Keytab or password is required for getting otp
       when: ipaadmin_keytab is undefined and ipaadmin_password is undefined
+
+    - name: Install - Create temporary file for keytab
+      ansible.builtin.tempfile:
+        state: file
+        prefix: ipaclient_temp_
+        path: /root
+      register: keytab_temp
+      delegate_to: "{{ result_ipaclient_test.servers[0] }}"
+      when: ipaadmin_keytab is defined
+
+    - name: Install - Copy keytab to server temporary file
+      ansible.builtin.copy:
+        src: "{{ ipaadmin_keytab }}"
+        dest: "{{ keytab_temp.path }}"
+        mode: 0600
+      delegate_to: "{{ result_ipaclient_test.servers[0] }}"
+      when: ipaadmin_keytab is defined
 
     - name: Install - Get One-Time Password for client enrollment
       no_log: yes
       ipaclient_get_otp:
-        state: present
-        principal: "{{ ipaadmin_principal | default(omit) }}"
-        password: "{{ ipaadmin_password | default(omit) }}"
-        keytab: "{{ ipaadmin_keytab | default(omit) }}"
-        fqdn: "{{ result_ipaclient_test.hostname }}"
-        lifetime: "{{ ipaclient_lifetime | default(omit) }}"
-        random: True
+        ipaadmin_principal: "{{ ipaadmin_principal | default(omit) }}"
+        ipaadmin_password: "{{ ipaadmin_password | default(omit) }}"
+        ipaadmin_keytab: "{{ keytab_temp.path | default(omit) }}"
+        hostname: "{{ result_ipaclient_test.hostname }}"
       register: result_ipaclient_get_otp
-      # If the host is already enrolled, this command will exit on error
-      # The error can be ignored
-      failed_when: result_ipaclient_get_otp is failed and
-                   "Password cannot be set on enrolled host" not
-                       in result_ipaclient_get_otp.msg
       delegate_to: "{{ result_ipaclient_test.servers[0] }}"
-      ignore_errors: yes
 
     - name: Install - Report error for OTP generation
       debug:
@@ -143,6 +152,14 @@
                                if result_ipaclient_get_otp.host is defined }}"
 
     when: ipaclient_use_otp | bool and ipaclient_otp is not defined
+
+    always:
+    - name: Install - Remove keytab temporary file
+      ansible.builtin.file:
+        path: "{{ keytab_temp.path }}"
+        state: absent
+      delegate_to: "{{ result_ipaclient_test.servers[0] }}"
+      when: keytab_temp.path is defined
 
   - name: Store predefined OTP in admin_password
     no_log: yes
@@ -161,7 +178,7 @@
     #        result_ipaclient_join.already_joined)))
 
     - name: Install - Check if principal and keytab are set
-      fail: msg="Principal and keytab cannot be used together"
+      fail: msg="Admin principal and client keytab cannot be used together"
       when: ipaadmin_principal is defined and ipaclient_keytab is defined
 
     - name: Install - Check if one of password or keytabs are set

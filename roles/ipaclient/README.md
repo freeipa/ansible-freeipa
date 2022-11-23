@@ -32,7 +32,6 @@ Requirements
 
 **Controller**
 * Ansible version: 2.8+
-* /usr/bin/kinit is required on the controller if a one time password (OTP) is used
 
 **Node**
 * Supported FreeIPA version (see above)
@@ -172,7 +171,7 @@ Server Variables
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaservers` | This group is a list of the IPA server full qualified host names. In a topology with a chain of servers and replicas, it is important to use the right server or replica as the server for the client. If there is a need to overwrite the setting for a client in the `ipaclients` group, please use the list `ipaclient_servers` explained below. If no `ipaservers` group is defined than the installation preparation step will try to use DNS autodiscovery to identify the the IPA server using DNS txt records. | mostly
-`ipaadmin_keytab` | The string variable enables the use of an admin keytab as an alternative authentication method. The variable needs to contain the local path to the keytab file. If `ipaadmin_keytab` is used, then `ipaadmin_password` does not need to be set. If `ipaadmin_keytab` is used with `ipaclient_use_otp: yes` then the keytab needs to be available on the controller, else on the client node. The use of full path names is recommended.  | no
+`ipaadmin_keytab` | The string variable enables the use of an admin keytab as an alternative authentication method. The variable needs to contain the local path to the keytab file. If `ipaadmin_keytab` is used, then `ipaadmin_password` does not need to be set. If `ipaadmin_keytab` is used with `ipaclient_use_otp: yes` then the keytab needs to be available on the controller, else on the client node. The use of full path names is recommended. | no
 `ipaadmin_principal` | The string variable only needs to be set if the name of the Kerberos admin principal is not "admin". If `ipaadmin_principal` is not set it will be set internally to "admin". | no
 `ipaadmin_password` | The string variable contains the Kerberos password of the Kerberos admin principal. If `ipaadmin_keytab` is used, then `ipaadmin_password` does not need to be set. | mostly
 
