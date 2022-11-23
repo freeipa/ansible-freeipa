@@ -27,6 +27,25 @@
     ipaadmin_principal: admin
   when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
 
+- name: Install - Configure DNS resolver Block
+  block:
+
+  - name: Install - Fail on missing ipaclient_domain and ipaserver_domain
+    fail: msg="ipaclient_domain or ipaserver_domain is required for ipaclient_configure_dns_resolver"
+    when: ipaserver_domain is not defined and ipaclient_domain is not defined
+
+  - name: Install - Fail on missing ipaclient_servers
+    fail: msg="ipaclient_dns_servers is required for ipaclient_configure_dns_resolver"
+    when: ipaclient_dns_servers is not defined
+
+  - name: Install - Configure DNS resolver
+    ipaclient_configure_dns_resolver:
+      nameservers: "{{ ipaclient_dns_servers }}"
+      searchdomains: "{{ ipaserver_domain | default(ipaclient_domain) }}"
+      state: present
+
+  when: ipaclient_configure_dns_resolver
+
 - name: Install - IPA client test
   ipaclient_test:
     ### basic ###

@@ -28,3 +28,6 @@ ipaclient_request_cert: no
 
 ### packages ###
 ipaclient_install_packages: yes
+
+ipaclient_configure_dns_resolver: no
+ipaclient_cleanup_dns_resolver: no

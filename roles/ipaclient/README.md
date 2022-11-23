@@ -11,6 +11,7 @@ Features
 * Client deployment
 * One-time-password (OTP) support
 * Repair mode
+* DNS resolver configuration support
 
 
 Supported FreeIPA Versions
@@ -106,6 +107,40 @@ Example playbook to setup the IPA client(s) using principal and password from in
     state: present
 ```
 
+Example inventory file with configuration of dns resolvers:
+
+```ini
+[ipaclients]
+ipaclient1.example.com
+ipaclient2.example.com
+
+[ipaservers]
+ipaserver.example.com
+
+[ipaclients:vars]
+ipaadmin_principal=admin
+ipaadmin_password=MySecretPassword123
+ipaclient_domain=example.com
+ipaclient_configure_dns_resolver=yes
+ipaclient_dns_servers=192.168.100.1
+```
+
+Example inventory file with cleanup of dns resolvers:
+
+```ini
+[ipaclients]
+ipaclient1.example.com
+ipaclient2.example.com
+
+[ipaservers]
+ipaserver.example.com
+
+[ipaclients:vars]
+ipaadmin_principal=admin
+ipaadmin_password=MySecretPassword123
+ipaclient_domain=example.com
+ipaclient_cleanup_dns_resolver=yes
+```
 
 Playbooks
 =========
@@ -197,6 +232,9 @@ Variable | Description | Required
 `ipaclient_allow_repair` | The bool value defines if an already joined or partly set-up client can be repaired. `ipaclient_allow_repair` defaults to `no`. Contrary to `ipaclient_force_join=yes` the host entry will not be changed on the server. | no
 `ipaclient_install_packages` | The bool value defines if the needed packages are installed on the node. `ipaclient_install_packages` defaults to `yes`. | no
 `ipaclient_on_master` | The bool value is only used in the server and replica installation process to install the client part. It should not be set otherwise. `ipaclient_on_master` defaults to `no`. | no
+`ipaclient_configure_dns_resolver` | The bool value defines if the DNS resolver is configured. This is useful if the IPA server has internal DNS support. `ipaclient_dns_server` need to be set also. The installation of packages is happening before the DNS resolver is configured, therefore package installation needs to be possible without the configuration of the DNS resolver. The DNS nameservers are configured for `NetworkManager`, `systemd-resolved` (if installed and enabled) and `/etc/resolv.conf` if neither NetworkManager nor systemd-resolved is used. | no
+`ipaclient_dns_servers` | The list of DNS server IP addresses. This is only useful with `ipaclient_configure_dns_resolver`. | no
+`ipaclient_cleanup_dns_resolver` | The bool value defines if DNS resolvers that have been configured before with `ipaclient_configure_dns_resolver` will be cleaned up again. | no
 
 
 Authors
