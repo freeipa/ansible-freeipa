@@ -122,8 +122,7 @@ for i in roles/ipa*/library/*.py roles/ipa*/module_utils/*.py plugins/*/*.py; do
     chmod a-x $i
 done
 
-for i in utils/*.py utils/ansible-ipa-*-install utils/new_module \
-         utils/changelog utils/ansible-doc-test;
+for i in utils/*.py utils/new_module utils/changelog utils/ansible-doc-test
 do
     sed -i '{s@/usr/bin/python*@%{python}@}' $i
 done

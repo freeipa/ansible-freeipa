@@ -23,9 +23,6 @@ tests/user/users.sh shebang!skip
 tests/user/users_absent.sh shebang!skip
 tests/utils.py pylint:ansible-format-automatic-specification
 utils/ansible-doc-test shebang!skip
-utils/ansible-ipa-client-install shebang!skip
-utils/ansible-ipa-replica-install shebang!skip
-utils/ansible-ipa-server-install shebang!skip
 utils/build-galaxy-release.sh shebang!skip
 utils/build-srpm.sh shebang!skip
 utils/changelog shebang!skip
