@@ -129,6 +129,7 @@ Variable | Description | Required
 `nomembers` | Suppress processing of membership attributes. (bool) | no
 `host` | List of host name strings assigned to this sudorule. | no
 `hostgroup` | List of host group name strings assigned to this sudorule. | no
+`hostmask` | List of host masks of allowed hosts | no
 `user` | List of user name strings assigned to this sudorule. | no
 `group` | List of user group name strings assigned to this sudorule. | no
 `allow_sudocmd` | List of sudocmd name strings assigned to the allow group of this sudorule. | no

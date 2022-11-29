@@ -83,6 +83,7 @@
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name:
       - test_upstream_issue_664
+      - testrule_hostmask
       - testrule1
       - allusers
       - allhosts
@@ -1005,6 +1006,116 @@
     register: result
     failed_when: not result.changed or result.failed
 
+  - name: Ensure sudorule is present with hostmask
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule_hostmask
+      hostmask:
+      - 192.168.122.1/24
+      - 192.168.120.1/24
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule is present with hostmask, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule_hostmask
+      hostmask:
+      - 192.168.122.1/24
+      - 192.168.120.1/24
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure sudorule hostmask member is absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule_hostmask
+      hostmask: 192.168.122.0/24
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule hostmask member is absent, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule_hostmask
+      hostmask: 192.168.122.0/24
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure sudorule is present with another hostmask
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule_hostmask
+      hostmask: 192.168.122.0/24
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule is present with another hostmask, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule_hostmask
+      hostmask: 192.168.122.0/24
+    register: result
+    failed_when: result.changed
+
+  - name: Check sudorule with hostmask is absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule_hostmask
+      hostmask: 192.168.120.0/24
+      action: member
+    register: result
+    check_mode: yes
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule hostmask member is present
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule_hostmask
+      hostmask: 192.168.120.0/24
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule hostmask member is present, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule_hostmask
+      hostmask: 192.168.120.0/24
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure sudorule hostmask member is absent
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule_hostmask
+      hostmask: 192.168.120.0/24
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure sudorule hostmask member is absent, again
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testrule_hostmask
+      hostmask: 192.168.120.0/24
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
   # cleanup
   - name: Ensure sudocmdgroup is absent
     ipasudocmdgroup:
@@ -1013,6 +1124,7 @@
       name:
       - test_sudorule
       - test_sudorule2
+      - testrule_hostmask
       state: absent
 
   - name: Ensure sudocmds are absent
