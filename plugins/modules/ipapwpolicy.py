@@ -2,6 +2,7 @@
 
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
+#   Rafael Guterres Jeffman <rjeffman@redhat.com>
 #
 # Copyright (C) 2019-2022 Red Hat
 # see file 'COPYING' for use and warranty information
@@ -88,6 +89,41 @@ options:
     type: int
     required: false
     aliases: ["krbpwdlockoutduration"]
+  maxrepeat:
+    description: >
+      Maximum number of same consecutive characters.
+      Requires IPA 4.9+
+    type: int
+    required: false
+    aliases: ["ipapwdmaxrepeat"]
+  maxsequence:
+    description: >
+      The maximum length of monotonic character sequences (abcd).
+      Requires IPA 4.9+
+    type: int
+    required: false
+    aliases: ["ipapwdmaxsequence"]
+  dictcheck:
+    description: >
+      Check if the password is a dictionary word.
+      Requires IPA 4.9+
+    type: bool
+    required: false
+    aliases: ["ipapwdictcheck"]
+  usercheck:
+    description: >
+      Check if the password contains the username.
+      Requires IPA 4.9+
+    type: bool
+    required: false
+    aliases: ["ipapwdusercheck"]
+  gracelimit:
+    description: >
+      Number of LDAP authentications allowed after expiration.
+      Requires IPA 4.10.1+
+    type: int
+    required: false
+    aliases: ["passwordgracelimit"]
   state:
     description: State to ensure
     type: str
@@ -95,6 +131,7 @@ options:
     choices: ["present", "absent"]
 author:
   - Thomas Woerner (@t-woerner)
+  - Rafael Guterres Jeffman (@rjeffman)
 """
 
 EXAMPLES = """
@@ -135,7 +172,8 @@ def find_pwpolicy(module, name):
 
 
 def gen_args(maxlife, minlife, history, minclasses, minlength, priority,
-             maxfail, failinterval, lockouttime):
+             maxfail, failinterval, lockouttime, maxrepeat, maxsequence,
+             dictcheck, usercheck, gracelimit):
     _args = {}
     if maxlife is not None:
         _args["krbmaxpwdlife"] = maxlife
@@ -155,8 +193,45 @@ def gen_args(maxlife, minlife, history, minclasses, minlength, priority,
         _args["krbpwdfailurecountinterval"] = failinterval
     if lockouttime is not None:
         _args["krbpwdlockoutduration"] = lockouttime
+    if maxrepeat is not None:
+        _args["ipapwdmaxrepeat"] = maxrepeat
+    if maxsequence is not None:
+        _args["ipapwdmaxrsequence"] = maxsequence
+    if dictcheck is not None:
+        _args["ipapwddictcheck"] = dictcheck
+    if usercheck is not None:
+        _args["ipapwdusercheck"] = usercheck
+    if gracelimit is not None:
+        _args["passwordgracelimit"] = gracelimit
 
     return _args
+
+
+def check_supported_params(
+    module, maxrepeat, maxsequence, dictcheck, usercheck, gracelimit
+):
+    # All password checking parameters were added by the same commit,
+    # so we only need to test one of them.
+    has_password_check = module.ipa_command_param_exists(
+        "pwpolicy_add", "ipapwdmaxrepeat")
+    # check if gracelimit is supported
+    has_gracelimit = module.ipa_command_param_exists(
+        "pwpolicy_add", "passwordgracelimit")
+
+    # If needed, report unsupported password checking paramteres
+    if not has_password_check:
+        check_password_params = [maxrepeat, maxsequence, dictcheck, usercheck]
+        unsupported = [
+            x for x in check_password_params if x is not None
+        ]
+        if unsupported:
+            module.fail_json(
+                msg="Your IPA version does not support arguments: "
+                    "maxrepeat, maxsequence, dictcheck, usercheck.")
+
+    if gracelimit is not None and not has_gracelimit:
+        module.fail_json(
+            msg="Your IPA version does not support 'gracelimit'.")
 
 
 def main():
@@ -183,6 +258,16 @@ def main():
                               default=None),
             lockouttime=dict(type="int", aliases=["krbpwdlockoutduration"],
                              default=None),
+            maxrepeat=dict(type="int", aliases=["ipapwdmaxrepeat"],
+                           default=None),
+            maxsequence=dict(type="int", aliases=["ipapwdmaxsequence"],
+                             default=None),
+            dictcheck=dict(type="bool", aliases=["ipapwdictcheck"],
+                           default=None),
+            usercheck=dict(type="bool", aliases=["ipapwusercheck"],
+                           default=None),
+            gracelimit=dict(type="int", aliases=["passwordgracelimit"],
+                            default=None),
             # state
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
@@ -207,6 +292,11 @@ def main():
     maxfail = ansible_module.params_get("maxfail")
     failinterval = ansible_module.params_get("failinterval")
     lockouttime = ansible_module.params_get("lockouttime")
+    maxrepeat = ansible_module.params_get("maxrepeat")
+    maxsequence = ansible_module.params_get("maxsequence")
+    dictcheck = ansible_module.params_get("dictcheck")
+    usercheck = ansible_module.params_get("usercheck")
+    gracelimit = ansible_module.params_get("gracelimit")
 
     # state
     state = ansible_module.params_get("state")
@@ -230,9 +320,15 @@ def main():
                 msg="'global_policy' can not be made absent.")
         invalid = ["maxlife", "minlife", "history", "minclasses",
                    "minlength", "priority", "maxfail", "failinterval",
-                   "lockouttime"]
+                   "lockouttime", "maxrepeat", "maxsequence", "dictcheck",
+                   "usercheck", "gracelimit"]
 
     ansible_module.params_fail_used_invalid(invalid, state)
+
+    if gracelimit is not None:
+        if gracelimit < -1:
+            ansible_module.fail_json(
+                msg="'gracelimit' must be no less than -1")
 
     # Init
 
@@ -240,6 +336,11 @@ def main():
     exit_args = {}
 
     with ansible_module.ipa_connect():
+
+        check_supported_params(
+            ansible_module, maxrepeat, maxsequence, dictcheck, usercheck,
+            gracelimit
+        )
 
         commands = []
 
@@ -252,7 +353,8 @@ def main():
                 # Generate args
                 args = gen_args(maxlife, minlife, history, minclasses,
                                 minlength, priority, maxfail, failinterval,
-                                lockouttime)
+                                lockouttime, maxrepeat, maxsequence, dictcheck,
+                                usercheck, gracelimit)
 
                 # Found the pwpolicy
                 if res_find is not None:
