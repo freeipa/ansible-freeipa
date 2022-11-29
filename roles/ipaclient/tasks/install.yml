@@ -44,7 +44,8 @@
       searchdomains: "{{ ipaserver_domain | default(ipaclient_domain) }}"
       state: present
 
-  when: ipaclient_configure_dns_resolver
+  when: ipaclient_configure_dns_resolver | bool
+        and not ipaclient_on_master | bool
 
 - name: Install - IPA client test
   ipaclient_test:
