@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4.3.0
         with:
           python-version: '3.x'
@@ -24,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4.3.0
         with:
           python-version: '3.x'
@@ -39,6 +43,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4.3.0
         with:
           python-version: '3.x'
@@ -55,6 +61,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4.3.0
         with:
           python-version: '3.x'
