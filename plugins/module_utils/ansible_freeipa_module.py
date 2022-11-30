@@ -32,6 +32,9 @@ __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "load_pem_x509_certificate", "DNSName", "getargspec"]
 
 import os
+# ansible-freeipa requires locale to be C, IPA requires utf-8.
+os.environ["LANGUAGE"] = "C"
+
 import sys
 import operator
 import tempfile
@@ -153,9 +156,6 @@ except ImportError as _err:
 else:
     ANSIBLE_FREEIPA_MODULE_IMPORT_ERROR = None
 
-
-# ansible-freeipa requires locale to be C, IPA requires utf-8.
-os.environ["LANGUAGE"] = "C"
 
 if six.PY3:
     unicode = str
