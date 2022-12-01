@@ -84,7 +84,7 @@ def get_plugins_from_playbook(playbook):
 def import_mock(name, *args):
     """Intercept 'import' calls and store module name."""
     if not hasattr(import_mock, "call_list"):
-        setattr(import_mock, "call_list", set())
+        setattr(import_mock, "call_list", set())  # noqa: B010
     import_mock.call_list.add(name)  # pylint: disable=no-member
     try:
         # print("NAME:", name)

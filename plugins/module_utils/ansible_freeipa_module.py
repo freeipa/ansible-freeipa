@@ -1125,8 +1125,8 @@ class IPAAnsibleModule(AnsibleModule):
     def ipa_get_domain(self):
         """Retrieve IPA API domain."""
         if not hasattr(self, "__ipa_api_domain"):
-            setattr(self, "__ipa_api_domain", api_get_domain())
-        return getattr(self, "__ipa_api_domain")
+            setattr(self, "__ipa_api_domain", api_get_domain())  # noqa: B010
+        return getattr(self, "__ipa_api_domain")  # noqa: B009
 
     @staticmethod
     def ipa_get_realm():
