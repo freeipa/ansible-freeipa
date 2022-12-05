@@ -117,12 +117,13 @@ to get the needed requrements to run the tests.
 # Fix python modules and module utils:
 # - Remove shebang
 # - Remove execute flag
-for i in roles/ipa*/library/*.py roles/ipa*/module_utils/*.py plugins/*/*.py; do
+for i in roles/ipa*/library/*.py roles/ipa*/module_utils/*.py plugins/*/*.py;
+do
     sed -i '1{/\/usr\/bin\/python*/d;}' $i
     chmod a-x $i
 done
 
-for i in utils/*.py utils/new_module utils/changelog utils/ansible-doc-test
+for i in utils/*.py utils/new_module utils/changelog utils/ansible-doc-test;
 do
     sed -i '{s@/usr/bin/python*@%{python}@}' $i
 done
