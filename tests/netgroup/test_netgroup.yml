@@ -17,6 +17,14 @@
           - my_netgroup3
         state: absent
 
+    - name: Ensure hostgroup is absent
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - my_hostgroup1
+        state: absent
+
     # CREATE TEST ITEMS
     - name: Get Domain from server name
       ansible.builtin.set_fact:
@@ -34,6 +42,12 @@
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: my_netgroup3
+
+    - name: Ensure hostgroup my_hostgroup1 is present
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: my_hostgroup1
 
     # TESTS
 
@@ -115,12 +129,22 @@
       register: result
       failed_when: result.changed or result.failed
 
-    # netgroup and hostgroup with the same name are deprecated
+    # netgroup and hostgroup with the same name are deprecated (check hostgroup)
     - name: Ensure hostgroup my_netgroup2 isn't present
       ipahostgroup:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: my_netgroup2
+      register: result
+      failed_when: result.changed or not result.failed or
+        "Hostgroups and netgroups share a common namespace" not in result.msg
+
+    # netgroup and hostgroup with the same name are deprecated (check netgroup)
+    - name: Ensure netgroup my_hostgroup1 isn't present
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: my_hostgroup1
       register: result
       failed_when: result.changed or not result.failed or
         "Hostgroups and netgroups share a common namespace" not in result.msg
@@ -146,4 +170,12 @@
           - my_netgroup1
           - my_netgroup2
           - my_netgroup3
+        state: absent
+
+    - name: Ensure hostgroups are absent
+      ipahostgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - my_hostgroup1
         state: absent
