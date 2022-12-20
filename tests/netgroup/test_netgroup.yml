@@ -19,7 +19,7 @@
 
     # CREATE TEST ITEMS
     - name: Get Domain from server name
-      set_fact:
+      ansible.builtin.set_fact:
         ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
       when: ipaserver_domain is not defined
 
