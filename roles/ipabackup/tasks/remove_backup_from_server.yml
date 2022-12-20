@@ -1,5 +1,5 @@
 ---
 - name: Remove backup "{{ ipabackup_item }}"
-  file:
+  ansible.builtin.file:
     path: "{{ ipabackup_dir }}/{{ ipabackup_item }}"
     state: absent
