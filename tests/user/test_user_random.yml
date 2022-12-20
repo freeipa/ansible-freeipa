@@ -26,7 +26,7 @@
                  ipauser.failed
 
   - name: Print generated random password
-    debug:
+    ansible.builtin.debug:
       var: ipauser.user.randompassword
 
   - name: User user1 absent
@@ -56,11 +56,11 @@
                  ipauser.failed
 
   - name: Print generated random password for user1
-    debug:
+    ansible.builtin.debug:
       var: ipauser.user.user1.randompassword
 
   - name: Print generated random password for user2
-    debug:
+    ansible.builtin.debug:
       var: ipauser.user.user2.randompassword
 
   - name: Users user1 and user2 absent

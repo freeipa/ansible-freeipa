@@ -4,10 +4,10 @@
 
   tasks:
   - name: Check if users.json exists
-    stat:
+    ansible.builtin.stat:
       path: users.json
     register: register_stat_users
 
   - name: Create users.json
-    command: /bin/bash users.sh 500
+    ansible.builtin.command: /bin/bash users.sh 500
     when: not register_stat_users.stat.exists
