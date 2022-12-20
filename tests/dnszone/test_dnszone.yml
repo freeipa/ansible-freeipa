@@ -8,7 +8,7 @@
 
   # Setup
   - name: Setup testing environment
-    include_tasks: env_setup.yml
+    ansible.builtin.include_tasks: env_setup.yml
 
   # Tests
   - name: Check if zone is present, when in shouldn't be.
@@ -267,4 +267,4 @@
 
   # Teardown
   - name: Teardown testing environment
-    include_tasks: env_teardown.yml
+    ansible.builtin.include_tasks: env_teardown.yml
