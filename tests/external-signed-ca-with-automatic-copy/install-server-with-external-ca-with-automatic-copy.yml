@@ -15,7 +15,7 @@
 
   tasks:
   - name: Run external-ca.sh
-    command: >
+    ansible.builtin.command: >
       /bin/bash
       external-ca.sh
       "{{ groups.ipaserver[0] }}"
