@@ -7,7 +7,7 @@
 
   tasks:
   - name: Setup testing environment.
-    import_tasks: env_setup.yml
+    ansible.builtin.import_tasks: env_setup.yml
 
   - name: Ensure test_vault is absent.
     ipavault:
@@ -42,7 +42,7 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify assymetric-only fields are not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
@@ -63,7 +63,7 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify salt is not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
@@ -94,7 +94,7 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify salt is not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
@@ -115,7 +115,7 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify assymetric-only fields are not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
@@ -168,7 +168,7 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify assymetric-only fields are not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
@@ -198,7 +198,7 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify salt is not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
@@ -246,7 +246,7 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify salt is not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
@@ -276,7 +276,7 @@
       failed_when: result.failed or not result.changed or result.failed
 
     - name: Verify assymetric-only fields are not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
@@ -301,4 +301,4 @@
       state: absent
 
   - name: Cleanup testing environment.
-    import_tasks: env_cleanup.yml
+    ansible.builtin.import_tasks: env_cleanup.yml

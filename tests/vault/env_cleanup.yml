@@ -41,7 +41,7 @@
       state: absent
 
   - name: Remove files from target host.
-    file:
+    ansible.builtin.file:
       path: "{{ ansible_facts['env'].HOME }}/{{ item }}"
       state: absent
     with_items:
@@ -58,7 +58,7 @@
     - out.txt
 
   - name: Remove files from controller.
-    file:
+    ansible.builtin.file:
       path: "{{ playbook_dir }}/{{ item }}"
       state: absent
     delegate_to: localhost

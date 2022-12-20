@@ -7,7 +7,7 @@
 
   tasks:
   - name: Test vault module member operations.
-    include_tasks:
+    ansible.builtin.include_tasks:
       file: tasks_vault_members.yml
       apply:
         tags:

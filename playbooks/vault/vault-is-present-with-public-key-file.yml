@@ -11,7 +11,7 @@
 
   tasks:
   - name: Copy public key file to server.
-    copy:
+    ansible.builtin.copy:
       src: "{{ playbook_dir }}/public.pem"
       dest: "{{ ansible_facts['env'].HOME }}/public.pem"
       owner: "{{ ansible_user }}"
@@ -25,6 +25,6 @@
       vault_type: asymmetric
       vault_public_key_file: "{{ ansible_facts['env'].HOME }}/public.pem"
   - name: Remove public key file from server.
-    file:
+    ansible.builtin.file:
       path: "{{ ansible_facts['env'].HOME }}/public.pem"
       state: absent
