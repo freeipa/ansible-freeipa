@@ -6,7 +6,7 @@
 
   tasks:
   - name: Get Domain from the server name
-    set_fact:
+    ansible.builtin.set_fact:
       ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
 
   - name: Ensure sudorules are absent
