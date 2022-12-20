@@ -6,10 +6,10 @@
 
   tasks:
   - name: Set environment facts.
-    import_tasks: env_facts.yml
+    ansible.builtin.import_tasks: env_facts.yml
 
   - name: Setup environment.
-    import_tasks: env_setup.yml
+    ansible.builtin.import_tasks: env_setup.yml
 
   - name: Add role.
     iparole:
@@ -41,7 +41,7 @@
     failed_when: result.failed or not result.changed
 
   - name: Verify role privileges.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
         KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
@@ -71,7 +71,7 @@
     failed_when: result.failed or not result.changed
 
   - name: Verify role users.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
         KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
@@ -95,7 +95,7 @@
     failed_when: result.failed or not result.changed
 
   - name: Verify role group.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
         KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
@@ -119,7 +119,7 @@
     failed_when: result.failed or not result.changed
 
   - name: Verify role hosts.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
         KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
@@ -145,7 +145,7 @@
     failed_when: result.failed or not result.changed
 
   - name: Verify role hostgroups.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
         KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
@@ -169,7 +169,7 @@
     failed_when: result.failed or not result.changed
 
   - name: Verify role services.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
         KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
@@ -197,7 +197,7 @@
     failed_when: result.failed or not result.changed
 
   - name: Verify role services.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
         KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
@@ -225,7 +225,7 @@
     failed_when: result.failed or not result.changed
 
   - name: Verify role services.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
         KRB5CCNAME={{ krb5ccname }} ipa role-show testrole
@@ -256,4 +256,4 @@
 
   # cleanup
   - name: Cleanup environment.
-    include_tasks: env_cleanup.yml
+    ansible.builtin.include_tasks: env_cleanup.yml

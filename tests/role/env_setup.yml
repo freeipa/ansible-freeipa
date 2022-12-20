@@ -1,6 +1,6 @@
 ---
 - name: Cleanup environment.
-  import_tasks: env_cleanup.yml
+  ansible.builtin.import_tasks: env_cleanup.yml
 
 - name: Ensure test user is present.
   ipauser:

@@ -22,7 +22,7 @@
       - MySVC/host01
 
   tasks:
-  - include_tasks: ../env_freeipa_facts.yml
+  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   - block:
       # setup
