@@ -1,7 +1,7 @@
 ---
 # Set common vars and facts for test.
 - name: Set IPv4 address prefix.
-  set_fact:
+  ansible.builtin.set_fact:
     ipv4_prefix: "{{ ansible_facts['default_ipv4'].address.split('.')[:-1] |
                      join('.') }}"
     ipv4_reverse: "{{ ansible_facts['default_ipv4'].address.split('.')[:-1] |
@@ -9,7 +9,7 @@
                       join('.') }}"
 
 - name: Set zone prefixes.
-  set_fact:
+  ansible.builtin.set_fact:
     testzone: 'testzone.test'
     safezone: 'safezone.test'
     zone_ipv6_reverse: "ip6.arpa."

@@ -7,10 +7,10 @@
   tasks:
 
   - name: Setup testing environment.
-    include_tasks: env_setup.yml
+    ansible.builtin.include_tasks: env_setup.yml
 
   - name: Generate self-signed certificates.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout "private{{ item }}.key" -out "cert{{ item }}.pem" -subj '/CN=test'
         openssl x509 -outform der -in "cert{{ item }}.pem" -out "cert{{ item }}.der"
@@ -1547,7 +1547,7 @@
 
   # cleanup
   - name: Cleanup test environment.
-    include_tasks: env_cleanup.yml
+    ansible.builtin.include_tasks: env_cleanup.yml
 
   - name: Remove certificate files.  # noqa: deprecated-command-syntax
     ansible.builtin.shell: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
