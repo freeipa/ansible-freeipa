@@ -7,7 +7,7 @@
   tasks:
 
   - name: Set FreeIPA facts.
-    include_tasks: ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   # GET CURRENT CONFIG
 

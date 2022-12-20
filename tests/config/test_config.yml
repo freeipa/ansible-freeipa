@@ -5,7 +5,7 @@
   gather_facts: false
 
   tasks:
-  - include_tasks: ../env_freeipa_facts.yml
+  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   - block:
       # Retrieve current configuration.
@@ -16,7 +16,7 @@
         register: previousconfig
 
       - name: Display current configuration.
-        debug:
+        ansible.builtin.debug:
           var: previousconfig
 
       # setup environment.
@@ -481,7 +481,7 @@
         register: result
 
       - name: "CA-Renewal server warning."
-        debug:
+        ansible.builtin.debug:
           msg: "Due to a test failure, IPA CA-Renewal Server might not be correctly be set. Check your configuration."
 
     always:
