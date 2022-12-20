@@ -23,7 +23,7 @@
   failed_when: result.failed
 
 - name: Retrieve Domain Security Identifier
-  shell:
+  ansible.builtin.shell:
     cmd: |
       kinit -c test_krb5_cache admin <<< SomeADMINpassword > /dev/null
       KRB5CCNAME=test_krb5_cache ipa trust-show {{ adserver.domain }} | sed -n "/Domain Security Identifier/s/ //gp" | cut -d":" -f2
@@ -32,5 +32,5 @@
   no_log: yes
 
 - name: Set ipa_domain_sid.
-  set_fact:
+  ansible.builtin.set_fact:
     ipa_domain_sid: "{{ getsid.stdout }}"

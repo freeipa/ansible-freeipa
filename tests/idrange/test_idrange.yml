@@ -14,7 +14,7 @@
   tasks:
   # CLEANUP TEST ITEMS
   - name: Remove test trust.
-    include_tasks: tasks_remove_trust.yml
+    ansible.builtin.include_tasks: tasks_remove_trust.yml
     when: trust_test_is_supported | default(false)
 
   - name: Ensure testing idranges are absent
@@ -121,7 +121,7 @@
   - block:
       # Create trust with range_type: ipa-ad-trust
       - name: Create trust with range_type 'ipa-ad-trust'
-        include_tasks: tasks_set_trust.yml
+        ansible.builtin.include_tasks: tasks_set_trust.yml
         vars:
           trust_base_id: 10000000
           trust_range_size: 200000
@@ -218,7 +218,7 @@
 
       # Remove trust and idrange
       - name: Remove test trust.
-        include_tasks: tasks_remove_trust.yml
+        ansible.builtin.include_tasks: tasks_remove_trust.yml
 
       - name: Ensure AD-trust idrange is absent
         ipaidrange:
@@ -229,7 +229,7 @@
 
       # Create trust with range_type: ipa-ad-trust-posix
       - name: Create trust with range_type 'ipa-ad-trust'
-        include_tasks: tasks_set_trust.yml
+        ansible.builtin.include_tasks: tasks_set_trust.yml
         vars:
           trust_base_id: 10000000
           trust_range_size: 200000
@@ -251,7 +251,7 @@
 
       # Remove trust and idrange
       - name: Remove test trust.
-        include_tasks: tasks_remove_trust.yml
+        ansible.builtin.include_tasks: tasks_remove_trust.yml
 
       - name: Ensure AD-trust idrange is absent
         ipaidrange:
@@ -262,7 +262,7 @@
 
       # Remove trust and idrange
       - name: Remove test trust.
-        include_tasks: tasks_remove_trust.yml
+        ansible.builtin.include_tasks: tasks_remove_trust.yml
 
       - name: Ensure AD-trust idrange is absent
         ipaidrange:
@@ -273,7 +273,7 @@
 
       # Create trust with range_type: ipa-ad-trust-posix
       - name: Create trust with range_type 'ipa-ad-trust-posix'
-        include_tasks: tasks_set_trust.yml
+        ansible.builtin.include_tasks: tasks_set_trust.yml
         vars:
           trust_base_id: 10000000
           trust_range_size: 2000000
@@ -319,7 +319,7 @@
 
       # Remove trust and idrange
       - name: Remove test trust.
-        include_tasks: tasks_remove_trust.yml
+        ansible.builtin.include_tasks: tasks_remove_trust.yml
 
       - name: Ensure AD-trust idrange is absent
         ipaidrange:
@@ -330,7 +330,7 @@
 
       # Create trust with range_type: ipa-ad-trust-posix
       - name: Create trust with range_type 'ipa-ad-trust-posix'
-        include_tasks: tasks_set_trust.yml
+        ansible.builtin.include_tasks: tasks_set_trust.yml
         vars:
           trust_base_id: 10000000
           trust_range_size: 2000000
@@ -352,7 +352,7 @@
     always:
       # CLEANUP TEST ITEMS
       - name: Remove test trust.
-        include_tasks: tasks_remove_trust.yml
+        ansible.builtin.include_tasks: tasks_remove_trust.yml
 
       - name: Ensure testing idranges are absent
         ipaidrange:
