@@ -6,7 +6,7 @@
   tasks:
   # setup
   - name: Setup test envirnoment.
-    include_tasks: env_setup.yml
+    ansible.builtin.include_tasks: env_setup.yml
 
   # Add service to test keytab create/retrieve attributes.
   - name: Ensure test service is present
@@ -394,4 +394,4 @@
 
   # cleanup
   - name: Clean-up envirnoment.
-    include_tasks: env_cleanup.yml
+    ansible.builtin.include_tasks: env_cleanup.yml
