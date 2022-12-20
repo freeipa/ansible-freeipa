@@ -2,7 +2,7 @@
 # tasks to uninstall IPA client
 
 - name: Uninstall - Uninstall IPA client
-  command: >
+  ansible.builtin.command: >
     /usr/sbin/ipa-client-install
     --uninstall
     -U
@@ -17,6 +17,6 @@
   when: ipaclient_cleanup_dns_resolver | bool
 
 #- name: Remove IPA client package
-#  package:
+#  ansible.builtin.package:
 #    name: "{{ ipaclient_packages }}"
 #    state: absent
