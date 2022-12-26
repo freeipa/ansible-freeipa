@@ -28,20 +28,25 @@ jobs:
       pip install \
         "molecule[docker]>=3" \
         "ansible${{ parameters.ansible_version }}"
+    retryCountOnTaskFailure: 5
     displayName: Install molecule and Ansible
 
   - script: ansible-galaxy collection install community.docker ansible.posix
+    retryCountOnTaskFailure: 5
     displayName: Install Ansible collections
 
   - script: pip install -r requirements-tests.txt
+    retryCountOnTaskFailure: 5
     displayName: Install dependencies
 
   - script: |
+      rm -rf ~/.ansible
       mkdir -p ~/.ansible/roles ~/.ansible/library ~/.ansible/module_utils
       cp -a roles/* ~/.ansible/roles
       cp -a plugins/modules/* ~/.ansible/library
       cp -a plugins/module_utils/* ~/.ansible/module_utils
       molecule create -s ${{ parameters.scenario }}
+    retryCountOnTaskFailure: 5
     displayName: Setup test container
     env:
       ANSIBLE_LIBRARY: ./molecule
