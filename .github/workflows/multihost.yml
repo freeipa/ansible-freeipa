@@ -1,0 +1,93 @@
+name: Multihost Testing
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  multihost-testing:
+    name: "Multihost tests"
+    # Only macos provides Vagrant.
+    runs-on: macos-12
+    defaults:
+      run:
+        working-directory: tests/multihost
+
+    steps:
+      - uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v4.3.0
+        with:
+          python-version: "3.x"
+
+      - name: Install Ansible
+        run: pip install ansible-core
+
+      - name: Ansible version
+        run: ansible --version
+
+      - name: Prepare ansible-freeipa environment
+        working-directory: .
+        run: |
+          rm -rf ~/.ansible
+          mkdir ~/.ansible
+          ln -s $(pwd)/roles ~/.ansible/
+          ln -s $(pwd)/plugins ~/.ansible/
+          ls -l ~/.ansible/*
+
+      - name: Show Vagrant version
+        run: |
+          vagrant --version
+
+      - name: Run vagrant up
+        run: vagrant up
+
+      - name: Get vagrant ssh config and IP addresses
+        run: |
+          vagrant ssh-config | tee "vagrant-ssh" | ./get_ip.sh > inventory/group_vars/all.yml
+
+      - name: Ansible ping target hosts.
+        run: |
+          ansible -i inventory --ssh-extra-args "-F vagrant-ssh" -m ping all
+
+      # Here is where you add tests...
+      - name: Test IPA server deploy
+        run: ansible-playbook -i inventory --ssh-extra-args "-F vagrant-ssh" playbooks/install-server.yml
+
+      - name: Test IPA client deploy
+        run: ansible-playbook -i inventory --ssh-extra-args "-F vagrant-ssh" playbooks/install-client.yml
+
+      #- name: Ensure server PTR records are available
+      #  run: ansible-playbook -i inventory --ssh-extra-args "-F vagrant-ssh" ensure-reverse-dns.yaml
+
+      - name: Test IPA replica deploy
+        run: ansible-playbook -i inventory --ssh-extra-args "-F vagrant-ssh" playbooks/install-replica.yml
+
+      - name: Retrieve logs in case of ANY deploy failure
+        if: failure()
+        working-directory: .
+        run: |
+          ssh -F tests/multihost/vagrant-ssh server.ipa.test "sudo chmod a+r /var/log/*.log"
+          mkdir -p logs/server-logs
+          scp -F tests/multihost/vagrant-ssh vagrant@server.ipa.test:/var/log/{ipaserver,ipaclient}-install.log logs/server-logs || true
+          ssh -F tests/multihost/vagrant-ssh rep-01.ipa.test "sudo chmod a+r /var/log/*.log"
+          mkdir -p logs/replica-logs
+          scp -F tests/multihost/vagrant-ssh vagrant@rep-01.ipa.test:/var/log/{ipareplica,ipaclient}-install.log logs/replica-logs || true
+          ssh -F tests/multihost/vagrant-ssh cli-01.ipa.test "sudo chmod a+r /var/log/*.log"
+          mkdir -p logs/client-logs
+          scp -F tests/multihost/vagrant-ssh vagrant@cli-01.ipa.test:/var/log/ipaclient-install.log logs/client-logs || true
+          tar czvf multihost-logs.tar.gz logs
+
+      - name: Save artifacts
+        if: failure()
+        # if: github.event.state == 'error' || github.event.state == 'failure'
+        uses: actions/upload-artifact@v3
+        with:
+          path: multihost-logs.tar.gz
+          if-no-files-found: "ignore"
+
+      # Cleanup
+      - name: Stop vagrant
+        run: vagrant destroy -f

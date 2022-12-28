@@ -1,0 +1,18 @@
+---
+- name: Ensure IPA server has domain reverse zone and server PTR record.
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Ensure reverse zone is present.
+    ipadnszone:
+      ipaadmin_password: "{{ ipa_admin_password }}"
+      name_from_ip: "{{ server_ip }}"
+
+  - name: Ensure server PTR record is set.
+    ipadnsrecord:
+      ipaadmin_password: "{{ ipa_admin_password }}"
+      zone_name: '{{ server_ip.split(".")[:-1][::-1] | join(".") }}.in-addr.arpa.'
+      name: '{{ server_ip.split(".")[-1] }}'
+      ptr_hostname: server.ipa.test.

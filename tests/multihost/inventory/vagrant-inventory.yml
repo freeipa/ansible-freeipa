@@ -1,0 +1,87 @@
+---
+all:
+  vars:
+    # IPA variables
+    ipaserver_domain: ipa.test
+    ipaserver_realm: IPA.TEST
+    # ipareplica_realm: IPA.TEST
+    ipadm_password: "{{ lookup('env', 'ipadm_password') | default('SomeDMpassword', True) }}"
+    ipaadmin_password: "{{ lookup('env', 'ipaadmin_password') | default('SomeADMINpassword', True) }}"
+  children:
+    # define cluster
+    ipacluster:
+      children:
+        ipaserver:
+        ipareplicas:
+        ipaclients:
+    # IPA First (CA Renewal) Server
+    ipaserver:
+      hosts:
+        "server.ipa.test":
+          # Ansible connection configuration
+          ansible_ssh_user: vagrant
+          ansible_ssh_private_key_file: ".vagrant/machines/server/libvirt/private_key"
+          ansible_ssh_host_key_checking: false
+          # IPA Configuration.
+      vars:
+        # KRA
+        ipaserver_setup_kra: "{{ lookup('env', 'ipaserver_setup_kra') | default(false, True) | bool }}"
+        # DNS
+        ipaserver_setup_dns: "{{ lookup('env', 'ipaserver_setup_dns') | default(true, True) | bool }}"
+        ipaserver_auto_forwarders: "{{ lookup('env', 'ipaserver_auto_forwarders') | default(true, True) | bool }}"
+        ipaserver_no_forwarders: "{{ lookup('env', 'ipaserver_no_forwarders') | default(false, True) | bool }}"
+        ipaserver_forwarders: "{{ lookup('env', 'ipaserver_forwarders') | default([], True) }}"
+        ipaserver_auto_reverse: "{{ lookup('env', 'ipaserver_auto_reverse') | default(true, True) | bool }}"
+        # For easier setup of DNS keep it set to 'true'
+        ipaserver_allow_zone_overlap: true
+        # DNSSEC must be set to 'false' for AD trust
+        ipaserver_no_dnssec_validation: true
+        # trust vars
+        ipaserver_setup_adtrust: "{{ lookup('env', 'ipaserver_setup_adtrust') | default(false) | bool }}"
+        ipaserver_netbios_name: "{{ lookup('env', 'ipaserver_netbios_name') | default(omit) }}"
+        # disable 'allow all' HBAC rule
+        ipaserver_no_hbac_allow: true
+        # other vars
+        ipaserver_random_serial_numbers: "{{ lookup('env', 'ipaserver_random_serial_numbers:') | default(true, True) | bool }}"
+    # IPA Replica Servers
+    ipareplicas:
+      hosts:
+        "rep-01.ipa.test":
+          # Ansible connection configuration
+          ansible_ssh_user: vagrant
+          ansible_ssh_private_key_file: ".vagrant/machines/replica/libvirt/private_key"
+          ansible_ssh_host_key_checking: false
+      vars:
+        # CA backup
+        ipareplica_setup_ca: "{{ lookup('env', 'ipareplica_setup_ca') | default(false, True) | bool }}"
+        # KRA backup
+        ipareplica_setup_kra: "{{ lookup('env', 'ipareplica_setup_kra') | default(false, True) | bool }}"
+        # DNS backup
+        ipareplica_setup_dns: "{{ lookup('env', 'ipareplica_setup_dns') | default(false, True) | bool }}"
+        ipareplica_auto_forwarders: "{{ lookup('env', 'ipareplica_auto_forwarders') | default(true, True) | bool }}"
+        ipareplica_no_forwarders: "{{ lookup('env', 'ipareplica_no_forwarders') | default(false, True) | bool }}"
+        ipareplica_forwarders: "{{ lookup('env', 'ipareplica_forwarders') | default([], True) }}"
+        ipareplica_auto_reverse: "{{ lookup('env', 'ipareplica_auto_reverse') | default(true, True) | bool }}"
+        # Trust backup
+        ipareplica_setup_trust: "{{ lookup('env', 'ipaserver_setup_trust') | default(false) | bool }}"
+        ipareplica_netbios_name: "{{ lookup('env', 'ipaserver_netbios_name') | default(omit) }}"
+        # Update IP addressess
+        ipasssd_enable_dns_updates: true
+        # Automatically handle DNS nameservers (ansible-freeipa v1.9.0+)
+        ipaclient_configure_dns_resolver: "{{ ipaserver_setup_dns | default(false) }}"
+        ipaclient_dns_servers: ["{{ server_ip if (ipaserver_setup_dns | default(false)) else omit}}"]
+    # IPA Client hosts
+    ipaclients:
+      hosts:
+        "cli-01.ipa.test":
+          # Ansible connection configuration
+          ansible_ssh_user: vagrant
+          ansible_ssh_private_key_file: ".vagrant/machines/client/libvirt/private_key"
+          ansible_ssh_host_key_checking: false
+          # IPA Configuration.
+      vars:
+        # Add client DNS entries
+        ipasssd_enable_dns_updates: true
+        # Automatically handle DNS nameservers (ansible-freeipa v1.9.0+)
+        ipaclient_configure_dns_resolver: "{{ ipaserver_setup_dns | default(false) }}"
+        ipaclient_dns_servers: ["{{ server_ip if (ipaserver_setup_dns | default(false)) else omit}}"]

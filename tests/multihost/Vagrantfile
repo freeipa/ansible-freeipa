@@ -1,0 +1,55 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "fedora/38-cloud-base"
+  
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.qemu_use_session = false
+    libvirt.memory = 2500
+  end
+  config.vm.provider :virtualbox do |virtualbox|
+    virtualbox.memory = 2500
+  end
+
+  # Prevent SharedFoldersEnableSymlinksCreate errors
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  # boot timeout (in seconds).
+  config.vm.boot_timeout = 12 * 60
+
+  config.vm.define "server.ipa.test" do |server|
+    server.vm.hostname = "server.ipa.test"
+    server.vm.provision "shell",
+       inline: "hostnamectl set-hostname server.ipa.test"
+    server.vm.provision "shell",
+      inline: "echo $(hostname -I) server.ipa.test >> /etc/hosts"
+    server.vm.provision "shell",
+      inline: "dnf install --downloadonly -y freeipa-server python3-libselinux freeipa-server-dns freeipa-server-trust-ad firewalld"
+  end    
+
+  config.vm.define "rep-01.ipa.test" do |replica|
+    replica.vm.hostname="rep-01.ipa.test"
+    replica.vm.provision "shell",
+       inline: "hostnamectl set-hostname rep-01.ipa.test"
+    replica.vm.provision "shell",
+      inline: "echo $(hostname -I) rep-01.ipa.test >> /etc/hosts"
+    replica.vm.provision "shell",
+      inline: "dnf install --downloadonly -y freeipa-server python3-libselinux freeipa-server-dns freeipa-server-trust-ad firewalld"
+  end 
+
+  config.vm.define "cli-01.ipa.test" do |client|
+    client.vm.hostname="cli-01.ipa.test"
+    client.vm.provision "shell",
+       inline: "hostnamectl set-hostname cli-01.ipa.test"
+    client.vm.provision "shell",
+      inline: "dnf install --downloadonly -y freeipa-client python3-libselinux"
+    client.vm.provider :libvirt do |cmv|
+      cmv.memory = 768
+    end
+    client.vm.provider :virtualbox do |cmv|
+      cmv.memory = 768
+    end
+  end
+
+end
+

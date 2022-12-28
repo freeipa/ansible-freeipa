@@ -5,4 +5,8 @@
 /.tox/
 /.venv/
 
+# ignore Vagrant data
+/.vagrant/
+/tests/multihost/vagrant-ssh
+
 tests/logs/
