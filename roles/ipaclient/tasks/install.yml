@@ -19,7 +19,8 @@
         ipaclient_servers is not defined
 
 - name: Install - Check that either password or keytab is set
-  ansible.builtin.fail: msg="ipaadmin_password and ipaadmin_keytab cannot be used together"
+  ansible.builtin.fail:
+    msg: "ipaadmin_password and ipaadmin_keytab cannot be used together"
   when: ipaadmin_keytab is defined and ipaadmin_password is defined
 
 - name: Install - Set default principal if no keytab is given
@@ -31,11 +32,13 @@
   block:
 
   - name: Install - Fail on missing ipaclient_domain and ipaserver_domain
-    ansible.builtin.fail: msg="ipaclient_domain or ipaserver_domain is required for ipaclient_configure_dns_resolver"
+    ansible.builtin.fail:
+      msg: "ipaclient_domain or ipaserver_domain is required for ipaclient_configure_dns_resolver"
     when: ipaserver_domain is not defined and ipaclient_domain is not defined
 
   - name: Install - Fail on missing ipaclient_servers
-    ansible.builtin.fail: msg="ipaclient_dns_servers is required for ipaclient_configure_dns_resolver"
+    ansible.builtin.fail:
+      msg: "ipaclient_dns_servers is required for ipaclient_configure_dns_resolver"
     when: ipaclient_dns_servers is not defined
 
   - name: Install - Configure DNS resolver
@@ -130,7 +133,7 @@
     block:
     - name: Install - Keytab or password is required for getting otp
       ansible.builtin.fail:
-        msg: Keytab or password is required for getting otp
+        msg: "Keytab or password is required for getting otp"
       when: ipaadmin_keytab is undefined and ipaadmin_password is undefined
 
     - name: Install - Create temporary file for keytab
@@ -194,11 +197,13 @@
     block:
 
     - name: Install - Check if principal and keytab are set
-      ansible.builtin.fail: msg="Admin principal and client keytab cannot be used together"
+      ansible.builtin.fail:
+        msg: "Admin principal and client keytab cannot be used together"
       when: ipaadmin_principal is defined and ipaclient_keytab is defined
 
     - name: Install - Check if one of password or keytabs are set
-      ansible.builtin.fail: msg="At least one of password or keytabs must be specified"
+      ansible.builtin.fail:
+        msg: "At least one of password or keytabs must be specified"
       when: not result_ipaclient_test_keytab.krb5_keytab_ok
             and ipaadmin_password is undefined
             and ipaadmin_keytab is undefined

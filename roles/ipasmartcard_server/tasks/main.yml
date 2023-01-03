@@ -2,7 +2,8 @@
 # tasks file for ipasmartcard_server role
 
 - name: Uninstall smartcard server
-  ansible.builtin.fail: msg="Uninstalling smartcard for IPA is not supported"
+  ansible.builtin.fail:
+    msg: "Uninstalling smartcard for IPA is not supported"
   when: state|default('present') == 'absent'
 
 - name: Import variables specific to distribution
@@ -27,7 +28,8 @@
 
   # Fail on empty "ipasmartcard_server_ca_certs"
   - name: Fail on empty "ipasmartcard_server_ca_certs"
-    ansible.builtin.fail: msg="No CA certs given in 'ipasmartcard_server_ca_certs'"
+    ansible.builtin.fail:
+      msg: "No CA certs given in 'ipasmartcard_server_ca_certs'"
     when: ipasmartcard_server_ca_certs is not defined or
           ipasmartcard_server_ca_certs | length < 1
 
@@ -70,7 +72,8 @@
     register: result_ipa_server_show
 
   - name: Fail if not an IPA server
-    ansible.builtin.fail: msg="Not an IPA server"
+    ansible.builtin.fail:
+      msg: "Not an IPA server"
     when: result_ipa_server_show.failed
 
   - name: Get Domain from server-find server name
@@ -83,7 +86,8 @@
     register: result_get_ipaca_records
 
   - name: Fail if ipa-ca records are not resolvable
-    ansible.builtin.fail: msg="ipa-ca records are not resolvable"
+    ansible.builtin.fail:
+      msg: "ipa-ca records are not resolvable"
     when: result_get_ipaca_records.failed or
           result_get_ipaca_records.stdout | length == 0
 

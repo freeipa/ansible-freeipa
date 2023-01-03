@@ -1,6 +1,7 @@
 ---
 - name: Fail on invalid ipabackup_name
-  ansible.builtin.fail: msg="ipabackup_name {{ ipabackup_name }} is not valid"
+  ansible.builtin.fail:
+    msg: "ipabackup_name {{ ipabackup_name }} is not valid"
   when: ipabackup_name is not defined or
         ipabackup_name | length < 1 or
         (ipabackup_name.find("ipa-full-") == -1 and
@@ -30,7 +31,8 @@
   become: no
 
 - name: Fail on missing backup to copy
-  ansible.builtin.fail: msg="Unable to find backup {{ ipabackup_name }}"
+  ansible.builtin.fail:
+    msg: "Unable to find backup {{ ipabackup_name }}"
   when: result_backup_stat.stat.isdir is not defined
 
 - name: Copy backup files to server for "{{ ipabackup_item }}"

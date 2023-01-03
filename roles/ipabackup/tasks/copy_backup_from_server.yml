@@ -1,6 +1,7 @@
 ---
 - name: Fail on invalid ipabackup_item
-  ansible.builtin.fail: msg="ipabackup_item {{ ipabackup_item }} is not valid"
+  ansible.builtin.fail:
+    msg: "ipabackup_item {{ ipabackup_item }} is not valid"
   when: ipabackup_item is not defined or
         ipabackup_item | length < 1 or
         (ipabackup_item.find("ipa-full-") == -1 and
@@ -19,7 +20,8 @@
   register: result_backup_stat
 
 - name: Fail on missing backup directory
-  ansible.builtin.fail: msg="Unable to find backup {{ ipabackup_item }}"
+  ansible.builtin.fail:
+    msg: "Unable to find backup {{ ipabackup_item }}"
   when: result_backup_stat.stat.isdir is not defined
 
 - name: Get backup files to copy for "{{ ipabackup_item }}"

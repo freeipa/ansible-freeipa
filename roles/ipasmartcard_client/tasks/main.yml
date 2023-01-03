@@ -2,7 +2,8 @@
 # tasks file for ipasmartcard_client role
 
 - name: Uninstall smartcard client
-  ansible.builtin.fail: msg="Uninstalling smartcard for IPA is not supported"
+  ansible.builtin.fail:
+    msg: "Uninstalling smartcard for IPA is not supported"
   when: state|default('present') == 'absent'
 
 - name: Import variables specific to distribution
@@ -36,7 +37,8 @@
   # Fail on empty "ipasmartcard_client_ca_certs"
 
   - name: Fail on empty "ipasmartcard_client_ca_certs"
-    ansible.builtin.fail: msg="No CA certs given in 'ipasmartcard_client_ca_certs'"
+    ansible.builtin.fail:
+      msg: "No CA certs given in 'ipasmartcard_client_ca_certs'"
     when: ipasmartcard_client_ca_certs is not defined or
           ipasmartcard_client_ca_certs | length < 1
 

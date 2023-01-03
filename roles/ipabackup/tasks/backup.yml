@@ -26,7 +26,8 @@
       label: ""
 
   - name: Fail on missing ipabackup_item
-    ansible.builtin.fail: msg="Failed to get ipabackup_item"
+    ansible.builtin.fail:
+      msg: "Failed to get ipabackup_item"
     when: ipabackup_item is not defined
 
   - name: Copy backup to controller

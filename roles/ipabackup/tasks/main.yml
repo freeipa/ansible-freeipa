@@ -2,7 +2,8 @@
 # tasks file for ipabackup
 
 - name: Check for empty vars
-  ansible.builtin.fail: msg="Variable {{ item }} is empty"
+  ansible.builtin.fail:
+    msg: "Variable {{ item }} is empty"
   when: "item in vars and not vars[item]"
   with_items: "{{ ipabackup_empty_var_checks }}"
   vars:
@@ -23,11 +24,13 @@
   when: ipabackup_online | bool and not ipabackup_data | bool
 
 - name: Fail if ipabackup_from_controller and ipabackup_to_controller are set
-  ansible.builtin.fail: msg="ipabackup_from_controller and ipabackup_to_controller are set"
+  ansible.builtin.fail:
+    msg: "ipabackup_from_controller and ipabackup_to_controller are set"
   when: ipabackup_from_controller | bool and ipabackup_to_controller | bool
 
 - name: Fail for given ipabackup_name if state is not copied, restored or absent
-  ansible.builtin.fail: msg="ipabackup_name is given and state is not copied, restored or absent"
+  ansible.builtin.fail:
+    msg: "ipabackup_name is given and state is not copied, restored or absent"
   when: state is not defined or
         (state != "copied" and state != "restored" and state != "absent") and
         ipabackup_name is defined
@@ -40,7 +43,8 @@
   when: state|default("present") == "present"
 
 - name: Fail on missing ipabackup_name
-  ansible.builtin.fail: msg="ipabackup_name is not set"
+  ansible.builtin.fail:
+    msg: "ipabackup_name is not set"
   when: (ipabackup_name is not defined or not ipabackup_name) and
         state is defined and
         (state == "copied" or state == "restored" or state == "absent")
@@ -66,7 +70,8 @@
 - name: Set ipabackup_names from ipabackup_name
   block:
   - name: Fail on ipabackup_name all
-    ansible.builtin.fail: msg="ipabackup_name can not be all in this case"
+    ansible.builtin.fail:
+      msg: "ipabackup_name can not be all in this case"
     when: ipabackup_name is defined and ipabackup_name == "all"
 
   - name: Set ipabackup_names from ipabackup_name string
@@ -114,7 +119,8 @@
 # restore.
 
 - name: Fail to copy or restore more than one backup on the server
-  ansible.builtin.fail: msg="Only one backup can be copied to the server or restored"
+  ansible.builtin.fail:
+    msg: "Only one backup can be copied to the server or restored"
   when: state is defined and (state == "copied" or state == "restored") and
         ipabackup_from_controller | bool and ipabackup_names | length != 1
 
