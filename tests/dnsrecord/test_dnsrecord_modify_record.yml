@@ -6,7 +6,7 @@
 
   tasks:
   - name: Setup testing environment.
-    include_tasks: env_setup.yml
+    ansible.builtin.include_tasks: env_setup.yml
 
   - name: Add test host.
     ipahost:
@@ -177,4 +177,4 @@
       state: absent
   # cleanup
   - name: Cleanup test environment.
-    include_tasks: env_cleanup.yml
+    ansible.builtin.include_tasks: env_cleanup.yml

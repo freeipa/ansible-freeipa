@@ -8,7 +8,7 @@
 
   tasks:
   - name: Include FreeIPA facts.
-    include_tasks: ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   # Test will only be executed if host is not a server.
   - name: Execute with server context in the client.
@@ -29,11 +29,11 @@
 # in upstream CI.
 
 - name: Test servicedelegationtarget using client context, in client host.
-  import_playbook: test_servicedelegationtarget.yml
+  ansible.builtin.import_playbook: test_servicedelegationtarget.yml
   when: groups['ipaclients']
   vars:
     ipa_test_host: ipaclients
 
 - name: Test servicedelegationtarget using client context, in server host.
-  import_playbook: test_servicedelegationtarget.yml
+  ansible.builtin.import_playbook: test_servicedelegationtarget.yml
   when: groups['ipaclients'] is not defined or not groups['ipaclients']

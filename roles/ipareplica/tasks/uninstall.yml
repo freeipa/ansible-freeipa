@@ -2,7 +2,7 @@
 # tasks to uninstall IPA replica
 
 - name: Uninstall - Uninstall IPA replica
-  command: >
+  ansible.builtin.command: >
     /usr/sbin/ipa-server-install
     --uninstall
     -U
@@ -22,7 +22,7 @@
   delay: 1
 
 #- name: Uninstall - Remove all replication agreements and data about replica
-#  command: >
+#  ansible.builtin.command: >
 #    /usr/sbin/ipa-replica-manage
 #    del
 #    {{ ipareplica_hostname | default(ansible_facts['fqdn']) }}
@@ -32,6 +32,6 @@
 #  delegate_to: "{{ groups.ipaserver[0] | default(fail) }}"
 
 #- name: Remove IPA replica packages
-#  package:
+#  ansible.builtin.package:
 #    name: "{{ ipareplica_packages }}"
 #    state: absent

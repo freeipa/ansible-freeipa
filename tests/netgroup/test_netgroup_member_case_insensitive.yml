@@ -16,7 +16,7 @@
   - block:
     # SETUP
     - name: Get Domain from server name
-      set_fact:
+      ansible.builtin.set_fact:
         ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
       when: ipaserver_domain is not defined
 
@@ -62,7 +62,7 @@
 
     # TESTS
     - name: Start tests.
-      debug:
+      ansible.builtin.debug:
         msg: "Tests are starting."
 
     - name: Ensure netgroups exist
@@ -203,7 +203,7 @@
       failed_when: result.failed or result.changed
 
     - name: End tests.
-      debug:
+      ansible.builtin.debug:
         msg: "All tests executed."
 
     always:

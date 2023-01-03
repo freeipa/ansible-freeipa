@@ -1,6 +1,6 @@
 ---
 - name: Include create_users_json.yml
-  import_playbook: create_users_json.yml
+  ansible.builtin.import_playbook: create_users_json.yml
 
 - name: Test users present
   hosts: ipaserver
@@ -9,7 +9,7 @@
 
   tasks:
   - name: Include users.json
-    include_vars:
+    ansible.builtin.include_vars:
       file: users.json  # noqa 505
 
   - name: Users present len:{{ users | length }}

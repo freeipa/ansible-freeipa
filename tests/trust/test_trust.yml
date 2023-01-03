@@ -28,7 +28,7 @@
         state: absent
 
     - name: Clear test idranges
-      shell: |
+      ansible.builtin.shell: |
         kinit -c test_krb5_cache admin <<< SomeADMINpassword
         ipa idrange-del {{ adserver.realm }}_id_range || true
         ipa idrange-del {{ ipaserver.realm }}_subid_range || true
@@ -48,7 +48,7 @@
       failed_when: result.failed or not result.changed
 
     - name: check if 'ipa-ad-trust' trust exists
-      shell: |
+      ansible.builtin.shell: |
         echo 'SomeADMINpassword' | kinit admin
         ipa trust-find
         kdestroy -c test_krb5_cache -q -A
@@ -77,7 +77,7 @@
       failed_when: result.failed or not result.changed
 
     - name: Check if 'ipa-ad-trust' trust was removed
-      shell: |
+      ansible.builtin.shell: |
         kinit -c test_krb5_cache admin <<< SomeADMINpassword
         ipa trust-find
         kdestroy -c test_krb5_cache -q -A
@@ -94,7 +94,7 @@
       failed_when: result.failed or result.changed
 
     - name: Clear test idranges
-      shell: |
+      ansible.builtin.shell: |
         kinit -c test_krb5_cache admin <<< SomeADMINpassword
         ipa idrange-del {{ adserver.realm }}_id_range || true
         ipa idrange-del {{ ipaserver.realm }}_subid_range || true
@@ -113,7 +113,7 @@
       failed_when: result.failed or not result.changed
 
     - name: Check if 'ipa-ad-trust-posix' trust exists
-      shell: |
+      ansible.builtin.shell: |
         kinit -c test_krb5_cache admin <<< SomeADMINpassword
         ipa trust-find
         kdestroy -c test_krb5_cache -q -A
@@ -142,7 +142,7 @@
       failed_when: result.failed or not result.changed
 
     - name: Check if trust 'ipa-ad-trust-posix' was removed
-      shell: |
+      ansible.builtin.shell: |
         kinit -c test_krb5_cache admin <<< SomeADMINpassword
         ipa trust-find
         kdestroy -c test_krb5_cache -q -A
@@ -159,7 +159,7 @@
       failed_when: result.failed or result.changed
 
     - name: Clear test idranges
-      shell: |
+      ansible.builtin.shell: |
         kinit -c test_krb5_cache admin <<< SomeADMINpassword
         ipa idrange-del {{ adserver.realm }}_id_range || true
         ipa idrange-del {{ ipaserver.realm }}_subid_range || true

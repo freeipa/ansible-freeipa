@@ -7,7 +7,7 @@
   tasks:
 
   - name: Setup test environment
-    include_tasks: env_setup.yml
+    ansible.builtin.include_tasks: env_setup.yml
 
   # tests
 
@@ -147,4 +147,4 @@
 
   # Cleanup
   - name: Cleanup test environment.
-    include_tasks: env_cleanup.yml
+    ansible.builtin.include_tasks: env_cleanup.yml

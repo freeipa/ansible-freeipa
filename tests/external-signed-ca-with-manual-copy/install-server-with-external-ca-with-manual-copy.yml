@@ -11,7 +11,7 @@
 
   post_tasks:
   - name: Copy CSR /root/ipa.csr from node to "{{ groups.ipaserver[0] + '-ipa.csr' }}"
-    fetch:
+    ansible.builtin.fetch:
       src: /root/ipa.csr
       dest: "{{ groups.ipaserver[0] + '-ipa.csr' }}"
       flat: yes
@@ -21,7 +21,7 @@
 
   tasks:
   - name: Run external-ca.sh
-    command: >
+    ansible.builtin.command: >
       /bin/bash
       external-ca.sh
       "{{ groups.ipaserver[0] }}"
@@ -38,7 +38,7 @@
 
   pre_tasks:
   - name: Copy "{{ groups.ipaserver[0] + '-chain.crt' }}" to /root/chain.crt on node
-    copy:
+    ansible.builtin.copy:
       src: "{{ groups.ipaserver[0] + '-chain.crt' }}"
       dest: "/root/chain.crt"
       force: yes

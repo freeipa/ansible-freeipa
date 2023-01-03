@@ -6,7 +6,7 @@
 
   tasks:
   - name: Setup FreeIPA test facts.
-    import_tasks: ../env_freeipa_facts.yml
+    ansible.builtin.import_tasks: ../env_freeipa_facts.yml
 
   - name: Ensure maxlife of 90 for global_policy
     ipapwpolicy:

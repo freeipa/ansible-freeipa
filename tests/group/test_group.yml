@@ -6,12 +6,12 @@
 
   tasks:
   # setup
-  - include_tasks: ../env_freeipa_facts.yml
+  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   # GET FQDN_AT_DOMAIN
 
   - name: Get fqdn_at_domain
-    set_fact:
+    ansible.builtin.set_fact:
       fqdn_at_domain: "{{ ansible_facts['fqdn'] + '@' + ipaserver_realm }}"
 
   # CLEANUP TEST ITEMS

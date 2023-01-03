@@ -6,7 +6,7 @@
 
   tasks:
   - name: Generate self-signed certificates.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout "private{{ item }}.key" -out "cert{{ item }}.pem" -subj '/CN=test'
         openssl x509 -outform der -in "cert{{ item }}.pem" -out "cert{{ item }}.der"
@@ -81,7 +81,7 @@
     failed_when: not result.changed or result.failed
 
   - name: Remove certificate files.  # noqa: deprecated-command-syntax
-    shell:
+    ansible.builtin.shell:
       cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
     with_items: [1, 2, 3]
     become: no

@@ -5,12 +5,12 @@
 
   tasks:
   - name: Get Domain from server name
-    set_fact:
+    ansible.builtin.set_fact:
       ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Set host1_fqdn
-    set_fact:
+    ansible.builtin.set_fact:
       host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
 
   - name: Host host1 absent

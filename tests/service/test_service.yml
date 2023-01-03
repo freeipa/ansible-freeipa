@@ -17,13 +17,13 @@
 
   tasks:
   # setup
-  - include_tasks: ../env_freeipa_facts.yml
+  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   # tests
   - name: Tests with skip_host_check, require IPA version 4.8.0+.
     block:
       - name: Setup test environment
-        include_tasks: env_setup.yml
+        ansible.builtin.include_tasks: env_setup.yml
 
       - name: Ensure service is present
         ipaservice:
@@ -575,5 +575,5 @@
 
       # cleanup
       - name: Cleanup test environment
-        include_tasks: env_cleanup.yml
+        ansible.builtin.include_tasks: env_cleanup.yml
     when: ipa_version is version('4.7.0', '>=')

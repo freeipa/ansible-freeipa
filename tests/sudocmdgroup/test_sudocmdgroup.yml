@@ -83,7 +83,7 @@
     failed_when: result.changed or result.failed
 
   - name: Verify sudocmdgroup creation with sudocmds
-    shell: |
+    ansible.builtin.shell: |
       echo SomeADMINpassword | kinit -c verify_sudocmdgroup admin
       KRB5CCNAME="verify_sudocmdgroup" ipa sudocmdgroup-show network --all
       kdestroy -A -q -c verify_sudocmdgroup

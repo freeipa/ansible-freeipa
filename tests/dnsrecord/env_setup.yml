@@ -1,10 +1,10 @@
 ---
   - name: Setup variables and facts.
-    include_tasks: env_vars.yml
+    ansible.builtin.include_tasks: env_vars.yml
 
   # Cleanup before setup.
   - name: Cleanup test environment.
-    include_tasks: env_cleanup.yml
+    ansible.builtin.include_tasks: env_cleanup.yml
 
   # Common setup tasks.
   - name: Ensure DNS testing zones are present.

@@ -6,7 +6,7 @@
 
   tasks:
   # setup
-  - include_tasks: ../env_freeipa_facts.yml
+  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   # host principals are only possible with IPA 4.9.0+
   - block:
@@ -14,17 +14,17 @@
     # SET FACTS
 
     - name: Get Domain from server name
-      set_fact:
+      ansible.builtin.set_fact:
         ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
       when: ipaserver_domain is not defined
 
     - name: Get REALM from server name
-      set_fact:
+      ansible.builtin.set_fact:
         ipaserver_realm: "{{ ipaserver_domain | upper }}"
       when: ipaserver_realm is not defined
 
     - name: Set test-host fqdn
-      set_fact:
+      ansible.builtin.set_fact:
         test_host_fqdn: "{{ 'test-host.' + ipaserver_domain }}"
         test_host_fqdn_realm: "{{ 'test-host.' + ipaserver_domain + '@' + ipaserver_realm }}"
 

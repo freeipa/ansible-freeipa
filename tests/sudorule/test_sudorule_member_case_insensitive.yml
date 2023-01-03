@@ -16,7 +16,7 @@
   - block:
     # SETUP
     - name: Ensure domain name
-      set_fact:
+      ansible.builtin.set_fact:
         ipa_domain: ipa.test
       when: ipa_domain is not defined
 
@@ -56,7 +56,7 @@
 
     # TESTS
     - name: Start tests.
-      debug:
+      ansible.builtin.debug:
         msg: "Tests are starting."
 
     - name: Ensure sudorule exist with runasusers members
@@ -249,7 +249,7 @@
       failed_when: result.failed or result.changed
 
     - name: End tests.
-      debug:
+      ansible.builtin.debug:
         msg: "All tests executed."
 
     always:
