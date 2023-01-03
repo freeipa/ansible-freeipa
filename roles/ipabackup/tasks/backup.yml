@@ -14,6 +14,7 @@
   register: result_ipabackup
 
 - name: Handle backup
+  when: ipabackup_to_controller
   block:
   - name: Get ipabackup_item from stderr or stdout output
     ansible.builtin.set_fact:
@@ -37,5 +38,3 @@
   - name: Remove backup on server
     ansible.builtin.include_tasks: "{{ role_path }}/tasks/remove_backup_from_server.yml"
     when: not ipabackup_keep_on_server
-
-  when: ipabackup_to_controller

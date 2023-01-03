@@ -50,6 +50,10 @@
         (state == "copied" or state == "restored" or state == "absent")
 
 - name: Get all backup names for copy to controller
+  when: state is defined and
+        ((state == "copied" and ipabackup_to_controller) or
+         state == "absent") and
+        ipabackup_name is defined and ipabackup_name == "all"
   block:
   - name: Get list of all backups on IPA server
     ansible.builtin.shell:
@@ -62,12 +66,8 @@
     ansible.builtin.set_fact:
       ipabackup_names: "{{ result_backup_find_backup_files.stdout_lines }}"
 
-  when: state is defined and
-        ((state == "copied" and ipabackup_to_controller) or
-         state == "absent") and
-        ipabackup_name is defined and ipabackup_name == "all"
-
 - name: Set ipabackup_names from ipabackup_name
+  when: ipabackup_names is not defined and ipabackup_name is defined
   block:
   - name: Fail on ipabackup_name all
     ansible.builtin.fail:
@@ -83,7 +83,6 @@
     ansible.builtin.set_fact:
       ipabackup_names: "{{ ipabackup_name }}"
     when: ipabackup_name | type_debug == "list"
-  when: ipabackup_names is not defined and ipabackup_name is defined
 
 - name: Set empty ipabackup_names if ipabackup_name is not defined
   ansible.builtin.set_fact:
@@ -91,6 +90,8 @@
   when: ipabackup_names is not defined and ipabackup_name is not defined
 
 - name: Process "{{ ipabackup_names }}"
+  when: state is defined and
+        ((state == "copied" and ipabackup_to_controller) or state == "absent")
   block:
   - name: Copy backup from IPA server
     ansible.builtin.include_tasks: "{{ role_path }}/tasks/copy_backup_from_server.yml"
@@ -112,9 +113,6 @@
       loop_var: main_item
     when: state is defined and state == "absent"
 
-  when: state is defined and
-        ((state == "copied" and ipabackup_to_controller) or state == "absent")
-
 # Fail with more than one entry in ipabackup_names for copy to sever and
 # restore.
 
@@ -127,6 +125,10 @@
 # Use only first item in ipabackup_names for copy to server and for restore.
 
 - name: Process "{{ ipabackup_names[0] }}"
+  when: ipabackup_from_controller or
+        (state|default("present") == "copied" and not ipabackup_to_controller)
+  vars:
+    ipabackup_name: "{{ ipabackup_names[0] }}"
   block:
   - name: Copy backup to server
     ansible.builtin.include_tasks: "{{ role_path }}/tasks/copy_backup_to_server.yml"
@@ -134,11 +136,6 @@
   - name: Restore IPA server after copy
     ansible.builtin.include_tasks: "{{ role_path }}/tasks/restore.yml"
     when: state|default("present") == "restored"
-
-  vars:
-    ipabackup_name: "{{ ipabackup_names[0] }}"
-  when: ipabackup_from_controller or
-        (state|default("present") == "copied" and not ipabackup_to_controller)
 
 - name: Restore IPA server
   ansible.builtin.include_tasks: "{{ role_path }}/tasks/restore.yml"

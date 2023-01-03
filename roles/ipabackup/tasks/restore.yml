@@ -55,6 +55,7 @@
 ### INSTALL PACKAGES
 
 - name: Package installation
+  when: ipabackup_install_packages | bool
   block:
   - name: Ensure that IPA server packages are installed
     ansible.builtin.package:
@@ -79,11 +80,10 @@
       state: present
     when: ipabackup_setup_firewalld | bool
 
-  when: ipabackup_install_packages | bool
-
 ### START FIREWALLD
 
 - name: Firewall configuration
+  when: ipabackup_setup_firewalld | bool
   block:
   - name: Ensure that firewalld is running
     ansible.builtin.systemd:
@@ -105,8 +105,6 @@
       --info-zone="{{ ipabackup_firewalld_zone }}"
       >/dev/null
     when: ipabackup_firewalld_zone is defined
-
-  when: ipabackup_setup_firewalld | bool
 
 ### RESTORE
 

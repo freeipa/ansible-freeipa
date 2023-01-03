@@ -2,6 +2,7 @@
 # tasks file for ipareplica
 
 - name: Package installation
+  when: ipareplica_install_packages | bool
   block:
 
   - name: Install - Ensure IPA replica packages are installed
@@ -27,9 +28,8 @@
       state: present
     when: ipareplica_setup_firewalld | bool
 
-  when: ipareplica_install_packages | bool
-
 - name: Firewall configuration
+  when: ipareplica_setup_firewalld | bool
   block:
   - name: Firewalld service - Ensure that firewalld is running
     ansible.builtin.systemd:
@@ -51,8 +51,6 @@
       --info-zone="{{ ipareplica_firewalld_zone }}"
       >/dev/null
     when: ipareplica_firewalld_zone is defined
-
-  when: ipareplica_setup_firewalld | bool
 
 - name: Install - Set ipareplica_servers
   ansible.builtin.set_fact:
@@ -104,6 +102,9 @@
   register: result_ipareplica_test
 
 - name: Install - Deploy replica
+  when: not ansible_check_mode and
+        not (result_ipareplica_test.client_already_configured is defined or
+             result_ipareplica_test.server_already_configured is defined)
   block:
   # This block is executed only when
   # not ansible_check_mode and
@@ -793,7 +794,3 @@
     - "/etc/ipa/.tmp_pkcs12_dirsrv"
     - "/etc/ipa/.tmp_pkcs12_http"
     - "/etc/ipa/.tmp_pkcs12_pkinit"
-
-  when: not ansible_check_mode and
-        not (result_ipareplica_test.client_already_configured is defined or
-             result_ipareplica_test.server_already_configured is defined)

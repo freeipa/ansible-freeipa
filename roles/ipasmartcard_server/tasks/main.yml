@@ -168,10 +168,10 @@
   # HTTPD IFP
 
   - name: Allow HTTPD ifp
+    when: ipasmartcard_server_vars.allow_httpd_ifp
     block:
 
     # Allow Apache to access SSSD IFP
-
     - name: Allow Apache to access SSSD IFP
       ansible.builtin.command: "{{ ipasmartcard_server_vars.python_interpreter }}"
       args:
@@ -192,11 +192,10 @@
         name: sssd
         state: restarted
 
-    when: ipasmartcard_server_vars.allow_httpd_ifp
-
   # Ensure /etc/sssd/pki exists
 
   - name: Prepare for authselect
+    when: ipasmartcard_server_vars.USE_AUTHSELECT
     block:
     - name: Ensure /etc/sssd/pki exists
       ansible.builtin.file:
@@ -208,8 +207,6 @@
       ansible.builtin.file:
         path: /etc/sssd/pki/sssd_auth_ca_db.pem
         state: absent
-
-    when: ipasmartcard_server_vars.USE_AUTHSELECT
 
   # Upload smartcard CA certificates to systemwide db
 

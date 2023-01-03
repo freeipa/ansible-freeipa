@@ -103,6 +103,7 @@
   # Ensure /etc/sssd/pki exists
 
   - name: Prepare for authselect
+    when: ipasmartcard_client_vars.USE_AUTHSELECT
     block:
     - name: Ensure /etc/sssd/pki exists
       ansible.builtin.file:
@@ -114,8 +115,6 @@
       ansible.builtin.file:
         path: /etc/sssd/pki/sssd_auth_ca_db.pem
         state: absent
-
-    when: ipasmartcard_client_vars.USE_AUTHSELECT
 
   # Upload smartcard CA certificates to systemwide db
 
