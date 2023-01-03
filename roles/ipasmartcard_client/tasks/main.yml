@@ -70,13 +70,13 @@
       ipaadmin_principal: admin
     when: ipaadmin_principal is undefined
 
-  - name: kinit using "{{ ipaadmin_principal }}" password
+  - name: Authenticate using kinit and "{{ ipaadmin_principal }}" password
     ansible.builtin.command: kinit "{{ ipaadmin_principal }}"
     args:
       stdin: "{{ ipaadmin_password }}"
     when: ipaadmin_password is defined
 
-  - name: kinit using "{{ ipaadmin_principal }}" keytab
+  - name: Authenticate using kinit and "{{ ipaadmin_principal }}" keytab
     ansible.builtin.command: kinit -kt "{{ ipaadmin_keytab }}" "{{ ipaadmin_principal }}"
     when: ipaadmin_keytab is defined
 
@@ -173,5 +173,5 @@
   ### ALWAYS ###
 
   always:
-  - name: kdestroy
+  - name: Destroy Kerberos tickets
     ansible.builtin.command: kdestroy -A

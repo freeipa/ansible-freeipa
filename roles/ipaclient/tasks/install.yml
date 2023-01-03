@@ -273,7 +273,7 @@
       ansible.builtin.fail:
         msg: "The IPA test failed, please enable allow_repair to fix this."
       when: not result_ipaclient_test_keytab.ping_test_ok
-    - name: ca.crt file is missing
+    - name: Fail due to missing ca.crt file
       ansible.builtin.fail:
         msg: >
           The ca.crt file is missing, please enable allow_repair to fix this.
