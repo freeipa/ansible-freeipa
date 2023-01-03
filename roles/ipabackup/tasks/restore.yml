@@ -116,13 +116,13 @@
     ipa-restore
     {{ ipabackup_item }}
     --unattended
-    {{ "--password="+ipabackup_password if ipabackup_password is defined else "" }}
+    {{ "--password=" + ipabackup_password if ipabackup_password is defined else "" }}
     {{ "--data" if ipabackup_data | bool else "" }}
     {{ "--online" if ipabackup_online | bool else "" }}
-    {{ "--instance="+ipabackup_instance if ipabackup_instance is defined else "" }}
-    {{ "--backend="+ipabackup_backend if ipabackup_backend is defined else "" }}
+    {{ "--instance=" + ipabackup_instance if ipabackup_instance is defined else "" }}
+    {{ "--backend=" + ipabackup_backend if ipabackup_backend is defined else "" }}
     {{ "--no-logs" if ipabackup_no_logs | bool else "" }}
-    {{ "--log-file="+ipabackup_log_file if ipabackup_log_file is defined else "" }}
+    {{ "--log-file=" + ipabackup_log_file if ipabackup_log_file is defined else "" }}
   register: result_iparestore
   ignore_errors: yes
 
@@ -138,7 +138,7 @@
   ansible.builtin.command: >
     firewall-cmd
     --permanent
-    {{ "--zone="+ipabackup_firewalld_zone if ipabackup_firewalld_zone is defined else "" }}
+    {{ "--zone=" + ipabackup_firewalld_zone if ipabackup_firewalld_zone is defined else "" }}
     --add-service=freeipa-ldap
     --add-service=freeipa-ldaps
     {{ "--add-service=freeipa-trust" if ipabackup_service_adtrust in ipabackup_services else "" }}
@@ -149,7 +149,7 @@
 - name: Configure firewalld runtime
   ansible.builtin.command: >
     firewall-cmd
-    {{ "--zone="+ipabackup_firewalld_zone if ipabackup_firewalld_zone is defined else "" }}
+    {{ "--zone=" + ipabackup_firewalld_zone if ipabackup_firewalld_zone is defined else "" }}
     --add-service=freeipa-ldap
     --add-service=freeipa-ldaps
     {{ "--add-service=freeipa-trust" if ipabackup_service_adtrust in ipabackup_services else "" }}

@@ -73,7 +73,7 @@
     domain: "{{ ipareplica_domain | default(ipaserver_domain) |
             default(omit) }}"
     servers: "{{ ipareplica_servers | default(omit) }}"
-    realm: "{{ ipareplica_realm | default(ipaserver_realm) |default(omit) }}"
+    realm: "{{ ipareplica_realm | default(ipaserver_realm) | default(omit) }}"
     hostname: "{{ ipareplica_hostname | default(ansible_facts['fqdn']) }}"
     ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
     hidden_replica: "{{ ipareplica_hidden_replica }}"
@@ -305,7 +305,7 @@
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       installer_ccache: "{{ result_ipareplica_prepare.installer_ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
-      _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info  if result_ipareplica_prepare._dirsrv_pkcs12_info != None else omit }}"
+      _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info if result_ipareplica_prepare._dirsrv_pkcs12_info != None else omit }}"
       subject_base: "{{ result_ipareplica_prepare.subject_base }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
@@ -370,7 +370,7 @@
       config_master_host_name:
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
-      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info  if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       dirman_password: "{{ ipareplica_dirman_password }}"
 

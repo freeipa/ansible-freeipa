@@ -78,7 +78,7 @@
 
   - name: Get Domain from server-find server name
     ansible.builtin.set_fact:
-      ipaserver_domain: "{{ (result_ipa_server_show.stdout | regex_search('cn: (.+)', '\\1'))[0].split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ (result_ipa_server_show.stdout | regex_search('cn: (.+)', '\\1'))[0].split('.')[1:] | join('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Get ipa-ca records

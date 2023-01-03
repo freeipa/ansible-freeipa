@@ -10,12 +10,12 @@
 - name: Set controller source directory
   ansible.builtin.set_fact:
     ipabackup_controller_dir:
-      "{{ ipabackup_controller_path | default(lookup('env','PWD')) }}"
+      "{{ ipabackup_controller_path | default(lookup('env', 'PWD')) }}"
 
 - name: Set ipabackup_item
   ansible.builtin.set_fact:
     ipabackup_item:
-      "{{ ipabackup_name | regex_search('.*_(ipa-.+)','\\1') | first }}"
+      "{{ ipabackup_name | regex_search('.*_(ipa-.+)', '\\1') | first }}"
   when: "'_ipa-' in ipabackup_name"
 
 - name: Set ipabackup_item

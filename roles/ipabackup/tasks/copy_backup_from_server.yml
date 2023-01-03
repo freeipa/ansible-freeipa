@@ -10,7 +10,7 @@
 - name: Set controller destination directory
   ansible.builtin.set_fact:
     ipabackup_controller_dir:
-        "{{ ipabackup_controller_path | default(lookup('env','PWD')) }}/{{
+        "{{ ipabackup_controller_path | default(lookup('env', 'PWD')) }}/{{
          ipabackup_name_prefix | default(ansible_facts['fqdn']) }}_{{
          ipabackup_item }}/"
 

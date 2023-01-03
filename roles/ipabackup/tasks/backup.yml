@@ -5,12 +5,12 @@
   ansible.builtin.shell: >
     ipa-backup
     {{ "--gpg" if ipabackup_gpg | bool else "" }}
-    {{ "--gpg-keyring="+ipabackup_gpg_keyring if ipabackup_gpg_keyring is defined else "" }}
+    {{ "--gpg-keyring=" + ipabackup_gpg_keyring if ipabackup_gpg_keyring is defined else "" }}
     {{ "--data" if ipabackup_data | bool else "" }}
     {{ "--logs" if ipabackup_logs | bool else "" }}
     {{ "--online" if ipabackup_online | bool else "" }}
     {{ "--disable-role-check" if ipabackup_disable_role_check | bool else "" }}
-    {{ "--log-file="+ipabackup_log_file if ipabackup_log_file is defined else "" }}
+    {{ "--log-file=" + ipabackup_log_file if ipabackup_log_file is defined else "" }}
   register: result_ipabackup
 
 - name: Handle backup
