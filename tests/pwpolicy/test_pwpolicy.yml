@@ -121,7 +121,75 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure presence of pwpolicies for group ops
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      minlife: 7
+      maxlife: 49
+      history: 5
+      priority: 1
+      lockouttime: 300
+      minlength: 8
+      minclasses: 5
+      maxfail: 3
+      failinterval: 5
+
+  - name: Ensure policies are cleared
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      minlife: ""
+      maxlife: ""
+      history: ""
+      # priority: ""
+      lockouttime: ""
+      minclasses: ""
+      maxfail: ""
+      failinterval: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure policies are cleared, again
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      minlife: ""
+      maxlife: ""
+      history: ""
+      # priority: ""
+      lockouttime: ""
+      minclasses: ""
+      maxfail: ""
+      failinterval: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure minlength is not cleared due to FreeIPA issue
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      minlength: ""
+    register: result
+    failed_when: result.changed or (result.failed and "int() argument must be a string, a bytes-like object" not in result.msg)
+    when: ipa_version is version("4.9", ">=")
+
+  - name: Ensure minlength is not cleared due to FreeIPA issue
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      minlength: ""
+    register: result
+    failed_when: not result.changed or result.failed
+    when: ipa_version is version("4.7", "<")
+
   - name: Execute tests if ipa_version >= 4.9.0
+    when: ipa_version is version("4.9", ">=")
     block:
     - name: Ensure maxrepeat of 2 for global_policy
       ipapwpolicy:
@@ -171,6 +239,13 @@
       register: result
       failed_when: not result.changed or result.failed
 
+    - name: Ensure usercheck and dictcheck have known values
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        dictcheck: false
+        usercheck: false
+
     - name: Ensure dictcheck is set for global_policy
       ipapwpolicy:
         ipaadmin_password: SomeADMINpassword
@@ -219,9 +294,26 @@
       register: result
       failed_when: not result.changed or result.failed
 
-    when: ipa_version is version("4.9", ">=")
+    - name: Ensure usercheck and dictcheck are cleared for global_policy
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        dictcheck: ""
+        usercheck: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure usercheck and dictcheck are cleared for global_policy, again
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        dictcheck: ""
+        usercheck: ""
+      register: result
+      failed_when: result.changed or result.failed
 
   - name: Execute tests if ipa_version >= 4.9.10
+    when: ipa_version is version("4.9.10", ">=")
     block:
     - name: Ensure grace limit is set to 10 for global_policy
       ipapwpolicy:
@@ -255,6 +347,22 @@
       register: result
       failed_when: not result.changed or result.failed
 
+    - name: Ensure grace limit is cleared for global_policy
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        gracelimit: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure grace limit is cleared for global_policy, again
+      ipapwpolicy:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        gracelimit: ""
+      register: result
+      failed_when: result.changed or result.failed
+
     - name: Ensure grace limit is not set to -2 for global_policy
       ipapwpolicy:
         ipaadmin_password: SomeADMINpassword
@@ -262,5 +370,3 @@
         gracelimit: -2
       register: result
       failed_when: not result.failed and "must be at least -1" not in result.msg
-
-    when: ipa_version is version("4.9.10", ">=")
