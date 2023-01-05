@@ -19,12 +19,15 @@ jobs:
       versionSpec: '${{ parameters.python_version }}'
 
   - script: python -m pip install --upgrade pip setuptools wheel ansible
+    retryCountOnTaskFailure: 5
     displayName: Install tools
 
   - script: pip install molecule[docker]
+    retryCountOnTaskFailure: 5
     displayName: Install molecule
 
   - script: molecule create -s ${{ parameters.build_scenario_name }}
+    retryCountOnTaskFailure: 5
     displayName: Create test container
     env:
       ANSIBLE_LIBRARY: ./molecule
