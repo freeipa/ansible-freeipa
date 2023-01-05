@@ -5,7 +5,8 @@
   gather_facts: false
 
   tasks:
-  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   - name: Tests requiring IPA version 4.8.7+
     block:

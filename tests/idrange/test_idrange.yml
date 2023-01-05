@@ -34,7 +34,8 @@
   # TESTS
 
   # Test local idrange, only if ipa-adtrust-install was not executed.
-  - block:
+  - name: Test local idrange
+    block:
       - name: Ensure idrange with minimal attributes is present
         ipaidrange:
           ipaadmin_password: SomeADMINpassword
@@ -118,7 +119,8 @@
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: local_id_range
 
-  - block:
+  - name: Execute idrange tests if trust test environment is supported
+    block:
       # Create trust with range_type: ipa-ad-trust
       - name: Create trust with range_type 'ipa-ad-trust'
         ansible.builtin.include_tasks: tasks_set_trust.yml

@@ -20,7 +20,8 @@
     # If neither distro nor family is supported, try a default configuration.
     - "vars/default.yml"
 
-- block:
+- name: Client configuration
+  block:
 
   # CA CERTS
 
@@ -99,7 +100,8 @@
 
   # Ensure /etc/sssd/pki exists
 
-  - block:
+  - name: Prepare for authselect
+    block:
     - name: Ensure /etc/sssd/pki exists
       ansible.builtin.file:
         path: /etc/sssd/pki

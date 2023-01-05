@@ -6,7 +6,8 @@
 
   tasks:
   # setup
-  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   # GET FQDN_AT_DOMAIN
 
@@ -136,7 +137,8 @@
 
     # service
 
-  - block:
+  - name: Execute tests if ipa_verison >= 4.7.0
+    block:
 
     - name: Ensure service "{{ 'HTTP/' + fqdn_at_domain }}" is present in group group1
       ipagroup:

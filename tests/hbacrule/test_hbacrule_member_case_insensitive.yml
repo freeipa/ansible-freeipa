@@ -25,9 +25,11 @@
       - sVCgrOUp1
 
   tasks:
-  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
-  - block:
+  - name: Test hbacrule member case insensitive
+    block:
       # setup
 
       - name: Ensure test hbacrule is absent

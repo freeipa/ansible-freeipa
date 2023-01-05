@@ -52,7 +52,8 @@
 
 ### INSTALL PACKAGES
 
-- block:
+- name: Package installation
+  block:
   - name: Ensure that IPA server packages are installed
     ansible.builtin.package:
       name: "{{ ipaserver_packages }}"
@@ -80,7 +81,8 @@
 
 ### START FIREWALLD
 
-- block:
+- name: Firewall configuration
+  block:
   - name: Ensure that firewalld is running
     ansible.builtin.systemd:
       name: firewalld

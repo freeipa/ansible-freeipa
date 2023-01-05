@@ -5,7 +5,8 @@
   gather_facts: no
 
   tasks:
-  - block:
+  - name: Test dnsconfig forwarders ports
+    block:
     # Setup.
     - name: Ensure forwarder with custom port is absent.
       ipadnsconfig:

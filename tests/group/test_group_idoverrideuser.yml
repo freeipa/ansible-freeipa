@@ -9,9 +9,11 @@
       ad_domain: "{{ test_ad_domain | default('ad.ipa.test') }}"
 
   tasks:
-    - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+    - name: Include tasks ../env_freeipa_facts.yml
+      ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
-    - block:
+    - name: Execute tests if ipa_verison >= 4.8.7 and trust test environment is supported
+      block:
       - name: Create idoverrideuser.
         ansible.builtin.shell: |
           kinit -c idoverride_cache admin <<< SomeADMINpassword

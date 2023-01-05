@@ -121,7 +121,8 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - block:
+  - name: Execute tests if ipa_version >= 4.9.0
+    block:
     - name: Ensure maxrepeat of 2 for global_policy
       ipapwpolicy:
         ipaadmin_password: SomeADMINpassword
@@ -220,7 +221,8 @@
 
     when: ipa_version is version("4.9", ">=")
 
-  - block:
+  - name: Execute tests if ipa_version >= 4.9.10
+    block:
     - name: Ensure grace limit is set to 10 for global_policy
       ipapwpolicy:
         ipaadmin_password: SomeADMINpassword

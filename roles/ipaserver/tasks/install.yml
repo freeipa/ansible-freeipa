@@ -1,7 +1,8 @@
 ---
 # tasks file for ipaserver
 
-- block:
+- name: Install - Package installation
+  block:
   - name: Install - Ensure that IPA server packages are installed
     ansible.builtin.package:
       name: "{{ ipaserver_packages }}"
@@ -27,7 +28,8 @@
 
   when: ipaserver_install_packages | bool
 
-- block:
+- name: Install - Firewall configuration
+  block:
   - name: Firewalld service - Ensure that firewalld is running
     ansible.builtin.systemd:
       name: firewalld
@@ -51,7 +53,8 @@
 
   when: ipaserver_setup_firewalld | bool
 
-- ansible.builtin.include_tasks: "{{ role_path }}/tasks/copy_external_cert.yml"
+- name: Include tasks "{{ role_path }}/tasks/copy_external_cert.yml"
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/copy_external_cert.yml"
   with_items: "{{ ipaserver_external_cert_files_from_controller }}"
   when: ipaserver_external_cert_files_from_controller is defined and
         ipaserver_external_cert_files_from_controller|length > 0 and
@@ -127,14 +130,16 @@
     ### additional ###
   register: result_ipaserver_test
 
-- block:
+- name: Install - Deploy server
+  block:
   # This block is executed only when
   # not ansible_check_mode and
   # not (not result_ipaserver_test.changed and
   #      (result_ipaserver_test.client_already_configured is defined or
   #       result_ipaserver_test.server_already_configured is defined)
 
-  - block:
+  - name: Install - Obtain master password
+    block:
     - name: Install - Master password creation
       no_log: yes
       ipaserver_master_password:
@@ -315,7 +320,8 @@
     when: result_ipaserver_setup_ca.csr_generated | bool and
           ipaserver_copy_csr_to_controller | bool
 
-  - block:
+  - name: Install - Configure services
+    block:
     - name: Install - Setup otpd
       ipaserver_setup_otpd:
         realm: "{{ result_ipaserver_test.realm }}"

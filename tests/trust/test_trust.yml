@@ -18,7 +18,8 @@
 
   tasks:
 
-  - block:
+  - name: Run tust tests, if supported by environment
+    block:
 
     - name: Delete test trust
       ipatrust:

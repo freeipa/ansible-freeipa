@@ -13,7 +13,8 @@
 
 
   tasks:
-  - block:
+  - name: Test sudorule member case insensitive
+    block:
     # SETUP
     - name: Ensure domain name
       ansible.builtin.set_fact:

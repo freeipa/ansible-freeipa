@@ -1,7 +1,8 @@
 ---
 # tasks file for ipareplica
 
-- block:
+- name: Package installation
+  block:
 
   - name: Install - Ensure IPA replica packages are installed
     ansible.builtin.package:
@@ -28,7 +29,8 @@
 
   when: ipareplica_install_packages | bool
 
-- block:
+- name: Firewall configuration
+  block:
   - name: Firewalld service - Ensure that firewalld is running
     ansible.builtin.systemd:
       name: firewalld
@@ -101,7 +103,8 @@
     no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
   register: result_ipareplica_test
 
-- block:
+- name: Install - Deploy replica
+  block:
   # This block is executed only when
   # not ansible_check_mode and
   # not (result_ipareplica_test.client_already_configured is defined or

@@ -20,7 +20,8 @@
     # If neither distro nor family is supported, try a default configuration.
     - "vars/default.yml"
 
-- block:
+- name: Server configuration
+  block:
 
   # CA CERTS
 
@@ -162,7 +163,8 @@
 
   # HTTPD IFP
 
-  - block:
+  - name: Allow HTTPD ifp
+    block:
 
     # Allow Apache to access SSSD IFP
 
@@ -190,7 +192,8 @@
 
   # Ensure /etc/sssd/pki exists
 
-  - block:
+  - name: Prepare for authselect
+    block:
     - name: Ensure /etc/sssd/pki exists
       ansible.builtin.file:
         path: /etc/sssd/pki

@@ -18,7 +18,8 @@
     register: previous
 
   # TESTS
-  - block:
+  - name: Test config sid
+    block:
     - name: Check if SID is enabled.
       ipaconfig:
         ipaadmin_password: SomeADMINpassword

@@ -30,7 +30,8 @@
     register: result
     failed_when: result.failed or not result.changed
 
-  - block:
+  - name: Change vault type from asymmetric to symmetric
+    block:
     - name: Change from asymmetric to symmetric
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -52,7 +53,8 @@
     vars:
       krb5ccname: verify_change_from_asymmetric
 
-  - block:
+  - name: Change vault type from symmetric to standard
+    block:
     - name: Change from symmetric to standard
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -82,7 +84,8 @@
     register: result
     failed_when: result.failed or not result.changed
 
-  - block:
+  - name: Change vault type from symmetric to asymmetric
+    block:
     - name: Change from symmetric to asymmetric
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -104,7 +107,8 @@
     vars:
       krb5ccname: verify_change_from_symmetric
 
-  - block:
+  - name: Change vault type from asymmetric to standard
+    block:
     - name: Change from asymmetric to standard
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -156,7 +160,8 @@
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'hello'
 
-  - block:
+  - name: Change vault type from asymmetric to symmetric, with data
+    block:
     - name: Change from asymmetric to symmetric, with data
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -187,7 +192,8 @@
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'hello'
 
-  - block:
+  - name: Change vault type from symmetric to standard, with data
+    block:
     - name: Change from symmetric to standard, with data
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -234,7 +240,8 @@
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'hello'
 
-  - block:
+  - name: Change vault type from symmetric to asymmetric, with data
+    block:
     - name: Change from symmetric to asymmetric, with data
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -265,7 +272,8 @@
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'hello'
 
-  - block:
+  - name: Change vault type from asymmetric to standard, with data
+    block:
     - name: Change from asymmetric to standard, with data
       ipavault:
         ipaadmin_password: SomeADMINpassword

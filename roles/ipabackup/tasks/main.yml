@@ -45,7 +45,8 @@
         state is defined and
         (state == "copied" or state == "restored" or state == "absent")
 
-- block:
+- name: Get all backup names for copy to controller
+  block:
   - name: Get list of all backups on IPA server
     ansible.builtin.shell:
       find . -name "ipa-full-*" -o -name "ipa-data-*" | cut -d"/" -f 2
@@ -62,7 +63,8 @@
          state == "absent") and
         ipabackup_name is defined and ipabackup_name == "all"
 
-- block:
+- name: Set ipabackup_names from ipabackup_name
+  block:
   - name: Fail on ipabackup_name all
     ansible.builtin.fail: msg="ipabackup_name can not be all in this case"
     when: ipabackup_name is defined and ipabackup_name == "all"
@@ -83,7 +85,8 @@
     ipabackup_names: []
   when: ipabackup_names is not defined and ipabackup_name is not defined
 
-- block:
+- name: Process "{{ ipabackup_names }}"
+  block:
   - name: Copy backup from IPA server
     ansible.builtin.include_tasks: "{{ role_path }}/tasks/copy_backup_from_server.yml"
     vars:
@@ -117,7 +120,8 @@
 
 # Use only first item in ipabackup_names for copy to server and for restore.
 
-- block:
+- name: Process "{{ ipabackup_names[0] }}"
+  block:
   - name: Copy backup to server
     ansible.builtin.include_tasks: "{{ role_path }}/tasks/copy_backup_to_server.yml"
 

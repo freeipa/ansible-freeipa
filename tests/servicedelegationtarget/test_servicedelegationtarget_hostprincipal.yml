@@ -6,10 +6,11 @@
 
   tasks:
   # setup
-  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
-  # host principals are only possible with IPA 4.9.0+
-  - block:
+  - name: Host principals are only possible with IPA 4.9.0+
+    block:
 
     # SET FACTS
 
