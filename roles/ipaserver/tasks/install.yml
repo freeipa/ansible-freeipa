@@ -148,8 +148,14 @@
     - name: Install - Use new master password
       no_log: yes
       ansible.builtin.set_fact:
-        ipaserver_master_password:
+        __derived_master_password:
           "{{ result_ipaserver_master_password.password }}"
+
+  - name: Use user defined master password, if provided
+    when: ipaserver_master_password is defined
+    no_log: yes
+    ansible.builtin.set_fact:
+      __derived_master_password: "{{ ipaserver_master_password }}"
 
   - name: Install - Server preparation
     ipaserver_prepare:
@@ -208,7 +214,7 @@
     ipaserver_setup_ds:
       dm_password: "{{ ipadm_password }}"
       password: "{{ ipaadmin_password }}"
-      # master_password: "{{ ipaserver_master_password }}"
+      # master_password: "{{ __derived_master_password }}"
       domain: "{{ result_ipaserver_test.domain }}"
       realm: "{{ result_ipaserver_test.realm | default(omit) }}"
       hostname: "{{ result_ipaserver_test.hostname }}"
@@ -237,7 +243,7 @@
     ipaserver_setup_krb:
       dm_password: "{{ ipadm_password }}"
       password: "{{ ipaadmin_password }}"
-      master_password: "{{ ipaserver_master_password }}"
+      master_password: "{{ __derived_master_password }}"
       domain: "{{ result_ipaserver_test.domain }}"
       realm: "{{ result_ipaserver_test.realm }}"
       hostname: "{{ result_ipaserver_test.hostname }}"
@@ -270,7 +276,7 @@
     ipaserver_setup_ca:
       dm_password: "{{ ipadm_password }}"
       password: "{{ ipaadmin_password }}"
-      master_password: "{{ ipaserver_master_password }}"
+      master_password: "{{ __derived_master_password }}"
       # ip_addresses: "{{ result_ipaserver_prepare.ip_addresses }}"
       domain: "{{ result_ipaserver_test.domain }}"
       realm: "{{ result_ipaserver_test.realm }}"
@@ -329,7 +335,7 @@
       ipaserver_setup_http:
         dm_password: "{{ ipadm_password }}"
         password: "{{ ipaadmin_password }}"
-        master_password: "{{ ipaserver_master_password }}"
+        master_password: "{{ __derived_master_password }}"
         domain: "{{ result_ipaserver_test.domain }}"
         realm: "{{ result_ipaserver_test.realm }}"
         hostname: "{{ result_ipaserver_test.hostname }}"
