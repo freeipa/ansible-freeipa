@@ -39,13 +39,14 @@ def galaxyfy_playbook(project_prefix, collection_prefix, lines):
         if stripped.startswith("- name:") or \
            stripped.startswith("- block:"):
             changeable = True
-        elif stripped in ["set_fact:", "vars:"]:
+        elif stripped in ["set_fact:", "ansible.builtin.set_fact:", "vars:"]:
             changeable = False
             include_role = False
         elif stripped == "roles:":
             changeable = True
             include_role = False
-        elif stripped.startswith("include_role:"):
+        elif (stripped.startswith("include_role:") or
+              stripped.startswith("ansible.builtin.include_role:")):
             include_role = True
         elif include_role and stripped.startswith("name:"):
             line = po2.sub(pattern2, line)
