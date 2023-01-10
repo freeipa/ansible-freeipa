@@ -217,7 +217,7 @@
             and ipaadmin_keytab is undefined
             and ipaclient_keytab is undefined
 
-  - name: Install - Purge {{ result_ipaclient_test.realm }} from host keytab
+  - name: "Install - From host keytab, purge {{ result_ipaclient_test.realm }}"
     ansible.builtin.command: >
       /usr/sbin/ipa-rmkeytab
       -k /etc/krb5.keytab

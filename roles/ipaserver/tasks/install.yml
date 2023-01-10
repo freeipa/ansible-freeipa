@@ -52,7 +52,7 @@
       >/dev/null
     when: ipaserver_firewalld_zone is defined
 
-- name: Copy external cert
+- name: Copy external certs
   ansible.builtin.include_tasks: "{{ role_path }}/tasks/copy_external_cert.yml"
   with_items: "{{ ipaserver_external_cert_files_from_controller }}"
   when: ipaserver_external_cert_files_from_controller is defined and
@@ -314,7 +314,7 @@
       _http_ca_cert: "{{ result_ipaserver_test._http_ca_cert }}"
     register: result_ipaserver_setup_ca
 
-  - name: Copy /root/ipa.csr to "{{ inventory_hostname }}-ipa.csr"
+  - name: Copy /root/ipa.csr to "{{ inventory_hostname + '-ipa.csr' }}"
     ansible.builtin.fetch:
       src: /root/ipa.csr
       dest: "{{ inventory_hostname }}-ipa.csr"
