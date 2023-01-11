@@ -1,0 +1,235 @@
+---
+
+- name: Test sudorule with external members
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: true
+  gather_facts: true
+
+  tasks:
+  - name: Test sudorule with external members
+    block:
+    # setup
+    - name: Ensure sudorules are absent
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - testrule1
+          - testrule2
+        state: absent
+
+    - name: Ensure external user and user are absent
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - external-user
+          - user01
+        state: absent
+
+    - name: Ensure external group and group are absent
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - external-group
+          - group01
+        state: absent
+
+    - name: Ensure external host is absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - external.host
+        state: absent
+
+    - name: Ensure user is present
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: user01
+        first: user
+        last: zeroone
+
+    - name: Ensure group is present
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: group01
+
+    - name: Ensure host is present
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: "{{ ansible_facts['fqdn'] }}"
+
+    - name: Ensure sudorule testrule2 is present
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testrule2
+
+    # tests
+    - name: Ensure sudorule is present with users and hosts (action sudorule)
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testrule1
+        user:
+          - external-user
+          - user01
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+        runasuser:
+          - user01
+          - external-user
+        runasgroup:
+          - group01
+          - external-group
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present with users and hosts (action sudorule) again
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testrule1
+        user:
+          - external-user
+          - user01
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+        runasuser:
+          - user01
+          - external-user
+        runasgroup:
+          - group01
+          - external-group
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorule is present with users and hosts (action member)
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testrule2
+        user:
+          - external-user
+          - user01
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+        runasuser:
+          - user01
+          - external-user
+        runasgroup:
+          - group01
+          - external-group
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorule is present with users and hosts (action member) again
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testrule2
+        user:
+          - external-user
+          - user01
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+        runasuser:
+          - user01
+          - external-user
+        runasgroup:
+          - group01
+          - external-group
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure users and hosts are absent in sudorule (action member)
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testrule2
+        user:
+          - external-user
+          - user01
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+        runasuser:
+          - user01
+          - external-user
+        runasgroup:
+          - group01
+          - external-group
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure users and hosts are absent in sudorule (action member) again
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testrule2
+        user:
+          - external-user
+          - user01
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+        runasuser:
+          - user01
+          - external-user
+        runasgroup:
+          - group01
+          - external-group
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    always:
+    # cleanup
+    - name: Ensure sudorules are absent
+      ipasudorule:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+        - testrule1
+        - testrule2
+        state: absent
+
+    - name: Ensure external user and user are absent
+      ipauser:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+        - external-user
+        - user01
+        state: absent
+
+    - name: Ensure external group and group are absent
+      ipagroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+        - external-group
+        - group01
+        state: absent
+
+    - name: Ensure external host is absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+        - external.host
+        state: absent
