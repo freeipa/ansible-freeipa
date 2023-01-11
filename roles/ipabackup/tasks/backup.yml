@@ -13,7 +13,8 @@
     {{ "--log-file="+ipabackup_log_file if ipabackup_log_file is defined else "" }}
   register: result_ipabackup
 
-- block:
+- name: Handle backup
+  block:
   - name: Get ipabackup_item from stderr or stdout output
     ansible.builtin.set_fact:
       ipabackup_item: "{{ item | regex_search('\n.*/([^\n]+)','\\1') | first }}"

@@ -32,7 +32,8 @@
       key: NewKeyName
       state: absent
 
-  - block:
+  - name: Execute Automount Key tests
+    block:
     ### test the key creation, and modification
     - name: ensure key TestKey is present
       ipaautomountkey:

@@ -17,7 +17,8 @@
 
   tasks:
   # setup
-  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   # tests
   - name: Tests with skip_host_check, require IPA version 4.8.0+.

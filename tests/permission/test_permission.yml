@@ -4,7 +4,8 @@
   become: true
 
   tasks:
-  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+  - name: Include task ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   - name: Ensure testing groups are present.
     ipagroup:

@@ -7,7 +7,8 @@
   tasks:
 
   # CLEANUP TEST ITEMS
-  - block:
+  - name: Ensure ipa_server_name is set
+    block:
       - name: Get server name from hostname
         ansible.builtin.set_fact:
           ipa_server_name: "{{ ansible_facts['fqdn'].split('.')[0] }}"
@@ -17,7 +18,8 @@
           ipa_server_name: ipaserver
     when: ipa_server_name is not defined
 
-  - block:
+  - name: Ensure ipaserver_domain is set
+    block:
       - name: Get domain name from hostname.
         ansible.builtin.set_fact:
           ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"

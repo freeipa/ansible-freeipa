@@ -5,7 +5,8 @@
   gather_facts: no
 
   tasks:
-  - block:
+  - name: Test sudorule single hostnames
+    block:
     # setup test environment
     - name: Get Domain from the server name
       ansible.builtin.set_fact:

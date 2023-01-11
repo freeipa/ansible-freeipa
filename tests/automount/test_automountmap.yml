@@ -35,7 +35,8 @@
       state: present
 
   # TESTS
-  - block:
+  - name: Execute Automount Map tests
+    block:
     - name: ensure map TestMap is present
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword

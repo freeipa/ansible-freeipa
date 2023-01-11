@@ -204,7 +204,8 @@
 
     # EXTERNAL MEMBER TEST (REQUIRES AD)
 
-    - block:
+    - name: Execute group tests if trust test environment is supported
+      block:
 
       - name: Ensure users testuser1, testuser2 and testuser3 are present in group externalgroup
         ipagroup:

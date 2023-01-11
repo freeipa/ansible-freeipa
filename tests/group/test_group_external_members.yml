@@ -6,9 +6,11 @@
 
   tasks:
 
-  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
-  - block:
+  - name: Execute group tests if trust test environment is supported
+    block:
 
     - name: Add nonposix group.
       ipagroup:

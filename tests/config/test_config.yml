@@ -5,9 +5,11 @@
   gather_facts: false
 
   tasks:
-  - ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
-  - block:
+  - name: Execute config tests
+    block:
       # Retrieve current configuration.
       - name: return current values of the global configuration options
         ipaconfig:
@@ -56,7 +58,8 @@
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           pac_type: ""
 
-      - block:
+      - name: Execute tests if ipa_version >= 4.8.0
+        block:
           - name: set maxhostname to 255
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
@@ -221,7 +224,8 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - block:
+      - name: Execute tests if ipa_version >= 4.8.0
+        block:
           - name: set maxhostname to 77
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
@@ -410,7 +414,8 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - block:
+      - name: Execute tests if ipa_version >= 4.8.0
+        block:
           - name: reset maxhostname
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
@@ -445,7 +450,8 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - block:
+      - name: Execute tests if ipa_version >= 4.8.0
+        block:
           - name: reset maxhostname
             ipaconfig:
               ipaadmin_password: SomeADMINpassword

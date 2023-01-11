@@ -30,7 +30,8 @@
     ipa_host_is_client: "{{ (output.stdout_lines[-1] == 'CLIENT') | bool }}"
     trust_test_is_supported: no
 
-- block:
+- name: Ensure ipaserver_domain is set
+  block:
   - name: Get Domain from server name
     ansible.builtin.set_fact:
       ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
