@@ -16,6 +16,11 @@ exclude_paths:
 kinds:
   - playbook: '**/tests/**/test_*.yml'
   - playbook: '**/playbooks/**/*.yml'
+  - playbook: '**/tests/ca-less/install_*_without_ca.yml'
+  - playbook: '**/tests/ca-less/clean_up_certificates.yml'
+  - playbook: '**/tests/external-signed-ca-with-automatic-copy/install-server-with-external-ca-with-automatic-copy.yml'
+  - playbook: '**/tests/external-signed-ca-with-manual-copy/install-server-with-external-ca-with-manual-copy.yml'
+  - playbook: '**/tests/user/create_users_json.yml'
   - tasks: '**/tasks_*.yml'
   - tasks: '**/env_*.yml'
 
