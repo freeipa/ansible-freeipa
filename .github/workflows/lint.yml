@@ -16,7 +16,7 @@ jobs:
           python-version: "3.x"
       - name: Run ansible-lint
         run: |
-          pip install ansible-core==2.11.6 ansible-lint
+          pip install "ansible-core >=2.14,<2.15" ansible-lint
           find playbooks roles tests -name '*.yml' ! -name "env_*" ! -name "tasks_*" -exec ansible-lint --force-color {} \+
         env:
           ANSIBLE_MODULE_UTILS: plugins/module_utils
@@ -34,7 +34,7 @@ jobs:
         with:
           python-version: "3.x"
       - name: Run yaml-lint
-        uses: ibiqlik/action-yamllint@v1
+        uses: ibiqlik/action-yamllint@v3.1.1
 
   pydocstyle:
     name: Verify pydocstyle
@@ -63,7 +63,7 @@ jobs:
           python-version: "3.x"
       - name: Run flake8
         run: |
-            pip install flake8
+            pip install flake8 flake8-bugbear
             flake8
 
   pylint:
@@ -78,7 +78,7 @@ jobs:
           python-version: "3.x"
       - name: Run pylint
         run: |
-            pip install pylint==2.13.7 wrapt==1.14.0
+            pip install pylint==2.14.4 wrapt==1.14.0
             pylint plugins roles --disable=import-error
 
   shellcheck:
