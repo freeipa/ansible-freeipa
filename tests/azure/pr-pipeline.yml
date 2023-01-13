@@ -38,7 +38,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: c9s
-      ansible_version: "-core >=2.12,<2.13"
+      ansible_version: "-core >=2.13,<2.14"
 
 # CentOS 8 Stream
 
@@ -49,7 +49,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: c8s
-      ansible_version: "-core >=2.12,<2.13"
+      ansible_version: "-core >=2.13,<2.14"
 
 # CentOS 7
 
@@ -60,7 +60,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: centos-7
-      ansible_version: "-core >=2.12,<2.13"
+      ansible_version: "-core >=2.13,<2.14"
 
 # Rawhide
 
@@ -71,4 +71,4 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: fedora-rawhide
-      ansible_version: "-core >=2.12,<2.13"
+      ansible_version: "-core >=2.13,<2.14"
