@@ -17,11 +17,9 @@ jobs:
       - name: Run ansible-lint
         run: |
           pip install "ansible-core >=2.14,<2.15" ansible-lint
-          find playbooks roles tests -name '*.yml' ! -name "env_*" ! -name "tasks_*" -exec ansible-lint --force-color {} \+
-        env:
-          ANSIBLE_MODULE_UTILS: plugins/module_utils
-          ANSIBLE_LIBRARY: plugins/modules
-          ANSIBLE_DOC_FRAGMENT_PLUGINS: plugins/doc_fragments
+          utils/build-galaxy-release.sh -ki
+          cd .galaxy-build
+          ansible-lint roles plugins
 
   yamllint:
     name: Verify yamllint
