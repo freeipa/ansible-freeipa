@@ -5,15 +5,16 @@
   ansible.builtin.shell: >
     ipa-backup
     {{ "--gpg" if ipabackup_gpg | bool else "" }}
-    {{ "--gpg-keyring="+ipabackup_gpg_keyring if ipabackup_gpg_keyring is defined else "" }}
+    {{ "--gpg-keyring=" + ipabackup_gpg_keyring if ipabackup_gpg_keyring is defined else "" }}
     {{ "--data" if ipabackup_data | bool else "" }}
     {{ "--logs" if ipabackup_logs | bool else "" }}
     {{ "--online" if ipabackup_online | bool else "" }}
     {{ "--disable-role-check" if ipabackup_disable_role_check | bool else "" }}
-    {{ "--log-file="+ipabackup_log_file if ipabackup_log_file is defined else "" }}
+    {{ "--log-file=" + ipabackup_log_file if ipabackup_log_file is defined else "" }}
   register: result_ipabackup
 
 - name: Handle backup
+  when: ipabackup_to_controller
   block:
   - name: Get ipabackup_item from stderr or stdout output
     ansible.builtin.set_fact:
@@ -26,7 +27,8 @@
       label: ""
 
   - name: Fail on missing ipabackup_item
-    ansible.builtin.fail: msg="Failed to get ipabackup_item"
+    ansible.builtin.fail:
+      msg: "Failed to get ipabackup_item"
     when: ipabackup_item is not defined
 
   - name: Copy backup to controller
@@ -36,5 +38,3 @@
   - name: Remove backup on server
     ansible.builtin.include_tasks: "{{ role_path }}/tasks/remove_backup_from_server.yml"
     when: not ipabackup_keep_on_server
-
-  when: ipabackup_to_controller

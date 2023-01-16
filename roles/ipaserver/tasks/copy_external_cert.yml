@@ -1,14 +1,18 @@
 ---
-- name: Install - Initialize ipaserver_external_cert_files
-  ansible.builtin.set_fact:
-     ipaserver_external_cert_files: []
-  when: ipaserver_external_cert_files is undefined
-- name: Install - Copy "{{ item }}" "{{ inventory_hostname }}':/root/'{{ item | basename }}"
-  ansible.builtin.copy:
-    src: "{{ item }}"
-    dest: "/root/{{ item | basename }}"
-    mode: preserve
-    force: yes
-- name: Install - Extend ipaserver_external_cert_files with "/root/{{ item | basename }}"
-  ansible.builtin.set_fact:
-    ipaserver_external_cert_files: "{{ ipaserver_external_cert_files + [ '/root/' + (item | basename) ] }}"
+- name: Copy external certificates
+  vars:
+    __item_basename: "{{ item | basename }}"
+  block:
+  - name: Install - Initialize ipaserver_external_cert_files
+    ansible.builtin.set_fact:
+      ipaserver_external_cert_files: []
+    when: ipaserver_external_cert_files is undefined
+  - name: Install - Copy "{{ item + " " + inventory_hostname + ':/root/' + __item_basename }}"
+    ansible.builtin.copy:
+      src: "{{ item }}"
+      dest: "/root/{{ __item_basename }}"
+      mode: preserve
+      force: yes
+  - name: Install - Extend ipaserver_external_cert_files with "/root/{{ __item_basename }}"
+    ansible.builtin.set_fact:
+      ipaserver_external_cert_files: "{{ ipaserver_external_cert_files + ['/root/' + (__item_basename)] }}"
