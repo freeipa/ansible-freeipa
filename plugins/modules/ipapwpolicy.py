@@ -171,7 +171,8 @@ def find_pwpolicy(module, name):
     return None
 
 
-def gen_args(maxlife, minlife, history, minclasses, minlength, priority,
+def gen_args(module,
+             maxlife, minlife, history, minclasses, minlength, priority,
              maxfail, failinterval, lockouttime, maxrepeat, maxsequence,
              dictcheck, usercheck, gracelimit):
     _args = {}
@@ -198,9 +199,19 @@ def gen_args(maxlife, minlife, history, minclasses, minlength, priority,
     if maxsequence is not None:
         _args["ipapwdmaxrsequence"] = maxsequence
     if dictcheck is not None:
-        _args["ipapwddictcheck"] = dictcheck
+        if module.ipa_check_version("<", "4.9.10"):
+            # Allowed values: "TRUE", "FALSE", ""
+            _args["ipapwddictcheck"] = "TRUE" if dictcheck is True else \
+                "FALSE" if dictcheck is False else dictcheck
+        else:
+            _args["ipapwddictcheck"] = dictcheck
     if usercheck is not None:
-        _args["ipapwdusercheck"] = usercheck
+        if module.ipa_check_version("<", "4.9.10"):
+            # Allowed values: "TRUE", "FALSE", ""
+            _args["ipapwdusercheck"] = "TRUE" if usercheck is True else \
+                "FALSE" if usercheck is False else usercheck
+        else:
+            _args["ipapwdusercheck"] = usercheck
     if gracelimit is not None:
         _args["passwordgracelimit"] = gracelimit
 
@@ -349,7 +360,7 @@ def main():
     maxsequence = int_or_empty_param(maxsequence, "maxsequence")
     gracelimit = int_or_empty_param(gracelimit, "gracelimit")
 
-    def bool_param(value, param):  # pylint: disable=R1710
+    def bool_or_empty_param(value, param):  # pylint: disable=R1710
         # As of Ansible 2.14, values True, False, Yes an No, with variable
         # capitalization are accepted by Ansible.
         if not value:
@@ -362,8 +373,8 @@ def main():
             msg="Invalid value '%s' for argument '%s'." % (value, param)
         )
 
-    dictcheck = bool_param(dictcheck, "dictcheck")
-    usercheck = bool_param(usercheck, "usercheck")
+    dictcheck = bool_or_empty_param(dictcheck, "dictcheck")
+    usercheck = bool_or_empty_param(usercheck, "usercheck")
 
     # Ensure gracelimit has proper limit.
     if gracelimit:
@@ -392,7 +403,8 @@ def main():
             # Create command
             if state == "present":
                 # Generate args
-                args = gen_args(maxlife, minlife, history, minclasses,
+                args = gen_args(ansible_module,
+                                maxlife, minlife, history, minclasses,
                                 minlength, priority, maxfail, failinterval,
                                 lockouttime, maxrepeat, maxsequence, dictcheck,
                                 usercheck, gracelimit)
