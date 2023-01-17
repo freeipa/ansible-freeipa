@@ -11,7 +11,7 @@
     ansible.builtin.include_tasks: env_setup.yml
 
   # Tests
-  - name: Check if zone is present, when in shouldn't be.
+  - name: Check if zone is present, when it shouldn't be.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -21,7 +21,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Check if zone is present again, when in shouldn't be.
+  - name: Check if zone is present again, when it shouldn't be.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -40,7 +40,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Check if zone is present, when in should be.
+  - name: Check if zone is present, when it should be.
     ipadnszone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
