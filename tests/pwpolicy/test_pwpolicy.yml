@@ -175,7 +175,13 @@
       name: ops
       minlength: ""
     register: result
-    failed_when: result.changed or (result.failed and "int() argument must be a string, a bytes-like object" not in result.msg)
+    failed_when:
+        result.changed or (
+            result.failed and not (
+                "an internal error has occurred" in result.msg
+                or "int() argument must be" in result.msg
+            )
+        )
     when: ipa_version is version("4.9", ">=")
 
   - name: Ensure minlength is not cleared due to FreeIPA issue
