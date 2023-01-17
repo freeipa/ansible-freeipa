@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# CHANGE ONLY TO SPAWN AZURE TESTS
+
 # Authors:
 #   Thomas Woerner <twoerner@redhat.com>
 #
