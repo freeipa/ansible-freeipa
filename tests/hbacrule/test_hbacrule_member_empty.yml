@@ -6,7 +6,7 @@
   tasks:
   - name: Get Domain from server name
     ansible.builtin.set_fact:
-      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
     when: ipaserver_domain is not defined
 
   - name: Test hbacrule member empty

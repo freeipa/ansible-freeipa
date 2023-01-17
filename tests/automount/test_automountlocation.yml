@@ -5,7 +5,7 @@
   gather_facts: false
 
   tasks:
-  - name: ensure automountlocation TestLocations are absent before testing
+  - name: Ensure automountlocation TestLocations are absent before testing
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -14,7 +14,7 @@
       - TestLocation_02
       state: absent
 
-  - name: ensure empty automountlocation does nothing
+  - name: Ensure empty automountlocation does nothing
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -23,7 +23,7 @@
     register: result
     failed_when: not result.failed or "At least one location must be provided" not in result.msg
 
-  - name: ensure empty automountlocation does nothing on absent
+  - name: Ensure empty automountlocation does nothing on absent
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -32,7 +32,7 @@
     register: result
     failed_when: not result.failed or "At least one location must be provided" not in result.msg
 
-  - name: ensure automountlocation TestLocation is present
+  - name: Ensure automountlocation TestLocation is present
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -41,7 +41,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: ensure automountlocation TestLocation is present again
+  - name: Ensure automountlocation TestLocation is present again
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -50,7 +50,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: ensure automountlocation TestLocation is absent
+  - name: Ensure automountlocation TestLocation is absent
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -59,7 +59,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: ensure automountlocation TestLocation is absent again
+  - name: Ensure automountlocation TestLocation is absent again
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -68,7 +68,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: ensure a list of automountlocations are present
+  - name: Ensure a list of automountlocations are present
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -79,7 +79,7 @@
     register: result
     failed_when: result.failed or not result.changed
 
-  - name: ensure a list of automountlocations exist
+  - name: Ensure a list of automountlocations exist
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -90,7 +90,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: ensure a list of automountlocations are absent
+  - name: Ensure a list of automountlocations are absent
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -101,7 +101,7 @@
     register: result
     failed_when: result.failed or not result.changed
 
-  - name: ensure multiple automountlocations are absent
+  - name: Ensure multiple automountlocations are absent
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"

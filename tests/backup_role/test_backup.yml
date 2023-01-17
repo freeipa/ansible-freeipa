@@ -174,7 +174,7 @@
     become: no
 
   # Copy all backups from server
-  - name: list all existing backups on server
+  - name: List all existing backups on server
     ansible.builtin.find:
       path: /var/lib/ipa/backup
       recurse: no
@@ -305,7 +305,7 @@
     become: no
 
   # Remove all backups from server
-  - name: list all existing backups on server
+  - name: List all existing backups on server
     ansible.builtin.find:
       path: /var/lib/ipa/backup
       recurse: no
@@ -320,7 +320,7 @@
       state: absent
       ipabackup_name: all
 
-  - name: list all existing backups on server
+  - name: List all existing backups on server
     ansible.builtin.find:
       path: /var/lib/ipa/backup
       recurse: no
@@ -342,7 +342,7 @@
       state: absent
       ipabackup_name: all
 
-  - name: list all existing backups on server
+  - name: List all existing backups on server
     ansible.builtin.find:
       path: /var/lib/ipa/backup
       recurse: no

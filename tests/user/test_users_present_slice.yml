@@ -19,5 +19,5 @@
   - name: Users present
     ipauser:
       ipaadmin_password: SomeADMINpassword
-      users: "{{ users[item:item+slice_size] }}"
-    loop: "{{ range(0,users | length, slice_size) | list }}"
+      users: "{{ users[item : item + slice_size] }}"
+    loop: "{{ range(0, users | length, slice_size) | list }}"

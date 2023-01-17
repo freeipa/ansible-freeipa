@@ -48,7 +48,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: check if 'ipa-ad-trust' trust exists
+    - name: Check if 'ipa-ad-trust' trust exists
       ansible.builtin.shell: |
         echo 'SomeADMINpassword' | kinit admin
         ipa trust-find

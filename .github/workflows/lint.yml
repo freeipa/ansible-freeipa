@@ -19,7 +19,7 @@ jobs:
           pip install "ansible-core >=2.14,<2.15" ansible-lint
           utils/build-galaxy-release.sh -ki
           cd .galaxy-build
-          ansible-lint roles plugins
+          ansible-lint
 
   yamllint:
     name: Verify yamllint

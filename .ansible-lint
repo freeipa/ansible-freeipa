@@ -33,6 +33,8 @@ skip_list:
   - '305'  # Use shell only when shell functionality is required
   - '306'  # risky-shell-pipe
   - yaml   # yamllint should be executed separately.
+  - experimental   # Do not run any experimental tests
+  - name[template] # Allow Jinja templating inside task names
 
 use_default_rules: true
 

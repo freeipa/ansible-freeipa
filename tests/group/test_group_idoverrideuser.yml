@@ -103,4 +103,4 @@
           kdestroy -A -q -c idoverride_cache
         when:
 
-      when: ipa_version is version("4.8.7", ">=")  and trust_test_is_supported | default(false)
+      when: ipa_version is version("4.8.7", ">=") and trust_test_is_supported | default(false)

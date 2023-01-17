@@ -5,7 +5,7 @@
   gather_facts: false
 
   tasks:
-  - name: ensure test forwardzones are absent
+  - name: Ensure test forwardzones are absent
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -14,7 +14,7 @@
       - newfailzone.com
       state: absent
 
-  - name: ensure forwardzone example.com is created
+  - name: Ensure forwardzone example.com is created
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -27,7 +27,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: ensure forwardzone example.com is present again
+  - name: Ensure forwardzone example.com is present again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -40,7 +40,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: ensure forwardzone example.com has two forwarders
+  - name: Ensure forwardzone example.com has two forwarders
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -55,7 +55,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: ensure forwardzone example.com has one forwarder again
+  - name: Ensure forwardzone example.com has one forwarder again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -68,7 +68,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: skip_overlap_check can only be set on creation so change nothing
+  - name: Skip_overlap_check can only be set on creation so change nothing
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -81,7 +81,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: ensure forwardzone example.com is absent.
+  - name: Ensure forwardzone example.com is absent.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -90,7 +90,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: ensure forwardzone example.com is absent, again.
+  - name: Ensure forwardzone example.com is absent, again.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -99,7 +99,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: change all the things at once
+  - name: Change all the things at once
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -115,7 +115,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: change zone forward policy
+  - name: Change zone forward policy
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -124,7 +124,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: change zone forward policy, again
+  - name: Change zone forward policy, again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -133,7 +133,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: ensure forwardzone example.com is absent.
+  - name: Ensure forwardzone example.com is absent.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -142,7 +142,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: ensure forwardzone example.com is absent, again.
+  - name: Ensure forwardzone example.com is absent, again.
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -151,7 +151,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: ensure forwardzone example.com is created with minimal args
+  - name: Ensure forwardzone example.com is created with minimal args
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -163,7 +163,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: ensure forwardzone example.com is created with minimal args, again
+  - name: Ensure forwardzone example.com is created with minimal args, again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -175,7 +175,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: add a forwarder to any existing ones
+  - name: Add a forwarder to any existing ones
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -188,7 +188,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: add a forwarder to any existing ones, again
+  - name: Add a forwarder to any existing ones, again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -201,7 +201,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: check the list of forwarders is what we expect
+  - name: Check the list of forwarders is what we expect
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -215,7 +215,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: remove a single forwarder
+  - name: Remove a single forwarder
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -227,7 +227,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: remove a single forwarder, again
+  - name: Remove a single forwarder, again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -239,7 +239,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: check the list of forwarders is what we expect now
+  - name: Check the list of forwarders is what we expect now
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -292,7 +292,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: disable the forwarder
+  - name: Disable the forwarder
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -301,7 +301,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: disable the forwarder again
+  - name: Disable the forwarder again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -310,7 +310,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: enable the forwarder
+  - name: Enable the forwarder
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -319,7 +319,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: enable the forwarder, again
+  - name: Enable the forwarder, again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -328,14 +328,14 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: ensure forwardzone example.com is absent again
+  - name: Ensure forwardzone example.com is absent again
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: example.com
       state: absent
 
-  - name: try to create a new forwarder with action=member
+  - name: Try to create a new forwarder with action=member
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -349,7 +349,7 @@
     register: result
     failed_when: not result.failed or "not found" not in result.msg
 
-  - name: try to create a new forwarder with disabled state
+  - name: Try to create a new forwarder with disabled state
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -366,7 +366,7 @@
     register: result
     failed_when: not result.failed or "No forwarders specified" not in result.msg
 
-  - name: ensure forwardzone example.com is absent - tidy up
+  - name: Ensure forwardzone example.com is absent - tidy up
     ipadnsforwardzone:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"

@@ -11,7 +11,7 @@
   - name: Execute config tests
     block:
       # Retrieve current configuration.
-      - name: return current values of the global configuration options
+      - name: Return current values of the global configuration options
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -22,7 +22,7 @@
           var: previousconfig
 
       # setup environment.
-      - name: create test group
+      - name: Create test group
         ipagroup:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -34,25 +34,25 @@
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           emaildomain: ipa.test
 
-      - name: set default shell to '/bin/sh'
+      - name: Set default shell to '/bin/sh'
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           defaultshell: /bin/sh
 
-      - name: set default group
+      - name: Set default group
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           defaultgroup: ipausers
 
-      - name: set default home directory
+      - name: Set default home directory
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           homedirectory: /home
 
-      - name: clear pac-type
+      - name: Clear pac-type
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -60,68 +60,68 @@
 
       - name: Execute tests if ipa_version >= 4.8.0
         block:
-          - name: set maxhostname to 255
+          - name: Set maxhostname to 255
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
               maxhostname: 255
         when: ipa_version is version('4.8.0', '>=')
 
-      - name: set maxusername to 45
+      - name: Set maxusername to 45
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           maxusername: 45
 
-      - name: set pwdexpnotify to 0
+      - name: Set pwdexpnotify to 0
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           pwdexpnotify: 0
 
-      - name: set searchrecordslimit to 10
+      - name: Set searchrecordslimit to 10
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           searchrecordslimit: 10
 
-      - name: set searchtimelimit to 1
+      - name: Set searchtimelimit to 1
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           searchtimelimit: 1
 
-      - name: clear configstring
+      - name: Clear configstring
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           configstring: ""
 
-      - name: set configstring to AllowNThash
+      - name: Set configstring to AllowNThash
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           configstring: 'KDC:Disable Lockout'
 
-      - name: set selinuxusermapdefault
+      - name: Set selinuxusermapdefault
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           selinuxusermapdefault: "staff_u:s0-s0:c0.c1023"
 
-      - name: set selinuxusermaporder
+      - name: Set selinuxusermaporder
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           selinuxusermaporder: 'user_u:s0$staff_u:s0-s0:c0.c1023'
 
-      - name: set usersearch to `uid`
+      - name: Set usersearch to `uid`
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           usersearch: uid
 
-      - name: set groupsearch to `cn`
+      - name: Set groupsearch to `cn`
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -144,7 +144,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set default shell to '/bin/someshell'
+      - name: Set default shell to '/bin/someshell'
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -152,7 +152,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set default shell to '/bin/someshell', again.
+      - name: Set default shell to '/bin/someshell', again.
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -160,7 +160,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set default group
+      - name: Set default group
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -168,7 +168,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set default group, again
+      - name: Set default group, again
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -176,7 +176,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set default home directory
+      - name: Set default home directory
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -184,7 +184,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set default home directory, again
+      - name: Set default home directory, again
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -192,7 +192,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set pac-type
+      - name: Set pac-type
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -200,7 +200,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set pac-type, again.
+      - name: Set pac-type, again.
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -208,7 +208,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set maxusername to 33
+      - name: Set maxusername to 33
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -216,7 +216,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set maxusername to 33, again.
+      - name: Set maxusername to 33, again.
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -226,7 +226,7 @@
 
       - name: Execute tests if ipa_version >= 4.8.0
         block:
-          - name: set maxhostname to 77
+          - name: Set maxhostname to 77
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -234,7 +234,7 @@
             register: result
             failed_when: not result.changed or result.failed
 
-          - name: set maxhostname to 77, again
+          - name: Set maxhostname to 77, again
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -243,7 +243,7 @@
             failed_when: result.changed or result.failed
         when: ipa_version is version('4.8.0', '>=')
 
-      - name: set pwdexpnotify to 17
+      - name: Set pwdexpnotify to 17
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -251,7 +251,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set pwdexpnotify to 17, again
+      - name: Set pwdexpnotify to 17, again
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -259,7 +259,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set searchrecordslimit to -1
+      - name: Set searchrecordslimit to -1
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -267,7 +267,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set searchrecordslimit to -1, again.
+      - name: Set searchrecordslimit to -1, again.
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -275,7 +275,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set searchtimelimit to 12345
+      - name: Set searchtimelimit to 12345
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -283,7 +283,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set searchtimelimit to 12345, again.
+      - name: Set searchtimelimit to 12345, again.
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -291,7 +291,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: change enable_migration
+      - name: Change enable_migration
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -299,7 +299,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: change enable_migration, again
+      - name: Change enable_migration, again
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -307,7 +307,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set configstring to AllowNThash
+      - name: Set configstring to AllowNThash
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -315,7 +315,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set configstring to AllowNThash, again.
+      - name: Set configstring to AllowNThash, again.
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -323,7 +323,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set selinuxusermaporder
+      - name: Set selinuxusermaporder
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -331,7 +331,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set selinuxusermaporder, again
+      - name: Set selinuxusermaporder, again
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -339,7 +339,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set selinuxusermapdefault
+      - name: Set selinuxusermapdefault
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -347,7 +347,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set selinuxusermapdefault, again
+      - name: Set selinuxusermapdefault, again
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -355,7 +355,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set groupsearch to `description`
+      - name: Set groupsearch to `description`
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -363,7 +363,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set groupsearch to `gidNumber`, again
+      - name: Set groupsearch to `gidNumber`, again
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -371,7 +371,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: set usersearch to `uidNumber`
+      - name: Set usersearch to `uidNumber`
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -379,7 +379,7 @@
         register: result
         failed_when: not result.changed or result.failed
 
-      - name: set usersearch to `uidNumber`, again
+      - name: Set usersearch to `uidNumber`, again
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -387,7 +387,7 @@
         register: result
         failed_when: result.changed or result.failed
 
-      - name: reset changed fields
+      - name: Reset changed fields
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -416,14 +416,14 @@
 
       - name: Execute tests if ipa_version >= 4.8.0
         block:
-          - name: reset maxhostname
+          - name: Reset maxhostname
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
               maxhostname: '{{ previousconfig.config.maxhostname | default(omit) }}'
         when: ipa_version is version('4.8.0', '>=')
 
-      - name: reset changed fields, again
+      - name: Reset changed fields, again
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -452,7 +452,7 @@
 
       - name: Execute tests if ipa_version >= 4.8.0
         block:
-          - name: reset maxhostname
+          - name: Reset maxhostname
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -492,7 +492,7 @@
 
     always:
       # cleanup
-      - name: cleanup test group
+      - name: Cleanup test group
         ipagroup:
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
