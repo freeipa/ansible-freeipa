@@ -18,23 +18,31 @@ pushd "${TOPDIR}" >/dev/null 2>&1 || die "Failed to change directory."
 
 files_list=$(mktemp)
 
-remote="$(basename $(mktemp -u remote_XXXXXX))"
-git remote add ${remote} https://github.com/freeipa/ansible-freeipa
-git fetch --prune --no-tags --quiet ${remote}
-git diff "${remote}/master" --name-only > "${files_list}"
-git remote remove ${remote}
+#remote="$(basename $(mktemp -u remote_XXXXXX))"
+#git remote add ${remote} https://github.com/freeipa/ansible-freeipa
+#git fetch --prune --no-tags --quiet ${remote}
+#git diff "${remote}/master" --name-only > "${files_list}"
+#git remote remove ${remote}
+
+git diff "${1:-origin}/master" --name-only > "${files_list}"
+
+
+unset enabled_tests
+unset enabled_modules
 
 # Get all modules that should have tests executed
 enabled_modules="$(python utils/get_test_modules.py $(cat "${files_list}"))"
-[ -z "${enabled_modules}" ] && enabled_modules="None"
 
 # Get individual tests that should be executed
 mapfile -t tests < <(sed -n "s#.*/\(test_[^/]*\).yml#\1#p" "${files_list}" | tr -d " ")
 [ ${#tests[@]} -gt 0 ] && enabled_tests=$(IFS=, ; echo "${tests[*]}")
-[ -z "${enabled_tests}" ] && enabled_tests="None"
 
-[ -n "${enabled_tests}" ] && IPA_ENABLED_TESTS="${enabled_tests},${IPA_ENABLED_TESTS}"
-[ -n "${enabled_modules}" ] && IPA_ENABLED_MODULES="${enabled_modules},${IPA_ENABLED_MODULES}"
+[ -n "${enabled_tests}" ] && enabled_tests="${enabled_tests},${IPA_ENABLED_TESTS}"
+[ -n "${enabled_modules}" ] && enabled_modules="${enabled_modules},${IPA_ENABLED_MODULES}"
+
+
+IPA_ENABLED_MODULES="$(echo -n "${enabled_modules}" | sed "s/,/\n/" | sort -u)"
+IPA_ENABLED_TESTS="$(echo -n "${enabled_tests}" | sed "s/,/\n/" | sort -u)"
 
 rm -f "${files_list}"
 

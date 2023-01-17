@@ -21,33 +21,25 @@ def get_plugins_from_playbook(playbook):
         """
         _result = set()
         for tasks in task_block:
-            for task in tasks:
-                original_task = task
-                if "." in task:
-                    task = task.split(".")[-1]
-                if task == "block":
-                    _result.update(get_tasks(tasks["block"]))
-                elif task in ["include_tasks", "import_tasks"
-                              "ansible.builtin.include_tasks",
-                              "ansible.builtin.import_tasks"]:
+            for module, task in tasks.items():
+                module = module.split(".")[-1]
+                if module == "block":
+                    _result.update(get_tasks(task))
+                elif module in ("include_tasks", "import_tasks"):
                     parent = os.path.dirname(playbook)
-                    include_task = tasks[task]
-                    if isinstance(include_task, dict):
-                        include_file = os.path.join(
-                            parent, include_task["file"]
-                        )
+                    if isinstance(task, dict):
+                        include_file = os.path.join(parent, task["file"])
                     else:
-                        include_file = os.path.join(parent, include_task)
+                        include_file = os.path.join(parent, task)
                     _result.update(get_plugins_from_playbook(include_file))
-                elif task in ["include_role",
-                              "ansible.builtin.include_role"]:
-                    _result.add(f"_{tasks[original_task]['name']}")
-                elif task.startswith("ipa"):
+                elif module == "include_role":
+                    _result.add(f"_{task['name']}")
+                elif module.startswith("ipa"):
                     # assume we are only interested in 'ipa*' modules/roles
-                    _result.add(task)
-                elif task == "role":
+                    _result.add(module)
+                elif module == "role":
                     # not really a "task", but we'll handle the same way.
-                    _result.add(f"_{tasks[task]}")
+                    _result.add(f"_{module}")
         return _result
 
     def load_playbook(filename):
@@ -128,7 +120,12 @@ def parse_playbooks(test_module):
                         ):
                             # pylint: disable=no-value-for-parameter
                             loader = SourceFileLoader(playbook, source)
-                            loader.exec_module(types.ModuleType(loader.name))
+                            try:
+                                loader.exec_module(
+                                    types.ModuleType(loader.name)
+                                )
+                            except Exception:  # pylint: disable=broad-except
+                                pass
                         # pylint: disable=no-member
                         candidates = [
                             f.split(".")[1:]
@@ -164,7 +161,7 @@ def map_test_module_sources(base):
 
 
 def usage(err=0):
-    print("filter_plugins.py [-h|--help] [-p|--pytest] PY_SRC...")
+    print("get_test_modules.py [-h|--help] [-p|--pytest] PY_SRC...")
     print(
         """
 Print a comma-separated list of modules that should be tested if
