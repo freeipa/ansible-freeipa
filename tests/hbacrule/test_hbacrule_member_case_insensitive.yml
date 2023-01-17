@@ -193,7 +193,7 @@
           - "{{ hbacsvc_list[0] | upper }}"
           - "{{ hbacsvc_list[1] | upper }}"
           hbacsvcgroup:
-          - "{{ hbacsvcgroup_list[0] | upper  }}"
+          - "{{ hbacsvcgroup_list[0] | upper }}"
         register: result
         failed_when: result.changed or result.failed
 

@@ -14,7 +14,7 @@
 
   - name: Create dict with user names
     ansible.builtin.set_fact:
-      user_names: "{{ user_names | default([]) + [{ 'name': item.name }] }}"
+      user_names: "{{ user_names | default([]) + [{'name': item.name}] }}"
     loop: "{{ users }}"
 
   - name: Users absent len:{{ users | length }}

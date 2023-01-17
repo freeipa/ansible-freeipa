@@ -267,7 +267,7 @@
       salt: MTIzNDU2Nzg5MDEyMzQ1Ngo=
       new_password: SomeVAULTpassword
     register: result
-    failed_when: not result.failed and  "Vault `salt` can only change when changing the password." not in result.msg
+    failed_when: not result.failed and "Vault `salt` can only change when changing the password." not in result.msg
 
   - name: Try to change symmetric vault salt, without providing `new_password`
     ipavault:
@@ -276,7 +276,7 @@
       salt: MTIzNDU2Nzg5MDEyMzQ1Ngo=
       password: SomeVAULTpassword
     register: result
-    failed_when: not result.failed and  "Vault `salt` can only change when changing the password." not in result.msg
+    failed_when: not result.failed and "Vault `salt` can only change when changing the password." not in result.msg
 
   - name: Try to change symmetric vault salt, using wrong password.
     ipavault:

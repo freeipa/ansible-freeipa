@@ -92,11 +92,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | lower }}"
-        host: "{{ item  | lower }}.{{ ipaserver_domain }}"
-        group: "{{ item  | lower }}"
-        user: "user{{ item  | lower }}"
-        netgroup: "netgroup{{ item  | lower }}"
+        hostgroup: "hostgroup{{ item | lower }}"
+        host: "{{ item | lower }}.{{ ipaserver_domain }}"
+        group: "{{ item | lower }}"
+        user: "user{{ item | lower }}"
+        netgroup: "netgroup{{ item | lower }}"
         action: member
       loop: "{{ groups_present }}"
       register: result
@@ -106,11 +106,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | upper }}"
-        host: "{{ item  | upper }}.{{ ipaserver_domain }}"
-        group: "{{ item  | upper }}"
-        user: "user{{ item  | upper }}"
-        netgroup: "netgroup{{ item  | upper }}"
+        hostgroup: "hostgroup{{ item | upper }}"
+        host: "{{ item | upper }}.{{ ipaserver_domain }}"
+        group: "{{ item | upper }}"
+        user: "user{{ item | upper }}"
+        netgroup: "netgroup{{ item | upper }}"
         action: member
       loop: "{{ groups_present }}"
       register: result
@@ -135,11 +135,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | lower }}"
-        host: "{{ item  | lower }}.{{ ipaserver_domain }}"
-        group: "{{ item  | lower }}"
-        user: "user{{ item  | lower }}"
-        netgroup: "netgroup{{ item  | lower }}"
+        hostgroup: "hostgroup{{ item | lower }}"
+        host: "{{ item | lower }}.{{ ipaserver_domain }}"
+        group: "{{ item | lower }}"
+        user: "user{{ item | lower }}"
+        netgroup: "netgroup{{ item | lower }}"
         action: member
         state: absent
       loop: "{{ groups_present }}"
@@ -150,11 +150,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | upper }}"
-        host: "{{ item  | upper }}.{{ ipaserver_domain }}"
-        group: "{{ item  | upper }}"
-        user: "user{{ item  | upper }}"
-        netgroup: "netgroup{{ item  | upper }}"
+        hostgroup: "hostgroup{{ item | upper }}"
+        host: "{{ item | upper }}.{{ ipaserver_domain }}"
+        group: "{{ item | upper }}"
+        user: "user{{ item | upper }}"
+        netgroup: "netgroup{{ item | upper }}"
         action: member
         state: absent
       loop: "{{ groups_present }}"
@@ -165,11 +165,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | upper }}"
-        host: "{{ item  | upper }}.{{ ipaserver_domain }}"
-        group: "{{ item  | upper }}"
-        user: "user{{ item  | upper }}"
-        netgroup: "netgroup{{ item  | upper }}"
+        hostgroup: "hostgroup{{ item | upper }}"
+        host: "{{ item | upper }}.{{ ipaserver_domain }}"
+        group: "{{ item | upper }}"
+        user: "user{{ item | upper }}"
+        netgroup: "netgroup{{ item | upper }}"
         action: member
       loop: "{{ groups_present }}"
       register: result
@@ -179,11 +179,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | lower }}"
-        host: "{{ item  | lower }}.{{ ipaserver_domain }}"
-        group: "{{ item  | lower }}"
-        user: "user{{ item  | lower }}"
-        netgroup: "netgroup{{ item  | lower }}"
+        hostgroup: "hostgroup{{ item | lower }}"
+        host: "{{ item | lower }}.{{ ipaserver_domain }}"
+        group: "{{ item | lower }}"
+        user: "user{{ item | lower }}"
+        netgroup: "netgroup{{ item | lower }}"
         action: member
       loop: "{{ groups_present }}"
       register: result
