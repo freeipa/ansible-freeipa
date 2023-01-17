@@ -4,7 +4,7 @@
   become: no
 
   tasks:
-  - name: ensure map TestMap is present
+  - name: Ensure map TestMap is present
     ipaautomountmap:
       ipaadmin_password: SomeADMINpassword
       name: TestMap
