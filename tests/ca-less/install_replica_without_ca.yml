@@ -9,7 +9,7 @@
       /bin/bash
       generate-certificates.sh create
       "{{ groups.ipareplicas[0] }}"
-      "{{ ipareplica_domain | default(groups.ipareplicas[0].split('.')[1:] | join ('.')) }}"
+      "{{ ipareplica_domain | default(groups.ipareplicas[0].split('.')[1:] | join('.')) }}"
     args:
       chdir: "{{ playbook_dir }}"
 

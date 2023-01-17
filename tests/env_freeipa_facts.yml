@@ -34,7 +34,7 @@
   block:
   - name: Get Domain from server name
     ansible.builtin.set_fact:
-      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
     when: "'fqdn' in ansible_facts"
 
   - name: Set Domain to 'ipa.test' if FQDN could not be retrieved.
