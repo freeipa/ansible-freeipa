@@ -38,7 +38,7 @@ def pytest_configure(config):
 
     config_dir = os.path.join(test_dir, "config")
     if os.path.exists(config_dir):
-        inventory_path = os.path.join(config_dir, "test.inventory.yaml")
+        inventory_path = os.path.join(config_dir, "test.inventory.yml")
         inventory = get_inventory(inventory_path)
         print("Configuring execution using {}".format(inventory_path))
         ipaservers = inventory["all"]["children"]["ipaserver"]["hosts"]
