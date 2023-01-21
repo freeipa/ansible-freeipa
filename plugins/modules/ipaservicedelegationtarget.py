@@ -105,8 +105,8 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, gen_add_del_lists, gen_add_list, gen_intersection_list, \
-    servicedelegation_normalize_principals
+    IPAAnsibleModule, servicedelegation_normalize_principals, \
+    gen_member_manage_commands, create_ipa_mapping, ipa_api_map
 from ansible.module_utils import six
 
 if six.PY3:
@@ -190,7 +190,6 @@ def main():
                 ansible_module, principal, state == "present")
 
         commands = []
-        principal_add = principal_del = []
         for name in names:
             # Make sure servicedelegationtarget exists
             res_find = find_servicedelegationtarget(ansible_module, name)
@@ -208,23 +207,10 @@ def main():
                                          {}])
                         res_find = {}
 
-                    # Generate addition and removal lists
-                    principal_add, principal_del = gen_add_del_lists(
-                        principal, res_find.get("memberprincipal"))
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
                             msg="No servicedelegationtarget '%s'" % name)
-
-                    # Reduce add lists for principal
-                    # to new entries only that are not in res_find.
-                    if principal is not None and \
-                       "memberprincipal" in res_find:
-                        principal_add = gen_add_list(
-                            principal, res_find["memberprincipal"])
-                    else:
-                        principal_add = principal
 
             elif state == "absent":
                 if action == "servicedelegationtarget":
@@ -237,34 +223,32 @@ def main():
                         ansible_module.fail_json(
                             msg="No servicedelegationtarget '%s'" % name)
 
-                    # Reduce del lists of principal
-                    # to the entries only that are in res_find.
-                    if principal is not None:
-                        principal_del = gen_intersection_list(
-                            principal, res_find.get("memberprincipal"))
-                    else:
-                        principal_del = principal
-
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
             # Handle members
 
-            # Add principal members
-            if principal_add is not None and len(principal_add) > 0:
-                commands.append(
-                    [name, "servicedelegationtarget_add_member",
-                     {
-                         "principal": principal_add,
-                     }])
-            # Remove principal members
-            if principal_del is not None and len(principal_del) > 0:
-                commands.append(
-                    [name, "servicedelegationtarget_remove_member",
-                     {
-                         "principal": principal_del,
-                     }])
-
+            # Manage members
+            commands.extend(
+                gen_member_manage_commands(
+                    ansible_module, res_find, name,
+                    "servicedelegationtarget_add_member",
+                    "servicedelegationtarget_remove_member",
+                    create_ipa_mapping(
+                        ipa_api_map(
+                            "principal",
+                            "principal",
+                            "memberprincipal",
+                            transform={
+                                "principal": lambda _p:
+                                    servicedelegation_normalize_principals(
+                                        ansible_module, _p, state == "present"
+                                    )
+                            }
+                        )
+                    )
+                )
+            )
         # Execute commands
 
         changed = ansible_module.execute_ipa_commands(
