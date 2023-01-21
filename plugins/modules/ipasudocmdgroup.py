@@ -111,8 +111,8 @@ RETURN = """
 """
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
-    gen_add_list, gen_intersection_list, ipalib_errors
+    IPAAnsibleModule, compare_args_ipa, ipalib_errors, \
+    gen_member_manage_commands, create_ipa_mapping, ipa_api_map
 
 
 def find_sudocmdgroup(module, name):
@@ -132,14 +132,6 @@ def gen_args(description, nomembers):
         _args["description"] = description
     if nomembers is not None:
         _args["nomembers"] = nomembers
-
-    return _args
-
-
-def gen_member_args(sudocmd):
-    _args = {}
-    if sudocmd is not None:
-        _args["member_sudocmd"] = sudocmd
 
     return _args
 
@@ -174,7 +166,6 @@ def main():
     # present
     description = ansible_module.params_get("description")
     nomembers = ansible_module.params_get("nomembers")
-    sudocmd = ansible_module.params_get("sudocmd")
     action = ansible_module.params_get("action")
     # state
     state = ansible_module.params_get("state")
@@ -232,42 +223,10 @@ def main():
                         # Set res_find to empty dict for next step
                         res_find = {}
 
-                    member_args = gen_member_args(sudocmd)
-                    if not compare_args_ipa(ansible_module, member_args,
-                                            res_find):
-                        # Generate addition and removal lists
-                        sudocmd_add, sudocmd_del = \
-                            gen_add_del_lists(
-                                sudocmd,
-                                res_find.get("member_sudocmd"))
-
-                        # Add members
-                        if len(sudocmd_add) > 0:
-                            commands.append([name, "sudocmdgroup_add_member",
-                                             {
-                                                 "sudocmd": sudocmd_add
-                                             }
-                                             ])
-                        # Remove members
-                        if len(sudocmd_del) > 0:
-                            commands.append([name,
-                                             "sudocmdgroup_remove_member",
-                                             {
-                                                 "sudocmd": sudocmd_del
-                                             }
-                                             ])
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
                             msg="No sudocmdgroup '%s'" % name)
-
-                    # Ensure members are present
-                    sudocmd = gen_add_list(
-                        sudocmd, res_find.get("member_sudocmd") or [])
-                    if sudocmd:
-                        commands.append([name, "sudocmdgroup_add_member",
-                                         {"sudocmd": sudocmd}
-                                         ])
             elif state == "absent":
                 if action == "sudocmdgroup":
                     if res_find is not None:
@@ -278,14 +237,19 @@ def main():
                         ansible_module.fail_json(
                             msg="No sudocmdgroup '%s'" % name)
 
-                    sudocmd = gen_intersection_list(
-                        sudocmd, res_find.get("member_sudocmd") or [])
-                    if sudocmd:
-                        commands.append([name, "sudocmdgroup_remove_member",
-                                         {"sudocmd": sudocmd}
-                                         ])
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+            # Manage member attributes.
+            commands.extend(
+                gen_member_manage_commands(
+                    ansible_module, res_find, name,
+                    "sudocmdgroup_add_member", "sudocmdgroup_remove_member",
+                    create_ipa_mapping(
+                        ipa_api_map("sudocmd", "sudocmd", "member_sudocmd"),
+                    )
+                )
+            )
 
         changed = ansible_module.execute_ipa_commands(
             commands, fail_on_member_errors=True)
