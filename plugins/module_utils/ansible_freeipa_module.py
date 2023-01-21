@@ -409,7 +409,7 @@ def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
         # If ipa_arg is a list and arg is not, replace arg
         # with list containing arg. Most args in a find result
         # are lists, but not all.
-        if isinstance(ipa_arg, (list, tuple)):
+        if is_list(ipa_arg):
             if not isinstance(arg, list):
                 arg = [arg]
             if len(ipa_arg) != len(arg):
@@ -787,6 +787,252 @@ def get_trusted_domain_sid_from_name(dom_name):
     sid = domain_validator.get_sid_from_domain_name(dom_name)
 
     return unicode(sid) if sid is not None else None
+
+
+def create_ipa_mapping(*args):
+    """Create an IPA mapping for arguments to gen_member_manage_commands."""
+    return {
+        k: v for _mapping in args for k, v in _mapping.items()
+    }
+
+
+def ipa_api_map(api_arg, module_params, ldap_attrs, transform=None):
+    """
+    Create a mapping bettwen IPA API, LDAP attributes and module params.
+
+    Parameters
+    ----------
+    api_arg:
+        The name of the IPA API argument.
+    module_params:
+        The list of module parameters that are part of the argument.
+    ldap_attrs:
+        The list of LDAP attributes that are part of the argument.
+    transform:
+        An optional dictionaire of 'module_param: transform_function'.
+
+    """
+    return {
+        api_arg: {
+            "param": module_params,
+            "ldap": ldap_attrs,
+            "transform": transform,
+        }
+    }
+
+
+def get_gen_list_function_for_state_action(state, action):
+    """
+    Retrieve a function to generate add/del member lists.
+
+    Based on an IPAAnsibleModule 'state' and 'action', retrieve a function
+    that will generate the appropriate add/del lists of members. The
+    returned function has the signature:
+        def gen_list(module_member_list, ldap_member_list): -> (list, list)
+
+    It can be use as:
+
+            addlist, dellist = gen_list(module_member_data, ldap_member_data)
+    """
+    list_diff = {
+        ("present", False): gen_add_del_lists,
+        ("present", True): lambda x, y: (gen_add_list(x, y), []),
+        ("absent", True): lambda x, y: ([], gen_intersection_list(x, y)),
+    }
+    return list_diff.get((state, action == "member"), None)
+
+
+def is_list(data):
+    """Check if data is a list or tuple."""
+    return isinstance(data, (list, tuple))
+
+
+def gen_add_del_lists_for_members(
+    module, res_find, module_params, ldap_fields, gen_lists,
+    transform=None
+):
+    """Generate add/del lists for module members."""
+    not_any_param = all(module.params_get(x) is None for x in module_params)
+    params = (
+        None if not_any_param
+        else (
+            [
+                transform.get(k, lambda n: n)(v) if transform else v
+                for k, v in [(k, module.params_get(k)) for k in module_params]
+                if v is not None
+            ]
+        )
+    )
+    _res = ([], [])
+    if params is not None:
+        _res = gen_lists(
+            sum([x if is_list(x) else [x] for x in params if x], []),
+            sum([list(res_find.get(x) or []) for x in ldap_fields], [])
+        )
+
+    return _res
+
+
+def gen_member_manage_commands(
+    module, res_find,
+    name,
+    add_command, remove_command,
+    ipa_params,
+    batch_update=True,
+):
+    """
+    Generate commands to manage member items in modules.
+
+    Given an ansible-freeipa module, the attributes of an IPA object, the
+    name of the object being changed (as used by the module), the IPA API
+    command names for adding or remove members to/from the IPA objects and
+    a mapping of the IPA-Module-LDAP values, a list of command triplets
+    ([name, command, args]) is returned and can be used to manage the object
+    members.
+
+    In its simplest case, only a simple mapping is required:
+
+    Usage example:
+
+        gen_member_manage_commands(
+            ansible_module,
+            res_find,
+            name,
+            "sudorule_add_option",
+            "sudorule_remove_option",
+            create_ipa_mapping (
+                ipa_api_map("ipasudoopt", "sudooption", "ipasudoopt"),
+            ),
+            batch_update=False
+        )
+
+    Some module parameters require special processing, for example, parameters
+    for which the value is compared in case insensitive manner, and for such
+    cases a function to transform data may be provided.
+
+    The transform function must be associated with the module parameter:
+
+        gen_member_manage_commands(
+            ansible_module,
+            res_find,
+            name,
+            "hbacsvcgroup_add_member",
+            "hbacsvcgroup_remove_member",
+            create_ipa_mapping(
+                ipa_api_map(
+                    api_arg="hbacsvc",
+                    ldap_attrs="member_hbacsvc",
+                    module_params="hbacsvc",
+                    transform={"hbacsvc": transform_lowercase}
+                )
+            )
+        )
+
+    Some attributes may require multiple LDAP attributes to be compared
+    against, so a list (or tuple) of attributes can be provided:
+
+        gen_member_manage_commands(
+            ansible_module,
+            res_find,
+            name,
+            "sudorule_add_runasuser",
+            "sudorule_remove_runasuser",
+            ipa_params=dict(
+                user=dict(
+                    param="runasuser",
+                    ldap=("ipasudorunas_user", "ipasudorunasextuser"),
+                    values=runasuser,
+                ),
+            )
+        )
+
+    Some parameters of IPA API objects need to be processed one value at a
+    time, instead of all at once, and cannot be added as set of values. In
+    that case, set 'batch_update' to 'False':
+
+        gen_member_manage_commands(
+            ansible_module,
+            res_find,
+            name,
+            "sudorule_add_option",
+            "sudorule_remove_option",
+            create_ipa_mapping (
+                ipa_api_map(
+                    "ipasudoopt", "sudooption", "ipasudoopt",
+                    transform={"runasgroup":transform_lowercase},
+                ),
+            ),
+            batch_update=False
+        )
+
+
+    Parameters
+    ----------
+    module:
+        The IPAAnsibleModule object.
+    res_find:
+        The object data result retrieved from IPA.
+    name:
+        The item name.
+    add_command:
+        The IPA API command to add members to the item.
+    remove_command:
+        The IPA API command to remove members from the item.
+    ipa_params:
+        The IPA API mapping.
+    batch_update:
+        Process all changes in a single command. Defaults to True.
+
+    Returns
+    -------
+    A list of commands triplets ([name, command, args]) to be executed in
+    order to ensure the required state for module members is met.
+
+    """
+    res_find = res_find or {}
+    # Selection of the proper function based on state and action.
+    state = module.params_get("state")
+    action = module.params_get("action")
+    gen_lists = get_gen_list_function_for_state_action(state, action)
+    # If there is not a list generator function,
+    # there's no need to process module members.
+    if not gen_lists:
+        return []
+
+    _res = []
+    add_args = {}
+    del_args = {}
+    for ipa_api, param in ipa_params.items():
+        ipa_ldap = param["ldap"]
+        mod_params = param["param"]
+        # Generate proper add/del lists
+        add_data, del_data = gen_add_del_lists_for_members(
+            module, res_find,
+            mod_params if is_list(mod_params) else [mod_params],
+            ipa_ldap if is_list(ipa_ldap) else [ipa_ldap],
+            gen_lists,
+            param.get("transform")
+        )
+
+        if batch_update:
+            # If data is available add it to command args.
+            if add_data:
+                add_args[ipa_api] = add_data
+            if del_data:
+                del_args[ipa_api] = del_data
+        else:
+            # If data is to be processed one by one, add single commands
+            if add_data:
+                for entry in add_data:
+                    _res.append([name, add_command, {ipa_api: entry}])
+            for entry in del_data:
+                _res.append([name, remove_command, {ipa_api: entry}])
+    # if command args have items, add command to command list.
+    if add_args:
+        _res.append([name, add_command, add_args])
+    if del_args:
+        _res.append([name, remove_command, del_args])
+    return _res
 
 
 class IPAParamMapping(Mapping):
