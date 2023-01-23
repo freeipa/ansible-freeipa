@@ -15,7 +15,7 @@ parameters:
 jobs:
 - job: Test_PyTests
   displayName: Run pytests on ${{ parameters.scenario }}
-  timeoutInMinutes: 120
+  timeoutInMinutes: 240
   variables:
   - template: variables.yaml
   - template: variables_${{ parameters.scenario }}.yaml

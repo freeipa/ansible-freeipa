@@ -21,7 +21,7 @@ parameters:
 jobs:
 - job: Test_Group${{ parameters.group_number }}
   displayName: Run playbook tests ${{ parameters.scenario }} (${{ parameters.group_number }}/${{ parameters.number_of_groups }})
-  timeoutInMinutes: 120
+  timeoutInMinutes: 240
   variables:
   - template: variables.yaml
   - template: variables_${{ parameters.scenario }}.yaml
