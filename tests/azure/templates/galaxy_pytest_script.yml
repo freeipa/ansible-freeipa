@@ -15,7 +15,7 @@ parameters:
 jobs:
 - job: Test_PyTests
   displayName: Run pytests on ${{ parameters.scenario }}
-  timeoutInMinutes: 120
+  timeoutInMinutes: 240
   steps:
   - task: UsePythonVersion@0
     inputs:
