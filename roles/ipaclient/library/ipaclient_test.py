@@ -434,7 +434,6 @@ def main():
                 if not isinstance(value, list):
                     raise ValueError("Expected list, got {!r}".format(value))
                 # this is what init() does
-                value = value[-1]
                 if not os.path.exists(value):
                     raise ValueError("'%s' does not exist" % value)
                 if not os.path.isfile(value):
