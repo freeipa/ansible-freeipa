@@ -329,7 +329,7 @@
         domain: "{{ result_ipaclient_test.domain }}"
         servers: "{{ result_ipaclient_test.servers }}"
         kdc: "{{ result_ipaclient_test.kdc }}"
-        dnsok: "{{ result_ipaclient_test.dnsok }}"
+        dnsok: "{{ override_krb5_dns | d(result_ipaclient_test.dnsok) }}"
         client_domain: "{{ result_ipaclient_test.client_domain }}"
         hostname: "{{ result_ipaclient_test.hostname }}"
         sssd: "{{ result_ipaclient_test.sssd }}"
