@@ -78,7 +78,7 @@ if [ -z "$name" ] || [ -z "$author" ] || [ -z "$email" ] || [ -z "$github_user" 
     [ -z "$name" ] && echo "ERROR: name is not valid"
     [ -z "$author" ] && echo "ERROR: author is not valid"
     [ -z "$email" ] && echo "ERROR: email is not valid"
-    [ -z "$githubuser" ] && echo "ERROR: github_user is not valid"
+    [ -z "$github_user" ] && echo "ERROR: github_user is not valid"
     echo
     usage;
     exit 1;
