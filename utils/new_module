@@ -63,7 +63,7 @@ for (( i=0; i<OPTIND-1; i++)); do
     shift
 done
 
-if [ ${#@} -ne 3 ]; then
+if [ ${#@} -ne 4 ]; then
     usage;
     exit 1
 fi
