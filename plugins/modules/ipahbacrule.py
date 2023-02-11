@@ -170,8 +170,9 @@ RETURN = """
 """
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, ensure_fqdn
+    IPAAnsibleModule, compare_args_ipa, gen_member_manage_commands, \
+    create_ipa_mapping, ipa_api_map, transform_lowercase, \
+    transform_host_param
 
 
 def find_hbacrule(module, name):
@@ -258,12 +259,12 @@ def main():
     hostcategory = ansible_module.params_get("hostcategory")
     servicecategory = ansible_module.params_get("servicecategory")
     nomembers = ansible_module.params_get("nomembers")
-    host = ansible_module.params_get_lowercase("host")
-    hostgroup = ansible_module.params_get_lowercase("hostgroup")
-    hbacsvc = ansible_module.params_get_lowercase("hbacsvc")
-    hbacsvcgroup = ansible_module.params_get_lowercase("hbacsvcgroup")
-    user = ansible_module.params_get_lowercase("user")
-    group = ansible_module.params_get_lowercase("group")
+    host = ansible_module.params_get("host")
+    hostgroup = ansible_module.params_get("hostgroup")
+    hbacsvc = ansible_module.params_get("hbacsvc")
+    hbacsvcgroup = ansible_module.params_get("hbacsvcgroup")
+    user = ansible_module.params_get("user")
+    group = ansible_module.params_get("group")
     action = ansible_module.params_get("action")
     # state
     state = ansible_module.params_get("state")
@@ -321,27 +322,11 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
-
-        # Get default domain
-        default_domain = ansible_module.ipa_get_domain()
-
-        # Ensure fqdn host names, use default domain for simple names
-        if host is not None:
-            _host = [ensure_fqdn(x, default_domain).lower() for x in host]
-            host = _host
-
         commands = []
 
         for name in names:
             # Make sure hbacrule exists
             res_find = find_hbacrule(ansible_module, name)
-
-            host_add, host_del = [], []
-            hostgroup_add, hostgroup_del = [], []
-            hbacsvc_add, hbacsvc_del = [], []
-            hbacsvcgroup_add, hbacsvcgroup_del = [], []
-            user_add, user_del = [], []
-            group_add, group_del = [], []
 
             # Create command
             if state == "present":
@@ -379,66 +364,9 @@ def main():
                         # Set res_find to empty dict for next step
                         res_find = {}
 
-                    # Generate addition and removal lists
-                    if host is not None:
-                        host_add, host_del = gen_add_del_lists(
-                            host, res_find.get("memberhost_host"))
-
-                    if hostgroup is not None:
-                        hostgroup_add, hostgroup_del = gen_add_del_lists(
-                            hostgroup, res_find.get("memberhost_hostgroup"))
-
-                    if hbacsvc is not None:
-                        hbacsvc_add, hbacsvc_del = gen_add_del_lists(
-                            hbacsvc, res_find.get("memberservice_hbacsvc"))
-
-                    if hbacsvcgroup is not None:
-                        hbacsvcgroup_add, hbacsvcgroup_del = gen_add_del_lists(
-                            hbacsvcgroup,
-                            res_find.get("memberservice_hbacsvcgroup"))
-
-                    if user is not None:
-                        user_add, user_del = gen_add_del_lists(
-                            user, res_find.get("memberuser_user"))
-
-                    if group is not None:
-                        group_add, group_del = gen_add_del_lists(
-                            group, res_find.get("memberuser_group"))
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(msg="No hbacrule '%s'" % name)
-
-                    # Generate add lists for host, hostgroup and
-                    # res_find to only try to add hosts and hostgroups
-                    # that not in hbacrule already
-                    if host:
-                        host_add = gen_add_list(
-                            host, res_find.get("memberhost_host"))
-                    if hostgroup:
-                        hostgroup_add = gen_add_list(
-                            hostgroup, res_find.get("memberhost_hostgroup"))
-
-                    # Generate add lists for hbacsvc, hbacsvcgroup and
-                    # res_find to only try to add hbacsvcs and hbacsvcgroups
-                    # that not in hbacrule already
-                    if hbacsvc:
-                        hbacsvc_add = gen_add_list(
-                            hbacsvc, res_find.get("memberservice_hbacsvc"))
-                    if hbacsvcgroup:
-                        hbacsvcgroup_add = gen_add_list(
-                            hbacsvcgroup,
-                            res_find.get("memberservice_hbacsvcgroup"))
-
-                    # Generate add lists for user, group and
-                    # res_find to only try to add users and groups
-                    # that not in hbacrule already
-                    if user:
-                        user_add = gen_add_list(
-                            user, res_find.get("memberuser_user"))
-                    if group:
-                        group_add = gen_add_list(
-                            group, res_find.get("memberuser_group"))
 
             elif state == "absent":
                 if action == "hbacrule":
@@ -448,43 +376,6 @@ def main():
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(msg="No hbacrule '%s'" % name)
-
-                    # Generate intersection lists for host, hostgroup and
-                    # res_find to only try to remove hosts and hostgroups
-                    # that are in hbacrule
-                    if host:
-                        if "memberhost_host" in res_find:
-                            host_del = gen_intersection_list(
-                                host, res_find["memberhost_host"])
-                    if hostgroup:
-                        if "memberhost_hostgroup" in res_find:
-                            hostgroup_del = gen_intersection_list(
-                                hostgroup, res_find["memberhost_hostgroup"])
-
-                    # Generate intersection lists for hbacsvc, hbacsvcgroup
-                    # and res_find to only try to remove hbacsvcs and
-                    # hbacsvcgroups that are in hbacrule
-                    if hbacsvc:
-                        if "memberservice_hbacsvc" in res_find:
-                            hbacsvc_del = gen_intersection_list(
-                                hbacsvc, res_find["memberservice_hbacsvc"])
-                    if hbacsvcgroup:
-                        if "memberservice_hbacsvcgroup" in res_find:
-                            hbacsvcgroup_del = gen_intersection_list(
-                                hbacsvcgroup,
-                                res_find["memberservice_hbacsvcgroup"])
-
-                    # Generate intersection lists for user, group and
-                    # res_find to only try to remove users and groups
-                    # that are in hbacrule
-                    if user:
-                        if "memberuser_user" in res_find:
-                            user_del = gen_intersection_list(
-                                user, res_find["memberuser_user"])
-                    if group:
-                        if "memberuser_group" in res_find:
-                            group_del = gen_intersection_list(
-                                group, res_find["memberuser_group"])
 
             elif state == "enabled":
                 if res_find is None:
@@ -518,54 +409,67 @@ def main():
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
             # Manage HBAC rule members.
-
-            # Add hosts and hostgroups
-            if len(host_add) > 0 or len(hostgroup_add) > 0:
-                commands.append([name, "hbacrule_add_host",
-                                 {
-                                     "host": host_add,
-                                     "hostgroup": hostgroup_add,
-                                 }])
-            # Remove hosts and hostgroups
-            if len(host_del) > 0 or len(hostgroup_del) > 0:
-                commands.append([name, "hbacrule_remove_host",
-                                 {
-                                     "host": host_del,
-                                     "hostgroup": hostgroup_del,
-                                 }])
-
-            # Add hbacsvcs and hbacsvcgroups
-            if len(hbacsvc_add) > 0 or len(hbacsvcgroup_add) > 0:
-                commands.append([name, "hbacrule_add_service",
-                                 {
-                                     "hbacsvc": hbacsvc_add,
-                                     "hbacsvcgroup": hbacsvcgroup_add,
-                                 }])
-            # Remove hbacsvcs and hbacsvcgroups
-            if len(hbacsvc_del) > 0 or len(hbacsvcgroup_del) > 0:
-                commands.append([name, "hbacrule_remove_service",
-                                 {
-                                     "hbacsvc": hbacsvc_del,
-                                     "hbacsvcgroup": hbacsvcgroup_del,
-                                 }])
-
-            # Add users and groups
-            if len(user_add) > 0 or len(group_add) > 0:
-                commands.append([name, "hbacrule_add_user",
-                                 {
-                                     "user": user_add,
-                                     "group": group_add,
-                                 }])
-            # Remove users and groups
-            if len(user_del) > 0 or len(group_del) > 0:
-                commands.append([name, "hbacrule_remove_user",
-                                 {
-                                     "user": user_del,
-                                     "group": group_del,
-                                 }])
+            commands.extend(
+                gen_member_manage_commands(
+                    ansible_module,
+                    res_find,
+                    name,
+                    "hbacrule_add_host",
+                    "hbacrule_remove_host",
+                    create_ipa_mapping(
+                        ipa_api_map(
+                            "host", "host", "memberhost_host",
+                            transform={"host": transform_host_param},
+                        ),
+                        ipa_api_map(
+                            "hostgroup", "hostgroup", "memberhost_hostgroup",
+                            transform={"hostgroup": transform_lowercase},
+                        ),
+                    )
+                )
+            )
+            commands.extend(
+                gen_member_manage_commands(
+                    ansible_module,
+                    res_find,
+                    name,
+                    "hbacrule_add_service",
+                    "hbacrule_remove_service",
+                    create_ipa_mapping(
+                        ipa_api_map(
+                            "hbacsvc", "hbacsvc", "memberservice_hbacsvc",
+                            transform={"hbacsvc": transform_lowercase},
+                        ),
+                        ipa_api_map(
+                            "hbacsvcgroup",
+                            "hbacsvcgroup",
+                            "memberservice_hbacsvcgroup",
+                            transform={"hbacsvcgroup": transform_lowercase},
+                        ),
+                    )
+                )
+            )
+            commands.extend(
+                gen_member_manage_commands(
+                    ansible_module,
+                    res_find,
+                    name,
+                    "hbacrule_add_user",
+                    "hbacrule_remove_user",
+                    create_ipa_mapping(
+                        ipa_api_map(
+                            "user", "user", "memberuser_user",
+                            transform={"user": transform_lowercase},
+                        ),
+                        ipa_api_map(
+                            "group", "group", "memberuser_group",
+                            transform={"group": transform_lowercase},
+                        ),
+                    )
+                )
+            )
 
         # Execute commands
-
         changed = ansible_module.execute_ipa_commands(
             commands, fail_on_member_errors=True)
 

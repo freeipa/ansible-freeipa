@@ -129,8 +129,9 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, gen_add_del_lists, gen_add_list, gen_intersection_list, \
-    servicedelegation_normalize_principals, ipalib_errors
+    IPAAnsibleModule, servicedelegation_normalize_principals, ipalib_errors, \
+    gen_member_manage_commands, create_ipa_mapping, ipa_api_map
+
 from ansible.module_utils import six
 
 if six.PY3:
@@ -223,7 +224,6 @@ def main():
 
     # Init
 
-    membertarget = "ipaallowedtarget_servicedelegationtarget"
     changed = False
     exit_args = {}
 
@@ -238,8 +238,6 @@ def main():
             check_targets(ansible_module, target)
 
         commands = []
-        principal_add = principal_del = []
-        target_add = target_del = []
         for name in names:
             # Make sure servicedelegationrule exists
             res_find = find_servicedelegationrule(ansible_module, name)
@@ -257,35 +255,10 @@ def main():
                                          {}])
                         res_find = {}
 
-                    # Generate addition and removal lists for principal
-                    principal_add, principal_del = gen_add_del_lists(
-                        principal, res_find.get("memberprincipal"))
-
-                    # Generate addition and removal lists for target
-                    target_add, target_del = gen_add_del_lists(
-                        target, res_find.get(membertarget))
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
                             msg="No servicedelegationrule '%s'" % name)
-
-                    # Reduce add lists for principal
-                    # to new entries only that are not in res_find.
-                    if principal is not None and \
-                       "memberprincipal" in res_find:
-                        principal_add = gen_add_list(
-                            principal, res_find["memberprincipal"])
-                    else:
-                        principal_add = principal
-
-                    # Reduce add lists for target
-                    # to new entries only that are not in res_find.
-                    if target is not None and membertarget in res_find:
-                        target_add = gen_add_list(
-                            target, res_find[membertarget])
-                    else:
-                        target_add = target
 
             elif state == "absent":
                 if action == "servicedelegationrule":
@@ -298,56 +271,43 @@ def main():
                         ansible_module.fail_json(
                             msg="No servicedelegationrule '%s'" % name)
 
-                    # Reduce del lists of principals to the entries only
-                    # that are in res_find.
-                    if principal is not None:
-                        principal_del = gen_intersection_list(
-                            principal, res_find.get("memberprincipal"))
-                    else:
-                        principal_del = principal
-
-                    # Reduce del lists of targets to the entries only
-                    # that are in res_find.
-                    if target is not None:
-                        target_del = gen_intersection_list(
-                            target, res_find.get(membertarget))
-                    else:
-                        target_del = target
-
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
-            # Handle members
+            # Manage members
+            commands.extend(
+                gen_member_manage_commands(
+                    ansible_module, res_find, name,
+                    "servicedelegationtarget_add_member",
+                    "servicedelegationtarget_remove_member",
+                    create_ipa_mapping(
+                        ipa_api_map(
+                            "principal", "principal", "memberprincipal",
+                            transform={
+                                "principal": lambda _p:
+                                    servicedelegation_normalize_principals(
+                                        ansible_module, _p, state == "present"
+                                    )
+                            },
+                        ),
+                    )
+                )
+            )
 
-            # Add principal members
-            if principal_add is not None and len(principal_add) > 0:
-                commands.append(
-                    [name, "servicedelegationtarget_add_member",
-                     {
-                         "principal": principal_add,
-                     }])
-            # Remove principal members
-            if principal_del is not None and len(principal_del) > 0:
-                commands.append(
-                    [name, "servicedelegationtarget_remove_member",
-                     {
-                         "principal": principal_del,
-                     }])
-
-            # Add target members
-            if target_add is not None and len(target_add) > 0:
-                commands.append(
-                    [name, "servicedelegationrule_add_target",
-                     {
-                         "servicedelegationtarget": target_add,
-                     }])
-            # Remove target members
-            if target_del is not None and len(target_del) > 0:
-                commands.append(
-                    [name, "servicedelegationrule_remove_target",
-                     {
-                         "servicedelegationtarget": target_del,
-                     }])
+            commands.extend(
+                gen_member_manage_commands(
+                    ansible_module, res_find, name,
+                    "servicedelegationrule_add_target",
+                    "servicedelegationrule_remove_target",
+                    create_ipa_mapping(
+                        ipa_api_map(
+                            "servicedelegationtarget",
+                            "target",
+                            "ipaallowedtarget_servicedelegationtarget",
+                        )
+                    )
+                )
+            )
 
         # Execute commands
 

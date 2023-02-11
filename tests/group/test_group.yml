@@ -124,7 +124,7 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure group3 ia present in group group1
+  - name: Ensure group3 is present in group group1 again
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"

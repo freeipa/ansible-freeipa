@@ -246,8 +246,9 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, encode_certificate, \
-    gen_add_del_lists, gen_add_list, gen_intersection_list, ipalib_errors, \
-    api_get_realm, to_text
+    ipalib_errors, api_get_realm, to_text, \
+    gen_member_manage_commands, create_ipa_mapping, ipa_api_map, \
+    transform_lowercase, transform_service_principal
 
 
 def find_service(module, name):
@@ -266,6 +267,13 @@ def find_service(module, name):
         if certs is not None:
             _res["usercertificate"] = [encode_certificate(cert) for
                                        cert in certs]
+        # Remove principal host from list of managedby_host, as it is not
+        # part of object member attributes.
+        hosts = [
+            x for x in _res.get("managedby_host", [])
+            if x not in str(_res.get("krbprincipalname"))
+        ]
+        _res["managedby_host"] = hosts
         return _res
 
     return None
@@ -439,7 +447,6 @@ def main():
 
     # service attributes
     principal = ansible_module.params_get("principal")
-    certificate = ansible_module.params_get("certificate")
     pac_type = ansible_module.params_get("pac_type", allow_empty_string=True)
     auth_ind = ansible_module.params_get("auth_ind", allow_empty_string=True)
     skip_host_check = ansible_module.params_get("skip_host_check")
@@ -451,8 +458,6 @@ def main():
 
     smb = ansible_module.params_get("smb")
     netbiosname = ansible_module.params_get("netbiosname")
-
-    host = ansible_module.params_get("host")
 
     delete_continue = ansible_module.params_get("delete_continue")
 
@@ -479,36 +484,24 @@ def main():
                 msg="Skipping host check is not supported by your IPA version")
 
         commands = []
-        keytab_members = ["user", "group", "host", "hostgroup"]
 
         for name in names:
+            if "@" not in name:
+                name = name + "@" + api_get_realm()
+
             res_find = find_service(ansible_module, name)
             res_principals = []
-
-            keytab = {
-                "retrieve": {
-                    "allow": {k: [] for k in keytab_members},
-                    "disallow": {k: [] for k in keytab_members},
-                },
-                "create": {
-                    "allow": {k: [] for k in keytab_members},
-                    "disallow": {k: [] for k in keytab_members},
-                },
-            }
-            certificate_add, certificate_del = [], []
-            host_add, host_del = [], []
-            principal_add, principal_del = [], []
 
             if principal and res_find:
                 # When comparing principals to the existing ones,
                 # the REALM is needded, and are added here for those
                 # that do not have it.
-                principal = [
-                    p if "@" in p
-                    else "%s@%s" % (p, api_get_realm())
-                    for p in principal
-                ]
-                principal = list(set(principal))
+                # principal = [
+                #     p if "@" in p
+                #     else "%s@%s" % (p, api_get_realm())
+                #     for p in principal
+                # ]
+                # principal = list(set(principal))
 
                 # Create list of existing principal aliases as strings
                 # to compare with provided ones.
@@ -536,11 +529,12 @@ def main():
                             _name = "cifs/" + name
                             res_find = find_service(ansible_module, _name)
                             if res_find is None:
+                                smb_host = name.split("@")[0]
                                 _args = gen_args_smb(
                                     netbiosname, ok_as_delegate,
                                     ok_to_auth_as_delegate)
                                 commands.append(
-                                    [name, 'service_add_smb', _args])
+                                    [smb_host, 'service_add_smb', _args])
                                 res_find = {}
                             # service_add_smb will prefix 'name' with
                             # "cifs/", so we will need to change it here,
@@ -579,47 +573,9 @@ def main():
                                                 res_find):
                             commands.append([name, "service_mod", args])
 
-                    # Manage members
-                    certificate_add, certificate_del = gen_add_del_lists(
-                        certificate, res_find.get("usercertificate"))
-
-                    host_add, host_del = gen_add_del_lists(
-                        host, res_find.get('managedby_host'))
-
-                    principal_add, principal_del = gen_add_del_lists(
-                        principal, res_principals)
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(msg="No service '%s'" % name)
-
-                    certificate_add = gen_add_list(
-                        certificate, res_find.get("usercertificate"))
-
-                    host_add = gen_add_list(
-                        host, res_find.get('managedby_host'))
-
-                    principal_add = gen_add_list(principal, res_principals)
-
-                # get keytab management lists for any 'action'.
-                for perm in ["create", "retrieve"]:
-                    oper = "write" if perm == "create" else "read"
-                    for key in ["user", "group", "host", "hostgroup"]:
-                        add_list, del_list = (
-                            gen_add_del_lists(
-                                ansible_module.params_get(
-                                    "allow_%s_keytab_%s" % (perm, key)
-                                ),
-                                res_find.get(
-                                    'ipaallowedtoperform_%s_keys_%s'
-                                    % (oper, key)
-                                )
-                            )
-                        )
-                        keytab[perm]["allow"][key] = add_list
-                        # Only remove members if action is 'service'
-                        if action == "service":
-                            keytab[perm]["disallow"][key] = del_list
 
             elif state == "absent":
                 if action == "service":
@@ -630,31 +586,6 @@ def main():
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(msg="No service '%s'" % name)
-
-                    principal_del = gen_intersection_list(
-                        principal, res_principals)
-
-                    certificate_del = gen_intersection_list(
-                        certificate, res_find.get("usercertificate"))
-
-                    host_del = gen_intersection_list(
-                        host, res_find.get("managedby_host"))
-
-                    for perm in ["create", "retrieve"]:
-                        oper = "write" if perm == "create" else "read"
-                        for key in ["user", "group", "host", "hostgroup"]:
-                            res_param = (
-                                'ipaallowedtoperform_%s_keys_%s'
-                                % (oper, key)
-                            )
-                            module_params = ansible_module.params_get(
-                                "allow_%s_keytab_%s" % (perm, key)
-                            )
-                            existing = res_find.get(res_param)
-                            del_list = (
-                                gen_intersection_list(module_params, existing)
-                            )
-                            keytab[perm]["disallow"][key] = del_list
 
             elif state == "disabled":
                 if action == "service":
@@ -674,42 +605,80 @@ def main():
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
             # Manage members
-            if principal_add:
-                commands.append([name, "service_add_principal",
-                                 {"krbprincipalname": principal_add}])
-            if principal_del:
-                commands.append([name, "service_remove_principal",
-                                 {"krbprincipalname": principal_del}])
+            commands.extend(
+                gen_member_manage_commands(
+                    ansible_module,
+                    # Use the computed principals instead of res_find one.
+                    {"krbprincipalname": res_principals},
+                    name,
+                    "service_add_principal", "service_remove_principal",
+                    create_ipa_mapping(
+                        ipa_api_map(
+                            "krbprincipalname",
+                            "principal",
+                            "krbprincipalname",
+                            transform={
+                                "principal": transform_service_principal
+                            }
+                        )
+                    )
+                    # ipa_params=dict(
+                    #     krbprincipalname=dict(
+                    #         param="principal",
+                    #         ldap="krbprincipalname",
+                    #         values=principal,
+                    #     )
+                    # )
+                )
+            )
 
-            if certificate_add:
-                commands.append([name, "service_add_cert",
-                                 {"usercertificate": certificate_add}])
-            if certificate_del:
-                commands.append([name, "service_remove_cert",
-                                 {"usercertificate": certificate_del}])
+            commands.extend(
+                gen_member_manage_commands(
+                    ansible_module, res_find, name,
+                    "service_add_cert", "service_remove_cert",
+                    create_ipa_mapping(
+                        ipa_api_map(
+                            "usercertificate",
+                            "certificate",
+                            "usercertificate",
+                        )
+                    )
+                )
+            )
 
-            if host_add:
-                commands.append([name, "service_add_host",
-                                 {"host": host_add}])
-            if host_del:
-                commands.append([name, "service_remove_host",
-                                 {"host": host_del}])
+            commands.extend(
+                gen_member_manage_commands(
+                    ansible_module, res_find, name,
+                    "service_add_host", "service_remove_host",
+                    create_ipa_mapping(
+                        ipa_api_map(
+                            "host", "host", "managedby_host",
+                            transform={"host": transform_lowercase},
+                        )
+                    )
+                )
+            )
 
             # manage keytab permissions.
-            for perm in ["create", "retrieve"]:
-                for mode in ["allow", "disallow"]:
-                    for key in ["user", "group", "host", "hostgroup"]:
-                        if keytab[perm][mode][key]:
-                            commands.append([
-                                name,
-                                "service_%s_%s_keytab" % (mode, perm),
-                                keytab[perm][mode]
-                            ])
-                            break
-
-        # Check mode exit
-        if ansible_module.check_mode:
-            ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
+            for oper, perm in {"write": "create", "read": "retrieve"}.items():
+                for key in ["user", "group", "host", "hostgroup"]:
+                    # module
+                    mod_param = "allow_%s_keytab_%s" % (perm, key)
+                    # LDAP
+                    ldap_param = 'ipaallowedtoperform_%s_keys_%s' % (oper, key)
+                    commands.extend(
+                        gen_member_manage_commands(
+                            ansible_module, res_find, name,
+                            "service_allow_%s_keytab" % perm,
+                            "service_disallow_%s_keytab" % perm,
+                            create_ipa_mapping(
+                                ipa_api_map(
+                                    key, mod_param, ldap_param,
+                                    transform={mod_param: transform_lowercase}
+                                ),
+                            ),
+                        )
+                    )
 
         # Execute commands
         changed = ansible_module.execute_ipa_commands(
