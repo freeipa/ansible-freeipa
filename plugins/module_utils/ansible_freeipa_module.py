@@ -484,13 +484,61 @@ def module_params_get(module, name, allow_empty_string=False):
     return value
 
 
-def module_params_get_lowercase(module, name, allow_empty_string=False):
-    value = module_params_get(module, name, allow_empty_string)
+def transform_lowercase(value):
+    """Convert the value or list of values to lowercase."""
     if isinstance(value, list):
         value = [v.lower() for v in value]
     if isinstance(value, (str, unicode)):
         value = value.lower()
     return value
+
+
+def transform_hostmask(value):
+    """Convert hostmask value to network CIDR."""
+    if isinstance(value, list):
+        return [to_text(netaddr.IPNetwork(v).cidr) for v in value]
+    if isinstance(value, (str, unicode)):
+        return to_text(netaddr.IPNetwork(value).cidr)
+    return value
+
+
+def transform_host_param(value):
+    """Ensure value is comparable to LDAP stored hosts."""
+    return transform_lowercase(transform_host_fqdn(value))
+
+
+def transform_host_fqdn(value):
+    """Ensure host value is a FQDN."""
+    domain = api_get_domain()
+    if isinstance(value, list):
+        return [ensure_fqdn(host, domain) for host in value]
+    if isinstance(value, (str, unicode)):
+        return ensure_fqdn(value, domain)
+    return value
+
+
+def transform_service_principal(value):
+    """Ensure service param value is a valid service principal."""
+    ipa_realm = api_get_realm()
+    if isinstance(value, (list, tuple)):
+        return [
+            to_text(x)
+            for x in [
+                svc if '@' in svc else ('%s@%s' % (svc.lower(), ipa_realm))
+                for svc in value
+            ]
+        ]
+    if isinstance(value, (str, unicode)):
+        return to_text(
+            value if '@' in value else ('%s@%s' % (value.lower(), ipa_realm))
+        )
+    return value
+
+
+def module_params_get_lowercase(module, name, allow_empty_string=False):
+    return transform_lowercase(
+        module_params_get(module, name, allow_empty_string)
+    )
 
 
 def api_get_domain():
