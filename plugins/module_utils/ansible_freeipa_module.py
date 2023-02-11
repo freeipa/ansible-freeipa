@@ -733,6 +733,8 @@ def servicedelegation_normalize_principals(module, principal,
 
     ipa_realm = module.ipa_get_realm()
     _principal = []
+    if not isinstance(principal, (list, tuple)):
+        principal = [principal]
     for _princ in principal:
         princ = _princ
         realm = ipa_realm
