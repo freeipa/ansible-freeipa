@@ -58,6 +58,7 @@ Example playbook to ensure a user is present:
       last: Acme
       uid: 10001
       gid: 100
+      gecos: "The Pinky"
       phone: "+555123457"
       email: pinky@acme.com
       passwordexpiration: "2023-01-19 23:59:59"
@@ -395,6 +396,7 @@ Variable | Description | Required
 `random` | Generate a random user password | no
 `uid` \| `uidnumber` | User ID Number (system will assign one if not provided). | no
 `gid` \| `gidnumber` | Group ID Number. | no
+`gecos` | GECOS | no
 `city` | City | no
 `userstate` \| `st` | State/Province | no
 `postalcode` \| `zip` | Postalcode/ZIP | no
