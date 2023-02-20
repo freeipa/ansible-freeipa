@@ -59,6 +59,7 @@
       #password: foo2
       principal: pa
       random: yes
+      street: PinkyStreet
       city: PinkyCity
       userstate: PinkyState
       postalcode: PinkyZip
@@ -85,6 +86,33 @@
       #subject: PinkySubject
     register: result
     failed_when: not result.changed or result.failed
+
+  - name: Set street, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      street: PinkyStreet
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Clear street attribute.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      street: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Clear street attribute, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      street: ""
+    register: result
+    failed_when: result.changed or result.failed
 
   - name: User pinky present with changed settings
     ipauser:
