@@ -98,8 +98,8 @@
 
       always:
       - name: Remove idoverrideuser.
-        ansible.builtin.shell: |
-          kinit -c idoverride_cache admin <<< SomeADMINpassword
-          ipa idoverrideuser-del "Default Trust View" {{ ad_user }}
-          kdestroy -A -q -c idoverride_cache
-        when:
+        ansible.builtin.shell:
+          cmd: |
+            kinit -c idoverride_cache admin <<< SomeADMINpassword
+            ipa idoverrideuser-del "Default Trust View" {{ ad_user }}
+            kdestroy -A -q -c idoverride_cache
