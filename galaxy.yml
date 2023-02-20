@@ -13,8 +13,8 @@ homepage: "https://github.com/freeipa/ansible-freeipa"
 issues: "https://github.com/freeipa/ansible-freeipa/issues"
 
 readme: "README.md"
-license: "GPL-3.0-or-later"
-
+license:
+  - "GPL-3.0-or-later"
 tags:
   - "linux"
   - "system"
