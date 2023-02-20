@@ -138,6 +138,7 @@
     # service
 
   - name: Execute tests if ipa_verison >= 4.7.0
+    when: ipa_version is version('4.7.0', '>=')
     block:
 
     - name: Ensure service "{{ 'HTTP/' + fqdn_at_domain }}" is present in group group1
@@ -281,8 +282,6 @@
         state: absent
       register: result
       failed_when: result.changed or result.failed
-
-    when: ipa_version is version('4.7.0', '>=')
 
     # user
 

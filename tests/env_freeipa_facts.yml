@@ -31,6 +31,7 @@
     trust_test_is_supported: no
 
 - name: Ensure ipaserver_domain is set
+  when: ipaserver_domain is not defined
   block:
   - name: Get Domain from server name
     ansible.builtin.set_fact:
@@ -41,4 +42,3 @@
     ansible.builtin.set_fact:
       ipaserver_domain: "ipa.test"
     when: "'fqdn' not in ansible_facts"
-  when: ipaserver_domain is not defined

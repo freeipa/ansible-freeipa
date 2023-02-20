@@ -59,13 +59,13 @@
           pac_type: ""
 
       - name: Execute tests if ipa_version >= 4.8.0
+        when: ipa_version is version('4.8.0', '>=')
         block:
           - name: Set maxhostname to 255
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
               maxhostname: 255
-        when: ipa_version is version('4.8.0', '>=')
 
       - name: Set maxusername to 45
         ipaconfig:
@@ -225,6 +225,7 @@
         failed_when: result.changed or result.failed
 
       - name: Execute tests if ipa_version >= 4.8.0
+        when: ipa_version is version('4.8.0', '>=')
         block:
           - name: Set maxhostname to 77
             ipaconfig:
@@ -241,7 +242,6 @@
               maxhostname: 77
             register: result
             failed_when: result.changed or result.failed
-        when: ipa_version is version('4.8.0', '>=')
 
       - name: Set pwdexpnotify to 17
         ipaconfig:
@@ -415,13 +415,13 @@
         failed_when: not result.changed or result.failed
 
       - name: Execute tests if ipa_version >= 4.8.0
+        when: ipa_version is version('4.8.0', '>=')
         block:
           - name: Reset maxhostname
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
               maxhostname: '{{ previousconfig.config.maxhostname | default(omit) }}'
-        when: ipa_version is version('4.8.0', '>=')
 
       - name: Reset changed fields, again
         ipaconfig:
@@ -451,13 +451,13 @@
         failed_when: result.changed or result.failed
 
       - name: Execute tests if ipa_version >= 4.8.0
+        when: ipa_version is version('4.8.0', '>=')
         block:
           - name: Reset maxhostname
             ipaconfig:
               ipaadmin_password: SomeADMINpassword
               ipaapi_context: "{{ ipa_context | default(omit) }}"
               maxhostname: '{{ previousconfig.config.maxhostname | default(omit) }}'
-        when: ipa_version is version('4.8.0', '>=')
 
     rescue:
       - name: Set fields to IPA default, due to error
