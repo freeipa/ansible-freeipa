@@ -46,20 +46,12 @@ options:
     type: list
     elements: str
     required: yes
-  domain:
-    description: Primary DNS domain of the IPA deployment
-    type: str
-    required: yes
   realm:
     description: Kerberos realm name of the IPA deployment
     type: str
     required: yes
   hostname:
     description: Fully qualified name of this host
-    type: str
-    required: yes
-  kdc:
-    description: The name or address of the host running the KDC
     type: str
     required: yes
   basedn:
@@ -102,6 +94,10 @@ options:
     description: Turn on extra debugging
     type: bool
     required: no
+  krb_name:
+    description: The krb5 config file name
+    type: str
+    required: yes
 author:
     - Thomas Woerner (@t-woerner)
 '''
@@ -111,27 +107,25 @@ EXAMPLES = '''
 - name: Join IPA in force mode with maximum 5 kinit attempts
   ipaclient_join:
     servers: ["server1.example.com","server2.example.com"]
-    domain: example.com
     realm: EXAMPLE.COM
-    kdc: server1.example.com
     basedn: dc=example,dc=com
     hostname: client1.example.com
     principal: admin
     password: MySecretPassword
     force_join: yes
     kinit_attempts: 5
+    krb_name: /tmp/tmpkrb5.conf
 
 # Join IPA to get the keytab using ipadiscovery return values
 - name: Join IPA
   ipaclient_join:
     servers: "{{ ipadiscovery.servers }}"
-    domain: "{{ ipadiscovery.domain }}"
     realm: "{{ ipadiscovery.realm }}"
-    kdc: "{{ ipadiscovery.kdc }}"
     basedn: "{{ ipadiscovery.basedn }}"
     hostname: "{{ ipadiscovery.hostname }}"
     principal: admin
     password: MySecretPassword
+    krb_name: /tmp/tmpkrb5.conf
 '''
 
 RETURN = '''
@@ -147,9 +141,9 @@ import tempfile
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
     setup_logging, check_imports,
-    SECURE_PATH, sysrestore, paths, options, configure_krb5_conf,
-    realm_to_suffix, kinit_keytab, GSSError, kinit_password, NUM_VERSION,
-    get_ca_cert, get_ca_certs, errors, run
+    SECURE_PATH, sysrestore, paths, options, realm_to_suffix, kinit_keytab,
+    GSSError, kinit_password, NUM_VERSION, get_ca_cert, get_ca_certs, errors,
+    run
 )
 
 
@@ -157,10 +151,8 @@ def main():
     module = AnsibleModule(
         argument_spec=dict(
             servers=dict(required=True, type='list', elements='str'),
-            domain=dict(required=True, type='str'),
             realm=dict(required=True, type='str'),
             hostname=dict(required=True, type='str'),
-            kdc=dict(required=True, type='str'),
             basedn=dict(required=True, type='str'),
             principal=dict(required=False, type='str'),
             password=dict(required=False, type='str', no_log=True),
@@ -170,6 +162,7 @@ def main():
             force_join=dict(required=False, type='bool'),
             kinit_attempts=dict(required=False, type='int', default=5),
             debug=dict(required=False, type='bool'),
+            krb_name=dict(required=True, type='str'),
         ),
         supports_check_mode=False,
     )
@@ -179,11 +172,9 @@ def main():
     setup_logging()
 
     servers = module.params.get('servers')
-    domain = module.params.get('domain')
     realm = module.params.get('realm')
     hostname = module.params.get('hostname')
     basedn = module.params.get('basedn')
-    kdc = module.params.get('kdc')
     force_join = module.params.get('force_join')
     principal = module.params.get('principal')
     password = module.params.get('password')
@@ -192,6 +183,7 @@ def main():
     ca_cert_file = module.params.get('ca_cert_file')
     kinit_attempts = module.params.get('kinit_attempts')
     debug = module.params.get('debug')
+    krb_name = module.params.get('krb_name')
 
     if password is not None and keytab is not None:
         module.fail_json(msg="Password and keytab cannot be used together")
@@ -199,12 +191,10 @@ def main():
     if password is None and admin_keytab is None:
         module.fail_json(msg="Password or admin_keytab is needed")
 
-    client_domain = hostname[hostname.find(".") + 1:]
     nolog = tuple()
     env = {'PATH': SECURE_PATH}
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     host_principal = 'host/%s@%s' % (hostname, realm)
-    sssd = True
 
     options.ca_cert_file = ca_cert_file
     options.principal = principal
@@ -215,19 +205,6 @@ def main():
     changed = False
     already_joined = False
     try:
-        (krb_fd, krb_name) = tempfile.mkstemp()
-        os.close(krb_fd)
-        configure_krb5_conf(
-            cli_realm=realm,
-            cli_domain=domain,
-            cli_server=servers,
-            cli_kdc=kdc,
-            dnsok=False,
-            filename=krb_name,
-            client_domain=client_domain,
-            client_hostname=hostname,
-            configure_sssd=sssd,
-            force=False)
         env['KRB5_CONFIG'] = krb_name
         ccache_dir = tempfile.mkdtemp(prefix='krbcc')
         ccache_name = os.path.join(ccache_dir, 'ccache')
@@ -336,27 +313,17 @@ def main():
                          paths.IPA_DNS_CCACHE,
                          config=krb_name,
                          attempts=kinit_attempts)
-            env['KRB5CCNAME'] = os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
         except GSSError as e:
             # failure to get ticket makes it impossible to login and
             # bind from sssd to LDAP, abort installation
             module.fail_json(msg="Failed to obtain host TGT: %s" % e)
 
     finally:
-        try:
-            os.remove(krb_name)
-        except OSError:
-            module.fail_json(msg="Could not remove %s" % krb_name)
         if ccache_dir is not None:
             try:
                 os.rmdir(ccache_dir)
             except OSError:
                 pass
-        if os.path.exists(krb_name + ".ipabkp"):
-            try:
-                os.remove(krb_name + ".ipabkp")
-            except OSError:
-                module.fail_json(msg="Could not remove %s.ipabkp" % krb_name)
 
     module.exit_json(changed=changed,
                      already_joined=already_joined)

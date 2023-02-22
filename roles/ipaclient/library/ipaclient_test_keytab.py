@@ -244,6 +244,12 @@ def main():
                 os.remove(krb_name)
             except OSError:
                 module.fail_json(msg="Could not remove %s" % krb_name)
+            if os.path.exists(krb_name + ".ipabkp"):
+                try:
+                    os.remove(krb_name + ".ipabkp")
+                except OSError:
+                    module.fail_json(
+                        msg="Could not remove %s.ipabkp" % krb_name)
 
     module.exit_json(changed=False,
                      krb5_keytab_ok=krb5_keytab_ok,

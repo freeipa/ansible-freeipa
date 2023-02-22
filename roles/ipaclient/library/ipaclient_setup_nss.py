@@ -177,7 +177,7 @@ from ansible.module_utils.ansible_ipa_client import (
     options, sysrestore, paths, ansible_module_get_parsed_ip_addresses,
     api, errors, create_ipa_nssdb, ipautil, ScriptError, CLIENT_INSTALL_ERROR,
     get_certs_from_ldap, DN, certstore, x509, logger, certdb,
-    CalledProcessError, tasks, client_dns, configure_certmonger, services,
+    CalledProcessError, tasks, client_dns, services,
     update_ssh_keys, save_state, configure_ldap_conf, configure_nslcd_conf,
     configure_openldap_conf, hardcode_ldap_server, getargspec, NUM_VERSION,
     serialization
@@ -350,8 +350,6 @@ def main():
 
         if not options.on_master:
             client_dns(cli_server[0], hostname, options)
-            configure_certmonger(fstore, subject_base, cli_realm, hostname,
-                                 options, ca_enabled)
 
         if hasattr(paths, "SSH_CONFIG_DIR"):
             ssh_config_dir = paths.SSH_CONFIG_DIR

@@ -55,6 +55,10 @@ options:
     type: bool
     required: no
     default: no
+  krb_name:
+    description: The krb5 config file name
+    type: str
+    required: yes
 author:
     - Thomas Woerner (@t-woerner)
 '''
@@ -65,6 +69,7 @@ EXAMPLES = '''
     servers: ["server1.example.com","server2.example.com"]
     domain: example.com
     hostname: client1.example.com
+    krb_name: /tmp/tmpkrb5.conf
   register: result_ipaclient_api
 '''
 
@@ -99,6 +104,7 @@ def main():
             realm=dict(required=True, type='str'),
             hostname=dict(required=True, type='str'),
             debug=dict(required=False, type='bool', default="false"),
+            krb_name=dict(required=True, type='str'),
         ),
         supports_check_mode=False,
     )
@@ -110,9 +116,11 @@ def main():
     realm = module.params.get('realm')
     hostname = module.params.get('hostname')
     debug = module.params.get('debug')
+    krb_name = module.params.get('krb_name')
 
     host_principal = 'host/%s@%s' % (hostname, realm)
     os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
+    os.environ['KRB5_CONFIG'] = krb_name
 
     ca_certs = x509.load_certificate_list_from_file(paths.IPA_CA_CRT)
     if 40500 <= NUM_VERSION < 40590:
