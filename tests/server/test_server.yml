@@ -8,6 +8,7 @@
 
   # CLEANUP TEST ITEMS
   - name: Ensure ipa_server_name is set
+    when: ipa_server_name is not defined
     block:
       - name: Get server name from hostname
         ansible.builtin.set_fact:
@@ -16,9 +17,9 @@
       - name: Fallback to 'ipaserver'
         ansible.builtin.set_fact:
           ipa_server_name: ipaserver
-    when: ipa_server_name is not defined
 
   - name: Ensure ipaserver_domain is set
+    when: ipaserver_domain is not defined
     block:
       - name: Get domain name from hostname.
         ansible.builtin.set_fact:
@@ -27,7 +28,6 @@
       - name: Fallback to 'ipa.test'
         ansible.builtin.set_fact:
           ipaserver_domain: "ipa.test"
-    when: ipaserver_domain is not defined
 
   - name: Ensure server "{{ ipa_server_name + '.' + ipaserver_domain }}" without location
     ipaserver:

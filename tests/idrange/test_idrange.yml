@@ -120,6 +120,7 @@
           name: local_id_range
 
   - name: Execute idrange tests if trust test environment is supported
+    when: trust_test_is_supported | default(false)
     block:
       # Create trust with range_type: ipa-ad-trust
       - name: Create trust with range_type 'ipa-ad-trust'
@@ -367,5 +368,3 @@
             - ad_posix_id_range
           continue: yes
           state: absent
-
-    when: trust_test_is_supported | default(false)

@@ -10,6 +10,7 @@
     ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   - name: Execute group tests if trust test environment is supported
+    when: trust_test_is_supported | default(false)
     block:
 
     - name: Add nonposix group.
@@ -111,5 +112,3 @@
         ipaadmin_password: SomeADMINpassword
         name: extgroup
         state: absent
-
-    when: trust_test_is_supported | default(false)

@@ -12,7 +12,7 @@
   tasks:
   - name: Include users.json
     ansible.builtin.include_vars:
-      file: users.json  # noqa 505
+      file: users.json  # noqa missing-import
   - name: Size of users slice.
     ansible.builtin.debug:
       msg: "{{ users | length }}"

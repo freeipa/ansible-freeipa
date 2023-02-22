@@ -22,6 +22,7 @@
 
   # tests
   - name: Tests with skip_host_check, require IPA version 4.8.0+.
+    when: ipa_version is version('4.7.0', '>=')
     block:
       - name: Setup test environment
         ansible.builtin.include_tasks: env_setup.yml
@@ -577,4 +578,3 @@
       # cleanup
       - name: Cleanup test environment
         ansible.builtin.include_tasks: env_cleanup.yml
-    when: ipa_version is version('4.7.0', '>=')

@@ -13,6 +13,7 @@
       ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
     - name: Execute tests if ipa_verison >= 4.8.7 and trust test environment is supported
+      when: ipa_version is version("4.8.7", ">=") and trust_test_is_supported | default(false)
       block:
       - name: Create idoverrideuser.
         ansible.builtin.shell: |
@@ -97,10 +98,8 @@
 
       always:
       - name: Remove idoverrideuser.
-        ansible.builtin.shell: |
-          kinit -c idoverride_cache admin <<< SomeADMINpassword
-          ipa idoverrideuser-del "Default Trust View" {{ ad_user }}
-          kdestroy -A -q -c idoverride_cache
-        when:
-
-      when: ipa_version is version("4.8.7", ">=") and trust_test_is_supported | default(false)
+        ansible.builtin.shell:
+          cmd: |
+            kinit -c idoverride_cache admin <<< SomeADMINpassword
+            ipa idoverrideuser-del "Default Trust View" {{ ad_user }}
+            kdestroy -A -q -c idoverride_cache

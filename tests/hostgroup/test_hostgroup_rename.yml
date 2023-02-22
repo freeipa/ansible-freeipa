@@ -9,6 +9,7 @@
     ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   - name: Tests requiring IPA version 4.8.7+
+    when: ipa_version is version('4.8.7', '>=')
     block:
       - name: Ensure testing host-group are absent
         ipahostgroup:
@@ -108,5 +109,3 @@
           - databases
           - datalake
           state: absent
-
-    when: ipa_version is version('4.8.7', '>=')

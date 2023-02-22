@@ -17,10 +17,9 @@
     ipa_range_exists: 'Range name: {{ ipaserver.realm }}_subid_range'
 
   tasks:
-
   - name: Run tust tests, if supported by environment
+    when: trust_test_is_supported | default(false)
     block:
-
     - name: Delete test trust
       ipatrust:
         ipaadmin_password: SomeADMINpassword
@@ -165,5 +164,3 @@
         ipa idrange-del {{ adserver.realm }}_id_range || true
         ipa idrange-del {{ ipaserver.realm }}_subid_range || true
         kdestroy -c test_krb5_cache -q -A
-
-    when: trust_test_is_supported | default(false)

@@ -10,6 +10,7 @@
     ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   - name: Host principals are only possible with IPA 4.9.0+
+    when: ipa_version is version('4.9.0', '>=')
     block:
 
     # SET FACTS
@@ -145,5 +146,3 @@
         state: absent
       register: result
       failed_when: not result.changed or result.failed
-
-    when: ipa_version is version('4.9.0', '>=')

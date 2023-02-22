@@ -19,6 +19,8 @@
 
   # TESTS
   - name: Test config sid
+    # only run tests if version supports enable-sid
+    when: ipa_version is version("4.9.8", ">=")
     block:
     - name: Check if SID is enabled.
       ipaconfig:
@@ -115,8 +117,6 @@
         ipaapi_context: "{{ ipa_context | default(omit) }}"
         add_sids: yes
 
-    # only run tests if version supports enable-sid
-    when: ipa_version is version("4.9.8", ">=")
     # REVERT TO PREVIOUS CONFIG
     always:
     # Once SID is enabled, it cannot be reverted.
