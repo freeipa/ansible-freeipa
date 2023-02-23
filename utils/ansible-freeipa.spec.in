@@ -10,7 +10,7 @@ Name: ansible-freeipa
 Version: @@VERSION@@
 Release: @@RELEASE@@%{?dist}
 URL: https://github.com/freeipa/ansible-freeipa
-License: GPLv3+
+License: GPL-3.0-or-later
 Source: %{name}-%{version}-@@RELEASE@@.tar.bz2
 BuildArch: noarch
 
