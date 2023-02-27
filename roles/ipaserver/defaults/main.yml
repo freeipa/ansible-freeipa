@@ -42,3 +42,4 @@ ipaserver_copy_csr_to_controller: no
 ### uninstall ###
 ipaserver_ignore_topology_disconnect: no
 ipaserver_ignore_last_of_role: no
+ipaserver_remove_from_domain: false

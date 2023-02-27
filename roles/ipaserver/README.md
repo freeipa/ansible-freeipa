@@ -79,7 +79,7 @@ Example playbook to setup the IPA server using admin and dirman passwords from a
     state: present
 ```
 
-Example playbook to unconfigure the IPA client(s) using principal and password from inventory file:
+Example playbook to unconfigure the IPA server using principal and password from inventory file:
 
 ```yaml
 ---
@@ -167,6 +167,48 @@ Server installation step 2: Copy `<ipaserver hostname>-chain.crt` to the IPA ser
 ```
 
 The files can also be copied automatically: Set `ipaserver_copy_csr_to_controller` to true in the server installation step 1 and set `ipaserver_external_cert_files_from_controller` to point to the `chain.crt` file in the server installation step 2.
+
+
+Example inventory file to remove a server from the domain:
+
+```ini
+[ipaserver]
+ipaserver.example.com
+
+[ipaserver:vars]
+ipaadmin_password=MySecretPassword123
+ipaserver_remove_from_domain=true
+```
+
+Example playbook to remove an IPA server using admin passwords from the domain:
+
+```yaml
+---
+- name: Playbook to remove IPA server
+  hosts: ipaserver
+  become: true
+
+  roles:
+  - role: ipaserver
+    state: absent
+```
+
+The inventory will enable the removal of the server (also a replica) from the domain. Additional options are needed if the removal of the server/replica is resulting in a topology disconnect or if the server/replica is the last that has a role.
+
+To continue with the removal with a topology disconnect it is needed to set these parameters:
+
+```ini
+ipaserver_ignore_topology_disconnect=true
+ipaserver_remove_on_server=ipaserver2.example.com
+```
+
+To continue with the removal for a server that is the last that has a role:
+
+```ini
+ipaserver_ignore_last_of_role=true
+```
+
+Be careful with enabling the `ipaserver_ignore_topology_disconnect` and especially `ipaserver_ignore_last_of_role`, the change can not be reverted easily.
 
 
 Playbooks
@@ -304,6 +346,19 @@ Variable | Description | Required
 `ipaserver_firewalld_zone` | The value defines the firewall zone that will be used. This needs to be an existing runtime and permanent zone. (string) | no
 `ipaserver_external_cert_files_from_controller` | Files containing the IPA CA certificates and the external CA certificate chains on the controller that will be copied to the ipaserver host to `/root` folder. (list of string) | no
 `ipaserver_copy_csr_to_controller` | Copy the generated CSR from the ipaserver to the controller as `"{{ inventory_hostname }}-ipa.csr"`. (bool) | no
+
+Undeploy Variables (`state`: absent)
+------------------------------------
+
+These settings should only be used if the result is really wanted. The change might not be revertable easily.
+
+Variable | Description | Required
+-------- | ----------- | --------
+`ipaserver_ignore_topology_disconnect` | If enabled this enforces the removal of the server even if it results in a topology disconnect. Be careful with this setting. (bool) | false
+`ipaserver_ignore_last_of_role` | If enabled this enforces the removal of the server even if the server is the last with one that has a role. Be careful, this might not be revered easily. (bool) | false
+`ipaserver_remove_from_domain` | This enables the removal of the server from the domain additionally to the undeployment. (bool) | false
+`ipaserver_remove_on_server` | The value defines the server/replica in the domain that will to be used to remove the server/replica from the domain if `ipaserver_ignore_topology_disconnect` and `ipaserver_remove_from_domain` are enabled. Without the need to enable `ipaserver_ignore_topology_disconnect`, the value will be automatically detected using the replication agreements of the server/replica. (string) | false
+
 
 Authors
 =======
