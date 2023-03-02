@@ -36,6 +36,27 @@
       - user1
       state: absent
 
+  - name: User user1 is present with random password using users parameter
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: user1
+        first: first1
+        last: last1
+        random: yes
+      update_password: on_create
+    register: ipauser
+    failed_when: not ipauser.changed or
+                 ipauser.user.user1.randompassword is not defined or
+                 ipauser.failed
+
+  - name: User user1 absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - user1
+      state: absent
+
   - name: Users user1 and user2 present with random password
     ipauser:
       ipaadmin_password: SomeADMINpassword
