@@ -1,0 +1,100 @@
+---
+- name: Test services without using option skip_host_check
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # setup
+  - name: Test services without using option skip_host_check
+    block:
+    - name: Setup test environment
+      ansible.builtin.include_tasks: env_setup.yml
+
+    - name: Services are present
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        services:
+        - name: "HTTP/{{ svc_fqdn }}"
+          principal:
+            - host/test.example.com
+        - name: "mysvc/{{ host1_fqdn }}"
+          pac_type: NONE
+          ok_as_delegate: yes
+          ok_to_auth_as_delegate: yes
+        - name: "HTTP/{{ host1_fqdn }}"
+          allow_create_keytab_user:
+            - user01
+            - user02
+          allow_create_keytab_group:
+            - group01
+            - group02
+          allow_create_keytab_host:
+            - "{{ host1_fqdn }}"
+            - "{{ host2_fqdn }}"
+          allow_create_keytab_hostgroup:
+            - hostgroup01
+            - hostgroup02
+        - name: "mysvc/{{ host2_fqdn }}"
+          auth_ind: otp,radius
+
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Services are present again
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        services:
+        - name: "HTTP/{{ svc_fqdn }}"
+        - name: "mysvc/{{ host1_fqdn }}"
+        - name: "HTTP/{{ host1_fqdn }}"
+        - name: "mysvc/{{ host2_fqdn }}"
+      register: result
+      failed_when: result.changed or result.failed
+
+    # failed_when: not result.failed has been added as this test needs to
+    # fail because two services with the same name should be added in the same
+    # task.
+    - name: Duplicate names in services failure test
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        services:
+        - name: "HTTP/{{ svc_fqdn }}"
+        - name: "mysvc/{{ host1_fqdn }}"
+        - name: "HTTP/{{ nohost_fqdn }}"
+        - name: "HTTP/{{ svc_fqdn }}"
+      register: result
+      failed_when: result.changed or not result.failed or "is used more than once" not in result.msg
+
+    - name: Services/name and name 'service' present
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        name: "HTTP/{{ svc_fqdn }}"
+        services:
+        - name: "HTTP/{{ svc_fqdn }}"
+      register: result
+      failed_when: result.changed or not result.failed or "parameters are mutually exclusive" not in result.msg
+
+    - name: Services/name and name are absent
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+      register: result
+      failed_when: result.changed or not result.failed or "one of the following is required" not in result.msg
+
+    - name: Name is absent
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        name:
+      register: result
+      failed_when: result.changed or not result.failed or "At least one name or services is required" not in result.msg
+
+    - name: Only one service can be added at a time using name.
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        name: example.com,example1.com
+      register: result
+      failed_when: result.changed or not result.failed or "Only one service can be added at a time using 'name'." not in result.msg
+
+    always:
+    # cleanup
+    - name: Cleanup test environment
+      ansible.builtin.include_tasks: env_cleanup.yml

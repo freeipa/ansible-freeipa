@@ -1,0 +1,22 @@
+---
+- name: Create services.json
+  hosts: localhost
+
+  tasks:
+  - name: Check if services.json exists
+    ansible.builtin.stat:
+      path: services.json
+    register: register_stat_services
+
+  - name: Create services.json
+    ansible.builtin.command: /bin/bash services.sh 500
+    when: not register_stat_services.stat.exists
+
+  - name: Check if hosts.json exists
+    ansible.builtin.stat:
+      path: hosts.json
+    register: register_stat_hosts
+
+  - name: Create hosts.json
+    ansible.builtin.command: /bin/bash hosts.sh 500
+    when: not register_stat_hosts.stat.exists
