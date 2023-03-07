@@ -353,6 +353,33 @@ Example playbook to ensure users are absent:
       state: absent
 ```
 
+When using FreeIPA 4.8.0+, SMB logon script, profile, home directory and home drive can be set for users.
+
+In the example playbook to set SMB attributes note that `smb_profile_path` and `smb_home_dir` use paths in UNC format, which includes backslashes ('\\`). If the paths are quoted, the backslash needs to be escaped becoming "\\", so the path `\\server\dir` becomes `"\\\\server\\dir"`. If the paths are unquoted the slashes do not have to be escaped.
+
+The YAML specification states that a colon (':') is a key separator and a dash ('-') is an item marker, only  with a space after them, so using both unquoted as part of a path should not be a problem. If a space is needed after a colon or a dash, then a quoted string must be used as in `"user - home"`. For the `smb_home_drive` attribute is is recomended that a quoted string is used, to improve readability.
+
+Example playbook to set SMB attributes:
+
+```yaml
+---
+- name: Plabook to handle users
+  hosts: ipaserver
+  become: false
+
+  tasks:
+  - name: Ensure user 'smbuser' is present with smb attributes
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: smbuser
+      first: SMB
+      last: User
+      smb_logon_script: N:\logonscripts\startup
+      smb_profile_path: \\server\profiles\some_profile
+      smb_home_dir: \\users\home\smbuser
+      smb_home_drive: "U:"
+```
+
 
 Variables
 =========
@@ -425,6 +452,10 @@ Variable | Description | Required
 &nbsp; | `subject` - Subject of the certificate, only usable together with `issuer` option. | no
 &nbsp; | `data` - Certmap data, not usable with other certmapdata options. | no
 `noprivate` | Do not create user private group. (bool) | no
+`smb_logon_script` \| `ipantlogonscript` | SMB logon script path. Requires FreeIPA version 4.8.0+. | no 
+`smb_profile_path:` \| `ipantprofilepath` | SMB profile path, in UNC format. Requires FreeIPA version 4.8.0+. | no 
+`smb_home_dir` \| `ipanthomedirectory` | SMB Home Directory, in UNC format. Requires FreeIPA version 4.8.0+.  | no 
+`smb_home_drive` \| `ipanthomedirectorydrive` | SMB Home Directory Drive, a single upercase letter (A-Z) followed by a colon (:), for example "U:". Requires FreeIPA version 4.8.0+. | no 
 `nomembers` | Suppress processing of membership attributes. (bool) | no
 
 

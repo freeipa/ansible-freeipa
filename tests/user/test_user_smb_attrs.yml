@@ -1,0 +1,253 @@
+---
+- name: Test users
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Set FreeIPA environment facts.
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  - name: Only run tests for IPA 4.8.0+
+    when: ipa_version is version('4.8.0', '>=')
+    block:
+      # SETUP
+      - name: Remove test users
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          state: absent
+
+      # TESTS
+      - name: Ensure user testuser exists with all smb paramters
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          first: test
+          last: user
+          smb_profile_path: "/some/profile/path"
+          smb_home_dir: "/some/home/dir"
+          smb_home_drive: "U{{ ':' }}"
+          smb_logon_script: "/some/profile/script.sh"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure user testuser exists all smb paramters, again
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          first: test
+          last: user
+          smb_logon_script: "/some/profile/script.sh"
+          smb_profile_path: "/some/profile/path"
+          smb_home_dir: "/some/home/dir"
+          smb_home_drive: "U{{ ':' }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Check SMB logon script is correct
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_logon_script: "/some/profile/script.sh"
+        register: result
+        check_mode: true
+        failed_when: result.changed or result.failed
+
+      - name: Check SMB profile path is correct
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_profile_path: "/some/profile/path"
+        register: result
+        check_mode: true
+        failed_when: result.changed or result.failed
+
+      - name: Check SMB Home Directory is correct
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_home_dir: "/some/home/dir"
+        register: result
+        check_mode: true
+        failed_when: result.changed or result.failed
+
+      - name: Check SMB Home Drive is correct
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          first: test
+          last: user
+          smb_home_drive: "U{{ ':' }}"
+        register: result
+        check_mode: true
+        failed_when: result.changed or result.failed
+
+      - name: Set SMB logon script
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_logon_script: "/some/profile/another_script.sh"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Set SMB logon script, again
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_logon_script: "/some/profile/another_script.sh"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Clear SMB logon script
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_logon_script: ""
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Clear SMB logon script, again
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_logon_script: ""
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Set SMB profile path
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_profile_path: "/some/profile/another_path"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Set SMB profile path, again
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_profile_path: "/some/profile/another_path"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Clear SMB profile path
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_profile_path: ""
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Clear SMB profile, again
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_profile_path: ""
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Set SMB home directory
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_home_dir: "/some/other/home"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Set SMB home directory, again
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_home_dir: "/some/other/home"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Clear SMB home directory
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_home_dir: ""
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Clear SMB home directory, again
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_home_dir: ""
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Set SMB home drive
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_home_drive: "Z{{ ':' }}"
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Set SMB home drive, again
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_home_drive: "Z{{ ':' }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Set SMB home drive to invalid value
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_home_drive: "INVALID:"
+        register: result
+        failed_when: not result.failed or "value of smb_home_drive must be one of" not in result.msg
+
+      - name: Clear SMB home drive
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_home_drive: ""
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Clear SMB home drive, again
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          smb_home_drive: ""
+        register: result
+        failed_when: result.changed or result.failed
+
+    always:
+      # CLEANUP
+      - name: Remove test users
+        ipauser:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: testuser
+          state: absent

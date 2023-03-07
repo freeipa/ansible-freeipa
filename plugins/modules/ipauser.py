@@ -242,6 +242,31 @@ options:
         description: Employee Type
         type: str
         required: false
+      smb_logon_script:
+        description: SMB logon script path
+        type: str
+        required: false
+        aliases: ["ipantlogonscript"]
+      smb_profile_path:
+        description: SMB profile path
+        type: str
+        required: false
+        aliases: ["ipantprofilepath"]
+      smb_home_dir:
+        description: SMB Home Directory
+        type: str
+        required: false
+        aliases: ["ipanthomedirectory"]
+      smb_home_drive:
+        description: SMB Home Directory Drive
+        type: str
+        required: false
+        choices: [
+           'A:', 'B:', 'C:', 'D:', 'E:', 'F:', 'G:', 'H:', 'I:', 'J:',
+           'K:', 'L:', 'M:', 'N:', 'O:', 'P:', 'Q:', 'R:', 'S:', 'T:',
+           'U:', 'V:', 'W:', 'X:', 'Y:', 'Z:', ''
+        ]
+        aliases: ["ipanthomedirectorydrive"]
       preferredlanguage:
         description: Preferred Language
         type: str
@@ -474,6 +499,31 @@ options:
     description: Employee Type
     type: str
     required: false
+  smb_logon_script:
+    description: SMB logon script path
+    type: str
+    required: false
+    aliases: ["ipantlogonscript"]
+  smb_profile_path:
+    description: SMB profile path
+    type: str
+    required: false
+    aliases: ["ipantprofilepath"]
+  smb_home_dir:
+    description: SMB Home Directory
+    type: str
+    required: false
+    aliases: ["ipanthomedirectory"]
+  smb_home_drive:
+    description: SMB Home Directory Drive
+    type: str
+    required: false
+    choices: [
+       'A:', 'B:', 'C:', 'D:', 'E:', 'F:', 'G:', 'H:', 'I:', 'J:',
+       'K:', 'L:', 'M:', 'N:', 'O:', 'P:', 'Q:', 'R:', 'S:', 'T:',
+       'U:', 'V:', 'W:', 'X:', 'Y:', 'Z:', ''
+    ]
+    aliases: ["ipanthomedirectorydrive"]
   preferredlanguage:
     description: Preferred Language
     type: str
@@ -613,6 +663,17 @@ EXAMPLES = """
     ipaadmin_password: SomeADMINpassword
     name: pinky,brain
     state: disabled
+
+# Ensure a user has SMB attributes
+- ipauser:
+    ipaadmin_password: SomeADMINpassword
+    name: smbuser
+    first: SMB
+    last: User
+    smb_logon_script: N:\\logonscripts\\startup
+    smb_profile_path: \\\\server\\profiles\\some_profile
+    smb_home_dir: \\\\users\\home\\smbuser
+    smb_home_drive: "U:"
 """
 
 RETURN = """
@@ -673,7 +734,8 @@ def gen_args(first, last, fullname, displayname, initials, homedir, gecos,
              random, uid, gid, street, city, userstate, postalcode, phone,
              mobile, pager, fax, orgunit, title, carlicense, sshpubkey,
              userauthtype, userclass, radius, radiususer, departmentnumber,
-             employeenumber, employeetype, preferredlanguage, noprivate,
+             employeenumber, employeetype, preferredlanguage, smb_logon_script,
+             smb_profile_path, smb_home_dir, smb_home_drive, noprivate,
              nomembers):
     # principal, manager, certificate and certmapdata are handled not in here
     _args = {}
@@ -751,6 +813,14 @@ def gen_args(first, last, fullname, displayname, initials, homedir, gecos,
         _args["noprivate"] = noprivate
     if nomembers is not None:
         _args["no_members"] = nomembers
+    if smb_logon_script is not None:
+        _args["ipantlogonscript"] = smb_logon_script
+    if smb_profile_path is not None:
+        _args["ipantprofilepath"] = smb_profile_path
+    if smb_home_dir is not None:
+        _args["ipanthomedirectory"] = smb_home_dir
+    if smb_home_drive is not None:
+        _args["ipanthomedirectorydrive"] = smb_home_drive
     return _args
 
 
@@ -761,7 +831,9 @@ def check_parameters(  # pylint: disable=unused-argument
         mobile, pager, fax, orgunit, title, manager, carlicense, sshpubkey,
         userauthtype, userclass, radius, radiususer, departmentnumber,
         employeenumber, employeetype, preferredlanguage, certificate,
-        certmapdata, noprivate, nomembers, preserve, update_password):
+        certmapdata, noprivate, nomembers, preserve, update_password,
+        smb_logon_script, smb_profile_path, smb_home_dir, smb_home_drive,
+):
     if state == "present" and action == "user":
         invalid = ["preserve"]
     else:
@@ -773,7 +845,8 @@ def check_parameters(  # pylint: disable=unused-argument
             "sshpubkey", "userauthtype", "userclass", "radius", "radiususer",
             "departmentnumber", "employeenumber", "employeetype",
             "preferredlanguage", "noprivate", "nomembers", "update_password",
-            "gecos",
+            "gecos", "smb_logon_script", "smb_profile_path", "smb_home_dir",
+            "smb_home_drive",
         ]
 
         if state == "present" and action == "member":
@@ -961,6 +1034,17 @@ def main():
         departmentnumber=dict(type="list", elements="str", default=None),
         employeenumber=dict(type="str", default=None),
         employeetype=dict(type="str", default=None),
+        smb_logon_script=dict(type="str", default=None,
+                              aliases=["ipantlogonscript"]),
+        smb_profile_path=dict(type="str", default=None,
+                              aliases=["ipantprofilepath"]),
+        smb_home_dir=dict(type="str", default=None,
+                          aliases=["ipanthomedirectory"]),
+        smb_home_drive=dict(type="str", default=None,
+                            choices=[
+                                ("%c:" % chr(x))
+                                for x in range(ord('A'), ord('Z') + 1)
+                            ] + [""], aliases=["ipanthomedirectorydrive"]),
         preferredlanguage=dict(type="str", default=None),
         certificate=dict(type="list", elements="str",
                          aliases=["usercertificate"], default=None),
@@ -1073,6 +1157,10 @@ def main():
     employeenumber = ansible_module.params_get("employeenumber")
     employeetype = ansible_module.params_get("employeetype")
     preferredlanguage = ansible_module.params_get("preferredlanguage")
+    smb_logon_script = ansible_module.params_get("smb_logon_script")
+    smb_profile_path = ansible_module.params_get("smb_profile_path")
+    smb_home_dir = ansible_module.params_get("smb_home_dir")
+    smb_home_drive = ansible_module.params_get("smb_home_drive")
     certificate = ansible_module.params_get("certificate")
     certmapdata = ansible_module.params_get("certmapdata")
     noprivate = ansible_module.params_get("noprivate")
@@ -1105,7 +1193,8 @@ def main():
         manager, carlicense, sshpubkey, userauthtype, userclass, radius,
         radiususer, departmentnumber, employeenumber, employeetype,
         preferredlanguage, certificate, certmapdata, noprivate, nomembers,
-        preserve, update_password)
+        preserve, update_password, smb_logon_script, smb_profile_path,
+        smb_home_dir, smb_home_drive)
     certmapdata = convert_certmapdata(certmapdata)
 
     # Use users if names is None
@@ -1191,6 +1280,10 @@ def main():
                 employeenumber = user.get("employeenumber")
                 employeetype = user.get("employeetype")
                 preferredlanguage = user.get("preferredlanguage")
+                smb_logon_script = user.get("smb_logon_script")
+                smb_profile_path = user.get("smb_profile_path")
+                smb_home_dir = user.get("smb_home_dir")
+                smb_home_drive = user.get("smb_home_drive")
                 certificate = user.get("certificate")
                 certmapdata = user.get("certmapdata")
                 noprivate = user.get("noprivate")
@@ -1206,7 +1299,8 @@ def main():
                     radiususer, departmentnumber, employeenumber,
                     employeetype, preferredlanguage, certificate,
                     certmapdata, noprivate, nomembers, preserve,
-                    update_password)
+                    update_password, smb_logon_script, smb_profile_path,
+                    smb_home_dir, smb_home_drive)
                 certmapdata = convert_certmapdata(certmapdata)
 
                 # Extend email addresses
@@ -1248,6 +1342,21 @@ def main():
                     msg="The use of certmapdata is not supported by "
                     "your IPA version")
 
+            # Check if SMB attributes are available
+            if (
+                any([
+                    smb_logon_script, smb_profile_path, smb_home_dir,
+                    smb_home_drive
+                ])
+                and not ansible_module.ipa_command_param_exists(
+                    "user_mod", "ipanthomedirectory"
+                )
+            ):
+                ansible_module.fail_json(
+                    msg="The use of smb_logon_script, smb_profile_path, "
+                    "smb_profile_path, and smb_home_drive is not supported "
+                    "by your IPA version")
+
             # Make sure user exists
             res_find = find_user(ansible_module, name)
 
@@ -1262,7 +1371,8 @@ def main():
                     postalcode, phone, mobile, pager, fax, orgunit, title,
                     carlicense, sshpubkey, userauthtype, userclass, radius,
                     radiususer, departmentnumber, employeenumber, employeetype,
-                    preferredlanguage, noprivate, nomembers)
+                    preferredlanguage, smb_logon_script, smb_profile_path,
+                    smb_home_dir, smb_home_drive, noprivate, nomembers)
 
                 if action == "user":
                     # Found the user
@@ -1298,8 +1408,21 @@ def main():
                             ansible_module.fail_json(
                                 msg="Last name is needed")
 
+                        smb_attrs = {
+                            k: args[k]
+                            for k in [
+                                "ipanthomedirectory",
+                                "ipanthomedirectorydrive",
+                                "ipantlogonscript",
+                                "ipantprofilepath",
+                            ]
+                            if k in args
+                        }
+                        for key in smb_attrs.keys():
+                            del args[key]
                         commands.append([name, "user_add", args])
-
+                        if smb_attrs:
+                            commands.append([name, "user_mod", smb_attrs])
                     # Handle members: principal, manager, certificate and
                     # certmapdata
                     if res_find is not None:
