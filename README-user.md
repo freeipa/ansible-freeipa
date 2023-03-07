@@ -445,6 +445,8 @@ Variable | Description | Required
 `employeenumber` | Employee Number | no
 `employeetype` | Employee Type | no
 `preferredlanguage` | Preferred Language | no
+`idp` \| `ipaidpconfiglink` | External IdP configuration | no
+`idp_user_id` \| `ipaidpsub` | A string that identifies the user at external IdP | no
 `certificate` | List of base-64 encoded user certificates. | no
 `certmapdata` | List of certificate mappings. Either `data` or `certificate` or `issuer` together with `subject` need to be specified. Only usable with IPA versions 4.5 and up. <br>Options: | no
 &nbsp; | `certificate` - Base-64 encoded user certificate, not usable with other certmapdata options. | no

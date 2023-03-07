@@ -1,0 +1,107 @@
+---
+- name: Test user
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure user idpuser is absent
+    ipauser:
+      name: idpuser
+      state: absent
+
+  # CREATE TEST ITEMS
+  - name: Run tests if FreeIPA 4.10.0+ is installed
+    when: ipa_version is version('4.10.0', '>=')
+    block:
+    - name: Ensure IDP provider is present
+      # TODO: Use an ansible-freeipa plugin instead of 'shell'
+      ansible.builtin.shell:
+        cmd: |
+          kinit -c test_krb5_cache admin <<< SomeADMINpassword
+          KRB5CCNAME=test_krb5_cache ipa idp-add keycloak --provider keycloak \
+             --org master \
+             --base-url https://client.ipademo.local:8443/auth \
+             --client-id ipa_oidc_client \
+             --secret  <<< $(echo -e "Secret123\nSecret123")
+          kdestroy -c test_krb5_cache -q -A
+      register: addidp
+      failed_when:
+      - '"Added Identity Provider" not in addidp.stdout'
+      - '"already exists" not in addidp.stderr'
+
+    # TESTS
+
+    - name: Ensure user idpuser is present
+      ipauser:
+        name: idpuser
+        first: IDP
+        last: User
+        userauthtype: idp
+        idp: keycloak
+        idp_user_id: "idpuser@ipademo.local"
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure user idpuser is present again
+      ipauser:
+        name: idpuser
+        first: IDP
+        last: User
+        userauthtype: idp
+        idp: keycloak
+        idp_user_id: "idpuser@ipademo.local"
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Clear 'idp_user_id'
+      ipauser:
+        name: idpuser
+        idp_user_id: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Clear 'idp'
+      ipauser:
+        name: idpuser
+        idp: ""
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure user idpuser is absent
+      ipauser:
+        name: idpuser
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure user idpuser is absent again
+      ipauser:
+        name: idpuser
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+
+    # CLEANUP TEST ITEMS
+    - name: Ensure IDP provider is absent
+      # TODO: Use an ansible-freeipa plugin instead of 'shell'
+      ansible.builtin.shell:
+        cmd: |
+          kinit -c test_krb5_cache admin <<< SomeADMINpassword
+          ipa idp-del keycloak
+          kdestroy -c test_krb5_cache -q -A
+    always:
+    - name: Ensure user idpuser is absent
+      ipauser:
+        name: idpuser
+        state: absent

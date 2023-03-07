@@ -1,0 +1,12 @@
+---
+- name: Playbook to handle users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Create user associated with an external IdP
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: idpuser
+      idp: keycloak
+      idp_user_id: idpuser@exemple.com

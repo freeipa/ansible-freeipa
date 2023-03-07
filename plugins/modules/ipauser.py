@@ -271,6 +271,16 @@ options:
         description: Preferred Language
         type: str
         required: false
+      idp:
+        description: External IdP configuration
+        type: str
+        required: false
+        aliases: ["ipaidpconfiglink"]
+      idp_user_id:
+        description: A string that identifies the user at external IdP
+        type: str
+        required: false
+        aliases: ["ipaidpsub"]
       certificate:
         description: List of base-64 encoded user certificates
         type: list
@@ -528,6 +538,16 @@ options:
     description: Preferred Language
     type: str
     required: false
+  idp:
+    description: External IdP configuration
+    type: str
+    required: false
+    aliases: ["ipaidpconfiglink"]
+  idp_user_id:
+    description: A string that identifies the user at external IdP
+    type: str
+    required: false
+    aliases: ["ipaidpsub"]
   certificate:
     description: List of base-64 encoded user certificates
     type: list
@@ -735,8 +755,8 @@ def gen_args(first, last, fullname, displayname, initials, homedir, gecos,
              mobile, pager, fax, orgunit, title, carlicense, sshpubkey,
              userauthtype, userclass, radius, radiususer, departmentnumber,
              employeenumber, employeetype, preferredlanguage, smb_logon_script,
-             smb_profile_path, smb_home_dir, smb_home_drive, noprivate,
-             nomembers):
+             smb_profile_path, smb_home_dir, smb_home_drive, idp, idp_user_id,
+             noprivate, nomembers):
     # principal, manager, certificate and certmapdata are handled not in here
     _args = {}
     if first is not None:
@@ -809,6 +829,10 @@ def gen_args(first, last, fullname, displayname, initials, homedir, gecos,
         _args["employeetype"] = employeetype
     if preferredlanguage is not None:
         _args["preferredlanguage"] = preferredlanguage
+    if idp is not None:
+        _args["ipaidpconfiglink"] = idp
+    if idp_user_id is not None:
+        _args["ipaidpsub"] = idp_user_id
     if noprivate is not None:
         _args["noprivate"] = noprivate
     if nomembers is not None:
@@ -833,6 +857,7 @@ def check_parameters(  # pylint: disable=unused-argument
         employeenumber, employeetype, preferredlanguage, certificate,
         certmapdata, noprivate, nomembers, preserve, update_password,
         smb_logon_script, smb_profile_path, smb_home_dir, smb_home_drive,
+        idp, ipa_user_id,
 ):
     if state == "present" and action == "user":
         invalid = ["preserve"]
@@ -846,7 +871,7 @@ def check_parameters(  # pylint: disable=unused-argument
             "departmentnumber", "employeenumber", "employeetype",
             "preferredlanguage", "noprivate", "nomembers", "update_password",
             "gecos", "smb_logon_script", "smb_profile_path", "smb_home_dir",
-            "smb_home_drive",
+            "smb_home_drive", "idp", "idp_user_id"
         ]
 
         if state == "present" and action == "member":
@@ -1069,6 +1094,9 @@ def main():
                          elements='dict', required=False),
         noprivate=dict(type='bool', default=None),
         nomembers=dict(type='bool', default=None),
+        idp=dict(type="str", default=None, aliases=['ipaidpconfiglink']),
+        idp_user_id=dict(type="str", default=None,
+                         aliases=['ipaidpconfiglink']),
     )
 
     ansible_module = IPAAnsibleModule(
@@ -1171,6 +1199,8 @@ def main():
     smb_profile_path = ansible_module.params_get("smb_profile_path")
     smb_home_dir = ansible_module.params_get("smb_home_dir")
     smb_home_drive = ansible_module.params_get("smb_home_drive")
+    idp = ansible_module.params_get("idp")
+    idp_user_id = ansible_module.params_get("idp_user_id")
     certificate = ansible_module.params_get("certificate")
     certmapdata = ansible_module.params_get("certmapdata")
     noprivate = ansible_module.params_get("noprivate")
@@ -1204,7 +1234,7 @@ def main():
         radiususer, departmentnumber, employeenumber, employeetype,
         preferredlanguage, certificate, certmapdata, noprivate, nomembers,
         preserve, update_password, smb_logon_script, smb_profile_path,
-        smb_home_dir, smb_home_drive)
+        smb_home_dir, smb_home_drive, idp, idp_user_id)
     certmapdata = convert_certmapdata(certmapdata)
 
     # Use users if names is None
@@ -1298,6 +1328,8 @@ def main():
                 smb_profile_path = user.get("smb_profile_path")
                 smb_home_dir = user.get("smb_home_dir")
                 smb_home_drive = user.get("smb_home_drive")
+                idp = user.get("idp")
+                idp_user_id = user.get("idp_user_id")
                 certificate = user.get("certificate")
                 certmapdata = user.get("certmapdata")
                 noprivate = user.get("noprivate")
@@ -1314,7 +1346,7 @@ def main():
                     employeetype, preferredlanguage, certificate,
                     certmapdata, noprivate, nomembers, preserve,
                     update_password, smb_logon_script, smb_profile_path,
-                    smb_home_dir, smb_home_drive)
+                    smb_home_dir, smb_home_drive, idp, idp_user_id)
                 certmapdata = convert_certmapdata(certmapdata)
 
                 # Check API specific parameters
@@ -1375,6 +1407,19 @@ def main():
                     "smb_profile_path, and smb_home_drive is not supported "
                     "by your IPA version")
 
+            # Check if IdP support is available
+            require_idp = (
+                idp is not None
+                or idp_user_id is not None
+                or userauthtype == "idp"
+            )
+            has_idp_support = ansible_module.ipa_command_param_exists(
+                "user_add", "ipaidpconfiglink"
+            )
+            if require_idp and not has_idp_support:
+                ansible_module.fail_json(
+                    msg="Your IPA version does not support External IdP.")
+
             # Make sure user exists
             res_find = find_user(ansible_module, name)
 
@@ -1390,7 +1435,9 @@ def main():
                     carlicense, sshpubkey, userauthtype, userclass, radius,
                     radiususer, departmentnumber, employeenumber, employeetype,
                     preferredlanguage, smb_logon_script, smb_profile_path,
-                    smb_home_dir, smb_home_drive, noprivate, nomembers)
+                    smb_home_dir, smb_home_drive, idp, idp_user_id, noprivate,
+                    nomembers,
+                )
 
                 if action == "user":
                     # Found the user
