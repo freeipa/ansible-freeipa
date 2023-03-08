@@ -2,7 +2,7 @@
 # tasks file for ipareplica
 
 - name: Import variables specific to distribution
-  include_vars: "{{ item }}"
+  ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
     - "vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_version'] }}.yml"
     - "vars/{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_major_version'] }}.yml"
@@ -17,9 +17,9 @@
     - "vars/default.yml"
 
 - name: Install IPA replica
-  include_tasks: install.yml
+  ansible.builtin.include_tasks: install.yml
   when: state|default('present') == 'present'
 
 - name: Uninstall IPA replica
-  include_tasks: uninstall.yml
+  ansible.builtin.include_tasks: uninstall.yml
   when: state|default('present') == 'absent'

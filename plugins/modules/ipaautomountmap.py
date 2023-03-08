@@ -126,7 +126,7 @@ class AutomountMap(IPAAnsibleModule):
 
         self.params_fail_used_invalid(invalid, state)
 
-    def get_args(self, mapname, desc):  # pylint: disable=no-self-use
+    def get_args(self, mapname, desc):
         # automountmapname is required for all automountmap operations.
         if not mapname:
             self.fail_json(msg="automountmapname cannot be None or empty.")

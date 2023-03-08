@@ -7,7 +7,7 @@
 
   tasks:
   - name: Setup testing environment.
-    import_tasks: env_setup.yml
+    ansible.builtin.import_tasks: env_setup.yml
 
   - name: Ensure symmetric vault is present
     ipavault:
@@ -74,7 +74,7 @@
     failed_when: result.changed or result.failed or (result.vault.data | default(false))
 
   - name: Verify retrieved data.
-    slurp:
+    ansible.builtin.slurp:
       src: "{{ ansible_facts['env'].HOME }}/data.txt"
     register: slurpfile
     failed_when: slurpfile['content'] | b64decode != 'Hello World.'
@@ -267,7 +267,7 @@
       salt: MTIzNDU2Nzg5MDEyMzQ1Ngo=
       new_password: SomeVAULTpassword
     register: result
-    failed_when: not result.failed and  "Vault `salt` can only change when changing the password." not in result.msg
+    failed_when: not result.failed and "Vault `salt` can only change when changing the password." not in result.msg
 
   - name: Try to change symmetric vault salt, without providing `new_password`
     ipavault:
@@ -276,7 +276,7 @@
       salt: MTIzNDU2Nzg5MDEyMzQ1Ngo=
       password: SomeVAULTpassword
     register: result
-    failed_when: not result.failed and  "Vault `salt` can only change when changing the password." not in result.msg
+    failed_when: not result.failed and "Vault `salt` can only change when changing the password." not in result.msg
 
   - name: Try to change symmetric vault salt, using wrong password.
     ipavault:
@@ -351,4 +351,4 @@
     failed_when: result.failed or not result.changed
 
   - name: Cleanup testing environment.
-    import_tasks: env_cleanup.yml
+    ansible.builtin.import_tasks: env_cleanup.yml

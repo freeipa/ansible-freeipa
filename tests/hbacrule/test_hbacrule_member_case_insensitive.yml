@@ -25,9 +25,11 @@
       - sVCgrOUp1
 
   tasks:
-  - include_tasks: ../env_freeipa_facts.yml
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
-  - block:
+  - name: Test hbacrule member case insensitive
+    block:
       # setup
 
       - name: Ensure test hbacrule is absent
@@ -191,7 +193,7 @@
           - "{{ hbacsvc_list[0] | upper }}"
           - "{{ hbacsvc_list[1] | upper }}"
           hbacsvcgroup:
-          - "{{ hbacsvcgroup_list[0] | upper  }}"
+          - "{{ hbacsvcgroup_list[0] | upper }}"
         register: result
         failed_when: result.changed or result.failed
 

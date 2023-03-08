@@ -5,11 +5,12 @@
   gather_facts: no
 
   tasks:
-  - block:
+  - name: Test sudorule single hostnames
+    block:
     # setup test environment
     - name: Get Domain from the server name
-      set_fact:
-        ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+      ansible.builtin.set_fact:
+        ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
       when: ipaserver_domain is not defined
 
     - name: Ensure test sudo rule is absent

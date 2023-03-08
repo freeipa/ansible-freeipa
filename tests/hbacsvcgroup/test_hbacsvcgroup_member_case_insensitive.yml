@@ -10,7 +10,8 @@
       - SvC2
 
   tasks:
-  - block:
+  - name: Test hbacsvcgroup member case insnsitive
+    block:
       - name: Ensure test hbacsvcgroup is absent
         ipahbacsvcgroup:
           ipaadmin_password: SomeADMINpassword

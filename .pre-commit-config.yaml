@@ -1,7 +1,7 @@
 ---
 repos:
 - repo: https://github.com/ansible/ansible-lint.git
-  rev: v5.3.2
+  rev: v6.6.1
   hooks:
   - id: ansible-lint
     always_run: false
@@ -11,20 +11,20 @@ repos:
     entry: |
         env ANSIBLE_LIBRARY=./plugins/modules ANSIBLE_MODULE_UTILS=./plugins/module_utils ANSIBLE_DOC_FRAGMENT_PLUGINS=./plugins/doc_fragments ansible-lint
 - repo: https://github.com/adrienverge/yamllint.git
-  rev: v1.26.1
+  rev: v1.28.0
   hooks:
   - id: yamllint
     files: \.(yaml|yml)$
 - repo: https://github.com/pycqa/flake8
-  rev: 3.9.2
+  rev: 5.0.3
   hooks:
   - id: flake8
 - repo: https://github.com/pycqa/pydocstyle
-  rev: 6.1.1
+  rev: 6.0.0
   hooks:
   - id: pydocstyle
 - repo: https://github.com/pycqa/pylint
-  rev: v2.12.2
+  rev: v2.14.4
   hooks:
   - id: pylint
     args:

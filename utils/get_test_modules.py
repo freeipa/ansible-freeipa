@@ -27,7 +27,9 @@ def get_plugins_from_playbook(playbook):
                     task = task.split(".")[-1]
                 if task == "block":
                     _result.update(get_tasks(tasks["block"]))
-                elif task in ["include_tasks", "import_tasks"]:
+                elif task in ["include_tasks", "import_tasks"
+                              "ansible.builtin.include_tasks",
+                              "ansible.builtin.import_tasks"]:
                     parent = os.path.dirname(playbook)
                     include_task = tasks[task]
                     if isinstance(include_task, dict):
@@ -37,7 +39,8 @@ def get_plugins_from_playbook(playbook):
                     else:
                         include_file = os.path.join(parent, include_task)
                     _result.update(get_plugins_from_playbook(include_file))
-                elif task == "include_role":
+                elif task in ["include_role",
+                              "ansible.builtin.include_role"]:
                     _result.add(f"_{tasks[original_task]['name']}")
                 elif task.startswith("ipa"):
                     # assume we are only interested in 'ipa*' modules/roles
@@ -81,7 +84,7 @@ def get_plugins_from_playbook(playbook):
 def import_mock(name, *args):
     """Intercept 'import' calls and store module name."""
     if not hasattr(import_mock, "call_list"):
-        setattr(import_mock, "call_list", set())
+        setattr(import_mock, "call_list", set())  # noqa: B010
     import_mock.call_list.add(name)  # pylint: disable=no-member
     try:
         # print("NAME:", name)

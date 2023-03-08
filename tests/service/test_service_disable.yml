@@ -14,10 +14,10 @@
 
   tasks:
   - name: Get Kerberos ticket for `admin`.
-    shell: echo SomeADMINpassword | kinit -c ${KRB5CCNAME} admin
+    ansible.builtin.shell: echo SomeADMINpassword | kinit -c ${KRB5CCNAME} admin
 
   - name: Generate self-signed certificates.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout "private{{ item }}.key" -out "cert{{ item }}.pem" -subj '/CN=test'
         openssl x509 -outform der -in "cert{{ item }}.pem" -out "cert{{ item }}.der"
@@ -43,10 +43,10 @@
     failed_when: not result.changed or result.failed
 
   - name: Obtain keytab
-    shell: ipa-getkeytab -s "{{ ansible_facts['fqdn'] }}" -p "mysvc1/{{ ansible_facts['fqdn'] }}" -k mysvc1.keytab
+    ansible.builtin.shell: ipa-getkeytab -s "{{ ansible_facts['fqdn'] }}" -p "mysvc1/{{ ansible_facts['fqdn'] }}" -k mysvc1.keytab
 
   - name: Verify keytab
-    shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
+    ansible.builtin.shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
     failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
 
@@ -59,15 +59,15 @@
     failed_when: not result.changed or result.failed
 
   - name: Verify keytab
-    shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
+    ansible.builtin.shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
     failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
 
   - name: Obtain keytab
-    shell: ipa-getkeytab -s "{{ ansible_facts['fqdn'] }}" -p "mysvc1/{{ ansible_facts['fqdn'] }}" -k mysvc1.keytab
+    ansible.builtin.shell: ipa-getkeytab -s "{{ ansible_facts['fqdn'] }}" -p "mysvc1/{{ ansible_facts['fqdn'] }}" -k mysvc1.keytab
 
   - name: Verify keytab
-    shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
+    ansible.builtin.shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
     failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
 
@@ -80,7 +80,7 @@
     failed_when: not result.changed or result.failed
 
   - name: Verify keytab
-    shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
+    ansible.builtin.shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
     failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
 
@@ -98,10 +98,10 @@
       name: "mysvc1/{{ ansible_facts['fqdn'] }}"
 
   - name: Destroy Kerberos tickets.
-    shell: kdestroy -A -q -c ${KRB5CCNAME}
+    ansible.builtin.shell: kdestroy -A -q -c ${KRB5CCNAME}
 
   - name: Remove certificate files.  # noqa: deprecated-command-syntax
-    shell:
+    ansible.builtin.shell:
       cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
     with_items: [1]
     become: no

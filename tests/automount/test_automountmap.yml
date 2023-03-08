@@ -6,7 +6,7 @@
 
   tasks:
   # setup environment
-  - name: ensure test maps are absent
+  - name: Ensure test maps are absent
     ipaautomountmap:
       ipaadmin_password: SomeADMINpassword
       name:
@@ -15,28 +15,29 @@
       location: TestLocation
       state: absent
 
-  - name: ensure location TestLocation is absent
+  - name: Ensure location TestLocation is absent
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       name: TestLocation
       state: absent
 
-  - name: ensure map TestMap is absent
+  - name: Ensure map TestMap is absent
     ipaautomountmap:
       ipaadmin_password: SomeADMINpassword
       name: TestMap
       location: TestLocation
       state: absent
 
-  - name: ensure location TestLocation is present
+  - name: Ensure location TestLocation is present
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       name: TestLocation
       state: present
 
   # TESTS
-  - block:
-    - name: ensure map TestMap is present
+  - name: Execute Automount Map tests
+    block:
+    - name: Ensure map TestMap is present
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap
@@ -45,7 +46,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: ensure map TestMap is present again
+    - name: Ensure map TestMap is present again
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap
@@ -53,7 +54,7 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: ensure map TestMap has a different description
+    - name: Ensure map TestMap has a different description
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap
@@ -62,7 +63,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: ensure map TestMap has a different description, again
+    - name: Ensure map TestMap has a different description, again
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap
@@ -71,7 +72,7 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: ensure map TestMap has an empty description
+    - name: Ensure map TestMap has an empty description
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap
@@ -80,7 +81,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: ensure map TestMap has an empty description, again
+    - name: Ensure map TestMap has an empty description, again
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap
@@ -89,7 +90,7 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: ensure map TestMap is removed
+    - name: Ensure map TestMap is removed
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap
@@ -98,7 +99,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: ensure map TestMap has been removed
+    - name: Ensure map TestMap has been removed
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap
@@ -107,7 +108,7 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: ensure map TestMap01 is present
+    - name: Ensure map TestMap01 is present
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap01
@@ -116,7 +117,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: ensure map TestMap02 is present
+    - name: Ensure map TestMap02 is present
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap02
@@ -125,7 +126,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: ensure TestMap01 and TestMap02 are both absent
+    - name: Ensure TestMap01 and TestMap02 are both absent
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name:
@@ -136,7 +137,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: ensure TestMap01 and TestMap02 are both absent again
+    - name: Ensure TestMap01 and TestMap02 are both absent again
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name:
@@ -149,7 +150,7 @@
 
     # CLEAN UP
     always:
-    - name: ensure test maps are absent
+    - name: Ensure test maps are absent
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name:
@@ -158,7 +159,7 @@
         location: TestLocation
         state: absent
 
-    - name: ensure location TestLocation is absent
+    - name: Ensure location TestLocation is absent
       ipaautomountlocation:
         ipaadmin_password: SomeADMINpassword
         name: TestLocation

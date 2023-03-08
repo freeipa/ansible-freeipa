@@ -1,12 +1,12 @@
 ---
-- name: Automount map absent example
+- name: Automount map present example
   hosts: ipaserver
   become: no
 
   tasks:
-  - name: ensure map TestMap is absent
+  - name: Ensure map TestMap is present
     ipaautomountmap:
       ipaadmin_password: SomeADMINpassword
       name: TestMap
       location: TestLocation
-      state: absent
+      desc: "this is a test map"

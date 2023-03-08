@@ -11,5 +11,5 @@
     register: serverconfig
 
   - name: Display current configuration.
-    debug:
+    ansible.builtin.debug:
       msg: "{{ serverconfig }}"

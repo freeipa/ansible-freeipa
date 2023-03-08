@@ -5,9 +5,11 @@
   gather_facts: false
 
   tasks:
-  - include_tasks: ../env_freeipa_facts.yml
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
-  - name: Tests requiring IPA version 4.8.4+
+  - name: Execute tests if ipa_verison >= 4.8.4
+    when: ipa_version is version('4.8.4', '>=')
     block:
       - name: Ensure user manangeruser1 and manageruser2 is absent
         ipauser:
@@ -205,5 +207,3 @@
           state: absent
         register: result
         failed_when: not result.changed or result.failed
-
-    when: ipa_version is version('4.8.4', '>=')

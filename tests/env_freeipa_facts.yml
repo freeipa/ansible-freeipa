@@ -8,12 +8,12 @@
 #
 ---
 - name: Retrieving FreeIPA version.
-  shell:
+  ansible.builtin.shell:
     cmd: 'ipa --version | sed -n "s/VERSION: \([^,]*\).*API_VERSION: \([^,]*\).*/\1\\n\2/p"'
   register: ipa_cmd_version
 
 - name: Verify if host is an IPA server or client.
-  shell:
+  ansible.builtin.shell:
     cmd: |
       echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
       RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa server-show `hostname` && echo SERVER || echo CLIENT)
@@ -24,20 +24,21 @@
   register: output
 
 - name: Set FreeIPA facts.
-  set_fact:
+  ansible.builtin.set_fact:
     ipa_version: "{{ ipa_cmd_version.stdout_lines[0] }}"
     ipa_api_version: "{{ ipa_cmd_version.stdout_lines[1] }}"
     ipa_host_is_client: "{{ (output.stdout_lines[-1] == 'CLIENT') | bool }}"
     trust_test_is_supported: no
 
-- block:
+- name: Ensure ipaserver_domain is set
+  when: ipaserver_domain is not defined
+  block:
   - name: Get Domain from server name
-    set_fact:
-      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+    ansible.builtin.set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
     when: "'fqdn' in ansible_facts"
 
   - name: Set Domain to 'ipa.test' if FQDN could not be retrieved.
-    set_fact:
+    ansible.builtin.set_fact:
       ipaserver_domain: "ipa.test"
     when: "'fqdn' not in ansible_facts"
-  when: ipaserver_domain is not defined

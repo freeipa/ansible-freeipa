@@ -1,10 +1,10 @@
 ---
   # Tasks executed to ensure a sane environment to test IPA Vault module.
   - name: Ensure environment is clean.
-    import_tasks: env_cleanup.yml
+    ansible.builtin.import_tasks: env_cleanup.yml
 
   - name: Create private/public key pair.
-    shell:
+    ansible.builtin.shell:
       cmd: |
         openssl genrsa -out "{{ item }}private.pem" 2048
         openssl rsa -in "{{ item }}private.pem" -outform PEM -pubout -out "{{ item }}public.pem"
@@ -17,7 +17,7 @@
     - B_
 
   - name: Copy files to target host.
-    copy:
+    ansible.builtin.copy:
       src: "{{ playbook_dir }}/{{ item }}"
       dest: "{{ ansible_facts['env'].HOME }}/{{ item }}"
       mode: 0644

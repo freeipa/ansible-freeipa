@@ -2,7 +2,8 @@
 # tasks file for ipasmartcard_client role
 
 - name: Uninstall smartcard client
-  ansible.builtin.fail: msg="Uninstalling smartcard for IPA is not supported"
+  ansible.builtin.fail:
+    msg: "Uninstalling smartcard for IPA is not supported"
   when: state|default('present') == 'absent'
 
 - name: Import variables specific to distribution
@@ -20,7 +21,8 @@
     # If neither distro nor family is supported, try a default configuration.
     - "vars/default.yml"
 
-- block:
+- name: Client configuration
+  block:
 
   # CA CERTS
 
@@ -35,7 +37,8 @@
   # Fail on empty "ipasmartcard_client_ca_certs"
 
   - name: Fail on empty "ipasmartcard_client_ca_certs"
-    ansible.builtin.fail: msg="No CA certs given in 'ipasmartcard_client_ca_certs'"
+    ansible.builtin.fail:
+      msg: "No CA certs given in 'ipasmartcard_client_ca_certs'"
     when: ipasmartcard_client_ca_certs is not defined or
           ipasmartcard_client_ca_certs | length < 1
 
@@ -67,13 +70,13 @@
       ipaadmin_principal: admin
     when: ipaadmin_principal is undefined
 
-  - name: kinit using "{{ ipaadmin_principal }}" password
+  - name: Authenticate using kinit with password for "{{ ipaadmin_principal }}"
     ansible.builtin.command: kinit "{{ ipaadmin_principal }}"
     args:
       stdin: "{{ ipaadmin_password }}"
     when: ipaadmin_password is defined
 
-  - name: kinit using "{{ ipaadmin_principal }}" keytab
+  - name: Authenticate using kinit with keytab for "{{ ipaadmin_principal }}"
     ansible.builtin.command: kinit -kt "{{ ipaadmin_keytab }}" "{{ ipaadmin_principal }}"
     when: ipaadmin_keytab is defined
 
@@ -99,7 +102,9 @@
 
   # Ensure /etc/sssd/pki exists
 
-  - block:
+  - name: Prepare for authselect
+    when: ipasmartcard_client_vars.USE_AUTHSELECT
+    block:
     - name: Ensure /etc/sssd/pki exists
       ansible.builtin.file:
         path: /etc/sssd/pki
@@ -110,8 +115,6 @@
       ansible.builtin.file:
         path: /etc/sssd/pki/sssd_auth_ca_db.pem
         state: absent
-
-    when: ipasmartcard_client_vars.USE_AUTHSELECT
 
   # Upload smartcard CA certificates to systemwide db
 
@@ -169,5 +172,5 @@
   ### ALWAYS ###
 
   always:
-  - name: kdestroy
+  - name: Destroy Kerberos tickets
     ansible.builtin.command: kdestroy -A

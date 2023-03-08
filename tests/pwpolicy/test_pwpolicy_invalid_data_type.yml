@@ -1,0 +1,134 @@
+---
+- name: Test pwpolicy invalid data types
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Setup FreeIPA test facts.
+    ansible.builtin.import_tasks: ../env_freeipa_facts.yml
+
+  - name: Ensure presence of group ops
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      state: present
+
+  - name: Ensure invalid values raise proper error for argument minlife
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      minlife: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'minlife'" not in result.msg)
+
+  - name: Ensure invalid values raise proper error for argument maxlife
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      maxlife: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'maxlife'" not in result.msg)
+
+  - name: Ensure invalid values raise proper error for argument history
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      history: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'history'" not in result.msg)
+
+  - name: Ensure invalid values raise proper error for argument priority
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      priority: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'priority'" not in result.msg)
+
+  - name: Ensure invalid values raise proper error for argument lockouttime
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      lockouttime: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'lockouttime'" not in result.msg)
+
+  - name: Ensure invalid values raise proper error for argument minlength
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      minlength: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'minlength'" not in result.msg)
+
+  - name: Ensure invalid values raise proper error for argument minclasses
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      minclasses: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'minclasses'" not in result.msg)
+
+  - name: Ensure invalid values raise proper error for argument maxfail
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      maxfail: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'maxfail'" not in result.msg)
+
+  - name: Ensure invalid values raise proper error for argument failinterval
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      failinterval: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'failinterval'" not in result.msg)
+
+  - name: Ensure invalid values for dictcheck raise proper error.
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      dictcheck: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'dictcheck" not in result.msg)
+    when: ipa_version is version("4.9", ">=")
+
+  - name: Ensure invalid values for usercheck raise proper error.
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      usercheck: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'usercheck'" not in result.msg)
+    when: ipa_version is version("4.9", ">=")
+
+  - name: Ensure invalid values for gracelimit raise proper error.
+    ipapwpolicy:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      gracelimit: "error"
+    register: result
+    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'gracelimit'" not in result.msg)
+    when: ipa_version is version("4.9.10", ">=")
+
+  - name: Ensure absence of group ops
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: ops
+      state: absent

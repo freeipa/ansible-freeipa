@@ -5,11 +5,12 @@
 
   tasks:
   - name: Get Domain from server name
-    set_fact:
-      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+    ansible.builtin.set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
     when: ipaserver_domain is not defined
 
-  - block:
+  - name: Test hbacrule member empty
+    block:
       # SETUP:
       - name: Ensure test HBAC rule is absent
         ipahbacrule:

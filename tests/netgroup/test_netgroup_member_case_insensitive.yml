@@ -13,11 +13,12 @@
 
 
   tasks:
-  - block:
+  - name: Test netgroup member case insensitive
+    block:
     # SETUP
     - name: Get Domain from server name
-      set_fact:
-        ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+      ansible.builtin.set_fact:
+        ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
       when: ipaserver_domain is not defined
 
     - name: Ensure test groups exist.
@@ -62,7 +63,7 @@
 
     # TESTS
     - name: Start tests.
-      debug:
+      ansible.builtin.debug:
         msg: "Tests are starting."
 
     - name: Ensure netgroups exist
@@ -91,11 +92,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | lower }}"
-        host: "{{ item  | lower }}.{{ ipaserver_domain }}"
-        group: "{{ item  | lower }}"
-        user: "user{{ item  | lower }}"
-        netgroup: "netgroup{{ item  | lower }}"
+        hostgroup: "hostgroup{{ item | lower }}"
+        host: "{{ item | lower }}.{{ ipaserver_domain }}"
+        group: "{{ item | lower }}"
+        user: "user{{ item | lower }}"
+        netgroup: "netgroup{{ item | lower }}"
         action: member
       loop: "{{ groups_present }}"
       register: result
@@ -105,11 +106,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | upper }}"
-        host: "{{ item  | upper }}.{{ ipaserver_domain }}"
-        group: "{{ item  | upper }}"
-        user: "user{{ item  | upper }}"
-        netgroup: "netgroup{{ item  | upper }}"
+        hostgroup: "hostgroup{{ item | upper }}"
+        host: "{{ item | upper }}.{{ ipaserver_domain }}"
+        group: "{{ item | upper }}"
+        user: "user{{ item | upper }}"
+        netgroup: "netgroup{{ item | upper }}"
         action: member
       loop: "{{ groups_present }}"
       register: result
@@ -134,11 +135,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | lower }}"
-        host: "{{ item  | lower }}.{{ ipaserver_domain }}"
-        group: "{{ item  | lower }}"
-        user: "user{{ item  | lower }}"
-        netgroup: "netgroup{{ item  | lower }}"
+        hostgroup: "hostgroup{{ item | lower }}"
+        host: "{{ item | lower }}.{{ ipaserver_domain }}"
+        group: "{{ item | lower }}"
+        user: "user{{ item | lower }}"
+        netgroup: "netgroup{{ item | lower }}"
         action: member
         state: absent
       loop: "{{ groups_present }}"
@@ -149,11 +150,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | upper }}"
-        host: "{{ item  | upper }}.{{ ipaserver_domain }}"
-        group: "{{ item  | upper }}"
-        user: "user{{ item  | upper }}"
-        netgroup: "netgroup{{ item  | upper }}"
+        hostgroup: "hostgroup{{ item | upper }}"
+        host: "{{ item | upper }}.{{ ipaserver_domain }}"
+        group: "{{ item | upper }}"
+        user: "user{{ item | upper }}"
+        netgroup: "netgroup{{ item | upper }}"
         action: member
         state: absent
       loop: "{{ groups_present }}"
@@ -164,11 +165,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | upper }}"
-        host: "{{ item  | upper }}.{{ ipaserver_domain }}"
-        group: "{{ item  | upper }}"
-        user: "user{{ item  | upper }}"
-        netgroup: "netgroup{{ item  | upper }}"
+        hostgroup: "hostgroup{{ item | upper }}"
+        host: "{{ item | upper }}.{{ ipaserver_domain }}"
+        group: "{{ item | upper }}"
+        user: "user{{ item | upper }}"
+        netgroup: "netgroup{{ item | upper }}"
         action: member
       loop: "{{ groups_present }}"
       register: result
@@ -178,11 +179,11 @@
       ipanetgroup:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "hostgroup{{ item  | lower }}"
-        host: "{{ item  | lower }}.{{ ipaserver_domain }}"
-        group: "{{ item  | lower }}"
-        user: "user{{ item  | lower }}"
-        netgroup: "netgroup{{ item  | lower }}"
+        hostgroup: "hostgroup{{ item | lower }}"
+        host: "{{ item | lower }}.{{ ipaserver_domain }}"
+        group: "{{ item | lower }}"
+        user: "user{{ item | lower }}"
+        netgroup: "netgroup{{ item | lower }}"
         action: member
       loop: "{{ groups_present }}"
       register: result
@@ -203,7 +204,7 @@
       failed_when: result.failed or result.changed
 
     - name: End tests.
-      debug:
+      ansible.builtin.debug:
         msg: "All tests executed."
 
     always:

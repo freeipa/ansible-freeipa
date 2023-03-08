@@ -5,18 +5,18 @@
   gather_facts: no
 
   tasks:
-  - name: ensure test location TestLocation is present
+  - name: Ensure test location TestLocation is present
     ipaautomountlocation:
       ipaadmin_password: SomeADMINpassword
       name: TestLocation
 
-  - name: ensure test map TestMap is present
+  - name: Ensure test map TestMap is present
     ipaautomountmap:
       ipaadmin_password: SomeADMINpassword
       name: TestMap
       location: TestLocation
 
-  - name: ensure key NewKeyName is absent
+  - name: Ensure key NewKeyName is absent
     ipaautomountkey:
       ipaadmin_password: SomeADMINpassword
       location: TestLocation
@@ -24,7 +24,7 @@
       key: NewKeyName
       state: absent
 
-  - name: ensure key TestKey is absent
+  - name: Ensure key TestKey is absent
     ipaautomountkey:
       ipaadmin_password: SomeADMINpassword
       location: TestLocation
@@ -32,9 +32,10 @@
       key: NewKeyName
       state: absent
 
-  - block:
+  - name: Execute Automount Key tests
+    block:
     ### test the key creation, and modification
-    - name: ensure key TestKey is present
+    - name: Ensure key TestKey is present
       ipaautomountkey:
         ipaadmin_password: SomeADMINpassword
         location: TestLocation
@@ -45,7 +46,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: ensure key TestKey is present again
+    - name: Ensure key TestKey is present again
       ipaautomountkey:
         ipaadmin_password: SomeADMINpassword
         location: TestLocation
@@ -57,7 +58,7 @@
       failed_when: result.failed or result.changed
 
     ## modify the key
-    - name: ensure key TestKey information has been updated
+    - name: Ensure key TestKey information has been updated
       ipaautomountkey:
         ipaadmin_password: SomeADMINpassword
         location: TestLocation
@@ -68,7 +69,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: ensure key TestKey information has been updated again
+    - name: Ensure key TestKey information has been updated again
       ipaautomountkey:
         ipaadmin_password: SomeADMINpassword
         location: TestLocation
@@ -80,7 +81,7 @@
       failed_when: result.failed or result.changed
 
     ## modify the name
-    - name: ensure key TestKey has been renamed to NewKeyName
+    - name: Ensure key TestKey has been renamed to NewKeyName
       ipaautomountkey:
         ipaadmin_password: SomeADMINpassword
         location: TestLocation
@@ -91,7 +92,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: ensure key TestKey is absent
+    - name: Ensure key TestKey is absent
       ipaautomountkey:
         ipaadmin_password: SomeADMINpassword
         location: TestLocation
@@ -101,7 +102,7 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: ensure key NewKeyName is present
+    - name: Ensure key NewKeyName is present
       ipaautomountkey:
         ipaadmin_password: SomeADMINpassword
         location: TestLocation
@@ -112,7 +113,7 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: ensure failure when state is renamed and newname is not set
+    - name: Ensure failure when state is renamed and newname is not set
       ipaautomountkey:
         ipaadmin_password: SomeADMINpassword
         location: TestLocation
@@ -124,7 +125,7 @@
 
     ### cleanup after the tests
     always:
-    - name: ensure key NewKeyName is absent
+    - name: Ensure key NewKeyName is absent
       ipaautomountkey:
         ipaadmin_password: SomeADMINpassword
         location: TestLocation
@@ -132,7 +133,7 @@
         key: NewKeyName
         state: absent
 
-    - name: ensure key TestKey is absent
+    - name: Ensure key TestKey is absent
       ipaautomountkey:
         ipaadmin_password: SomeADMINpassword
         location: TestLocation
@@ -140,14 +141,14 @@
         key: NewKeyName
         state: absent
 
-    - name: ensure map TestMap is absent
+    - name: Ensure map TestMap is absent
       ipaautomountmap:
         ipaadmin_password: SomeADMINpassword
         name: TestMap
         location: TestLocation
         state: absent
 
-    - name: ensure location TestLocation is absent
+    - name: Ensure location TestLocation is absent
       ipaautomountlocation:
         ipaadmin_password: SomeADMINpassword
         name: TestLocation

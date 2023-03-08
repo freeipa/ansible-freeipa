@@ -46,82 +46,82 @@ options:
     aliases: ["cn"]
   maxlife:
     description: Maximum password lifetime (in days)
-    type: int
+    type: str
     required: false
     aliases: ["krbmaxpwdlife"]
   minlife:
     description: Minimum password lifetime (in hours)
-    type: int
+    type: str
     required: false
     aliases: ["krbminpwdlife"]
   history:
     description: Password history size
-    type: int
+    type: str
     required: false
     aliases: ["krbpwdhistorylength"]
   minclasses:
     description: Minimum number of character classes
-    type: int
+    type: str
     required: false
     aliases: ["krbpwdmindiffchars"]
   minlength:
     description: Minimum length of password
-    type: int
+    type: str
     required: false
     aliases: ["krbpwdminlength"]
   priority:
     description: Priority of the policy (higher number means lower priority)
-    type: int
+    type: str
     required: false
     aliases: ["cospriority"]
   maxfail:
     description: Consecutive failures before lockout
-    type: int
+    type: str
     required: false
     aliases: ["krbpwdmaxfailure"]
   failinterval:
     description: Period after which failure count will be reset (seconds)
-    type: int
+    type: str
     required: false
     aliases: ["krbpwdfailurecountinterval"]
   lockouttime:
     description: Period for which lockout is enforced (seconds)
-    type: int
+    type: str
     required: false
     aliases: ["krbpwdlockoutduration"]
   maxrepeat:
     description: >
       Maximum number of same consecutive characters.
       Requires IPA 4.9+
-    type: int
+    type: str
     required: false
     aliases: ["ipapwdmaxrepeat"]
   maxsequence:
     description: >
       The maximum length of monotonic character sequences (abcd).
       Requires IPA 4.9+
-    type: int
+    type: str
     required: false
     aliases: ["ipapwdmaxsequence"]
   dictcheck:
     description: >
       Check if the password is a dictionary word.
       Requires IPA 4.9+
-    type: bool
+    type: str
     required: false
     aliases: ["ipapwdictcheck"]
   usercheck:
     description: >
       Check if the password contains the username.
       Requires IPA 4.9+
-    type: bool
+    type: str
     required: false
     aliases: ["ipapwdusercheck"]
   gracelimit:
     description: >
       Number of LDAP authentications allowed after expiration.
       Requires IPA 4.10.1+
-    type: int
+    type: str
     required: false
     aliases: ["passwordgracelimit"]
   state:
@@ -171,7 +171,8 @@ def find_pwpolicy(module, name):
     return None
 
 
-def gen_args(maxlife, minlife, history, minclasses, minlength, priority,
+def gen_args(module,
+             maxlife, minlife, history, minclasses, minlength, priority,
              maxfail, failinterval, lockouttime, maxrepeat, maxsequence,
              dictcheck, usercheck, gracelimit):
     _args = {}
@@ -198,9 +199,19 @@ def gen_args(maxlife, minlife, history, minclasses, minlength, priority,
     if maxsequence is not None:
         _args["ipapwdmaxrsequence"] = maxsequence
     if dictcheck is not None:
-        _args["ipapwddictcheck"] = dictcheck
+        if module.ipa_check_version("<", "4.9.10"):
+            # Allowed values: "TRUE", "FALSE", ""
+            _args["ipapwddictcheck"] = "TRUE" if dictcheck is True else \
+                "FALSE" if dictcheck is False else dictcheck
+        else:
+            _args["ipapwddictcheck"] = dictcheck
     if usercheck is not None:
-        _args["ipapwdusercheck"] = usercheck
+        if module.ipa_check_version("<", "4.9.10"):
+            # Allowed values: "TRUE", "FALSE", ""
+            _args["ipapwdusercheck"] = "TRUE" if usercheck is True else \
+                "FALSE" if usercheck is False else usercheck
+        else:
+            _args["ipapwdusercheck"] = usercheck
     if gracelimit is not None:
         _args["passwordgracelimit"] = gracelimit
 
@@ -242,31 +253,31 @@ def main():
                       default=None, required=False),
             # present
 
-            maxlife=dict(type="int", aliases=["krbmaxpwdlife"], default=None),
-            minlife=dict(type="int", aliases=["krbminpwdlife"], default=None),
-            history=dict(type="int", aliases=["krbpwdhistorylength"],
+            maxlife=dict(type="str", aliases=["krbmaxpwdlife"], default=None),
+            minlife=dict(type="str", aliases=["krbminpwdlife"], default=None),
+            history=dict(type="str", aliases=["krbpwdhistorylength"],
                          default=None),
-            minclasses=dict(type="int", aliases=["krbpwdmindiffchars"],
+            minclasses=dict(type="str", aliases=["krbpwdmindiffchars"],
                             default=None),
-            minlength=dict(type="int", aliases=["krbpwdminlength"],
+            minlength=dict(type="str", aliases=["krbpwdminlength"],
                            default=None),
-            priority=dict(type="int", aliases=["cospriority"], default=None),
-            maxfail=dict(type="int", aliases=["krbpwdmaxfailure"],
+            priority=dict(type="str", aliases=["cospriority"], default=None),
+            maxfail=dict(type="str", aliases=["krbpwdmaxfailure"],
                          default=None),
-            failinterval=dict(type="int",
+            failinterval=dict(type="str",
                               aliases=["krbpwdfailurecountinterval"],
                               default=None),
-            lockouttime=dict(type="int", aliases=["krbpwdlockoutduration"],
+            lockouttime=dict(type="str", aliases=["krbpwdlockoutduration"],
                              default=None),
-            maxrepeat=dict(type="int", aliases=["ipapwdmaxrepeat"],
+            maxrepeat=dict(type="str", aliases=["ipapwdmaxrepeat"],
                            default=None),
-            maxsequence=dict(type="int", aliases=["ipapwdmaxsequence"],
+            maxsequence=dict(type="str", aliases=["ipapwdmaxsequence"],
                              default=None),
-            dictcheck=dict(type="bool", aliases=["ipapwdictcheck"],
+            dictcheck=dict(type="str", aliases=["ipapwdictcheck"],
                            default=None),
-            usercheck=dict(type="bool", aliases=["ipapwusercheck"],
+            usercheck=dict(type="str", aliases=["ipapwusercheck"],
                            default=None),
-            gracelimit=dict(type="int", aliases=["passwordgracelimit"],
+            gracelimit=dict(type="str", aliases=["passwordgracelimit"],
                             default=None),
             # state
             state=dict(type="str", default="present",
@@ -325,7 +336,48 @@ def main():
 
     ansible_module.params_fail_used_invalid(invalid, state)
 
-    if gracelimit is not None:
+    # Ensure parameter values are valid and have proper type.
+    def int_or_empty_param(value, param):
+        if value is not None and value != "":
+            try:
+                value = int(value)
+            except ValueError:
+                ansible_module.fail_json(
+                    msg="Invalid value '%s' for argument '%s'" % (value, param)
+                )
+        return value
+
+    maxlife = int_or_empty_param(maxlife, "maxlife")
+    minlife = int_or_empty_param(minlife, "minlife")
+    history = int_or_empty_param(history, "history")
+    minclasses = int_or_empty_param(minclasses, "minclasses")
+    minlength = int_or_empty_param(minlength, "minlength")
+    priority = int_or_empty_param(priority, "priority")
+    maxfail = int_or_empty_param(maxfail, "maxfail")
+    failinterval = int_or_empty_param(failinterval, "failinterval")
+    lockouttime = int_or_empty_param(lockouttime, "lockouttime")
+    maxrepeat = int_or_empty_param(maxrepeat, "maxrepeat")
+    maxsequence = int_or_empty_param(maxsequence, "maxsequence")
+    gracelimit = int_or_empty_param(gracelimit, "gracelimit")
+
+    def bool_or_empty_param(value, param):  # pylint: disable=R1710
+        # As of Ansible 2.14, values True, False, Yes an No, with variable
+        # capitalization are accepted by Ansible.
+        if not value:
+            return value
+        if value in ["TRUE", "True", "true", "YES", "Yes", "yes"]:
+            return True
+        if value in ["FALSE", "False", "false", "NO", "No", "no"]:
+            return False
+        ansible_module.fail_json(
+            msg="Invalid value '%s' for argument '%s'." % (value, param)
+        )
+
+    dictcheck = bool_or_empty_param(dictcheck, "dictcheck")
+    usercheck = bool_or_empty_param(usercheck, "usercheck")
+
+    # Ensure gracelimit has proper limit.
+    if gracelimit:
         if gracelimit < -1:
             ansible_module.fail_json(
                 msg="'gracelimit' must be no less than -1")
@@ -351,7 +403,8 @@ def main():
             # Create command
             if state == "present":
                 # Generate args
-                args = gen_args(maxlife, minlife, history, minclasses,
+                args = gen_args(ansible_module,
+                                maxlife, minlife, history, minclasses,
                                 minlength, priority, maxfail, failinterval,
                                 lockouttime, maxrepeat, maxsequence, dictcheck,
                                 usercheck, gracelimit)

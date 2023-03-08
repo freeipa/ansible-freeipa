@@ -15,5 +15,5 @@
       register: result
       no_log: true
     - name: Display retrieved data.
-      debug:
+      ansible.builtin.debug:
         msg: "Data: {{ result.vault.data }}"

@@ -1,5 +1,5 @@
 ---
-- name: dnszone present
+- name: Dnszone present
   hosts: ipaserver
   become: true
 

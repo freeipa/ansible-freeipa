@@ -204,7 +204,9 @@
 
     # EXTERNAL MEMBER TEST (REQUIRES AD)
 
-    - block:
+    - name: Execute group tests if trust test environment is supported
+      when: trust_test_is_supported | default(false)
+      block:
 
       - name: Ensure users testuser1, testuser2 and testuser3 are present in group externalgroup
         ipagroup:
@@ -229,8 +231,6 @@
           - testuser3
         register: result
         failed_when: result.changed or result.failed
-
-      when: trust_test_is_supported | default(false)
 
     # CONVERT NONPOSIX TO POSIX GROUP WITH USERS
 

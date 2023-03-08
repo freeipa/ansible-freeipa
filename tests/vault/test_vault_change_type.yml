@@ -7,7 +7,7 @@
 
   tasks:
   - name: Setup testing environment.
-    import_tasks: env_setup.yml
+    ansible.builtin.import_tasks: env_setup.yml
 
   - name: Ensure test_vault is absent.
     ipavault:
@@ -30,7 +30,10 @@
     register: result
     failed_when: result.failed or not result.changed
 
-  - block:
+  - name: Change vault type from asymmetric to symmetric
+    vars:
+      krb5ccname: verify_change_from_asymmetric
+    block:
     - name: Change from asymmetric to symmetric
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -42,17 +45,17 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify assymetric-only fields are not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Public Key:" in result.stdout
 
+  - name: Change vault type from symmetric to standard
     vars:
-      krb5ccname: verify_change_from_asymmetric
-
-  - block:
+      krb5ccname: verify_change_from_symmetric
+    block:
     - name: Change from symmetric to standard
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -63,15 +66,12 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify salt is not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Salt:" in result.stdout
-
-    vars:
-      krb5ccname: verify_change_from_symmetric
 
   - name: Change from standard to symmetric
     ipavault:
@@ -82,7 +82,10 @@
     register: result
     failed_when: result.failed or not result.changed
 
-  - block:
+  - name: Change vault type from symmetric to asymmetric
+    vars:
+      krb5ccname: verify_change_from_symmetric
+    block:
     - name: Change from symmetric to asymmetric
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -94,17 +97,17 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify salt is not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Salt:" in result.stdout
 
+  - name: Change vault type from asymmetric to standard
     vars:
-      krb5ccname: verify_change_from_symmetric
-
-  - block:
+      krb5ccname: verify_change_from_asymmetric
+    block:
     - name: Change from asymmetric to standard
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -115,15 +118,12 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify assymetric-only fields are not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Public Key:" in result.stdout
-
-    vars:
-      krb5ccname: verify_change_from_asymmetric
 
   - name: Ensure test_vault is absent.
     ipavault:
@@ -156,7 +156,10 @@
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'hello'
 
-  - block:
+  - name: Change vault type from asymmetric to symmetric, with data
+    vars:
+      krb5ccname: verify_change_from_asymmetric
+    block:
     - name: Change from asymmetric to symmetric, with data
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -168,15 +171,12 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify assymetric-only fields are not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Public Key:" in result.stdout
-
-    vars:
-      krb5ccname: verify_change_from_asymmetric
 
   - name: Retrieve data from symmetric vault.
     ipavault:
@@ -187,7 +187,10 @@
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'hello'
 
-  - block:
+  - name: Change vault type from symmetric to standard, with data
+    vars:
+      krb5ccname: verify_change_from_symmetric
+    block:
     - name: Change from symmetric to standard, with data
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -198,15 +201,12 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify salt is not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Salt:" in result.stdout
-
-    vars:
-      krb5ccname: verify_change_from_symmetric
 
   - name: Retrieve data from standard vault.
     ipavault:
@@ -234,7 +234,10 @@
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'hello'
 
-  - block:
+  - name: Change vault type from symmetric to asymmetric, with data
+    vars:
+      krb5ccname: verify_change_from_symmetric
+    block:
     - name: Change from symmetric to asymmetric, with data
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -246,15 +249,12 @@
       failed_when: result.failed or not result.changed
 
     - name: Verify salt is not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Salt:" in result.stdout
-
-    vars:
-      krb5ccname: verify_change_from_symmetric
 
   - name: Retrieve data from asymmetric vault.
     ipavault:
@@ -265,7 +265,10 @@
     register: result
     failed_when: result.failed or result.changed or result.vault.data != 'hello'
 
-  - block:
+  - name: Change vault type from asymmetric to standard, with data
+    vars:
+      krb5ccname: verify_change_from_asymmetric
+    block:
     - name: Change from asymmetric to standard, with data
       ipavault:
         ipaadmin_password: SomeADMINpassword
@@ -276,15 +279,12 @@
       failed_when: result.failed or not result.changed or result.failed
 
     - name: Verify assymetric-only fields are not present.
-      shell: |
+      ansible.builtin.shell: |
          echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
          KRB5CCNAME={{ krb5ccname }} ipa vault-show test_vault
          kdestroy -A -q -c {{ krb5ccname }}
       register: result
       failed_when: result.failed or "Public Key:" in result.stdout
-
-    vars:
-      krb5ccname: verify_change_from_asymmetric
 
   - name: Retrieve data from standard vault.
     ipavault:
@@ -301,4 +301,4 @@
       state: absent
 
   - name: Cleanup testing environment.
-    import_tasks: env_cleanup.yml
+    ansible.builtin.import_tasks: env_cleanup.yml

@@ -8,7 +8,7 @@
   # setup
 
   - name: Setup test environment
-    include_tasks: env_setup.yml
+    ansible.builtin.include_tasks: env_setup.yml
 
   # tests
   - name: Ensure service is present
@@ -461,4 +461,4 @@
 
   # cleanup
   - name: Cleanup test environment
-    include_tasks: env_cleanup.yml
+    ansible.builtin.include_tasks: env_cleanup.yml

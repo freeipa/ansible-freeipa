@@ -4,5 +4,5 @@
   register: result_ipabackup_get_backup_dir
 
 - name: Set IPA backup dir
-  set_fact:
+  ansible.builtin.set_fact:
     ipabackup_dir: "{{ result_ipabackup_get_backup_dir.backup_dir }}"

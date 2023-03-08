@@ -157,18 +157,29 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
-    gen_add_list, gen_intersection_list, ipalib_errors, ensure_fqdn
+    gen_add_list, gen_intersection_list, ensure_fqdn
 
 
 def find_netgroup(module, name):
     """Find if a netgroup with the given name already exist."""
-    try:
-        _result = module.ipa_command("netgroup_show", name, {"all": True})
-    except ipalib_errors.NotFound:
-        # An exception is raised if netgroup name is not found.
-        return None
-    else:
-        return _result["result"]
+    _args = {
+        "all": True,
+        "cn": name,
+    }
+
+    # `netgroup_find` is used here instead of `netgroup_show` to workaround
+    # FreeIPA bug https://pagure.io/freeipa/issue/9284.
+    # `ipa netgroup-show hostgroup` shows hostgroup - it's a bug.
+    # `ipa netgroup-find hostgroup` doesn't show hostgroup - it's correct.
+    _result = module.ipa_command("netgroup_find", name, _args)
+
+    if len(_result["result"]) > 1:
+        module.fail_json(
+            msg="There is more than one netgroup '%s'" % name)
+    elif len(_result["result"]) == 1:
+        return _result["result"][0]
+
+    return None
 
 
 def gen_args(description, nisdomain, nomembers):

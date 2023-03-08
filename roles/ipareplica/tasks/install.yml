@@ -1,64 +1,64 @@
 ---
 # tasks file for ipareplica
 
-- block:
+- name: Package installation
+  when: ipareplica_install_packages | bool
+  block:
 
   - name: Install - Ensure IPA replica packages are installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipareplica_packages }}"
       state: present
 
   - name: Install - Ensure IPA replica packages for dns are installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipareplica_packages_dns }}"
       state: present
     when: ipareplica_setup_dns | bool
 
   - name: Install - Ensure IPA replica packages for adtrust are installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipareplica_packages_adtrust }}"
       state: present
     when: ipareplica_setup_adtrust | bool
 
   - name: Install - Ensure that firewall packages installed
-    package:
+    ansible.builtin.package:
       name: "{{ ipareplica_packages_firewalld }}"
       state: present
     when: ipareplica_setup_firewalld | bool
 
-  when: ipareplica_install_packages | bool
-
-- block:
+- name: Firewall configuration
+  when: ipareplica_setup_firewalld | bool
+  block:
   - name: Firewalld service - Ensure that firewalld is running
-    systemd:
+    ansible.builtin.systemd:
       name: firewalld
       enabled: yes
       state: started
 
   - name: Firewalld - Verify runtime zone "{{ ipareplica_firewalld_zone }}"
-    shell: >
+    ansible.builtin.shell: >
       firewall-cmd
       --info-zone="{{ ipareplica_firewalld_zone }}"
       >/dev/null
     when: ipareplica_firewalld_zone is defined
 
   - name: Firewalld - Verify permanent zone "{{ ipareplica_firewalld_zone }}"
-    shell: >
+    ansible.builtin.shell: >
       firewall-cmd
       --permanent
       --info-zone="{{ ipareplica_firewalld_zone }}"
       >/dev/null
     when: ipareplica_firewalld_zone is defined
 
-  when: ipareplica_setup_firewalld | bool
-
 - name: Install - Set ipareplica_servers
-  set_fact:
+  ansible.builtin.set_fact:
     ipareplica_servers: "{{ groups['ipaservers'] | list }}"
   when: groups.ipaservers is defined and ipareplica_servers is not defined
 
 - name: Install - Set default principal if no keytab is given
-  set_fact:
+  ansible.builtin.set_fact:
     ipaadmin_principal: admin
   when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
 
@@ -71,7 +71,7 @@
     domain: "{{ ipareplica_domain | default(ipaserver_domain) |
             default(omit) }}"
     servers: "{{ ipareplica_servers | default(omit) }}"
-    realm: "{{ ipareplica_realm | default(ipaserver_realm) |default(omit) }}"
+    realm: "{{ ipareplica_realm | default(ipaserver_realm) | default(omit) }}"
     hostname: "{{ ipareplica_hostname | default(ansible_facts['fqdn']) }}"
     ca_cert_files: "{{ ipareplica_ca_cert_files | default([]) }}"
     hidden_replica: "{{ ipareplica_hidden_replica }}"
@@ -101,14 +101,18 @@
     no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
   register: result_ipareplica_test
 
-- block:
+- name: Install - Deploy replica
+  when: not ansible_check_mode and
+        not (result_ipareplica_test.client_already_configured is defined or
+             result_ipareplica_test.server_already_configured is defined)
+  block:
   # This block is executed only when
   # not ansible_check_mode and
   # not (result_ipareplica_test.client_already_configured is defined or
   #      result_ipareplica_test.server_already_configured is defined)
 
   - name: Install - Setup client
-    include_role:
+    ansible.builtin.include_role:
       name: ipaclient
     vars:
       state: present
@@ -120,7 +124,7 @@
     when: not result_ipareplica_test.client_enrolled
 
   - name: Install - Configure firewalld
-    command: >
+    ansible.builtin.command: >
       firewall-cmd
       --permanent
       --zone="{{ ipareplica_firewalld_zone if ipareplica_firewalld_zone is
@@ -134,7 +138,7 @@
     when: ipareplica_setup_firewalld | bool
 
   - name: Install - Configure firewalld runtime
-    command: >
+    ansible.builtin.command: >
       firewall-cmd
       --zone="{{ ipareplica_firewalld_zone if ipareplica_firewalld_zone is
          defined else '' }}"
@@ -222,8 +226,8 @@
 
   - name: Install - Set dirman password
     no_log: yes
-    set_fact:
-      ipareplica_dirman_password:
+    ansible.builtin.set_fact:
+      __derived_dirman_password:
         "{{ result_ipareplica_master_password.password }}"
 
   - name: Install - Setup certmonger
@@ -264,7 +268,7 @@
       _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
       config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
       config_master_host_name:
         "{{ result_ipareplica_prepare.config_master_host_name }}"
@@ -302,13 +306,13 @@
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       installer_ccache: "{{ result_ipareplica_prepare.installer_ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
-      _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info  if result_ipareplica_prepare._dirsrv_pkcs12_info != None else omit }}"
+      _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info if result_ipareplica_prepare._dirsrv_pkcs12_info != None else omit }}"
       subject_base: "{{ result_ipareplica_prepare.subject_base }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
       config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
       config_master_host_name:
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
@@ -352,7 +356,7 @@
       _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
       setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
 
   - name: Install - Setup KRB
@@ -367,9 +371,9 @@
       config_master_host_name:
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
-      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info  if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
+      _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
 
   # We need to point to the master in ipa default conf when certmonger
   # asks for HTTP certificate in newer ipa versions. In these versions
@@ -410,7 +414,7 @@
       _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
       setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
       master:
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
@@ -434,7 +438,7 @@
       _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info if result_ipareplica_prepare._dirsrv_pkcs12_info != None else omit }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
       ds_ca_subject: "{{ result_ipareplica_setup_ds.ds_ca_subject }}"
 
   - name: Install - Setup http
@@ -455,7 +459,7 @@
       _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _http_pkcs12_info: "{{ result_ipareplica_prepare._http_pkcs12_info if result_ipareplica_prepare._http_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
 
   # Need to point back to ourself after the cert for HTTP is obtained
   - name: Install - Create original IPA conf again
@@ -494,7 +498,7 @@
       _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
       setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
     when: result_ipareplica_test.change_master_for_certmonger
 
@@ -513,7 +517,7 @@
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
 
   - name: Install - Setup custodia
     ipareplica_setup_custodia:
@@ -534,7 +538,7 @@
       _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
 
   - name: Install - Setup CA
     ipareplica_setup_ca:
@@ -557,7 +561,7 @@
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       _random_serial_numbers: "{{ result_ipareplica_prepare._random_serial_numbers }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
       config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
       config_master_host_name:
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
@@ -582,7 +586,7 @@
       _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
 
   - name: Install - DS apply updates
     ipareplica_ds_apply_updates:
@@ -602,7 +606,7 @@
       _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
       ds_ca_subject: "{{ result_ipareplica_setup_ds.ds_ca_subject }}"
 
   - name: Install - Setup kra
@@ -642,7 +646,7 @@
       _add_to_ipaservers: "{{ result_ipareplica_prepare._add_to_ipaservers }}"
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _subject_base: "{{ result_ipareplica_prepare._subject_base }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
     when: result_ipareplica_test.setup_kra
 
   - name: Install - Restart KDC
@@ -660,7 +664,7 @@
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
 
   - name: Install - Custodia import dm password
     ipareplica_custodia_import_dm_password:
@@ -681,7 +685,7 @@
       _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
       _kra_host_name: "{{ result_ipareplica_prepare.config_kra_host_name }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
-      dirman_password: "{{ ipareplica_dirman_password }}"
+      dirman_password: "{{ __derived_dirman_password }}"
       config_setup_ca: "{{ result_ipareplica_prepare.config_setup_ca }}"
 
   - name: Install - Promote SSSD
@@ -776,21 +780,17 @@
     register: result_ipareplica_enable_ipa
 
   - name: Install - Cleanup root IPA cache
-    file:
+    ansible.builtin.file:
       path: "/root/.ipa_cache"
       state: absent
     when: result_ipareplica_enable_ipa.changed
 
   always:
   - name: Cleanup temporary files
-    file:
+    ansible.builtin.file:
       path: "{{ item }}"
       state: absent
     with_items:
     - "/etc/ipa/.tmp_pkcs12_dirsrv"
     - "/etc/ipa/.tmp_pkcs12_http"
     - "/etc/ipa/.tmp_pkcs12_pkinit"
-
-  when: not ansible_check_mode and
-        not (result_ipareplica_test.client_already_configured is defined or
-             result_ipareplica_test.server_already_configured is defined)

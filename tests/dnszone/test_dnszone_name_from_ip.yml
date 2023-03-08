@@ -8,7 +8,7 @@
 
   # Setup
   - name: Setup testing environment
-    include_tasks: env_setup.yml
+    ansible.builtin.include_tasks: env_setup.yml
 
   # Tests
   - name: Ensure zone exists for reverse IP.
@@ -55,7 +55,7 @@
     register: ipv6_zone
     failed_when: not ipv6_zone.changed or ipv6_zone.failed
 
-  # - debug:
+  # - ansible.builtin.debug:
   #     msg: "{{ipv6_zone}}"
 
   - name: Ensure ipv6 zone was created.
@@ -95,4 +95,4 @@
 
   # Teardown
   - name: Teardown testing environment
-    include_tasks: env_teardown.yml
+    ansible.builtin.include_tasks: env_teardown.yml

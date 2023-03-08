@@ -1,14 +1,17 @@
 ---
-- name: find trust
+- name: Find trust
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
 
-  - include_tasks: ../env_freeipa_facts.yml
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
-  - block:
+  - name: Execute group tests if trust test environment is supported
+    when: trust_test_is_supported | default(false)
+    block:
 
     - name: Add nonposix group.
       ipagroup:
@@ -109,5 +112,3 @@
         ipaadmin_password: SomeADMINpassword
         name: extgroup
         state: absent
-
-    when: trust_test_is_supported | default(false)

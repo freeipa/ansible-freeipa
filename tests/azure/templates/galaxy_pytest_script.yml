@@ -15,7 +15,7 @@ parameters:
 jobs:
 - job: Test_PyTests
   displayName: Run pytests on ${{ parameters.scenario }}
-  timeoutInMinutes: 120
+  timeoutInMinutes: 240
   steps:
   - task: UsePythonVersion@0
     inputs:
@@ -25,16 +25,21 @@ jobs:
       pip install \
         "molecule[docker]>=3" \
         "ansible${{ parameters.ansible_version }}"
+    retryCountOnTaskFailure: 5
     displayName: Install molecule and Ansible
 
   - script: ansible-galaxy collection install community.docker ansible.posix
+    retryCountOnTaskFailure: 5
     displayName: Install Ansible collections
 
   - script: pip install -r requirements-tests.txt
+    retryCountOnTaskFailure: 5
     displayName: Install dependencies
+
   - script: |
       utils/build-galaxy-release.sh -i
       molecule create -s ${{ parameters.scenario }}
+    retryCountOnTaskFailure: 5
     displayName: Setup test container
     env:
       ANSIBLE_LIBRARY: ./molecule

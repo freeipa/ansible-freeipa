@@ -5,7 +5,7 @@
 
   tasks:
   - name: Run generate-certificates.sh
-    command: >
+    ansible.builtin.command: >
       /bin/bash
       generate-certificates.sh delete "{{ item }}"
     args:

@@ -5,11 +5,11 @@
 
   tasks:
   - name: Run generate-certificates.sh
-    command: >
+    ansible.builtin.command: >
       /bin/bash
       generate-certificates.sh create
       "{{ groups.ipaserver[0] }}"
-      "{{ ipaserver_domain | default(groups.ipaserver[0].split('.')[1:] | join ('.')) }}"
+      "{{ ipaserver_domain | default(groups.ipaserver[0].split('.')[1:] | join('.')) }}"
     args:
       chdir: "{{ playbook_dir }}"
 
@@ -40,18 +40,18 @@
 
   pre_tasks:
     - name: Remove "/root/ca-less-test"
-      file:
+      ansible.builtin.file:
         path: "/root/ca-less-test"
         state: absent
 
     - name: Generate "/root/ca-less-test"
-      file:
+      ansible.builtin.file:
         path: "/root/ca-less-test"
         state: directory
         mode: 0775
 
     - name: Copy CA certificate
-      copy:
+      ansible.builtin.copy:
         src: "{{ playbook_dir }}/certificates/root-ca/cert.pem"
         dest: "/root/ca-less-test/ca.crt"
         owner: root
@@ -59,7 +59,7 @@
         mode: "0644"
 
     - name: Copy p12 certificates
-      copy:
+      ansible.builtin.copy:
         src: "{{ playbook_dir }}/certificates/{{ item }}/{{ groups.ipaserver[0] }}/cert.p12"
         dest: "/root/ca-less-test/{{ item }}.p12"
         owner: root

@@ -159,11 +159,29 @@ def main():
     ca_crt_exists = os.path.exists(paths.IPA_CA_CRT)
     env = {'PATH': SECURE_PATH, 'KRB5CCNAME': paths.IPA_DNS_CCACHE}
 
-    # First try: Validate krb5 keytab with system krb5 configuraiton
+    # First try: Validate with temporary test krb5.conf that forces
+    # 1) no DNS lookups and
+    # 2) to load /etc/krb5.conf:
+    #
+    # [libdefaults]
+    # dns_lookup_realm = false
+    # dns_lookup_kdc = false
+    # include /etc/krb5.conf
+    #
     try:
+        (krb_fd, krb_name) = tempfile.mkstemp()
+        os.close(krb_fd)
+        content = "\n".join([
+            "[libdefaults]",
+            "dns_lookup_realm = false",
+            "dns_lookup_kdc = false",
+            "include /etc/krb5.conf"
+        ])
+        with open(krb_name, "w") as outf:
+            outf.write(content)
         kinit_keytab(host_principal, paths.KRB5_KEYTAB,
                      paths.IPA_DNS_CCACHE,
-                     config=paths.KRB5_CONF,
+                     config=krb_name,
                      attempts=kinit_attempts)
         krb5_keytab_ok = True
         krb5_conf_ok = True
@@ -177,6 +195,11 @@ def main():
             pass
     except GSSError:
         pass
+    finally:
+        try:
+            os.remove(krb_name)
+        except OSError:
+            module.fail_json(msg="Could not remove %s" % krb_name)
 
     # Second try: Validate krb5 keytab with temporary krb5
     # configuration

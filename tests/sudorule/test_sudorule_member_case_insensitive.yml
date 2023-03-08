@@ -13,10 +13,11 @@
 
 
   tasks:
-  - block:
+  - name: Test sudorule member case insensitive
+    block:
     # SETUP
     - name: Ensure domain name
-      set_fact:
+      ansible.builtin.set_fact:
         ipa_domain: ipa.test
       when: ipa_domain is not defined
 
@@ -56,7 +57,7 @@
 
     # TESTS
     - name: Start tests.
-      debug:
+      ansible.builtin.debug:
         msg: "Tests are starting."
 
     - name: Ensure sudorule exist with runasusers members
@@ -146,10 +147,10 @@
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
         cmdcategory: all
-        hostgroup: "{{ item  | lower }}"
-        host: "{{ item  | lower }}.{{ ipa_domain }}"
-        group: "{{ item  | lower }}"
-        user: "user{{ item  | lower }}"
+        hostgroup: "{{ item | lower }}"
+        host: "{{ item | lower }}.{{ ipa_domain }}"
+        group: "{{ item | lower }}"
+        user: "user{{ item | lower }}"
       loop: "{{ groups_present }}"
       register: result
       failed_when: result.failed or result.changed
@@ -159,10 +160,10 @@
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
         cmdcategory: all
-        hostgroup: "{{ item  | upper }}"
-        host: "{{ item  | upper }}.{{ ipa_domain }}"
-        group: "{{ item  | upper }}"
-        user: "user{{ item  | upper }}"
+        hostgroup: "{{ item | upper }}"
+        host: "{{ item | upper }}.{{ ipa_domain }}"
+        group: "{{ item | upper }}"
+        user: "user{{ item | upper }}"
       loop: "{{ groups_present }}"
       register: result
       failed_when: result.failed or result.changed
@@ -185,10 +186,10 @@
       ipasudorule:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "{{ item  | lower }}"
-        host: "{{ item  | lower }}.{{ ipa_domain }}"
-        group: "{{ item  | lower }}"
-        user: "user{{ item  | lower }}"
+        hostgroup: "{{ item | lower }}"
+        host: "{{ item | lower }}.{{ ipa_domain }}"
+        group: "{{ item | lower }}"
+        user: "user{{ item | lower }}"
         action: member
         state: absent
       loop: "{{ groups_present }}"
@@ -199,10 +200,10 @@
       ipasudorule:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "{{ item  | upper }}"
-        host: "{{ item  | upper }}.{{ ipa_domain }}"
-        group: "{{ item  | upper }}"
-        user: "user{{ item  | upper }}"
+        hostgroup: "{{ item | upper }}"
+        host: "{{ item | upper }}.{{ ipa_domain }}"
+        group: "{{ item | upper }}"
+        user: "user{{ item | upper }}"
         action: member
         state: absent
       loop: "{{ groups_present }}"
@@ -213,10 +214,10 @@
       ipasudorule:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "{{ item  | upper }}"
-        host: "{{ item  | upper }}.{{ ipa_domain }}"
-        group: "{{ item  | upper }}"
-        user: "user{{ item  | upper }}"
+        hostgroup: "{{ item | upper }}"
+        host: "{{ item | upper }}.{{ ipa_domain }}"
+        group: "{{ item | upper }}"
+        user: "user{{ item | upper }}"
         action: member
       loop: "{{ groups_present }}"
       register: result
@@ -226,10 +227,10 @@
       ipasudorule:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}"
-        hostgroup: "{{ item  | lower }}"
-        host: "{{ item  | lower }}.{{ ipa_domain }}"
-        group: "{{ item  | lower }}"
-        user: "user{{ item  | lower }}"
+        hostgroup: "{{ item | lower }}"
+        host: "{{ item | lower }}.{{ ipa_domain }}"
+        group: "{{ item | lower }}"
+        user: "user{{ item | lower }}"
         action: member
       loop: "{{ groups_present }}"
       register: result
@@ -249,7 +250,7 @@
       failed_when: result.failed or result.changed
 
     - name: End tests.
-      debug:
+      ansible.builtin.debug:
         msg: "All tests executed."
 
     always:

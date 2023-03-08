@@ -2,40 +2,45 @@
 # tasks file for ipaclient
 
 - name: Install - Ensure that IPA client packages are installed
-  package:
+  ansible.builtin.package:
     name: "{{ ipaclient_packages }}"
     state: present
   when: ipaclient_install_packages | bool
 
 - name: Install - Set ipaclient_servers
-  set_fact:
+  ansible.builtin.set_fact:
     ipaclient_servers: "{{ groups['ipaservers'] | list }}"
   when: groups.ipaservers is defined and ipaclient_servers is not defined
 
 - name: Install - Set ipaclient_servers from cluster inventory
-  set_fact:
+  ansible.builtin.set_fact:
     ipaclient_servers: "{{ groups['ipaserver'] | list }}"
   when: ipaclient_no_dns_lookup | bool and groups.ipaserver is defined and
         ipaclient_servers is not defined
 
 - name: Install - Check that either password or keytab is set
-  fail: msg="ipaadmin_password and ipaadmin_keytab cannot be used together"
+  ansible.builtin.fail:
+    msg: "ipaadmin_password and ipaadmin_keytab cannot be used together"
   when: ipaadmin_keytab is defined and ipaadmin_password is defined
 
 - name: Install - Set default principal if no keytab is given
-  set_fact:
+  ansible.builtin.set_fact:
     ipaadmin_principal: admin
   when: ipaadmin_principal is undefined and ipaclient_keytab is undefined
 
-- name: Install - Configure DNS resolver Block
+- name: Install - DNS resolver configuration
+  when: ipaclient_configure_dns_resolver | bool
+        and not ipaclient_on_master | bool
   block:
 
   - name: Install - Fail on missing ipaclient_domain and ipaserver_domain
-    fail: msg="ipaclient_domain or ipaserver_domain is required for ipaclient_configure_dns_resolver"
+    ansible.builtin.fail:
+      msg: "ipaclient_domain or ipaserver_domain is required for ipaclient_configure_dns_resolver"
     when: ipaserver_domain is not defined and ipaclient_domain is not defined
 
   - name: Install - Fail on missing ipaclient_servers
-    fail: msg="ipaclient_dns_servers is required for ipaclient_configure_dns_resolver"
+    ansible.builtin.fail:
+      msg: "ipaclient_dns_servers is required for ipaclient_configure_dns_resolver"
     when: ipaclient_dns_servers is not defined
 
   - name: Install - Configure DNS resolver
@@ -43,9 +48,6 @@
       nameservers: "{{ ipaclient_dns_servers }}"
       searchdomains: "{{ ipaserver_domain | default(ipaclient_domain) }}"
       state: present
-
-  when: ipaclient_configure_dns_resolver | bool
-        and not ipaclient_on_master | bool
 
 - name: Install - IPA client test
   ipaclient_test:
@@ -72,9 +74,13 @@
                             | default(ipasssd_enable_dns_updates) }}"
   register: result_ipaclient_test
 
-- block:
+- name: Install - Client deployment
+  when: not ansible_check_mode and
+        not (result_ipaclient_test.client_already_configured and
+            not ipaclient_allow_repair | bool and not ipaclient_force_join | bool)
+  block:
   - name: Install - Cleanup leftover ccache
-    file:
+    ansible.builtin.file:
       path: "/etc/ipa/.dns_ccache"
       state: absent
 
@@ -91,12 +97,12 @@
       domain: "{{ result_ipaclient_test.domain }}"
 
   - name: Install - Make sure One-Time Password is enabled if it's already defined
-    set_fact:
+    ansible.builtin.set_fact:
       ipaclient_use_otp: "yes"
     when: ipaclient_otp is defined
 
   - name: Install - Disable One-Time Password for on_master
-    set_fact:
+    ansible.builtin.set_fact:
       ipaclient_use_otp: "no"
     when: ipaclient_use_otp | bool and ipaclient_on_master | bool
 
@@ -112,7 +118,7 @@
 
   - name: Install - Disable One-Time Password for client with working
           krb5.keytab
-    set_fact:
+    ansible.builtin.set_fact:
       ipaclient_use_otp: "no"
     when: ipaclient_use_otp | bool and
           result_ipaclient_test_keytab.krb5_keytab_ok and
@@ -125,10 +131,12 @@
   # to create a OneTime Password
   # If a keytab is specified in the hostent, then the hostent will be disabled
   # if ipaclient_use_otp is set.
-  - block:
+  - name: Install - Obtain OTP
+    when: ipaclient_use_otp | bool and ipaclient_otp is not defined
+    block:
     - name: Install - Keytab or password is required for getting otp
       ansible.builtin.fail:
-        msg: Keytab or password is required for getting otp
+        msg: "Keytab or password is required for getting otp"
       when: ipaadmin_keytab is undefined and ipaadmin_password is undefined
 
     - name: Install - Create temporary file for keytab
@@ -159,20 +167,17 @@
       delegate_to: "{{ result_ipaclient_test.servers[0] }}"
 
     - name: Install - Report error for OTP generation
-      debug:
+      ansible.builtin.debug:
         msg: "{{ result_ipaclient_get_otp.msg }}"
       when: result_ipaclient_get_otp is failed
       failed_when: yes
 
     - name: Install - Store the previously obtained OTP
       no_log: yes
-      set_fact:
+      ansible.builtin.set_fact:
         ipaadmin_orig_password: "{{ ipaadmin_password | default(omit) }}"
         ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword
                                if result_ipaclient_get_otp.host is defined }}"
-
-    when: ipaclient_use_otp | bool and ipaclient_otp is not defined
-
     always:
     - name: Install - Remove keytab temporary file
       ansible.builtin.file:
@@ -183,12 +188,14 @@
 
   - name: Store predefined OTP in admin_password
     no_log: yes
-    set_fact:
+    ansible.builtin.set_fact:
       ipaadmin_orig_password: "{{ ipaadmin_password | default(omit) }}"
       ipaadmin_password: "{{ ipaclient_otp }}"
     when: ipaclient_otp is defined
 
-  - block:
+  - name: Install - Check keytab, principal and keytab
+    when: not ipaclient_on_master | bool
+    block:
     # This block is executed only when
     # not (not ipaclient_on_master | bool and
     #      not result_ipaclient_join.changed and
@@ -198,19 +205,20 @@
     #        result_ipaclient_join.already_joined)))
 
     - name: Install - Check if principal and keytab are set
-      fail: msg="Admin principal and client keytab cannot be used together"
+      ansible.builtin.fail:
+        msg: "Admin principal and client keytab cannot be used together"
       when: ipaadmin_principal is defined and ipaclient_keytab is defined
 
     - name: Install - Check if one of password or keytabs are set
-      fail: msg="At least one of password or keytabs must be specified"
+      ansible.builtin.fail:
+        msg: "At least one of password or keytabs must be specified"
       when: not result_ipaclient_test_keytab.krb5_keytab_ok
             and ipaadmin_password is undefined
             and ipaadmin_keytab is undefined
             and ipaclient_keytab is undefined
-    when: not ipaclient_on_master | bool
 
-  - name: Install - Purge {{ result_ipaclient_test.realm }} from host keytab
-    command: >
+  - name: "Install - From host keytab, purge {{ result_ipaclient_test.realm }}"
+    ansible.builtin.command: >
       /usr/sbin/ipa-rmkeytab
       -k /etc/krb5.keytab
       -r "{{ result_ipaclient_test.realm }}"
@@ -252,30 +260,38 @@
           (not result_ipaclient_test_keytab.krb5_keytab_ok or
               ipaclient_force_join)
 
-  - block:
-    - name: krb5 configuration not correct
-      fail:
-        msg: >
-          The krb5 configuration is not correct, please enable allow_repair
-          to fix this.
-      when: not result_ipaclient_test_keytab.krb5_conf_ok
-    - name: IPA test failed
-      fail:
-        msg: "The IPA test failed, please enable allow_repair to fix this."
-      when: not result_ipaclient_test_keytab.ping_test_ok
-    - name: ca.crt file is missing
-      fail:
-        msg: >
-          The ca.crt file is missing, please enable allow_repair to fix this.
-      when: not result_ipaclient_test_keytab.ca_crt_exists
+  - name: Install - Allow repair checks
     when: not ipaclient_on_master | bool and
           not result_ipaclient_join.changed and
           not ipaclient_allow_repair | bool and
           (result_ipaclient_test_keytab.krb5_keytab_ok or
               (result_ipaclient_join.already_joined is defined and
                   result_ipaclient_join.already_joined))
+    block:
+    - name: The krb5 configuration is not correct
+      ansible.builtin.fail:
+        msg: >
+          The krb5 configuration is not correct, please enable allow_repair
+          to fix this.
+      when: not result_ipaclient_test_keytab.krb5_conf_ok
+    - name: IPA test failed
+      ansible.builtin.fail:
+        msg: "The IPA test failed, please enable allow_repair to fix this."
+      when: not result_ipaclient_test_keytab.ping_test_ok
+    - name: Fail due to missing ca.crt file
+      ansible.builtin.fail:
+        msg: >
+          The ca.crt file is missing, please enable allow_repair to fix this.
+      when: not result_ipaclient_test_keytab.ca_crt_exists
 
-  - block:
+  - name: Install - Configuration
+    when: not (not ipaclient_on_master | bool and
+          not result_ipaclient_join.changed and
+          not ipaclient_allow_repair | bool
+              and (result_ipaclient_test_keytab.krb5_keytab_ok
+              or (result_ipaclient_join.already_joined is defined
+              and result_ipaclient_join.already_joined)))
+    block:
     - name: Install - Configure IPA default.conf
       ipaclient_ipa_conf:
         servers: "{{ result_ipaclient_test.servers }}"
@@ -362,6 +378,7 @@
         no_ssh: "{{ ipaclient_no_ssh }}"
         no_sshd: "{{ ipaclient_no_sshd }}"
         no_sudo: "{{ ipaclient_no_sudo }}"
+        subid: "{{ ipaclient_subid }}"
         fixed_primary: "{{ ipassd_fixed_primary
                            | default(ipasssd_fixed_primary) }}"
         permit: "{{ ipassd_permit | default(ipasssd_permit) }}"
@@ -396,26 +413,14 @@
         domain: "{{ result_ipaclient_test.domain }}"
         nisdomain: "{{ ipaclient_nisdomain | default(omit) }}"
       when: not ipaclient_no_nisdomain | bool
-
-    when: not (not ipaclient_on_master | bool and
-          not result_ipaclient_join.changed and
-          not ipaclient_allow_repair | bool
-              and (result_ipaclient_test_keytab.krb5_keytab_ok
-              or (result_ipaclient_join.already_joined is defined
-              and result_ipaclient_join.already_joined)))
-
-  when: not ansible_check_mode and
-        not (result_ipaclient_test.client_already_configured and
-            not ipaclient_allow_repair | bool and not ipaclient_force_join | bool)
-
   always:
   - name: Install - Restore original admin password if overwritten by OTP
     no_log: yes
-    set_fact:
+    ansible.builtin.set_fact:
         ipaadmin_password: "{{ ipaadmin_orig_password }}"
     when: ipaclient_use_otp | bool and ipaadmin_orig_password is defined
 
   - name: Cleanup leftover ccache
-    file:
+    ansible.builtin.file:
       path: "/etc/ipa/.dns_ccache"
       state: absent

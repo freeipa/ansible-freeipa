@@ -31,7 +31,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
         """TC-01: Add dns zone without forwarder."""
         zone01 = "01testzone.test"
         self.check_notexists([zone01], "dnszone-find")
-        self.run_playbook(BASE_PATH + "dnszone_add_without_forwarder.yaml")
+        self.run_playbook(BASE_PATH + "dnszone_add_without_forwarder.yml")
         self.check_details([zone01], "dnszone-find")
 
     def test_dnszone_add_multiple_ipv4_ipv6_forwarders(self):
@@ -41,7 +41,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
 
         # add dns zone with multiple forwarders
         self.run_playbook(
-            (BASE_PATH + "dnszone_add_multiple_ipv4_ipv6_forwarders.yaml")
+            (BASE_PATH + "dnszone_add_multiple_ipv4_ipv6_forwarders.yml")
         )
 
         exp_forwarders = [
@@ -58,7 +58,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
         zone26 = "26testzone.test"
         self.check_notexists([zone26], "dnszone-find")
         # add dns zone
-        self.run_playbook(BASE_PATH + "dnszone_with_forward_policy_only.yaml")
+        self.run_playbook(BASE_PATH + "dnszone_with_forward_policy_only.yml")
         self.check_details(["Forward policy: only"], "dnszone-find", [zone26])
 
     def test_dnszone_disable(self):
@@ -68,7 +68,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
             ["Active zone: (TRUE|True)"], "dnszone-find", [zone26]
         )
         # Disable dns zone
-        self.run_playbook(BASE_PATH + "dnszone_disable.yaml")
+        self.run_playbook(BASE_PATH + "dnszone_disable.yml")
         self.check_details(
             ["Active zone: (FALSE|False)"], "dnszone-find", [zone26]
         )
@@ -80,7 +80,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
             ["Active zone: (FALSE|False)"], "dnszone-find", [zone26]
         )
         # Enable dns zone
-        self.run_playbook(BASE_PATH + "dnszone_enable.yaml")
+        self.run_playbook(BASE_PATH + "dnszone_enable.yml")
         self.check_details(
             ["Active zone: (TRUE|True)"], "dnszone-find", [zone26]
         )
@@ -96,7 +96,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
             reason="Fix is not available for BZ-1845056",
         )
 
-        self.run_playbook(BASE_PATH + "dnszone_name_from_ip.yaml")
+        self.run_playbook(BASE_PATH + "dnszone_name_from_ip.yml")
         self.check_details([expected_msg], "dnszone-find", [zone])
 
     def test_dnszone_del_multiple(self):
@@ -113,7 +113,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
             reason="Fix is not available for BZ-1845058",
         )
 
-        self.run_playbook(BASE_PATH + "dnszone_del_multiple.yaml")
+        self.run_playbook(BASE_PATH + "dnszone_del_multiple.yml")
         # verify multiple dnszones are removed
         for add_zone in zone:
             error = "ipa: ERROR: {0}.: DNS zone not found".format(add_zone)
@@ -131,7 +131,7 @@ class TestDNSZone(AnsibleFreeIPATestCase):
         )
 
         self.run_playbook_with_exp_msg(
-            BASE_PATH + "dnszone_invalid_ip.yaml", expected_error,
+            BASE_PATH + "dnszone_invalid_ip.yml", expected_error,
         )
         self.check_notexists(
             [invalid_zone_ip], "dnszone-show", [invalid_zone_name],

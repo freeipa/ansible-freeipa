@@ -11,5 +11,5 @@
     register: result
 
   - name: Zone name inferred from `name_from_ip`
-    debug:
+    ansible.builtin.debug:
       msg: "Zone created: {{ result.dnszone.name }}"
