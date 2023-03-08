@@ -200,6 +200,7 @@ Variable | Description | Required
 `ipaclient_no_ssh` | The bool value defines if OpenSSH client will be configured. (bool, default: false) | no
 `ipaclient_no_sshd` | The bool value defines if OpenSSH server will be configured. (bool, default: false) | no
 `ipaclient_no_sudo` | The bool value defines if SSSD will be configured as a data source for sudo. (bool, default: false) | no
+`ipaclient_subid` | The bool value defines if SSSD will be configured as a data source for subid. (bool, default: false) | no
 `ipaclient_no_dns_sshfp` | The bool value defines if DNS SSHFP records will not be created automatically. (bool, default: false) | no
 
 Certificate system Variables

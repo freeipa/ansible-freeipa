@@ -378,6 +378,7 @@
         no_ssh: "{{ ipaclient_no_ssh }}"
         no_sshd: "{{ ipaclient_no_sshd }}"
         no_sudo: "{{ ipaclient_no_sudo }}"
+        subid: "{{ ipaclient_subid }}"
         fixed_primary: "{{ ipassd_fixed_primary
                            | default(ipasssd_fixed_primary) }}"
         permit: "{{ ipassd_permit | default(ipasssd_permit) }}"

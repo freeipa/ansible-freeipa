@@ -183,6 +183,7 @@ Variable | Description | Required
 `ipaclient_no_ssh` | The bool value defines if OpenSSH client will be configured. `ipaclient_no_ssh` defaults to `no`. | no
 `ipaclient_no_sshd` | The bool value defines if OpenSSH server will be configured. `ipaclient_no_sshd` defaults to `no`. | no
 `ipaclient_no_sudo` | The bool value defines if SSSD will be configured as a data source for sudo. `ipaclient_no_sudo` defaults to `no`. | no
+`ipaclient_subid` | The bool value defines if SSSD will be configured as a data source for subid. `ipaclient_subid` defaults to `no`. | no
 `ipaclient_no_dns_sshfp` | The bool value defines if DNS SSHFP records will not be created automatically. `ipaclient_no_dns_sshfp` defaults to `no`. | no
 `ipaclient_force` | The bool value defines if settings will be forced even in the error case. `ipaclient_force` defaults to `no`. | no
 `ipaclient_force_ntpd` | The bool value defines if ntpd usage will be forced. This is not supported anymore and leads to a warning. `ipaclient_force_ntpd` defaults to `no`. | no
