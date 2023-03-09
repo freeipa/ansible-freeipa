@@ -1,10 +1,16 @@
 -r requirements-tests.txt
 ipdb==0.13.4
-pre-commit==2.20.0
-flake8==5.0.3
-flake8-bugbear==22.10.27
-pylint==2.14.4
-wrapt == 1.14.0
-pydocstyle==6.0.0
-yamllint==1.28.0
-ansible-lint==6.6.1
+
+# Pylint is directly used by ansible, so we pin versions to
+# match the same version in Ansible's 'devel' branch 
+pylint==2.17.0
+wrapt == 1.15.0
+
+# These are not directly used by ansible sanity tests, so,
+# use the latest version available
+yamllint
+ansible-lint
+pydocstyle
+flake8
+flake8-bugbear
+pre-commit
