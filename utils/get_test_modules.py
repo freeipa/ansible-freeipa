@@ -62,8 +62,7 @@ def get_plugins_from_playbook(playbook):
             return []
         except yaml.parser.ParserError:  # If not a YAML/JSON file.
             return []
-        else:
-            return data if data else []
+        return data if data else []
 
     data = load_playbook(playbook)
     task_blocks = [t.get("tasks", []) if "tasks" in t else [] for t in data]
