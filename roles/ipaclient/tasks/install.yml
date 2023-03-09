@@ -239,12 +239,19 @@
       hostname: "{{ result_ipaclient_test.hostname }}"
     when: not ipaclient_on_master | bool
 
-  - name: Install - Join IPA
-    ipaclient_join:
+  - name: Install - Create temporary krb5 configuration
+    ipaclient_temp_krb5:
       servers: "{{ result_ipaclient_test.servers }}"
       domain: "{{ result_ipaclient_test.domain }}"
       realm: "{{ result_ipaclient_test.realm }}"
+      hostname: "{{ result_ipaclient_test.hostname }}"
       kdc: "{{ result_ipaclient_test.kdc }}"
+    register: result_ipaclient_temp_krb5
+
+  - name: Install - Join IPA
+    ipaclient_join:
+      servers: "{{ result_ipaclient_test.servers }}"
+      realm: "{{ result_ipaclient_test.realm }}"
       basedn: "{{ result_ipaclient_test.basedn }}"
       hostname: "{{ result_ipaclient_test.hostname }}"
       force_join: "{{ ipaclient_force_join | default(omit) }}"
@@ -255,6 +262,7 @@
       admin_keytab: "{{ ipaadmin_keytab if ipaadmin_keytab is defined and not ipaclient_use_otp | bool else omit }}"
       # ca_cert_file: "{{ ipaclient_ca_cert_file | default(omit) }}"
       kinit_attempts: "{{ ipaclient_kinit_attempts | default(omit) }}"
+      krb_name: "{{ result_ipaclient_temp_krb5.krb_name }}"
     register: result_ipaclient_join
     when: not ipaclient_on_master | bool and
           (not result_ipaclient_test_keytab.krb5_keytab_ok or
@@ -323,26 +331,13 @@
           "{{ ipassd_no_krb5_offline_passwords
               | default(ipasssd_no_krb5_offline_passwords) }}"
 
-    - name: Install - Configure krb5 for IPA realm
-      ipaclient_setup_krb5:
-        realm: "{{ result_ipaclient_test.realm }}"
-        domain: "{{ result_ipaclient_test.domain }}"
-        servers: "{{ result_ipaclient_test.servers }}"
-        kdc: "{{ result_ipaclient_test.kdc }}"
-        dnsok: "{{ result_ipaclient_test.dnsok }}"
-        client_domain: "{{ result_ipaclient_test.client_domain }}"
-        hostname: "{{ result_ipaclient_test.hostname }}"
-        sssd: "{{ result_ipaclient_test.sssd }}"
-        force: "{{ ipaclient_force }}"
-        # on_master: "{{ ipaclient_on_master }}"
-      when: not ipaclient_on_master | bool
-
     - name: Install - IPA API calls for remaining enrollment parts
       ipaclient_api:
         servers: "{{ result_ipaclient_test.servers }}"
         realm: "{{ result_ipaclient_test.realm }}"
         hostname: "{{ result_ipaclient_test.hostname }}"
         # debug: yes
+        krb_name: "{{ result_ipaclient_temp_krb5.krb_name }}"
       register: result_ipaclient_api
 
     - name: Install - Fix IPA ca
@@ -413,6 +408,36 @@
         domain: "{{ result_ipaclient_test.domain }}"
         nisdomain: "{{ ipaclient_nisdomain | default(omit) }}"
       when: not ipaclient_no_nisdomain | bool
+
+    - name: Remove temporary krb5.conf
+      ansible.builtin.file:
+        path: "{{ result_ipaclient_temp_krb5.krb_name }}"
+        state: absent
+      when: result_ipaclient_temp_krb5.krb_name is defined
+
+    - name: Install - Configure krb5 for IPA realm
+      ipaclient_setup_krb5:
+        realm: "{{ result_ipaclient_test.realm }}"
+        domain: "{{ result_ipaclient_test.domain }}"
+        servers: "{{ result_ipaclient_test.servers }}"
+        kdc: "{{ result_ipaclient_test.kdc }}"
+        dnsok: "{{ result_ipaclient_test.dnsok }}"
+        client_domain: "{{ result_ipaclient_test.client_domain }}"
+        hostname: "{{ result_ipaclient_test.hostname }}"
+        sssd: "{{ result_ipaclient_test.sssd }}"
+        force: "{{ ipaclient_force }}"
+        # on_master: "{{ ipaclient_on_master }}"
+      when: not ipaclient_on_master | bool
+
+    - name: Install - Configure certmonger
+      ipaclient_setup_certmonger:
+        realm: "{{ result_ipaclient_test.realm }}"
+        hostname: "{{ result_ipaclient_test.hostname }}"
+        subject_base: "{{ result_ipaclient_api.subject_base }}"
+        ca_enabled: "{{ result_ipaclient_api.ca_enabled }}"
+        request_cert: "{{ ipaclient_request_cert }}"
+      when: not ipaclient_on_master | bool
+
   always:
   - name: Install - Restore original admin password if overwritten by OTP
     no_log: yes
@@ -424,3 +449,15 @@
     ansible.builtin.file:
       path: "/etc/ipa/.dns_ccache"
       state: absent
+
+  - name: Remove temporary krb5.conf
+    ansible.builtin.file:
+      path: "{{ result_ipaclient_temp_krb5.krb_name }}"
+      state: absent
+    when: result_ipaclient_temp_krb5.krb_name is defined
+
+  - name: Remove temporary krb5.conf backup
+    ansible.builtin.file:
+      path: "{{ result_ipaclient_temp_krb5.krb_name }}.ipabkp"
+      state: absent
+    when: result_ipaclient_temp_krb5.krb_name is defined
