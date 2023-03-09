@@ -307,8 +307,9 @@ try:
 
     else:
         # IPA version < 4.4
-
-        raise Exception("freeipa version '%s' is too old" % VERSION)
+        raise Exception(  # pylint: disable=broad-exception-raised
+            "freeipa version '%s' is too old" % VERSION
+        )
 
 except ImportError as _err:
     ANSIBLE_IPA_CLIENT_MODULE_IMPORT_ERROR = str(_err)
