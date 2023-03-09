@@ -122,8 +122,7 @@ def find_sudocmdgroup(module, name):
         _result = module.ipa_command("sudocmdgroup_show", name, args)
     except ipalib_errors.NotFound:
         return None
-    else:
-        return _result["result"]
+    return _result["result"]
 
 
 def gen_args(description, nomembers):

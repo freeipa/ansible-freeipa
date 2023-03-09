@@ -107,8 +107,7 @@ class AutomountMap(IPAAnsibleModule):
             )
         except Exception:  # pylint: disable=broad-except
             return None
-        else:
-            return response["result"]
+        return response["result"]
 
     def check_ipa_params(self):
         invalid = []

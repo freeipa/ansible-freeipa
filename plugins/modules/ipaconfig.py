@@ -357,8 +357,7 @@ def get_netbios_name(module):
         _result = module.ipa_command_no_name("trustconfig_show", {"all": True})
     except Exception:  # pylint: disable=broad-except
         return None
-    else:
-        return _result["result"]["ipantflatname"][0]
+    return _result["result"]["ipantflatname"][0]
 
 
 def is_enable_sid(module):

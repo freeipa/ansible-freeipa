@@ -202,8 +202,7 @@ def find_server(module, name):
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if server name is not found.
         return None
-    else:
-        return _result["result"]
+    return _result["result"]
 
 
 def server_role_status(module, name):
@@ -218,8 +217,7 @@ def server_role_status(module, name):
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if server name is not found.
         return None
-    else:
-        return _result["result"][0]
+    return _result["result"][0]
 
 
 def gen_args(location, service_weight, no_members, delete_continue,
