@@ -56,14 +56,13 @@ password:
   returned: always
 '''
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
-    check_imports, setup_logging, ipa_generate_password
+    check_imports, setup_logging, ipa_generate_password, IPAAnsibleModule
 )
 
 
 def main():
-    module = AnsibleModule(
+    module = IPAAnsibleModule(
         argument_spec=dict(
             # basic
             master_password=dict(required=False, type='str', no_log=True),
@@ -80,8 +79,10 @@ def main():
     if not master_password:
         master_password = ipa_generate_password()
 
-    module.exit_json(changed=True,
-                     password=master_password)
+    module.exit_raw_json(
+        changed=True,
+        password=master_password
+    )
 
 
 if __name__ == '__main__':

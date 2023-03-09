@@ -53,14 +53,14 @@ RETURN = '''
 
 import os
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
-    check_imports, setup_logging, options, paths, read_cache
+    check_imports, setup_logging, options, paths, read_cache,
+    IPAAnsibleModule
 )
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # basic
             dm_password=dict(required=True, type='str', no_log=True),
@@ -94,7 +94,7 @@ def main():
         kwargs = {"changed": True}
         for name in options.__dict__:
             kwargs[name] = options.__dict__[name]
-        ansible_module.exit_json(**kwargs)
+        ansible_module.exit_raw_json(**kwargs)
 
     # done ##################################################################
 

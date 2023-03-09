@@ -292,7 +292,6 @@ import sys
 import random
 from shutil import copyfile
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_native
 from ansible.module_utils.ansible_ipa_server import (
     check_imports,
@@ -304,7 +303,7 @@ from ansible.module_utils.ansible_ipa_server import (
     check_dirsrv, ScriptError, get_fqdn, verify_fqdn, BadHostError,
     validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION,
     encode_certificate, check_available_memory, getargspec, adtrustinstance,
-    get_min_idstart
+    get_min_idstart, IPAAnsibleModule
 )
 from ansible.module_utils import six
 
@@ -313,7 +312,7 @@ if six.PY3:
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # basic
             force=dict(required=False, type='bool', default=False),
@@ -1147,42 +1146,44 @@ def main():
         pkinit_pkcs12_info = ("/etc/ipa/.tmp_pkcs12_pkinit", pkinit_pin)
         pkinit_ca_cert = encode_certificate(pkinit_ca_cert)
 
-    ansible_module.exit_json(changed=False,
-                             ipa_python_version=IPA_PYTHON_VERSION,
-                             # basic
-                             domain=options.domain_name,
-                             realm=realm_name,
-                             hostname=host_name,
-                             _hostname_overridden=bool(options.host_name),
-                             no_host_dns=options.no_host_dns,
-                             # server
-                             setup_adtrust=options.setup_adtrust,
-                             setup_kra=options.setup_kra,
-                             setup_ca=options.setup_ca,
-                             idstart=options.idstart,
-                             idmax=options.idmax,
-                             no_pkinit=options.no_pkinit,
-                             # ssl certificate
-                             _dirsrv_pkcs12_info=dirsrv_pkcs12_info,
-                             _dirsrv_ca_cert=dirsrv_ca_cert,
-                             _http_pkcs12_info=http_pkcs12_info,
-                             _http_ca_cert=http_ca_cert,
-                             _pkinit_pkcs12_info=pkinit_pkcs12_info,
-                             _pkinit_ca_cert=pkinit_ca_cert,
-                             # certificate system
-                             external_ca=options.external_ca,
-                             external_ca_type=options.external_ca_type,
-                             external_ca_profile=options.external_ca_profile,
-                             # ad trust
-                             rid_base=options.rid_base,
-                             secondary_rid_base=options.secondary_rid_base,
-                             # client
-                             ntp_servers=options.ntp_servers,
-                             ntp_pool=options.ntp_pool,
-                             # additional
-                             _installation_cleanup=_installation_cleanup,
-                             domainlevel=options.domainlevel,
-                             sid_generation_always=sid_generation_always)
+    ansible_module.exit_raw_json(
+        changed=False,
+        ipa_python_version=IPA_PYTHON_VERSION,
+        # basic
+        domain=options.domain_name,
+        realm=realm_name,
+        hostname=host_name,
+        _hostname_overridden=bool(options.host_name),
+        no_host_dns=options.no_host_dns,
+        # server
+        setup_adtrust=options.setup_adtrust,
+        setup_kra=options.setup_kra,
+        setup_ca=options.setup_ca,
+        idstart=options.idstart,
+        idmax=options.idmax,
+        no_pkinit=options.no_pkinit,
+        # ssl certificate
+        _dirsrv_pkcs12_info=dirsrv_pkcs12_info,
+        _dirsrv_ca_cert=dirsrv_ca_cert,
+        _http_pkcs12_info=http_pkcs12_info,
+        _http_ca_cert=http_ca_cert,
+        _pkinit_pkcs12_info=pkinit_pkcs12_info,
+        _pkinit_ca_cert=pkinit_ca_cert,
+        # certificate system
+        external_ca=options.external_ca,
+        external_ca_type=options.external_ca_type,
+        external_ca_profile=options.external_ca_profile,
+        # ad trust
+        rid_base=options.rid_base,
+        secondary_rid_base=options.secondary_rid_base,
+        # client
+        ntp_servers=options.ntp_servers,
+        ntp_pool=options.ntp_pool,
+        # additional
+        _installation_cleanup=_installation_cleanup,
+        domainlevel=options.domainlevel,
+        sid_generation_always=sid_generation_always
+    )
 
 
 if __name__ == '__main__':

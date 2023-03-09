@@ -49,7 +49,7 @@ __all__ = ["contextlib", "dnsexception", "dnsresolver", "dnsreversename",
            "dnsname", "kernel_keyring", "krbinstance", "getargspec",
            "adtrustinstance", "paths", "api", "dsinstance", "ipaldap", "Env",
            "ipautil", "installutils", "IPA_PYTHON_VERSION", "NUM_VERSION",
-           "ReplicaConfig", "create_api"]
+           "ReplicaConfig", "create_api", "IPAAnsibleModule"]
 
 import sys
 import logging
@@ -80,6 +80,9 @@ except ImportError:
 try:
     from contextlib import contextmanager as contextlib_contextmanager
     from ipapython.version import NUM_VERSION, VERSION
+
+    from ansible.module_utils.basic import AnsibleModule
+    from ansible.module_utils.common.text.converters import jsonify
 
     if NUM_VERSION < 30201:
         # See ipapython/version.py
@@ -489,6 +492,28 @@ def gen_remote_api(master_host_name, etc_ipa):
                          xmlrpc_uri=xmlrpc_uri)
     remote_api.finalize()
     return remote_api
+
+
+class IPAAnsibleModule(AnsibleModule):  # pylint: disable=R0903
+
+    def exit_raw_json(self, **kwargs):
+        """
+        Print the raw parameters in JSON format, without masking.
+
+        Due to Ansible filtering out values in the output that match values
+        in variables which has `no_log` set, if a module need to return
+        user defined dato to the controller, it cannot rely on
+        AnsibleModule.exit_json, as there is a chance that a partial match
+        may occur, masking the data returned.
+
+        This method is a replacement for AnsibleModule.exit_json. It has
+        nearly the same implementation as exit_json, but does not filter
+        data. Beware that this data will be logged by Ansible, and if it
+        contains sensible data, it will be appear in the logs.
+        """
+        self.do_cleanup_files()
+        print(jsonify(kwargs))
+        sys.exit(0)
 
 
 def check_imports(module):

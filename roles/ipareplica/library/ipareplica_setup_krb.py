@@ -89,17 +89,17 @@ RETURN = '''
 
 import os
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
     check_imports,
     AnsibleModuleLog, setup_logging, installer, DN, paths, sysrestore,
     gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
-    gen_ReplicaConfig, api, redirect_stdout, install_krb, getargspec
+    gen_ReplicaConfig, api, redirect_stdout, install_krb, getargspec,
+    IPAAnsibleModule
 )
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # server
             setup_ca=dict(required=False, type='bool'),
@@ -197,8 +197,10 @@ def main():
 
     # done #
 
-    ansible_module.exit_json(changed=True,
-                             config_master_host_name=config.master_host_name)
+    ansible_module.exit_raw_json(
+        changed=True,
+        config_master_host_name=config.master_host_name
+    )
 
 
 if __name__ == '__main__':

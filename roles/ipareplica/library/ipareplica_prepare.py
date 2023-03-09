@@ -265,7 +265,6 @@ import tempfile
 import traceback
 from shutil import copyfile
 
-from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_replica import (
     check_imports, AnsibleModuleLog, options, installer, DN, paths, sysrestore,
     ansible_module_get_parsed_ip_addresses, Env, ipautil, ipaldap,
@@ -275,7 +274,8 @@ from ansible.module_utils.ansible_ipa_replica import (
     check_domain_level_is_supported, errors, ScriptError, setup_logging,
     logger, check_dns_resolution, service, find_providing_server, ca, kra,
     dns, no_matching_interface_for_ip_address_warning, adtrust,
-    constants, api, redirect_stdout, replica_conn_check, tasks
+    constants, api, redirect_stdout, replica_conn_check, tasks,
+    IPAAnsibleModule
 )
 from ansible.module_utils import six
 
@@ -284,7 +284,7 @@ if six.PY3:
 
 
 def main():
-    ansible_module = AnsibleModule(
+    ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # basic
             dm_password=dict(required=False, type='str', no_log=True),
@@ -904,7 +904,7 @@ def main():
 
     # done #
 
-    ansible_module.exit_json(
+    ansible_module.exit_raw_json(
         changed=True,
         ccache=ccache,
         installer_ccache=installer._ccache,
