@@ -589,10 +589,12 @@ user:
     randompassword:
       description: The generated random password
       type: str
-      returned: If only one user is handled by the module
+      returned: |
+        If only one user is handled by the module without using users parameter
     name:
       description: The user name of the user that got a new random password
-      returned: If several users are handled by the module
+      returned: |
+        If several users are handled by the module with the users parameter
       type: dict
       contains:
         randompassword:
@@ -834,11 +836,11 @@ def gen_certmapdata_args(certmapdata):
 
 # pylint: disable=unused-argument
 def result_handler(module, result, command, name, args, errors, exit_args,
-                   one_name):
+                   single_user):
 
     if "random" in args and command in ["user_add", "user_mod"] \
        and "randompassword" in result["result"]:
-        if one_name:
+        if single_user:
             exit_args["randompassword"] = \
                 result["result"]["randompassword"]
         else:
@@ -861,7 +863,7 @@ def result_handler(module, result, command, name, args, errors, exit_args,
 
 
 # pylint: disable=unused-argument
-def exception_handler(module, ex, errors, exit_args, one_name):
+def exception_handler(module, ex, errors, exit_args, single_user):
     msg = str(ex)
     if "already contains" in msg \
        or "does not contain" in msg:
@@ -1511,7 +1513,7 @@ def main():
 
         changed = ansible_module.execute_ipa_commands(
             commands, result_handler, exception_handler,
-            exit_args=exit_args, one_name=len(names) == 1)
+            exit_args=exit_args, single_user=users is None)
 
     # Done
     ansible_module.exit_json(changed=changed, user=exit_args)
