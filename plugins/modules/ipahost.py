@@ -44,7 +44,7 @@ options:
     aliases: ["fqdn"]
     required: false
   hosts:
-    description: The list of user host dicts
+    description: The list of host dicts
     required: false
     type: list
     elements: dict
@@ -466,16 +466,18 @@ EXAMPLES = """
 RETURN = """
 host:
   description: Host dict with random password
-  returned: If random is yes and user did not exist or update_password is yes
+  returned: If random is yes and host did not exist or update_password is yes
   type: dict
   contains:
     randompassword:
       description: The generated random password
       type: str
-      returned: If only one user is handled by the module
+      returned: |
+        If only one host is handled by the module without using hosts parameter
     name:
-      description: The user name of the user that got a new random password
-      returned: If several users are handled by the module
+      description: The host name of the host that got a new random password
+      returned: |
+        If several hosts are handled by the module with the hosts parameter
       type: dict
       contains:
         randompassword:
@@ -646,10 +648,10 @@ def check_parameters(   # pylint: disable=unused-argument
 
 # pylint: disable=unused-argument
 def result_handler(module, result, command, name, args, errors, exit_args,
-                   one_name):
+                   single_host):
     if "random" in args and command in ["host_add", "host_mod"] \
        and "randompassword" in result["result"]:
-        if one_name:
+        if single_host:
             exit_args["randompassword"] = \
                 result["result"]["randompassword"]
         else:
@@ -671,7 +673,7 @@ def result_handler(module, result, command, name, args, errors, exit_args,
 
 
 # pylint: disable=unused-argument
-def exception_handler(module, ex, errors, exit_args, one_name):
+def exception_handler(module, ex, errors, exit_args, single_host):
     msg = str(ex)
     if "already contains" in msg \
        or "does not contain" in msg:
@@ -1468,7 +1470,7 @@ def main():
 
         changed = ansible_module.execute_ipa_commands(
             commands, result_handler, exception_handler,
-            exit_args=exit_args, one_name=len(names) == 1)
+            exit_args=exit_args, single_host=hosts is None)
 
     # Done
 

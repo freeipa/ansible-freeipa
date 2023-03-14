@@ -372,8 +372,8 @@ There are only return values if one or more random passwords have been generated
 Variable | Description | Returned When
 -------- | ----------- | -------------
 `host` | Host dict with random password. (dict) <br>Options: | If random is yes and host did not exist or update_password is yes
-&nbsp; | `randompassword` - The generated random password | If only one host is handled by the module
-&nbsp; | `name` - The host name of the host that got a new random password. (dict) <br> Options: <br> &nbsp; `randompassword` - The generated random password | If several hosts are handled by the module
+&nbsp; | `randompassword` - The generated random password | If only one host is handled by the module without using the `hosts` parameter.
+&nbsp; | `name` - The host name of the host that got a new random password. (dict) <br> Options: <br> &nbsp; `randompassword` - The generated random password | If several hosts are handled by the module with the `hosts` parameter.
 
 
 Authors
