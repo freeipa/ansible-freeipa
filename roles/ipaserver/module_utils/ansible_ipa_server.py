@@ -44,7 +44,7 @@ __all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
            "check_available_memory", "getargspec", "get_min_idstart",
            "paths", "api", "ipautil", "adtrust_imported", "NUM_VERSION",
            "time_service", "kra_imported", "dsinstance", "IPA_PYTHON_VERSION",
-           "NUM_VERSION"]
+           "NUM_VERSION", "SerialNumber"]
 
 import sys
 import logging
@@ -202,6 +202,13 @@ try:
             from ipaserver.install.server.install import get_min_idstart
         except ImportError:
             get_min_idstart = None
+
+        # SerialNumber is defined in versions 4.10 and later and is
+        # used by Random Serian Number v3.
+        try:
+            from ipalib.parameters import SerialNumber
+        except ImportError:
+            SerialNumber = None
 
     else:
         # IPA version < 4.5

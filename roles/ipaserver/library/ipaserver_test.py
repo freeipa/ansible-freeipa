@@ -208,6 +208,10 @@ options:
     description: The installer ca_subject setting
     type: str
     required: no
+  random_serial_numbers:
+    description: The installer random_serial_numbers setting
+    type: bool
+    required: no
   allow_zone_overlap:
     description: Create DNS zone even if it already exists
     type: bool
@@ -304,7 +308,7 @@ from ansible.module_utils.ansible_ipa_server import (
     check_dirsrv, ScriptError, get_fqdn, verify_fqdn, BadHostError,
     validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION,
     encode_certificate, check_available_memory, getargspec, adtrustinstance,
-    get_min_idstart
+    get_min_idstart, SerialNumber
 )
 from ansible.module_utils import six
 
@@ -369,6 +373,8 @@ def main():
                                      elements='str', default=None),
             subject_base=dict(required=False, type='str'),
             ca_subject=dict(required=False, type='str'),
+            random_serial_numbers=dict(required=False, type='bool',
+                                       default=False),
             # ca_signing_algorithm
             # dns
             allow_zone_overlap=dict(required=False, type='bool',
@@ -456,6 +462,8 @@ def main():
         'external_cert_files')
     options.subject_base = ansible_module.params.get('subject_base')
     options.ca_subject = ansible_module.params.get('ca_subject')
+    options._random_serial_numbers = ansible_module.params.get(
+        'random_serial_numbers')
     # ca_signing_algorithm
     # dns
     options.allow_zone_overlap = ansible_module.params.get(
@@ -512,6 +520,12 @@ def main():
             except ValueError as e:
                 ansible_module.fail_json(
                     msg="pki_config_override: %s" % str(e))
+
+    # Check if Random Serial Numbers v3 is available
+    if options._random_serial_numbers and SerialNumber is None:
+        ansible_module.fail_json(
+            msg="Random Serial Numbers is not supported for this IPA version"
+        )
 
     # default values ########################################################
 
@@ -1147,42 +1161,45 @@ def main():
         pkinit_pkcs12_info = ("/etc/ipa/.tmp_pkcs12_pkinit", pkinit_pin)
         pkinit_ca_cert = encode_certificate(pkinit_ca_cert)
 
-    ansible_module.exit_json(changed=False,
-                             ipa_python_version=IPA_PYTHON_VERSION,
-                             # basic
-                             domain=options.domain_name,
-                             realm=realm_name,
-                             hostname=host_name,
-                             _hostname_overridden=bool(options.host_name),
-                             no_host_dns=options.no_host_dns,
-                             # server
-                             setup_adtrust=options.setup_adtrust,
-                             setup_kra=options.setup_kra,
-                             setup_ca=options.setup_ca,
-                             idstart=options.idstart,
-                             idmax=options.idmax,
-                             no_pkinit=options.no_pkinit,
-                             # ssl certificate
-                             _dirsrv_pkcs12_info=dirsrv_pkcs12_info,
-                             _dirsrv_ca_cert=dirsrv_ca_cert,
-                             _http_pkcs12_info=http_pkcs12_info,
-                             _http_ca_cert=http_ca_cert,
-                             _pkinit_pkcs12_info=pkinit_pkcs12_info,
-                             _pkinit_ca_cert=pkinit_ca_cert,
-                             # certificate system
-                             external_ca=options.external_ca,
-                             external_ca_type=options.external_ca_type,
-                             external_ca_profile=options.external_ca_profile,
-                             # ad trust
-                             rid_base=options.rid_base,
-                             secondary_rid_base=options.secondary_rid_base,
-                             # client
-                             ntp_servers=options.ntp_servers,
-                             ntp_pool=options.ntp_pool,
-                             # additional
-                             _installation_cleanup=_installation_cleanup,
-                             domainlevel=options.domainlevel,
-                             sid_generation_always=sid_generation_always)
+    ansible_module.exit_json(
+        changed=False,
+        ipa_python_version=IPA_PYTHON_VERSION,
+        # basic
+        domain=options.domain_name,
+        realm=realm_name,
+        hostname=host_name,
+        _hostname_overridden=bool(options.host_name),
+        no_host_dns=options.no_host_dns,
+        # server
+        setup_adtrust=options.setup_adtrust,
+        setup_kra=options.setup_kra,
+        setup_ca=options.setup_ca,
+        idstart=options.idstart,
+        idmax=options.idmax,
+        no_pkinit=options.no_pkinit,
+        # ssl certificate
+        _dirsrv_pkcs12_info=dirsrv_pkcs12_info,
+        _dirsrv_ca_cert=dirsrv_ca_cert,
+        _http_pkcs12_info=http_pkcs12_info,
+        _http_ca_cert=http_ca_cert,
+        _pkinit_pkcs12_info=pkinit_pkcs12_info,
+        _pkinit_ca_cert=pkinit_ca_cert,
+        # certificate system
+        external_ca=options.external_ca,
+        external_ca_type=options.external_ca_type,
+        external_ca_profile=options.external_ca_profile,
+        # ad trust
+        rid_base=options.rid_base,
+        secondary_rid_base=options.secondary_rid_base,
+        # client
+        ntp_servers=options.ntp_servers,
+        ntp_pool=options.ntp_pool,
+        # additional
+        _installation_cleanup=_installation_cleanup,
+        domainlevel=options.domainlevel,
+        sid_generation_always=sid_generation_always,
+        random_serial_numbers=options._random_serial_numbers,
+    )
 
 
 if __name__ == '__main__':

@@ -11,6 +11,7 @@ ipaserver_no_hbac_allow: no
 ipaserver_no_pkinit: no
 ipaserver_no_ui_redirect: no
 ipaserver_mem_check: yes
+ipaserver_random_serial_numbers: true
 ### ssl certificate ###
 ### client ###
 ipaclient_mkhomedir: no
