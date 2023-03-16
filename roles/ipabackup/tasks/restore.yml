@@ -137,8 +137,7 @@
     firewall-cmd
     --permanent
     {{ "--zone=" + ipabackup_firewalld_zone if ipabackup_firewalld_zone is defined else "" }}
-    --add-service=freeipa-ldap
-    --add-service=freeipa-ldaps
+    --add-service=freeipa-4    
     {{ "--add-service=freeipa-trust" if ipabackup_service_adtrust in ipabackup_services else "" }}
     {{ "--add-service=dns" if ipabackup_service_dns in ipabackup_services else "" }}
     {{ "--add-service=ntp" if ipabackup_service_ntp in ipabackup_services else "" }}
@@ -148,8 +147,7 @@
   ansible.builtin.command: >
     firewall-cmd
     {{ "--zone=" + ipabackup_firewalld_zone if ipabackup_firewalld_zone is defined else "" }}
-    --add-service=freeipa-ldap
-    --add-service=freeipa-ldaps
+    --add-service=freeipa-4    
     {{ "--add-service=freeipa-trust" if ipabackup_service_adtrust in ipabackup_services else "" }}
     {{ "--add-service=dns" if ipabackup_service_dns in ipabackup_services else "" }}
     {{ "--add-service=ntp" if ipabackup_service_ntp in ipabackup_services else "" }}

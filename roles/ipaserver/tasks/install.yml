@@ -458,8 +458,7 @@
         --permanent
         --zone="{{ ipaserver_firewalld_zone if ipaserver_firewalld_zone is
            defined else '' }}"
-        --add-service=freeipa-ldap
-        --add-service=freeipa-ldaps
+        --add-service=freeipa-4
         {{ "--add-service=freeipa-trust" if ipaserver_setup_adtrust | bool
            else "" }}
         {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
@@ -471,8 +470,7 @@
         firewall-cmd
         --zone="{{ ipaserver_firewalld_zone if ipaserver_firewalld_zone is
            defined else '' }}"
-        --add-service=freeipa-ldap
-        --add-service=freeipa-ldaps
+        --add-service=freeipa-4
         {{ "--add-service=freeipa-trust" if ipaserver_setup_adtrust | bool
            else "" }}
         {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
