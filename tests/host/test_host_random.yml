@@ -49,6 +49,26 @@
       - "{{ host1_fqdn }}"
       state: absent
 
+  - name: Host "{{ host1_fqdn }}" is present with random password using hosts parameter
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        random: yes
+        force: yes
+      update_password: on_create
+    register: ipahost
+    failed_when: not ipahost.changed or
+                 ipahost.host[host1_fqdn].randompassword is not defined or
+                 ipahost.failed
+
+  - name: Host "{{ host1_fqdn }}" absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - "{{ host1_fqdn }}"
+      state: absent
+
   - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" present with random password
     ipahost:
       ipaadmin_password: SomeADMINpassword
