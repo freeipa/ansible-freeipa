@@ -255,10 +255,6 @@
       dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
       ### client ###
       force_join: "{{ ipaclient_force_join }}"
-      ### ad trust ###
-      netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
-      rid_base: "{{ ipareplica_rid_base | default(omit) }}"
-      secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
       ### additional ###
       server: "{{ result_ipareplica_test.server }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
@@ -297,10 +293,6 @@
       dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
       ### client ###
       force_join: "{{ ipaclient_force_join }}"
-      ### ad trust ###
-      netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
-      rid_base: "{{ ipareplica_rid_base | default(omit) }}"
-      secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
       ### additional ###
       server: "{{ result_ipareplica_test.server }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
@@ -339,10 +331,6 @@
       dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
       ### client ###
       force_join: "{{ ipaclient_force_join }}"
-      ### ad trust ###
-      netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
-      rid_base: "{{ ipareplica_rid_base | default(omit) }}"
-      secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
       ### additional ###
       server: "{{ result_ipareplica_test.server }}"
       config_master_host_name:
@@ -397,10 +385,6 @@
       dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
       ### client ###
       force_join: "{{ ipaclient_force_join }}"
-      ### ad trust ###
-      netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
-      rid_base: "{{ ipareplica_rid_base | default(omit) }}"
-      secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
       ### additional ###
       server: "{{ result_ipareplica_test.server }}"
       config_master_host_name:
@@ -481,10 +465,6 @@
       dirsrv_cert_files: "{{ ipareplica_dirsrv_cert_files | default([]) }}"
       ### client ###
       force_join: "{{ ipaclient_force_join }}"
-      ### ad trust ###
-      netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
-      rid_base: "{{ ipareplica_rid_base | default(omit) }}"
-      secondary_rid_base: "{{ ipareplica_secondary_rid_base | default(omit) }}"
       ### additional ###
       server: "{{ result_ipareplica_test.server }}"
       config_master_host_name:
