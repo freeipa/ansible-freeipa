@@ -124,12 +124,12 @@ options:
         required: false
         type: bool
       uid:
-        description: The UID
+        description: User ID Number (system will assign one if not provided)
         type: int
         required: false
         aliases: ["uidnumber"]
       gid:
-        description: The GID
+        description: Group ID Number
         type: int
         required: false
         aliases: ["gidnumber"]
@@ -348,12 +348,12 @@ options:
     required: false
     type: bool
   uid:
-    description: The UID
+    description: User ID Number (system will assign one if not provided)
     type: int
     required: false
     aliases: ["uidnumber"]
   gid:
-    description: The GID
+    description: Group ID Number
     type: int
     required: false
     aliases: ["gidnumber"]

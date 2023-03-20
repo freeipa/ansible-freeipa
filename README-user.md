@@ -393,8 +393,8 @@ Variable | Description | Required
 `passwordexpiration` \| `krbpasswordexpiration` | The kerberos password expiration date. Possible formats: `YYYYMMddHHmmssZ`, `YYYY-MM-ddTHH:mm:ssZ`, `YYYY-MM-ddTHH:mmZ`, `YYYY-MM-ddZ`, `YYYY-MM-dd HH:mm:ssZ` or `YYYY-MM-dd HH:mmZ`. The trailing 'Z' can be skipped. Only usable with IPA versions 4.7 and up. | no
 `password` | The user password string. | no
 `random` | Generate a random user password | no
-`uid` \| `uidnumber` | The UID integer. | no
-`gid` \| `gidnumber` | The GID integer. | no
+`uid` \| `uidnumber` | User ID Number (system will assign one if not provided). | no
+`gid` \| `gidnumber` | Group ID Number. | no
 `city` | City | no
 `userstate` \| `st` | State/Province | no
 `postalcode` \| `zip` | Postalcode/ZIP | no
