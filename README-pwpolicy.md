@@ -139,8 +139,8 @@ Variable | Description | Required
 `lockouttime` \| `krbpwdlockoutduration` | Period for which lockout is enforced in seconds. (int) | no
 `maxrepeat` \| `ipapwdmaxrepeat` | Maximum number of same consecutive characters. Requires IPA 4.9+ (int) | no
 `maxsequence` \| `ipapwdmaxsequence` |  The maximum length of monotonic character sequences (abcd). Requires IPA 4.9+ (int) | no
-`dictcheck` \| `ipapwdictcheck` | Check if the password is a dictionary word. Requires IPA 4.9+ (int) | no
-`usercheck` \| `ipapwdusercheck` | Check if the password contains the username. Requires IPA 4.9+ (int) | no
+`dictcheck` \| `ipapwdictcheck` | Check if the password is a dictionary word. Requires IPA 4.9+ (bool) | no
+`usercheck` \| `ipapwdusercheck` | Check if the password contains the username. Requires IPA 4.9+ (bool) | no
 `gracelimit` \| `passwordgracelimit` |  Number of LDAP authentications allowed after expiration. Requires IPA 4.9.10 (int) | no
 `state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. | yes
 
