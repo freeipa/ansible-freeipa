@@ -152,6 +152,10 @@ options:
       The dist of nss_ldap or nss-pam-ldapd files if sssd is disabled
     required: yes
     type: dict
+  krb_name:
+    description: The krb5 config file name
+    type: str
+    required: yes
 author:
     - Thomas Woerner (@t-woerner)
 '''
@@ -167,6 +171,7 @@ EXAMPLES = '''
     subject_base: O=EXAMPLE.COM
     principal: admin
     ca_enabled: yes
+    krb_name: /tmp/tmpkrb5.conf
 '''
 
 RETURN = '''
@@ -218,6 +223,7 @@ def main():
             no_krb5_offline_passwords=dict(required=False, type='bool'),
             no_dns_sshfp=dict(required=False, type='bool', default=False),
             nosssd_files=dict(required=True, type='dict'),
+            krb_name=dict(required=True, type='str'),
         ),
         supports_check_mode=False,
     )
@@ -268,6 +274,8 @@ def main():
     options.sssd = not options.no_sssd
     options.no_ac = False
     nosssd_files = module.params.get('nosssd_files')
+    krb_name = module.params.get('krb_name')
+    os.environ['KRB5_CONFIG'] = krb_name
 
     # pylint: disable=invalid-name
     CCACHE_FILE = paths.IPA_DNS_CCACHE
