@@ -346,6 +346,7 @@
         realm: "{{ result_ipaclient_test.realm }}"
         basedn: "{{ result_ipaclient_test.basedn }}"
         allow_repair: "{{ ipaclient_allow_repair }}"
+        krb_name: "{{ result_ipaclient_temp_krb5.krb_name }}"
       when: not ipaclient_on_master | bool and
             result_ipaclient_test_keytab.krb5_keytab_ok and
             not result_ipaclient_test_keytab.ca_crt_exists

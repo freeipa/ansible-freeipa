@@ -54,6 +54,10 @@ options:
       the host entry will not be changed on the server
     type: bool
     required: yes
+  krb_name:
+    description: The krb5 config file name
+    type: str
+    required: yes
 author:
     - Thomas Woerner (@t-woerner)
 '''
@@ -65,6 +69,7 @@ EXAMPLES = '''
     realm: EXAMPLE.COM
     basedn: dc=example,dc=com
     allow_repair: yes
+    krb_name: /tmp/tmpkrb5.conf
 '''
 
 RETURN = '''
@@ -87,6 +92,7 @@ def main():
             realm=dict(required=True, type='str'),
             basedn=dict(required=True, type='str'),
             allow_repair=dict(required=True, type='bool'),
+            krb_name=dict(required=True, type='str'),
         ),
     )
 
@@ -98,6 +104,8 @@ def main():
     realm = module.params.get('realm')
     basedn = module.params.get('basedn')
     allow_repair = module.params.get('allow_repair')
+    krb_name = module.params.get('krb_name')
+    os.environ['KRB5_CONFIG'] = krb_name
 
     env = {'PATH': SECURE_PATH}
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
