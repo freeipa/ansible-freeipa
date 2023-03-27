@@ -93,10 +93,12 @@ options:
   action:
     description: Work on netgroup or member level
     required: false
+    type: str
     default: netgroup
     choices: ["member", "netgroup"]
   state:
     description: The state to ensure.
+    type: str
     choices: ["present", "absent"]
     default: present
 author:
