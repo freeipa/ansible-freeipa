@@ -266,10 +266,8 @@ def unconfigure_dns_resolver(fstore=None):
 def main():
     module = AnsibleModule(
         argument_spec=dict(
-            nameservers=dict(type="list", elements="str", aliases=["cn"],
-                             required=False),
-            searchdomains=dict(type="list", elements="str", aliases=["cn"],
-                               required=False),
+            nameservers=dict(type="list", elements="str", required=False),
+            searchdomains=dict(type="list", elements="str", required=False),
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
         ),
