@@ -314,6 +314,17 @@ from ansible.module_utils.ansible_freeipa_module import \
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
+# Ensuring (adding) several groups with mixed types external, nonposix
+# and posix require to have a fix in IPA:
+# FreeIPA issue: https://pagure.io/freeipa/issue/9349
+# FreeIPA fix: https://github.com/freeipa/freeipa/pull/6741
+try:
+    from ipaserver.plugins import baseldap
+except ImportError:
+    FIX_6741_DEEPCOPY_OBJECTCLASSES = False
+else:
+    FIX_6741_DEEPCOPY_OBJECTCLASSES = \
+        "deepcopy" in baseldap.LDAPObject.__json__.__code__.co_names
 
 
 def find_group(module, name):
@@ -516,6 +527,30 @@ def main():
         ansible_module.fail_json(
             msg="group can not be non-external")
 
+    # Ensuring (adding) several groups with mixed types external, nonposix
+    # and posix require to have a fix in IPA:
+    #
+    # FreeIPA issue: https://pagure.io/freeipa/issue/9349
+    # FreeIPA fix: https://github.com/freeipa/freeipa/pull/6741
+    #
+    # The simple solution is to switch to client context for ensuring
+    # several groups simply if the user was not explicitly asking for
+    # the server context no matter if mixed types are used.
+    context = None
+    if state == "present" and groups is not None and len(groups) > 1 \
+       and not FIX_6741_DEEPCOPY_OBJECTCLASSES:
+        _context = ansible_module.params_get("ipaapi_context")
+        if _context is None:
+            context = "client"
+            ansible_module.debug(
+                "Switching to client context due to an unfixed issue in "
+                "your IPA version: https://pagure.io/freeipa/issue/9349")
+        elif _context == "server":
+            ansible_module.fail_json(
+                msg="Ensuring several groups with server context is not "
+                "supported by your IPA version: "
+                "https://pagure.io/freeipa/issue/9349")
+
     # Use groups if names is None
     if groups is not None:
         names = groups
@@ -530,7 +565,7 @@ def main():
         posix = not nonposix
 
     # Connect to IPA API
-    with ansible_module.ipa_connect():
+    with ansible_module.ipa_connect(context=context):
 
         has_add_member_service = ansible_module.ipa_command_param_exists(
             "group_add_member", "service")
