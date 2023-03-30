@@ -275,7 +275,7 @@ def main():
                              default=None),
             dictcheck=dict(type="str", aliases=["ipapwdictcheck"],
                            default=None),
-            usercheck=dict(type="str", aliases=["ipapwusercheck"],
+            usercheck=dict(type="str", aliases=["ipapwdusercheck"],
                            default=None),
             gracelimit=dict(type="str", aliases=["passwordgracelimit"],
                             default=None),

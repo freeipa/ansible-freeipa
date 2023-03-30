@@ -446,12 +446,6 @@
         setup_ca: "{{ result_ipaserver_test.setup_ca }}"
       register: result_ipaserver_enable_ipa
 
-    - name: Install - Cleanup root IPA cache
-      ansible.builtin.file:
-        path: "/root/.ipa_cache"
-        state: absent
-      when: result_ipaserver_enable_ipa.changed
-
     - name: Install - Configure firewalld
       ansible.builtin.command: >
         firewall-cmd
@@ -480,6 +474,11 @@
       when: ipaserver_setup_firewalld | bool
 
   always:
+  - name: Install - Cleanup root IPA cache
+    ansible.builtin.file:
+      path: "/root/.ipa_cache"
+      state: absent
+
   - name: Cleanup temporary files
     ansible.builtin.file:
       path: "{{ item }}"
