@@ -1,0 +1,32 @@
+---
+- name: Playbook to handle multiple groups
+  hosts: ipaserver
+
+  tasks:
+  - name: Create multiple groups ops, sysops
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+      - name: ops
+        gidnumber: 1234
+      - name: sysops
+
+  - name: Add user and group members to groups sysops and appops
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+      - name: sysops
+        user:
+          - user1
+      - name: appops
+        group:
+          - group2
+
+  - name: Create multiple non-POSIX and external groups
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+      - name: nongroup
+        nonposix: true
+      - name: extgroup
+        external: true

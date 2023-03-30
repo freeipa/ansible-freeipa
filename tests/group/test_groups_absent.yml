@@ -1,0 +1,35 @@
+---
+- name: Include create_groups_json.yml
+  ansible.builtin.import_playbook: create_groups_json.yml
+
+- name: Test groups absent
+  hosts: ipaserver
+  gather_facts: false
+
+  tasks:
+  - name: Include groups.json
+    ansible.builtin.include_vars:
+      file: groups.json  # noqa 505
+
+  - name: Initialize groups_names
+    ansible.builtin.set_fact:
+      groups_names: []
+
+  - name: Create dict with group names
+    ansible.builtin.set_fact:
+      groups_names: "{{ groups_names | default([]) + [{'name': item.name}] }}"
+    loop: "{{ group_list }}"
+
+  - name: Groups absent len:{{ group_list | length }}
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups: "{{ groups_names }}"
+      state: absent
+
+- name: Remove groups.json
+  hosts: localhost
+  tasks:
+  - name: Remove groups.json
+    ansible.builtin.file:
+      state: absent
+      path: groups.json

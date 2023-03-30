@@ -1,0 +1,143 @@
+---
+- name: Test groups
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  gather_facts: true
+
+  tasks:
+  # setup
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  # GET FQDN_AT_DOMAIN
+
+  - name: Get fqdn_at_domain
+    ansible.builtin.set_fact:
+      fqdn_at_domain: "{{ ansible_facts['fqdn'] + '@' + ipaserver_realm }}"
+
+  # CLEANUP TEST ITEMS
+
+  - name: Remove test groups
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: group1,group2,group3,group4,group5,group6,group7,group8,group9,group10
+      state: absent
+
+  - name: Remove test users
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: user1,user2,user3
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Users user1..3 present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+      - name: user1
+        first: user1
+        last: Last
+      - name: user2
+        first: user2
+        last: Last
+      - name: user3
+        first: user3
+        last: Last
+
+  # TESTS
+
+  - name: Groups group1..10 present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+      - name: group1
+      - name: group2
+        user:
+          - user1
+          - user2
+          - user3
+      - name: group3
+        group:
+          - group1
+          - group2
+      - name: group4
+      - name: group5
+      - name: group6
+      - name: group7
+      - name: group8
+      - name: group9
+      - name: group10
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Groups group1..10 present again
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+      - name: group1
+      - name: group2
+      - name: group3
+      - name: group4
+      - name: group5
+      - name: group6
+      - name: group7
+      - name: group8
+      - name: group9
+      - name: group10
+    register: result
+    failed_when: result.changed or result.failed
+
+  # failed_when: not result.failed has been added as this test needs to
+  # fail because two groups with the same name should be added in the same
+  # task.
+  - name: Duplicate names in groups failure test
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+      - name: group1
+      - name: group2
+      - name: group3
+      - name: group3
+    register: result
+    failed_when: result.changed or not result.failed or "is used more than once" not in result.msg
+
+  - name: Groups/name and name group11 present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: group11
+      groups:
+      - name: group11
+    register: result
+    failed_when: result.changed or not result.failed or "parameters are mutually exclusive" not in result.msg
+
+  - name: Groups/name and name are absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+    register: result
+    failed_when: result.changed or not result.failed or "one of the following is required" not in result.msg
+
+  - name: Name is absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+    register: result
+    failed_when: result.changed or not result.failed or "At least one name or groups is required" not in result.msg
+
+  - name: Only one group can be added at a time using name.
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: group11,group12
+    register: result
+    failed_when: result.changed or not result.failed or "Only one group can be added at a time using 'name'." not in result.msg
+
+  - name: Remove test groups
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: group1,group2,group3,group4,group5,group6,group7,group8,group9,group10
+      state: absent
+
+  - name: Remove test users
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: user1,user2,user3
+      state: absent

@@ -1,0 +1,13 @@
+---
+- name: Create groups.json
+  hosts: localhost
+
+  tasks:
+  - name: Check if groups.json exists
+    ansible.builtin.stat:
+      path: groups.json
+    register: register_stat_groups
+
+  - name: Create groups.json
+    ansible.builtin.command: /bin/bash groups.sh 500
+    when: not register_stat_groups.stat.exists
