@@ -114,6 +114,50 @@ Example playbook to setup the IPA client(s) using principal and password from in
     state: present
 ```
 
+Example inventory file to remove a replica from the domain:
+
+```ini
+[ipareplicas]
+ipareplica1.example.com
+
+[ipareplicas:vars]
+ipaadmin_password=MySecretPassword123
+ipareplica_remove_from_domain=true
+```
+
+Example playbook to remove an IPA replica using admin passwords from the domain:
+
+```yaml
+---
+- name: Playbook to remove IPA replica
+  hosts: ipareplica
+  become: true
+
+  roles:
+  - role: ipareplica
+    state: absent
+```
+
+The inventory will enable the removal of the replica (also a replica) from the domain. Additional options are needed if the removal of the replica is resulting in a topology disconnect or if the replica is the last that has a role.
+
+To continue with the removal with a topology disconnect it is needed to set these parameters:
+
+```ini
+ipareplica_ignore_topology_disconnect=true
+ipareplica_remove_on_server=ipareplica2.example.com
+```
+
+To continue with the removal for a replica that is the last that has a role:
+
+```ini
+ipareplica_ignore_last_of_role=true
+```
+
+Be careful with enabling the `ipareplica_ignore_topology_disconnect` and especially `ipareplica_ignore_last_of_role`, the change can not be reverted easily.
+
+The parameters `ipaserver_ignore_topology_disconnect`, `ipaserver_ignore_last_of_role`, `ipaserver_remove_on_server` and `ipaserver_remove_from_domain` can be used instead.
+
+
 Playbooks
 =========
 
@@ -254,6 +298,19 @@ Variable | Description | Required
 `ipareplica_install_packages` | The bool value defines if the needed packages are installed on the node. (bool, default: true) | no
 `ipareplica_setup_firewalld` | The value defines if the needed services will automatically be openen in the firewall managed by firewalld. (bool, default: true) | no
 `ipareplica_firewalld_zone` | The value defines the firewall zone that will be used. This needs to be an existing runtime and permanent zone. (string) | no
+
+Undeploy Variables (`state`: absent)
+------------------------------------
+
+These settings should only be used if the result is really wanted. The change might not be revertable easily.
+
+Variable | Description | Required
+-------- | ----------- | --------
+`ipareplica_ignore_topology_disconnect` \| `ipaserver_ignore_topology_disconnect` | If enabled this enforces the removal of the replica even if it results in a topology disconnect. Be careful with this setting. (bool) | false
+`ipareplica_ignore_last_of_role` \| `ipaserver_ignore_last_of_role` | If enabled this enforces the removal of the replica even if the replica is the last with one that has a role. Be careful, this might not be revered easily. (bool) | false
+`ipareplica_remove_from_domain` \| `ipaserver_remove_from_domain` | This enables the removal of the replica from the domain additionally to the undeployment. (bool) | false
+`ipareplica_remove_on_server` \| `ipaserver_remove_on_server` | The value defines the replica in the domain that will to be used to remove the replica from the domain if `ipareplica_ignore_topology_disconnect` and `ipareplica_remove_from_domain` are enabled. Without the need to enable `ipareplica_ignore_topology_disconnect`, the value will be automatically detected using the replication agreements of the replica. (string) | false
+
 
 Authors
 =======

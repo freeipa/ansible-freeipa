@@ -1,6 +1,47 @@
 ---
 # tasks to uninstall IPA server
 
+- name: Uninstall - Set server hostname for removal
+  ansible.builtin.set_fact:
+    _remove_hostname: "{{ ansible_facts['fqdn'] }}"
+
+- name: Uninstall - Remove server
+  when: ipaserver_remove_from_domain
+  block:
+
+  - name: Uninstall - Fail on missing ipaadmin_password for server removal
+    ansible.builtin.fail:
+      msg: "'ipaadmin_password' is needed for 'ipaserver_remove_from_domain'"
+    when: ipaadmin_password is not defined
+
+  - name: Uninstall - Fail on missing ipaserver_remove_on_server with ipaserver_ignore_topology_disconnect
+    ansible.builtin.fail:
+      msg: "'ipaserver_remove_on_server' is needed for 'ipaserver_remove_from_domain' with 'ipaserver_ignore_topology_disconnect'"
+    when: ipaserver_ignore_topology_disconnect | bool
+          and ipaserver_remove_on_server is not defined
+
+  - name: Uninstall - Get connected server
+    ipaserver_get_connected_server:
+      ipaadmin_principal: "{{ ipaadmin_principal | default('admin') }}"
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      hostname: "{{ _remove_hostname }}"
+    register: result_get_connected_server
+    when: ipaserver_remove_on_server is not defined
+
+  # REMOVE SERVER FROM DOMAIN
+  - name: Uninstall - Server del "{{ _remove_hostname }}"
+    ipaserver:
+      ipaadmin_principal: "{{ ipaadmin_principal | default('admin') }}"
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: "{{ _remove_hostname }}"
+      ignore_last_of_role: "{{ ipaserver_ignore_last_of_role }}"
+      ignore_topology_disconnect: "{{ ipaserver_ignore_topology_disconnect }}"
+      # delete_continue: "{{ ipaserver_delete_continue }}"
+      state: absent
+    delegate_to: "{{ ipaserver_remove_on_server | default(result_get_connected_server.server) }}"
+    when: ipaserver_remove_on_server is defined or
+          result_get_connected_server.server is defined
+
 - name: Uninstall - Uninstall IPA server
   ansible.builtin.command: >
     /usr/sbin/ipa-server-install

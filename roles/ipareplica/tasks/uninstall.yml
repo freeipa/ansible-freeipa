@@ -1,37 +1,19 @@
 ---
 # tasks to uninstall IPA replica
 
-- name: Uninstall - Uninstall IPA replica
-  ansible.builtin.command: >
-    /usr/sbin/ipa-server-install
-    --uninstall
-    -U
-    {{ "--ignore-topology-disconnect" if
-       ipareplica_ignore_topology_disconnect | bool else "" }}
-    {{ "--ignore-last-of-role" if ipareplica_ignore_last_of_role | bool
-       else "" }}
-  register: result_uninstall
-  # 2 means that uninstall failed because IPA replica was not configured
-  failed_when: result_uninstall.rc != 0 and "'Env' object
-    has no attribute 'basedn'" not in result_uninstall.stderr
-  # IPA server is not configured on this system" not in
-  #   result_uninstall.stdout_lines
-  changed_when: result_uninstall.rc == 0
-  # until: result_uninstall.rc == 0
-  retries: 2
-  delay: 1
+- name: Set parameters
+  ansible.builtin.set_fact:
+    _ignore_topology_disconnect: "{{ ipaserver_ignore_topology_disconnect | default(ipareplica_ignore_topology_disconnect) | default(omit) }}"
+    _ignore_last_of_role: "{{ ipaserver_ignore_last_of_role | default(ipareplica_ignore_last_of_role) | default(omit) }}"
+    _remove_from_domain: "{{ ipaserver_remove_from_domain | default(ipareplica_remove_from_domain) | default(omit) }}"
+    _remove_on_server: "{{ ipaserver_remove_on_server | default(ipareplica_remove_on_server) | default(omit) }}"
 
-#- name: Uninstall - Remove all replication agreements and data about replica
-#  ansible.builtin.command: >
-#    /usr/sbin/ipa-replica-manage
-#    del
-#    {{ ipareplica_hostname | default(ansible_facts['fqdn']) }}
-#    --force
-#    --password={{ ipadm_password }}
-#  failed_when: False
-#  delegate_to: "{{ groups.ipaserver[0] | default(fail) }}"
-
-#- name: Remove IPA replica packages
-#  ansible.builtin.package:
-#    name: "{{ ipareplica_packages }}"
-#    state: absent
+- name: Uninstall - Uninstall replica
+  ansible.builtin.include_role:
+    name: ipaserver
+  vars:
+    state: absent
+    ipaserver_ignore_topology_disconnect: "{{ _ignore_topology_disconnect | default(false) }}"
+    ipaserver_ignore_last_of_role: "{{ _ignore_last_of_role | default(false) }}"
+    ipaserver_remove_from_domain: "{{ _remove_from_domain | default(false) }}"
+    ipaserver_remove_on_server: "{{ _remove_on_server | default(NULL) }}"
