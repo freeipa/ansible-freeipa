@@ -1,2 +1,8 @@
 ---
 requires_ansible: ">=2.9"
+action_groups:
+  freeipa:
+  - ipaadmin_principal
+  - ipaadmin_password
+  - ipaapi_context
+  - ipaapi_ldap_cache
