@@ -1,5 +1,6 @@
 ---
 requires_ansible: ">=2.9"
+# added funktionality for feature request #1070
 action_groups:
   freeipa:
   - ipaadmin_principal
