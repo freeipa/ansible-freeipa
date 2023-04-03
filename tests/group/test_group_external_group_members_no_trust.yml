@@ -1,0 +1,81 @@
+---
+- name: Test external group group members (without trust-ad installed)
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Ensure external test groups are absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - externaltestgroup01
+      - externaltestgroup02
+      state: absent
+
+  - name: Create external test group 01
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: externaltestgroup01
+      external: true
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Create external test group 02
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: externaltestgroup02
+      external: true
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure externaltestgroup02 is a member of externaltestgroup01
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: externaltestgroup01
+      action: member
+      group:
+      - externaltestgroup02
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure externaltestgroup02 is a member of externaltestgroup01, again
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: externaltestgroup01
+      action: member
+      group:
+      - externaltestgroup02
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure externaltestgroup02 is not a member of externaltestgroup01
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: externaltestgroup01
+      action: member
+      group:
+      - externaltestgroup02
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure externaltestgroup02 is not a member of externaltestgroup01, again
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: externaltestgroup01
+      action: member
+      group:
+      - externaltestgroup02
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure external test groups are absent
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name:
+      - externaltestgroup01
+      - externaltestgroup02
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
