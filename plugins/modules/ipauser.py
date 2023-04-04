@@ -548,6 +548,17 @@ EXAMPLES = """
     first: brain
     last: Acme
 
+# Create multiple users pinky and brain
+- ipauser:
+    ipaadmin_password: SomeADMINpassword
+    users:
+    - name: pinky
+      first: pinky
+      last: Acme
+    - name: brain
+      first: brain
+      last: Acme
+
 # Delete user pinky, but preserved
 - ipauser:
     ipaadmin_password: SomeADMINpassword
@@ -572,6 +583,14 @@ EXAMPLES = """
     ipaadmin_password: SomeADMINpassword
     name: pinky,brain
     state: enabled
+
+# Remove but preserve user pinky
+- ipauser:
+    ipaadmin_password: SomeADMINpassword
+    users:
+    - name: pinky
+    preserve: yes
+    state: absent
 
 # Remove user pinky and brain
 - ipauser:

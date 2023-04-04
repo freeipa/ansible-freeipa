@@ -441,6 +441,15 @@ EXAMPLES = """
     description: Example host
     force: yes
 
+# Ensure multiple hosts are present with random passwords
+- ipahost:
+    ipaadmin_password: SomeADMINpassword
+    hosts:
+    - name: host01.example.com
+      random: yes
+    - name: host02.example.com
+      random: yes
+
 # Initiate generation of a random password for the host
 - ipahost:
     ipaadmin_password: SomeADMINpassword
@@ -448,6 +457,18 @@ EXAMPLES = """
     description: Example host
     ip_address: 192.168.0.123
     random: yes
+
+# Ensure multiple hosts are present with principals
+- ipahost:
+    ipaadmin_password: SomeADMINpassword
+    hosts:
+    - name: host01.example.com
+      principal:
+      - host/testhost01.example.com
+    - name: host02.example.com
+      principal:
+      - host/myhost01.example.com
+    action: member
 
 # Ensure host is disabled
 - ipahost:
