@@ -41,8 +41,88 @@ options:
     description: The group name
     type: list
     elements: str
-    required: true
+    required: false
     aliases: ["cn"]
+  groups:
+    description: The list of group dicts (internally gid).
+    type: list
+    elements: dict
+    suboptions:
+      name:
+        description: The group (internally gid).
+        type: str
+        required: true
+        aliases: ["cn"]
+      description:
+        description: The group description
+        type: str
+        required: false
+      gid:
+        description: The GID
+        type: int
+        required: false
+        aliases: ["gidnumber"]
+      nonposix:
+        description: Create as a non-POSIX group
+        required: false
+        type: bool
+      external:
+        description: Allow adding external non-IPA members from trusted domains
+        required: false
+        type: bool
+      posix:
+        description:
+          Create a non-POSIX group or change a non-POSIX to a posix group.
+        required: false
+        type: bool
+      nomembers:
+        description: Suppress processing of membership attributes
+        required: false
+        type: bool
+      user:
+        description: List of user names assigned to this group.
+        required: false
+        type: list
+        elements: str
+      group:
+        description: List of group names assigned to this group.
+        required: false
+        type: list
+        elements: str
+      service:
+        description:
+        - List of service names assigned to this group.
+        - Only usable with IPA versions 4.7 and up.
+        required: false
+        type: list
+        elements: str
+      membermanager_user:
+        description:
+        - List of member manager users assigned to this group.
+        - Only usable with IPA versions 4.8.4 and up.
+        required: false
+        type: list
+        elements: str
+      membermanager_group:
+        description:
+        - List of member manager groups assigned to this group.
+        - Only usable with IPA versions 4.8.4 and up.
+        required: false
+        type: list
+        elements: str
+      externalmember:
+        description:
+        - List of members of a trusted domain in DOM\\name or name@domain form.
+        required: false
+        type: list
+        elements: str
+        aliases: ["ipaexternalmember", "external_member"]
+      idoverrideuser:
+        description:
+        - User ID overrides to add
+        required: false
+        type: list
+        elements: str
   description:
     description: The group description
     type: str
@@ -144,6 +224,14 @@ EXAMPLES = """
     ipaadmin_password: SomeADMINpassword
     name: appops
 
+# Create multiple groups ops, sysops
+- ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    groups:
+    - name: ops
+      gidnumber: 1234
+    - name: sysops
+
 # Add user member pinky to group sysops
 - ipagroup:
     ipaadmin_password: SomeADMINpassword
@@ -160,13 +248,24 @@ EXAMPLES = """
     user:
     - brain
 
-# Add group members sysops and appops to group sysops
+# Add group members sysops and appops to group ops
 - ipagroup:
     ipaadmin_password: SomeADMINpassword
     name: ops
     group:
     - sysops
     - appops
+
+# Add user and group members to groups sysops and appops
+- ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    groups:
+    - name: sysops
+      user:
+        - user1
+    - name: appops
+      group:
+        - group2
 
 # Create a non-POSIX group
 - ipagroup:
@@ -189,7 +288,16 @@ EXAMPLES = """
     - WINIPA\\Web Users
     - WINIPA\\Developers
 
-# Remove goups sysops, appops, ops and nongroup
+# Create multiple non-POSIX and external groups
+- ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    groups:
+    - name: nongroup
+      nonposix: true
+    - name: extgroup
+      external: true
+
+# Remove groups sysops, appops, ops and nongroup
 - ipagroup:
     ipaadmin_password: SomeADMINpassword
     name: sysops,appops,ops, nongroup
@@ -203,6 +311,20 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
     gen_add_list, gen_intersection_list, api_check_param
+from ansible.module_utils import six
+if six.PY3:
+    unicode = str
+# Ensuring (adding) several groups with mixed types external, nonposix
+# and posix require to have a fix in IPA:
+# FreeIPA issue: https://pagure.io/freeipa/issue/9349
+# FreeIPA fix: https://github.com/freeipa/freeipa/pull/6741
+try:
+    from ipaserver.plugins import baseldap
+except ImportError:
+    FIX_6741_DEEPCOPY_OBJECTCLASSES = False
+else:
+    FIX_6741_DEEPCOPY_OBJECTCLASSES = \
+        "deepcopy" in baseldap.LDAPObject.__json__.__code__.co_names
 
 
 def find_group(module, name):
@@ -257,6 +379,22 @@ def gen_member_args(user, group, service, externalmember, idoverrideuser):
     return _args
 
 
+def check_parameters(module, state, action):
+    invalid = []
+    if state == "present":
+        if action == "member":
+            invalid = ["description", "gid", "posix", "nonposix", "external",
+                       "nomembers"]
+
+    else:
+        invalid = ["description", "gid", "posix", "nonposix", "external",
+                   "nomembers"]
+        if action == "group":
+            invalid.extend(["user", "group", "service", "externalmember"])
+
+    module.params_fail_used_invalid(invalid, state, action)
+
+
 def is_external_group(res_find):
     """Verify if the result group is an external group."""
     return res_find and 'ipaexternalgroup' in res_find['objectclass']
@@ -285,45 +423,63 @@ def check_objectclass_args(module, res_find, posix, external):
 
 
 def main():
+    group_spec = dict(
+        # present
+        description=dict(type="str", default=None),
+        gid=dict(type="int", aliases=["gidnumber"], default=None),
+        nonposix=dict(required=False, type='bool', default=None),
+        external=dict(required=False, type='bool', default=None),
+        posix=dict(required=False, type='bool', default=None),
+        nomembers=dict(required=False, type='bool', default=None),
+        user=dict(required=False, type='list', elements="str",
+                  default=None),
+        group=dict(required=False, type='list', elements="str",
+                   default=None),
+        service=dict(required=False, type='list', elements="str",
+                     default=None),
+        idoverrideuser=dict(required=False, type='list', elements="str",
+                            default=None),
+        membermanager_user=dict(required=False, type='list',
+                                elements="str", default=None),
+        membermanager_group=dict(required=False, type='list',
+                                 elements="str", default=None),
+        externalmember=dict(required=False, type='list', elements="str",
+                            default=None,
+                            aliases=[
+                                "ipaexternalmember",
+                                "external_member"
+                            ])
+    )
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
             name=dict(type="list", elements="str", aliases=["cn"],
-                      required=True),
-            # present
-            description=dict(type="str", default=None),
-            gid=dict(type="int", aliases=["gidnumber"], default=None),
-            nonposix=dict(required=False, type='bool', default=None),
-            external=dict(required=False, type='bool', default=None),
-            posix=dict(required=False, type='bool', default=None),
-            nomembers=dict(required=False, type='bool', default=None),
-            user=dict(required=False, type='list', elements="str",
-                      default=None),
-            group=dict(required=False, type='list', elements="str",
-                       default=None),
-            service=dict(required=False, type='list', elements="str",
-                         default=None),
-            idoverrideuser=dict(required=False, type='list', elements="str",
-                                default=None),
-            membermanager_user=dict(required=False, type='list',
-                                    elements="str", default=None),
-            membermanager_group=dict(required=False, type='list',
-                                     elements="str", default=None),
-            externalmember=dict(required=False, type='list', elements="str",
-                                default=None,
-                                aliases=[
-                                    "ipaexternalmember",
-                                    "external_member"
-                                ]),
+                      default=None, required=False),
+            groups=dict(type="list",
+                        default=None,
+                        options=dict(
+                            # Here name is a simple string
+                            name=dict(type="str", required=True,
+                                      aliases=["cn"]),
+                            # Add group specific parameters
+                            **group_spec
+                        ),
+                        elements='dict',
+                        required=False),
+            # general
             action=dict(type="str", default="group",
                         choices=["member", "group"]),
-            # state
             state=dict(type="str", default="present",
                        choices=["present", "absent"]),
+
+            # Add group specific parameters for simple use case
+            **group_spec
         ),
         # It does not make sense to set posix, nonposix or external at the
         # same time
-        mutually_exclusive=[['posix', 'nonposix', 'external']],
+        mutually_exclusive=[['posix', 'nonposix', 'external'],
+                            ["name", "groups"]],
+        required_one_of=[["name", "groups"]],
         supports_check_mode=True,
     )
 
@@ -333,6 +489,7 @@ def main():
 
     # general
     names = ansible_module.params_get("name")
+    groups = ansible_module.params_get("groups")
 
     # present
     description = ansible_module.params_get("description")
@@ -354,30 +511,49 @@ def main():
     state = ansible_module.params_get("state")
 
     # Check parameters
-    invalid = []
+
+    if (names is None or len(names) < 1) and \
+       (groups is None or len(groups) < 1):
+        ansible_module.fail_json(msg="At least one name or groups is required")
 
     if state == "present":
-        if len(names) != 1:
+        if names is not None and len(names) != 1:
             ansible_module.fail_json(
-                msg="Only one group can be added at a time.")
-        if action == "member":
-            invalid = ["description", "gid", "posix", "nonposix", "external",
-                       "nomembers"]
+                msg="Only one group can be added at a time using 'name'.")
 
-    if state == "absent":
-        if len(names) < 1:
-            ansible_module.fail_json(
-                msg="No name given.")
-        invalid = ["description", "gid", "posix", "nonposix", "external",
-                   "nomembers"]
-        if action == "group":
-            invalid.extend(["user", "group", "service", "externalmember"])
-
-    ansible_module.params_fail_used_invalid(invalid, state, action)
+    check_parameters(ansible_module, state, action)
 
     if external is False:
         ansible_module.fail_json(
             msg="group can not be non-external")
+
+    # Ensuring (adding) several groups with mixed types external, nonposix
+    # and posix require to have a fix in IPA:
+    #
+    # FreeIPA issue: https://pagure.io/freeipa/issue/9349
+    # FreeIPA fix: https://github.com/freeipa/freeipa/pull/6741
+    #
+    # The simple solution is to switch to client context for ensuring
+    # several groups simply if the user was not explicitly asking for
+    # the server context no matter if mixed types are used.
+    context = None
+    if state == "present" and groups is not None and len(groups) > 1 \
+       and not FIX_6741_DEEPCOPY_OBJECTCLASSES:
+        _context = ansible_module.params_get("ipaapi_context")
+        if _context is None:
+            context = "client"
+            ansible_module.debug(
+                "Switching to client context due to an unfixed issue in "
+                "your IPA version: https://pagure.io/freeipa/issue/9349")
+        elif _context == "server":
+            ansible_module.fail_json(
+                msg="Ensuring several groups with server context is not "
+                "supported by your IPA version: "
+                "https://pagure.io/freeipa/issue/9349")
+
+    # Use groups if names is None
+    if groups is not None:
+        names = groups
 
     # Init
 
@@ -389,7 +565,7 @@ def main():
         posix = not nonposix
 
     # Connect to IPA API
-    with ansible_module.ipa_connect():
+    with ansible_module.ipa_connect(context=context):
 
         has_add_member_service = ansible_module.ipa_command_param_exists(
             "group_add_member", "service")
@@ -415,8 +591,57 @@ def main():
                 "supported by your IPA version")
 
         commands = []
+        group_set = set()
 
-        for name in names:
+        for group_name in names:
+            if isinstance(group_name, dict):
+                name = group_name.get("name")
+                if name in group_set:
+                    ansible_module.fail_json(
+                        msg="group '%s' is used more than once" % name)
+                group_set.add(name)
+                # present
+                description = group_name.get("description")
+                gid = group_name.get("gid")
+                nonposix = group_name.get("nonposix")
+                external = group_name.get("external")
+                idoverrideuser = group_name.get("idoverrideuser")
+                posix = group_name.get("posix")
+                # Check mutually exclusive condition for multiple groups
+                # creation. It's not possible to check it with
+                # `mutually_exclusive` argument in `IPAAnsibleModule` class
+                # because it accepts only (list[str] or list[list[str]]). Here
+                # we need to loop over all groups and fail on mutually
+                # exclusive ones.
+                if all((posix, nonposix)) or\
+                   all((posix, external)) or\
+                   all((nonposix, external)):
+                    ansible_module.fail_json(
+                        msg="parameters are mutually exclusive for group "
+                            "`{0}`: posix|nonposix|external".format(name))
+                # Duplicating the condition for multiple group creation
+                if external is False:
+                    ansible_module.fail_json(
+                        msg="group can not be non-external")
+                # If nonposix is used, set posix as not nonposix
+                if nonposix is not None:
+                    posix = not nonposix
+                user = group_name.get("user")
+                group = group_name.get("group")
+                service = group_name.get("service")
+                membermanager_user = group_name.get("membermanager_user")
+                membermanager_group = group_name.get("membermanager_group")
+                externalmember = group_name.get("externalmember")
+                nomembers = group_name.get("nomembers")
+
+                check_parameters(ansible_module, state, action)
+
+            elif isinstance(group_name, (str, unicode)):
+                name = group_name
+            else:
+                ansible_module.fail_json(msg="Group '%s' is not valid" %
+                                         repr(group_name))
+
             # Make sure group exists
             res_find = find_group(ansible_module, name)
 

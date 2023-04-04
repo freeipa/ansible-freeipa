@@ -21,6 +21,7 @@ tests/pytests/conftest.py pylint:ansible-format-automatic-specification
 tests/sanity/sanity.sh shebang!skip
 tests/user/users.sh shebang!skip
 tests/user/users_absent.sh shebang!skip
+tests/group/groups.sh shebang!skip
 tests/utils.py pylint:ansible-format-automatic-specification
 utils/ansible-doc-test shebang!skip
 utils/build-galaxy-release.sh shebang!skip
