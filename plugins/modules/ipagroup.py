@@ -818,10 +818,12 @@ def main():
                 del_member_args["service"] = service_del
 
             if is_external_group(res_find):
-                add_member_args["ipaexternalmember"] = \
-                    externalmember_add
-                del_member_args["ipaexternalmember"] = \
-                    externalmember_del
+                if len(externalmember_add) > 0:
+                    add_member_args["ipaexternalmember"] = \
+                        externalmember_add
+                if len(externalmember_del) > 0:
+                    del_member_args["ipaexternalmember"] = \
+                        externalmember_del
             elif externalmember or external:
                 ansible_module.fail_json(
                     msg="Cannot add external members to a "
