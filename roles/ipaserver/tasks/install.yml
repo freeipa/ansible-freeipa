@@ -108,6 +108,7 @@
     external_cert_files: "{{ ipaserver_external_cert_files | default(omit) }}"
     subject_base: "{{ ipaserver_subject_base | default(omit) }}"
     ca_subject: "{{ ipaserver_ca_subject | default(omit) }}"
+    random_serial_numbers: "{{ ipaserver_random_serial_numbers | default(omit) }}"
     # ca_signing_algorithm
     ### dns ###
     allow_zone_overlap: "{{ ipaserver_allow_zone_overlap }}"
@@ -199,7 +200,7 @@
       ### additional ###
       setup_ca: "{{ result_ipaserver_test.setup_ca }}"
       sid_generation_always: "{{ result_ipaserver_test.sid_generation_always }}"
-      random_serial_numbers: no
+      random_serial_numbers: "{{ result_ipaserver_test.random_serial_numbers }}"
       _hostname_overridden: "{{ result_ipaserver_test._hostname_overridden }}"
     register: result_ipaserver_prepare
 

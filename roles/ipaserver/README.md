@@ -168,6 +168,22 @@ Server installation step 2: Copy `<ipaserver hostname>-chain.crt` to the IPA ser
 
 The files can also be copied automatically: Set `ipaserver_copy_csr_to_controller` to true in the server installation step 1 and set `ipaserver_external_cert_files_from_controller` to point to the `chain.crt` file in the server installation step 2.
 
+Since version 4.10, FreeIPA supports creating certificates using random serial numbers. Random serial numbers is a global and permanent setting, that can only be activated while deploying the first server of the domain. Replicas will inherit this setting automatically. An example of an inventory file to deploy a server with random serial numbers enabled is:
+
+```ini
+[ipaserver]
+ipaserver.example.com
+
+[ipaserver:vars]
+ipaserver_domain=example.com
+ipaserver_realm=EXAMPLE.COM
+ipaadmin_password=MySecretPassword123
+ipadm_password=MySecretPassword234
+ipaserver_random_serial_number=true
+```
+
+By setting the variable in the inventory file, the same ipaserver deployment playbook, shown before, can be used.
+
 
 Example inventory file to remove a server from the domain:
 
@@ -263,6 +279,7 @@ Variable | Description | Required
 `ipaserver_no_ui_redirect` | Do not automatically redirect to the Web UI. (bool) | no
 `ipaserver_dirsrv_config_file` | The path to LDIF file that will be used to modify configuration of dse.ldif during installation. (string) | no
 `ipaserver_pki_config_override` | Path to ini file with config overrides. This is only usable with recent FreeIPA versions. (string) | no
+`ipaserver_random_serial_numbers` | Enable use of random serial numbers for certificates. Requires FreeIPA version 4.10 or later. (boolean) | no
 
 SSL certificate Variables
 -------------------------
