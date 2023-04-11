@@ -128,20 +128,20 @@ Variable | Description | Required
 `ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
 `name` \| `cn` | The list of pwpolicy name strings. If name is not given, `global_policy` will be used automatically. | no
-`maxlife` \| `krbmaxpwdlife` | Maximum password lifetime in days. (int) | no
-`minlife` \| `krbminpwdlife` | Minimum password lifetime in hours. (int) | no
-`history` \| `krbpwdhistorylength` | Password history size. (int) | no
-`minclasses` \| `krbpwdmindiffchars` | Minimum number of character classes. (int) | no
-`minlength` \| `krbpwdminlength` | Minimum length of password. (int) | no
-`priority` \| `cospriority` | Priority of the policy, higher number means lower priority. (int) | no
-`maxfail` \| `krbpwdmaxfailure` | Consecutive failures before lockout. (int) | no
-`failinterval` \| `krbpwdfailurecountinterval` | Period after which failure count will be reset in seconds. (int) | no
-`lockouttime` \| `krbpwdlockoutduration` | Period for which lockout is enforced in seconds. (int) | no
-`maxrepeat` \| `ipapwdmaxrepeat` | Maximum number of same consecutive characters. Requires IPA 4.9+ (int) | no
-`maxsequence` \| `ipapwdmaxsequence` |  The maximum length of monotonic character sequences (abcd). Requires IPA 4.9+ (int) | no
-`dictcheck` \| `ipapwdictcheck` | Check if the password is a dictionary word. Requires IPA 4.9+ (int) | no
-`usercheck` \| `ipapwdusercheck` | Check if the password contains the username. Requires IPA 4.9+ (int) | no
-`gracelimit` \| `passwordgracelimit` |  Number of LDAP authentications allowed after expiration. Requires IPA 4.9.10 (int) | no
+`maxlife` \| `krbmaxpwdlife` | Maximum password lifetime in days. (int or "") | no
+`minlife` \| `krbminpwdlife` | Minimum password lifetime in hours. (int or "") | no
+`history` \| `krbpwdhistorylength` | Password history size. (int or "") | no
+`minclasses` \| `krbpwdmindiffchars` | Minimum number of character classes. (int or "") | no
+`minlength` \| `krbpwdminlength` | Minimum length of password. (int or "") | no
+`priority` \| `cospriority` | Priority of the policy, higher number means lower priority. (int or "") | no
+`maxfail` \| `krbpwdmaxfailure` | Consecutive failures before lockout. (int or "") | no
+`failinterval` \| `krbpwdfailurecountinterval` | Period after which failure count will be reset in seconds. (int or "") | no
+`lockouttime` \| `krbpwdlockoutduration` | Period for which lockout is enforced in seconds. (int or "") | no
+`maxrepeat` \| `ipapwdmaxrepeat` | Maximum number of same consecutive characters. Requires IPA 4.9+ (int or "") | no
+`maxsequence` \| `ipapwdmaxsequence` |  The maximum length of monotonic character sequences (abcd). Requires IPA 4.9+ (int or "") | no
+`dictcheck` \| `ipapwdictcheck` | Check if the password is a dictionary word. Requires IPA 4.9+. (bool or "") | no
+`usercheck` \| `ipapwdusercheck` | Check if the password contains the username. Requires IPA 4.9+. (bool or "") | no
+`gracelimit` \| `passwordgracelimit` |  Number of LDAP authentications allowed after expiration. Requires IPA 4.9.10 (int or "") | no
 `state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. | yes
 
 

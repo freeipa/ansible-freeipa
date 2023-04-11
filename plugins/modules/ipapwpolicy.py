@@ -45,82 +45,84 @@ options:
     required: false
     aliases: ["cn"]
   maxlife:
-    description: Maximum password lifetime (in days)
+    description: Maximum password lifetime (in days). (int or "")
     type: str
     required: false
     aliases: ["krbmaxpwdlife"]
   minlife:
-    description: Minimum password lifetime (in hours)
+    description: Minimum password lifetime (in hours). (int or "")
     type: str
     required: false
     aliases: ["krbminpwdlife"]
   history:
-    description: Password history size
+    description: Password history size. (int or "")
     type: str
     required: false
     aliases: ["krbpwdhistorylength"]
   minclasses:
-    description: Minimum number of character classes
+    description: Minimum number of character classes. (int or "")
     type: str
     required: false
     aliases: ["krbpwdmindiffchars"]
   minlength:
-    description: Minimum length of password
+    description: Minimum length of password. (int or "")
     type: str
     required: false
     aliases: ["krbpwdminlength"]
   priority:
-    description: Priority of the policy (higher number means lower priority)
+    description: >
+      Priority of the policy (higher number means lower priority). (int or "")
     type: str
     required: false
     aliases: ["cospriority"]
   maxfail:
-    description: Consecutive failures before lockout
+    description: Consecutive failures before lockout. (int or "")
     type: str
     required: false
     aliases: ["krbpwdmaxfailure"]
   failinterval:
-    description: Period after which failure count will be reset (seconds)
+    description: >
+      Period after which failure count will be reset (seconds). (int or "")
     type: str
     required: false
     aliases: ["krbpwdfailurecountinterval"]
   lockouttime:
-    description: Period for which lockout is enforced (seconds)
+    description: Period for which lockout is enforced (seconds). (int or "")
     type: str
     required: false
     aliases: ["krbpwdlockoutduration"]
   maxrepeat:
     description: >
       Maximum number of same consecutive characters.
-      Requires IPA 4.9+
+      Requires IPA 4.9+. (int or "")
     type: str
     required: false
     aliases: ["ipapwdmaxrepeat"]
   maxsequence:
     description: >
       The maximum length of monotonic character sequences (abcd).
-      Requires IPA 4.9+
+      Requires IPA 4.9+. (int or "")
     type: str
     required: false
     aliases: ["ipapwdmaxsequence"]
   dictcheck:
     description: >
       Check if the password is a dictionary word.
-      Requires IPA 4.9+
+      Requires IPA 4.9+. (bool or "")
     type: str
     required: false
     aliases: ["ipapwdictcheck"]
   usercheck:
     description: >
       Check if the password contains the username.
-      Requires IPA 4.9+
+      Requires IPA 4.9+. (bool or "")
     type: str
     required: false
     aliases: ["ipapwdusercheck"]
   gracelimit:
     description: >
       Number of LDAP authentications allowed after expiration.
-      Requires IPA 4.10.1+
+      Requires IPA 4.10.1+. (int or "")
     type: str
     required: false
     aliases: ["passwordgracelimit"]
