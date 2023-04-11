@@ -151,7 +151,7 @@ RETURN = """
 """
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa
+    IPAAnsibleModule, compare_args_ipa, boolean
 
 
 def find_pwpolicy(module, name):
@@ -359,17 +359,12 @@ def main():
     gracelimit = int_or_empty_param(gracelimit, "gracelimit")
 
     def bool_or_empty_param(value, param):  # pylint: disable=R1710
-        # As of Ansible 2.14, values True, False, Yes an No, with variable
-        # capitalization are accepted by Ansible.
-        if not value:
+        if value is None or value == "":
             return value
-        if value in ["TRUE", "True", "true", "YES", "Yes", "yes"]:
-            return True
-        if value in ["FALSE", "False", "false", "NO", "No", "no"]:
-            return False
-        ansible_module.fail_json(
-            msg="Invalid value '%s' for argument '%s'." % (value, param)
-        )
+        try:
+            return boolean(value)
+        except TypeError as terr:
+            ansible_module.fail_json(msg="Param '%s': %s" % (param, str(terr)))
 
     dictcheck = bool_or_empty_param(dictcheck, "dictcheck")
     usercheck = bool_or_empty_param(usercheck, "usercheck")
