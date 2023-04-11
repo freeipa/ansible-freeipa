@@ -1,5 +1,11 @@
 *.pyc
 *.retry
+*.swp
+
+# collection files
+freeipa-ansible_freeipa*.tar.gz
+redhat-rhel_idm*.tar.gz
+importer_result.json
 
 # ignore virtual environments
 /.tox/
