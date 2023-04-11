@@ -230,17 +230,15 @@ def check_supported_params(
         "pwpolicy_add", "passwordgracelimit")
 
     # If needed, report unsupported password checking paramteres
-    if not has_password_check:
-        check_password_params = [maxrepeat, maxsequence, dictcheck, usercheck]
-        unsupported = [
-            x for x in check_password_params if x is not None
-        ]
-        if unsupported:
-            module.fail_json(
-                msg="Your IPA version does not support arguments: "
-                    "maxrepeat, maxsequence, dictcheck, usercheck.")
+    if (
+        not has_password_check
+        and any([maxrepeat, maxsequence, dictcheck, usercheck])
+    ):
+        module.fail_json(
+            msg="Your IPA version does not support arguments: "
+                "maxrepeat, maxsequence, dictcheck, usercheck.")
 
-    if gracelimit is not None and not has_gracelimit:
+    if not has_gracelimit and gracelimit is not None:
         module.fail_json(
             msg="Your IPA version does not support 'gracelimit'.")
 
