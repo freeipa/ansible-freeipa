@@ -6,6 +6,10 @@
   become: false
   # Enable "gather_facts" only if "ansible_facts" variable needs to be used.
   gather_facts: false
+  module_defaults:
+    ipa$name:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
 
   tasks:
 
@@ -13,7 +17,6 @@
 
   - name: Ensure $name NAME is absent
     ipa$name:
-      ipaadmin_password: SomeADMINpassword
       name: NAME
       state: absent
 
@@ -23,8 +26,6 @@
 
   - name: Ensure $name NAME is present
     ipa$name:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: NAME
       # Add needed parameters here
     register: result
@@ -32,8 +33,6 @@
 
   - name: Ensure $name NAME is present again
     ipa$name:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: NAME
       # Add needed parameters here
     register: result
@@ -41,8 +40,6 @@
 
   - name: Ensure $name NAME member PARAMETER2 VALUE is present
     ipa$name:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: NAME
       PARAMETER2: VALUE
       action: member
@@ -51,8 +48,6 @@
 
   - name: Ensure $name NAME member PARAMETER2 VALUE is present again
     ipa$name:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: NAME
       PARAMETER2: VALUE
       action: member
@@ -61,8 +56,6 @@
 
   - name: Ensure $name NAME member PARAMETER2 VALUE is absent
     ipa$name:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: NAME
       PARAMETER2: VALUE
       action: member
@@ -72,8 +65,6 @@
 
   - name: Ensure $name NAME member PARAMETER2 VALUE is absent again
     ipa$name:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: NAME
       PARAMETER2: VALUE
       action: member
@@ -85,8 +76,6 @@
 
   - name: Ensure $name NAME is absent
     ipa$name:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: NAME
       state: absent
     register: result
@@ -94,8 +83,6 @@
 
   - name: Ensure $name NAME is absent again
     ipa$name:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: NAME
       state: absent
     register: result
@@ -105,7 +92,5 @@
 
   - name: Ensure $name NAME is absent
     ipa$name:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: NAME
       state: absent
