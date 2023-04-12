@@ -1,9 +1,10 @@
 ---
 - name: Test ${name}
   hosts: ipaclients, ipaserver
-  # Change "become" or "gather_facts" to "yes",
-  # if you test playbook requires any.
+  # It is normally not needed to set "become" to "true" for a module test.
+  # Only set it to true if it is needed to execute commands as root.
   become: false
+  # Enable "gather_facts" only if "ansible_facts" variable needs to be used.
   gather_facts: false
 
   tasks:
