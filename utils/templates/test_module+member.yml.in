@@ -3,8 +3,8 @@
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
   # Change "become" or "gather_facts" to "yes",
   # if you test playbook requires any.
-  become: no
-  gather_facts: no
+  become: false
+  gather_facts: false
 
   tasks:
 
