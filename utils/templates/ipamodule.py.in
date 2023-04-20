@@ -121,7 +121,7 @@ def main():
         argument_spec=dict(
             # general
             name=dict(type="list", elements="str", required=True,
-                      aliases=["API_PARAMETER_NAME"],
+                      aliases=["API_PARAMETER_NAME"]),
             # present
             PARAMETER1=dict(required=False, type='str',
                             aliases=["API_PARAMETER_NAME"], default=None),

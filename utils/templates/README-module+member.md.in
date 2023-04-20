@@ -45,7 +45,7 @@ Example playbook to make sure $name "NAME" is present:
 ---
 - name: Playbook to manage IPA $name.
   hosts: ipaserver
-  become: no
+  become: false
 
   tasks:
   - ipa$name:
@@ -60,7 +60,7 @@ Example playbook to make sure $name "NAME" member PARAMETER2 VALUE is present:
 ---
 - name: Playbook to manage IPA $name PARAMETER2 member.
   hosts: ipaserver
-  become: no
+  become: false
 
   tasks:
   - ipa$name:
@@ -78,7 +78,7 @@ Example playbook to make sure $name "NAME" member PARAMETER2 VALUE is absent:
 ---
 - name: Playbook to manage IPA $name PARAMETER2 member.
   hosts: ipaserver
-  become: no
+  become: false
 
   tasks:
   - ipa$name:
@@ -96,7 +96,7 @@ Example playbook to make sure $name "NAME" is absent:
 ---
 - name: Playbook to manage IPA $name.
   hosts: ipaserver
-  become: no
+  become: false
 
   tasks:
   - ipa$name:
@@ -117,7 +117,7 @@ Variable | Description | Required
 `ipaadmin_principal` | The admin principal is a string and defaults to `admin` | no
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
-`ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
+`ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to true. (bool) | no
 `name` \| `ALIAS` | The list of $name name strings. | yes
 `PARAMETER1` \| `API_PARAMETER_NAME` | DESCRIPTION | TYPE
 `PARAMETER2` \| `API_PARAMETER_NAME` | DESCRIPTION | TYPE
