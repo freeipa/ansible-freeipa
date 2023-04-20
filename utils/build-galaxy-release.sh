@@ -114,6 +114,8 @@ echo -e "\033[ACreating CHANGELOG.rst... \033[32;1mDONE\033[0m"
 
 sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.${collection_prefix}.plugins.module_utils.ansible_freeipa_module/" plugins/modules/*.py
 
+python utils/create_action_group.py "meta/runtime.yml" "$collection_prefix"
+
 (cd plugins/module_utils && {
     ln -sf ../../roles/*/module_utils/*.py .
 })
