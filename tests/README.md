@@ -105,7 +105,7 @@ It's also possible to run the tests in a container.
 Before setting up a container you will need to install molecule framework:
 
 ```
-pip install molecule[docker]>=3
+pip install molecule-plugins[docker]
 ```
 
 Now you can start a test container using the following command:

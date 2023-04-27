@@ -32,7 +32,7 @@ jobs:
 
   - script: |
       pip install \
-        "molecule[docker]>=3" \
+        "molecule-plugins[docker]" \
         "ansible${{ parameters.ansible_version }}"
     retryCountOnTaskFailure: 5
     displayName: Install molecule and Ansible
