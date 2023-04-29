@@ -431,10 +431,9 @@ def main():
 
         if options.ca_cert_files is not None:
             for value in options.ca_cert_files:
-                if not isinstance(value, list):
-                    raise ValueError("Expected list, got {!r}".format(value))
+                if not isinstance(value, str):
+                    raise ValueError("Expected string, got {!r}".format(value))
                 # this is what init() does
-                value = value[-1]
                 if not os.path.exists(value):
                     raise ValueError("'%s' does not exist" % value)
                 if not os.path.isfile(value):
