@@ -18,7 +18,8 @@ jobs:
     inputs:
       versionSpec: '${{ parameters.python_version }}'
 
-  - script: python -m pip install --upgrade pip setuptools wheel ansible
+  # 'ansible-compat<4' is required due to https://github.com/ansible-community/molecule/issues/3903
+  - script: python -m pip install --upgrade pip setuptools wheel ansible-core "ansible-compat<4"
     retryCountOnTaskFailure: 5
     displayName: Install tools
 

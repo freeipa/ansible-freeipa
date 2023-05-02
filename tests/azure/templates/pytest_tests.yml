@@ -24,10 +24,12 @@ jobs:
     inputs:
       versionSpec: '${{ parameters.python_version }}'
 
+  # 'ansible-compat<4' is required due to https://github.com/ansible-community/molecule/issues/3903
   - script: |
       pip install \
         "molecule-plugins[docker]" \
-        "ansible${{ parameters.ansible_version }}"
+        "ansible${{ parameters.ansible_version }}" \
+        "ansible-compat<4"
     retryCountOnTaskFailure: 5
     displayName: Install molecule and Ansible
 
