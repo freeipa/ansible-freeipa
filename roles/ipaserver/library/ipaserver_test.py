@@ -211,6 +211,7 @@ options:
   random_serial_numbers:
     description: The installer random_serial_numbers setting
     type: bool
+    default: no
     required: no
   allow_zone_overlap:
     description: Create DNS zone even if it already exists
