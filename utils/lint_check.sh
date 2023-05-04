@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 INFO="\033[37;1m"
 WARN="\033[33;1m"

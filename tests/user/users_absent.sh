@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 NUM=1000
 FILE="users_absent.json"

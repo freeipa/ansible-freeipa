@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 #
 # Build Ansible Collection from ansible-freeipa repo
 #

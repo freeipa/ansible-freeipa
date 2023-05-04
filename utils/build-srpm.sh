@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 git_version=$(git describe --tags | sed -e "s/^v//")
 version=${git_version%%-*}

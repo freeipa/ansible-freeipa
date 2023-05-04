@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 NUM=${1-1000}
 FILE="groups.json"
