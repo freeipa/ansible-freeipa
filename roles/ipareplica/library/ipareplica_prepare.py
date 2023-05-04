@@ -469,7 +469,7 @@ def main():
     env._finalize_core(**dict(constants.DEFAULT_CONFIG))
 
     # pylint: disable=no-member
-    xmlrpc_uri = 'https://{}/ipa/xml'.format(ipautil.format_netloc(env.host))
+    xmlrpc_uri = 'https://{0}/ipa/xml'.format(ipautil.format_netloc(env.host))
     if hasattr(ipaldap, "realm_to_ldapi_uri"):
         realm_to_ldapi_uri = ipaldap.realm_to_ldapi_uri
     else:
@@ -609,7 +609,7 @@ def main():
     ansible_log.debug("-- REMOTE_API --")
 
     ldapuri = 'ldaps://%s' % ipautil.format_netloc(config.master_host_name)
-    xmlrpc_uri = 'https://{}/ipa/xml'.format(
+    xmlrpc_uri = 'https://{0}/ipa/xml'.format(
         ipautil.format_netloc(config.master_host_name))
     remote_api = create_api(mode=None)
     remote_api.bootstrap(in_server=True,

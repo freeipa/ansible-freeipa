@@ -236,7 +236,8 @@ def main():
         except Exception as e:
             logger.debug("config_show failed %s", e, exc_info=True)
             module.fail_json(
-                "Failed to retrieve CA certificate subject base: {}".format(e),
+                "Failed to retrieve CA certificate subject base: "
+                "{0}".format(e),
                 rval=CLIENT_INSTALL_ERROR)
         else:
             subject_base = str(DN(config['ipacertificatesubjectbase'][0]))

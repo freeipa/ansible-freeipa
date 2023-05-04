@@ -1067,7 +1067,7 @@ def main():
         try:
             validate_domain_name(realm_name, entity="realm")
         except ValueError as e:
-            raise ScriptError("Invalid realm name: {}".format(unicode(e)))
+            raise ScriptError("Invalid realm name: {0}".format(unicode(e)))
 
     if not options.setup_adtrust:
         # If domain name and realm does not match, IPA server will not be able

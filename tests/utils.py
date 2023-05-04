@@ -180,7 +180,7 @@ def run_playbook(playbook, allow_failures=False):
     if allow_failures:
         return result
 
-    status_code_msg = "ansible-playbook return code: {}".format(
+    status_code_msg = "ansible-playbook return code: {0}".format(
         result.returncode
     )
     assert_msg = "\n".join(

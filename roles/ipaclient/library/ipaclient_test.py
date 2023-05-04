@@ -432,7 +432,7 @@ def main():
         if options.ca_cert_files is not None:
             for value in options.ca_cert_files:
                 if not isinstance(value, list):
-                    raise ValueError("Expected list, got {!r}".format(value))
+                    raise ValueError("Expected list, got {0!r}".format(value))
                 # this is what init() does
                 value = value[-1]
                 if not os.path.exists(value):
@@ -575,13 +575,13 @@ def main():
             hostname_source = "Machine's FQDN"
         if hostname != hostname.lower():
             raise ScriptError(
-                "Invalid hostname '{}', must be lower-case.".format(hostname),
+                "Invalid hostname '{0}', must be lower-case.".format(hostname),
                 rval=CLIENT_INSTALL_ERROR
             )
 
         if hostname in ('localhost', 'localhost.localdomain'):
             raise ScriptError(
-                "Invalid hostname, '{}' must not be used.".format(hostname),
+                "Invalid hostname, '{0}' must not be used.".format(hostname),
                 rval=CLIENT_INSTALL_ERROR)
 
         if hasattr(constants, "MAXHOSTNAMELEN"):
@@ -589,7 +589,7 @@ def main():
                 validate_hostname(hostname, maxlen=constants.MAXHOSTNAMELEN)
             except ValueError as e:
                 raise ScriptError(
-                    'invalid hostname: {}'.format(e),
+                    'invalid hostname: {0}'.format(e),
                     rval=CLIENT_INSTALL_ERROR)
 
         if hasattr(tasks, "is_nosssd_supported"):
@@ -695,7 +695,7 @@ def main():
                 rval=CLIENT_INSTALL_ERROR)
         if ret == ipadiscovery.NOT_FQDN:
             raise ScriptError(
-                "{} is not a fully-qualified hostname".format(hostname),
+                "{0} is not a fully-qualified hostname".format(hostname),
                 rval=CLIENT_INSTALL_ERROR)
         if ret in (ipadiscovery.NO_LDAP_SERVER, ipadiscovery.NOT_IPA_SERVER) \
                 or not ds.domain:

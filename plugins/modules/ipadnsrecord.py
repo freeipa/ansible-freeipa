@@ -1394,15 +1394,16 @@ def gen_args(entry):
 
     if record_value is not None:
         record_type = entry['record_type']
-        rec = "{}record".format(record_type.lower())
+        rec = "{0}record".format(record_type.lower())
         args[rec] = ensure_data_is_list(record_value)
 
     else:
         for field in _RECORD_FIELDS:
             record_value = entry.get(field) or entry.get("%sord" % field)
             if record_value is not None:
+                # pylint: disable=use-maxsplit-arg
                 record_type = field.split('_')[0]
-                rec = "{}record".format(record_type.lower())
+                rec = "{0}record".format(record_type.lower())
                 args[rec] = ensure_data_is_list(record_value)
 
         records = {
