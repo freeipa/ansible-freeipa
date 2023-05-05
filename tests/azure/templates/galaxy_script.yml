@@ -34,6 +34,7 @@ jobs:
   - script: |
       pip install \
         "molecule-plugins[docker]" \
+        "requests<2.29" \
         "ansible${{ parameters.ansible_version }}"
     retryCountOnTaskFailure: 5
     displayName: Install molecule and Ansible
