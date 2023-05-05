@@ -747,8 +747,8 @@ def exit_raw_json(module, **kwargs):
     contains sensible data, it will be appear in the logs.
     """
     module.do_cleanup_files()
-    print(jsonify(kwargs))
-    sys.exit(0)
+    print(jsonify(kwargs))  # pylint: disable=W0012,ansible-bad-function
+    sys.exit(0)  # pylint: disable=W0012,ansible-bad-function
 
 
 def __get_domain_validator():

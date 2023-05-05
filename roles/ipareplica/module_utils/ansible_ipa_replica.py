@@ -334,7 +334,7 @@ def gen_env_boostrap_finalize_core(etc_ipa, default_config):
 def api_bootstrap_finalize(env):
     # pylint: disable=no-member
     xmlrpc_uri = \
-        'https://{}/ipa/xml'.format(ipautil.format_netloc(env.host))
+        'https://{0}/ipa/xml'.format(ipautil.format_netloc(env.host))
     api.bootstrap(in_server=True,
                   context='installer',
                   confdir=paths.ETC_IPA,
@@ -479,7 +479,7 @@ def ansible_module_get_parsed_ip_addresses(ansible_module,
 
 def gen_remote_api(master_host_name, etc_ipa):
     ldapuri = 'ldaps://%s' % ipautil.format_netloc(master_host_name)
-    xmlrpc_uri = 'https://{}/ipa/xml'.format(
+    xmlrpc_uri = 'https://{0}/ipa/xml'.format(
         ipautil.format_netloc(master_host_name))
     remote_api = create_api(mode=None)
     remote_api.bootstrap(in_server=True,

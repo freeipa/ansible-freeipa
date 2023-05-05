@@ -125,7 +125,7 @@ done
 
 for i in utils/*.py utils/new_module utils/changelog utils/ansible-doc-test;
 do
-    sed -i '{s@/usr/bin/python*@%{python}@}' $i
+    sed -i '{s@/usr/bin/env python*@%{python}@}' $i
 done
 
 

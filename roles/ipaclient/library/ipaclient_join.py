@@ -241,7 +241,7 @@ def main():
                                    config=krb_name)
                 except RuntimeError as e:
                     module.fail_json(
-                        msg="Kerberos authentication failed: {}".format(e))
+                        msg="Kerberos authentication failed: {0}".format(e))
 
         elif keytab:
             join_args.append("-f")
@@ -254,10 +254,10 @@ def main():
                                  attempts=kinit_attempts)
                 except GSSError as e:
                     module.fail_json(
-                        msg="Kerberos authentication failed: {}".format(e))
+                        msg="Kerberos authentication failed: {0}".format(e))
             else:
                 module.fail_json(
-                    msg="Keytab file could not be found: {}".format(keytab))
+                    msg="Keytab file could not be found: {0}".format(keytab))
 
         elif password:
             join_args.append("-w")

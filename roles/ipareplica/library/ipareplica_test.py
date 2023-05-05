@@ -450,7 +450,7 @@ def main():
     if installer.ca_cert_files is not None:
         if not isinstance(installer.ca_cert_files, list):
             ansible_module.fail_json(
-                msg="Expected list, got {!r}".format(installer.ca_cert_files))
+                msg="Expected list, got {0!r}".format(installer.ca_cert_files))
         for cert in installer.ca_cert_files:
             if not os.path.exists(cert):
                 ansible_module.fail_json(msg="'%s' does not exist" % cert)

@@ -171,7 +171,7 @@ def main():
         # Print a warning if CA role is only installed on one server
         if len(ca_servers) == 1:
             msg = u'''
-                WARNING: The CA service is only installed on one server ({}).
+                WARNING: The CA service is only installed on one server ({0}).
                 It is strongly recommended to install it on another server.
                 Run ipa-ca-install(1) on another master to accomplish this.
             '''.format(ca_servers[0])
