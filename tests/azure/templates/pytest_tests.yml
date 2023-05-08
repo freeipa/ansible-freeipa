@@ -32,7 +32,7 @@ jobs:
     retryCountOnTaskFailure: 5
     displayName: Install molecule and Ansible
 
-  - script: ansible-galaxy collection install community.docker ansible.posix
+  - script: ansible-galaxy collection install community.docker:3.4.3 ansible.posix
     retryCountOnTaskFailure: 5
     displayName: Install Ansible collections
 
