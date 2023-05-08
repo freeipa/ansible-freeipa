@@ -418,7 +418,6 @@
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
-      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _dirsrv_pkcs12_info: "{{ result_ipareplica_prepare._dirsrv_pkcs12_info if result_ipareplica_prepare._dirsrv_pkcs12_info != None else omit }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
@@ -440,7 +439,6 @@
       config_ca_host_name: "{{ result_ipareplica_prepare.config_ca_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
-      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _http_pkcs12_info: "{{ result_ipareplica_prepare._http_pkcs12_info if result_ipareplica_prepare._http_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       dirman_password: "{{ __derived_dirman_password }}"
@@ -495,7 +493,6 @@
       config_master_host_name:
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
-      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       dirman_password: "{{ __derived_dirman_password }}"
 
@@ -515,7 +512,6 @@
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
       _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
       _kra_host_name: "{{ result_ipareplica_prepare.config_kra_host_name }}"
-      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       dirman_password: "{{ __derived_dirman_password }}"
@@ -533,7 +529,6 @@
       ### additional ###
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
-      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _ca_subject: "{{ result_ipareplica_prepare._ca_subject }}"
       _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
       _kra_host_name: "{{ result_ipareplica_prepare.config_kra_host_name }}"
@@ -563,7 +558,6 @@
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
-      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       dirman_password: "{{ __derived_dirman_password }}"
@@ -583,7 +577,6 @@
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
-      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _pkinit_pkcs12_info: "{{ result_ipareplica_prepare._pkinit_pkcs12_info if result_ipareplica_prepare._pkinit_pkcs12_info != None else omit }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       dirman_password: "{{ __derived_dirman_password }}"
@@ -642,7 +635,6 @@
       config_master_host_name:
         "{{ result_ipareplica_install_ca_certs.config_master_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
-      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"
       dirman_password: "{{ __derived_dirman_password }}"
 
@@ -661,7 +653,6 @@
       config_ca_host_name: "{{ result_ipareplica_prepare.config_ca_host_name }}"
       ccache: "{{ result_ipareplica_prepare.ccache }}"
       _ca_enabled: "{{ result_ipareplica_prepare._ca_enabled }}"
-      _ca_file: "{{ result_ipareplica_prepare._ca_file }}"
       _kra_enabled: "{{ result_ipareplica_prepare._kra_enabled }}"
       _kra_host_name: "{{ result_ipareplica_prepare.config_kra_host_name }}"
       _top_dir: "{{ result_ipareplica_prepare._top_dir }}"

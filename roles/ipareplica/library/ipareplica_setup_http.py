@@ -76,10 +76,6 @@ options:
     description: The installer _ca_enabled setting
     type: bool
     required: no
-  _ca_file:
-    description: The installer _ca_file setting
-    type: str
-    required: no
   _http_pkcs12_info:
     description: The installer _http_pkcs12_info setting
     type: list
@@ -129,7 +125,6 @@ def main():
             config_ca_host_name=dict(required=True, type='str'),
             ccache=dict(required=True, type='str'),
             _ca_enabled=dict(required=False, type='bool'),
-            _ca_file=dict(required=False, type='str'),
             _http_pkcs12_info=dict(required=False, type='list',
                                    elements='str'),
             _top_dir=dict(required=True, type='str'),
