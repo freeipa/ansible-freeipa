@@ -22,7 +22,7 @@ jobs:
     retryCountOnTaskFailure: 5
     displayName: Install tools
 
-  - script: pip install molecule-plugins[docker] requests<2.29
+  - script: pip install molecule-plugins[docker] "requests<2.29"
     retryCountOnTaskFailure: 5
     displayName: Install molecule
 
