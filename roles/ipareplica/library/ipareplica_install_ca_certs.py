@@ -297,6 +297,12 @@ def main():
     config.ca_host_name = config_ca_host_name
     config.ips = config_ips
 
+    if install_ca_cert is None:
+        ansible_module.exit_json(
+            changed=False,
+            config_master_host_name=config.master_host_name,
+            config_ca_host_name=config.ca_host_name)
+
     remote_api = gen_remote_api(config.master_host_name, paths.ETC_IPA)
     installer._remote_api = remote_api
 

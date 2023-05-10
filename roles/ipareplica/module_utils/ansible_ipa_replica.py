@@ -49,7 +49,7 @@ __all__ = ["contextlib", "dnsexception", "dnsresolver", "dnsreversename",
            "dnsname", "kernel_keyring", "krbinstance", "getargspec",
            "adtrustinstance", "paths", "api", "dsinstance", "ipaldap", "Env",
            "ipautil", "installutils", "IPA_PYTHON_VERSION", "NUM_VERSION",
-           "ReplicaConfig", "create_api"]
+           "ReplicaConfig", "create_api", "is_ipa_client_configured", ]
 
 import sys
 import logging
@@ -135,13 +135,23 @@ try:
         from ipaserver.install.installutils import (
             ReplicaConfig, load_pkcs12)
         try:
+            from ipalib.facts import is_ipa_client_configured
+        except ImportError:
+            is_ipa_client_configured = None
+        try:
             from ipalib.facts import is_ipa_configured
         except ImportError:
             from ipaserver.install.installutils import is_ipa_configured
         from ipaserver.install.replication import (
             ReplicationManager, replica_conn_check)
+        try:
+            from ipaserver.install.server.replicainstall import (
+                install_ca_cert
+            )
+        except ImportError:
+            install_ca_cert = None
         from ipaserver.install.server.replicainstall import (
-            make_pkcs12_info, install_replica_ds, install_krb, install_ca_cert,
+            make_pkcs12_info, install_replica_ds, install_krb,
             install_http, install_dns_records, create_ipa_conf, check_dirsrv,
             check_dns_resolution, configure_certmonger,
             remove_replica_info_dir,
