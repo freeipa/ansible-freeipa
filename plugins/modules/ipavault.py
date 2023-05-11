@@ -977,7 +977,7 @@ def main():
                     changed = 'Archived data into' in result['summary']
                 elif command == 'vault_retrieve':
                     if 'result' not in result:
-                        raise Exception(  # pylint: disable=W0719
+                        raise Exception(  # pylint: disable=W0012,W0719
                             "No result obtained."
                         )
                     if "data" in result["result"]:
@@ -985,7 +985,7 @@ def main():
                         data_return["data"] = result["result"]["data"]
                     else:
                         if not datafile_out:
-                            raise Exception(    # pylint: disable=W0719
+                            raise Exception(  # pylint: disable=W0012,W0719
                                 "No data retrieved."
                             )
                     changed = False

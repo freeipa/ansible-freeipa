@@ -212,7 +212,7 @@ try:
 
     else:
         # IPA version < 4.5
-        raise Exception(  # pylint: disable=broad-exception-raised
+        raise Exception(  # pylint: disable=W0012,broad-exception-raised
             "freeipa version '%s' is too old" % VERSION
         )
 
