@@ -45,9 +45,9 @@ options:
     aliases: ["cn"]
   location:
     description: |
-      The server location string.
-      "" for location reset.
-      Only in state: present.
+      The server DNS location.
+      Only available with 'state: present'.
+      Use "" for location reset.
     type: str
     required: false
     aliases: ["ipalocation_location"]
@@ -55,46 +55,46 @@ options:
     description: |
       Weight for server services
       Values 0 to 65535, -1 for weight reset.
-      Only in state: present.
+      Only available with 'state: present'.
     required: false
     type: int
     aliases: ["ipaserviceweight"]
   hidden:
     description: |
       Set hidden state of a server.
-      Only in state: present.
+      Only available with 'state: present'.
     required: false
     type: bool
   no_members:
     description: |
       Suppress processing of membership attributes
-      Only in state: present.
+      Only available with 'state: present'.
     required: false
     type: bool
   delete_continue:
     description: |
       Continuous mode: Don't stop on errors.
-      Only in state: absent.
+      Only available with 'state: absent'.
     required: false
     type: bool
     aliases: ["continue"]
   ignore_last_of_role:
     description: |
       Skip a check whether the last CA master or DNS server is removed.
-      Only in state: absent.
+      Only available with 'state: absent'.
     required: false
     type: bool
   ignore_topology_disconnect:
     description: |
       Ignore topology connectivity problems after removal.
-      Only in state: absent.
+      Only available with 'state: absent'.
     required: false
     type: bool
   force:
     description: |
       Force server removal even if it does not exist.
       Will always result in changed.
-      Only in state: absent.
+      Only available with 'state: absent'.
     required: false
     type: bool
   state:

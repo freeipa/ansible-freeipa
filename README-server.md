@@ -249,14 +249,14 @@ Variable | Description | Required
 `ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
 `name` \| `cn` | The list of server name strings. | yes
-`location` \| `ipalocation_location` | The server location string. Only in state: present. "" for location reset. | no
-`service_weight` \| `ipaserviceweight` | Weight for server services. Type Values 0 to 65535, -1 for weight reset. Only in state: present. (int) | no
-`hidden` | Set hidden state of a server. Only in state: present. (bool) | no
-`no_members` | Suppress processing of membership attributes. Only in state: present. (bool) | no
-`delete_continue` \| `continue` | Continuous mode: Don't stop on errors. Only in state: absent. (bool) | no
-`ignore_last_of_role` | Skip a check whether the last CA master or DNS server is removed. Only in state: absent. (bool) | no
-`ignore_topology_disconnect` | Ignore topology connectivity problems after removal. Only in state: absent. (bool) | no
-`force` | Force server removal even if it does not exist. Will always result in changed. Only in state: absent. (bool) | no
+`location` \| `ipalocation_location` | The server DNS location. Only available with 'state: present'. Use "" for location reset. | no
+`service_weight` \| `ipaserviceweight` | Weight for server services. Type Values 0 to 65535, -1 for weight reset. Only available with 'state: present'. (int) | no
+`hidden` | Set hidden state of a server. Only available with 'state: present'. (bool) | no
+`no_members` | Suppress processing of membership attributes. Only avialable with 'state: present'. (bool) | no
+`delete_continue` \| `continue` | Continuous mode: Don't stop on errors. Only available with 'state: absent'. (bool) | no
+`ignore_last_of_role` | Skip a check whether the last CA master or DNS server is removed. Only available with 'state: absent'. (bool) | no
+`ignore_topology_disconnect` | Ignore topology connectivity problems after removal. Only available with 'state: absent'. (bool) | no
+`force` | Force server removal even if it does not exist. Will always result in changed. Only available with 'state: absent'. (bool) | no
 `state` | The state to ensure. It can be one of `present`, `absent`, default: `present`. `present` is only working with existing servers. | no
 
 

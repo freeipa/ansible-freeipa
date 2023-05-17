@@ -335,7 +335,7 @@ Variable | Description | Required
 -------- | ----------- | --------
 `description` | The host description. | no
 `locality` | Host locality (e.g. "Baltimore, MD"). | no
-`location` \| `ns_host_location` | Host location (e.g. "Lab 2"). | no
+`location` \| `ns_host_location` | Host physical location hint (e.g. "Lab 2"). | no
 `platform` \| `ns_hardware_platform` | Host hardware platform (e.g. "Lenovo T61"). | no
 `os` \| `ns_os_version` | Host operating system and version (e.g. "Fedora 9"). | no
 `password` \| `user_password` \| `userpassword` | Password used in bulk enrollment for absent or not enrolled hosts. | no

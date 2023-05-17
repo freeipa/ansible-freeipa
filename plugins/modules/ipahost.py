@@ -63,7 +63,7 @@ options:
         type: str
         required: false
       location:
-        description: Host location (e.g. "Lab 2")
+        description: Host physical location hist (e.g. "Lab 2")
         type: str
         aliases: ["ns_host_location"]
         required: false
