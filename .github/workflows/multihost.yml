@@ -44,9 +44,13 @@ jobs:
       - name: Run vagrant up
         run: vagrant up
 
-      - name: Get vagrant ssh config and IP addresses
+      - name: Get vagrant ssh config
         run: |
-          vagrant ssh-config | tee "vagrant-ssh" | ./get_ip.sh > inventory/group_vars/all.yml
+          vagrant ssh-config | tee "vagrant-ssh"
+
+      - name: Get nodes IP addresses
+        run: |
+          ./get_ip.sh server replica client | tee "inventory/group_vars/all.yml"
 
       - name: Test host connection
         run: |
@@ -72,15 +76,15 @@ jobs:
         if: failure()
         working-directory: .
         run: |
-          ssh -F tests/multihost/vagrant-ssh server.ipa.test "sudo chmod a+r /var/log/*.log"
+          ssh -F tests/multihost/vagrant-ssh server  "sudo chmod a+r /var/log/*.log"
           mkdir -p logs/server-logs
-          scp -F tests/multihost/vagrant-ssh vagrant@server.ipa.test:/var/log/{ipaserver,ipaclient}-install.log logs/server-logs || true
-          ssh -F tests/multihost/vagrant-ssh rep-01.ipa.test "sudo chmod a+r /var/log/*.log"
+          scp -F tests/multihost/vagrant-ssh vagrant@server:/var/log/{ipaserver,ipaclient}-install.log logs/server-logs || true
+          ssh -F tests/multihost/vagrant-ssh replica "sudo chmod a+r /var/log/*.log"
           mkdir -p logs/replica-logs
-          scp -F tests/multihost/vagrant-ssh vagrant@rep-01.ipa.test:/var/log/{ipareplica,ipaclient}-install.log logs/replica-logs || true
-          ssh -F tests/multihost/vagrant-ssh cli-01.ipa.test "sudo chmod a+r /var/log/*.log"
+          scp -F tests/multihost/vagrant-ssh vagrant@replica:/var/log/{ipareplica,ipaclient}-install.log logs/replica-logs || true
+          ssh -F tests/multihost/vagrant-ssh clente.ipa.test "sudo chmod a+r /var/log/*.log"
           mkdir -p logs/client-logs
-          scp -F tests/multihost/vagrant-ssh vagrant@cli-01.ipa.test:/var/log/ipaclient-install.log logs/client-logs || true
+          scp -F tests/multihost/vagrant-ssh vagrant@client:/var/log/ipaclient-install.log logs/client-logs || true
           # tar czvf multihost-logs.tar.gz logs
 
       - name: Save artifacts

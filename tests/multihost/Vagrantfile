@@ -17,7 +17,7 @@ Vagrant.configure("2") do |config|
   # boot timeout (in seconds).
   config.vm.boot_timeout = 25 * 60
 
-  config.vm.define "server.ipa.test" do |server|
+  config.vm.define "server" do |server|
     server.vm.hostname = "server.ipa.test"
     server.vm.provision "shell",
        inline: "hostnamectl set-hostname server.ipa.test"
@@ -27,8 +27,8 @@ Vagrant.configure("2") do |config|
       inline: "dnf install --downloadonly -y freeipa-server python3-libselinux freeipa-server-dns freeipa-server-trust-ad firewalld"
   end    
 
-  config.vm.define "rep-01.ipa.test" do |replica|
-    replica.vm.hostname="rep-01.ipa.test"
+  config.vm.define "replica" do |replica|
+    replica.vm.hostname="replica"
     replica.vm.provision "shell",
        inline: "hostnamectl set-hostname rep-01.ipa.test"
     replica.vm.provision "shell",
@@ -37,8 +37,8 @@ Vagrant.configure("2") do |config|
       inline: "dnf install --downloadonly -y freeipa-server python3-libselinux freeipa-server-dns freeipa-server-trust-ad firewalld"
   end 
 
-  config.vm.define "cli-01.ipa.test" do |client|
-    client.vm.hostname="cli-01.ipa.test"
+  config.vm.define "client" do |client|
+    client.vm.hostname="client"
     client.vm.provision "shell",
        inline: "hostnamectl set-hostname cli-01.ipa.test"
     client.vm.provision "shell",

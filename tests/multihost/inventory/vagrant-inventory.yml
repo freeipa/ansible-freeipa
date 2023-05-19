@@ -17,7 +17,7 @@ all:
     # IPA First (CA Renewal) Server
     ipaserver:
       hosts:
-        "server.ipa.test":
+        "server":
           # Ansible connection configuration
           ansible_ssh_user: vagrant
           ansible_ssh_private_key_file: ".vagrant/machines/server/libvirt/private_key"
@@ -30,15 +30,15 @@ all:
         ipaserver_setup_dns: "{{ lookup('env', 'ipaserver_setup_dns') | default(true, True) | bool }}"
         ipaserver_auto_forwarders: "{{ lookup('env', 'ipaserver_auto_forwarders') | default(true, True) | bool }}"
         ipaserver_no_forwarders: "{{ lookup('env', 'ipaserver_no_forwarders') | default(false, True) | bool }}"
-        ipaserver_forwarders: "{{ lookup('env', 'ipaserver_forwarders') | default([], True) }}"
+        ipaserver_forwarders: "{{ lookup('env', 'ipaserver_forwarders') | default(omit, True) }}"
         ipaserver_auto_reverse: "{{ lookup('env', 'ipaserver_auto_reverse') | default(true, True) | bool }}"
         # For easier setup of DNS keep it set to 'true'
         ipaserver_allow_zone_overlap: true
         # DNSSEC must be set to 'false' for AD trust
         ipaserver_no_dnssec_validation: true
         # trust vars
-        ipaserver_setup_adtrust: "{{ lookup('env', 'ipaserver_setup_adtrust') | default(false) | bool }}"
-        ipaserver_netbios_name: "{{ lookup('env', 'ipaserver_netbios_name') | default('IPA') }}"
+        ipaserver_setup_adtrust: "{{ lookup('env', 'ipaserver_setup_adtrust') | default(false, True) | bool }}"
+        ipaserver_netbios_name: "{{ lookup('env', 'ipaserver_netbios_name') | default('IPA', True) }}"
         # disable 'allow all' HBAC rule
         ipaserver_no_hbac_allow: true
         # other vars
@@ -46,7 +46,7 @@ all:
     # IPA Replica Servers
     ipareplicas:
       hosts:
-        "rep-01.ipa.test":
+        "repplica":
           # Ansible connection configuration
           ansible_ssh_user: vagrant
           ansible_ssh_private_key_file: ".vagrant/machines/replica/libvirt/private_key"
@@ -60,20 +60,20 @@ all:
         ipareplica_setup_dns: "{{ lookup('env', 'ipareplica_setup_dns') | default(false, True) | bool }}"
         ipareplica_auto_forwarders: "{{ lookup('env', 'ipareplica_auto_forwarders') | default(true, True) | bool }}"
         ipareplica_no_forwarders: "{{ lookup('env', 'ipareplica_no_forwarders') | default(false, True) | bool }}"
-        ipareplica_forwarders: "{{ lookup('env', 'ipareplica_forwarders') | default([], True) }}"
+        ipareplica_forwarders: "{{ lookup('env', 'ipareplica_forwarders') | default(omit, True) }}"
         ipareplica_auto_reverse: "{{ lookup('env', 'ipareplica_auto_reverse') | default(true, True) | bool }}"
         # Trust backup
-        ipareplica_setup_adtrust: "{{ lookup('env', 'ipaserver_setup_adtrust') | default(false) | bool }}"
-        ipareplica_netbios_name: "{{ lookup('env', 'ipaserver_netbios_name') | default('IPA') }}"
+        ipareplica_setup_adtrust: "{{ lookup('env', 'ipaserver_setup_adtrust') | default(false, True) | bool }}"
+        ipareplica_netbios_name: "{{ lookup('env', 'ipaserver_netbios_name') | default('IPA', True) }}"
         # Update IP addressess
         ipasssd_enable_dns_updates: true
         # Automatically handle DNS nameservers (ansible-freeipa v1.9.0+)
-        ipaclient_configure_dns_resolver: "{{ ipaserver_setup_dns | default(false) }}"
-        ipaclient_dns_servers: ["{{ server_ip if (ipaserver_setup_dns | default(false)) else omit}}"]
+        ipaclient_configure_dns_resolver: "{{ lookup('env', 'ipareplica_setup_dns') | default(false, True) | bool }}"
+        ipaclient_dns_servers: "{{ server_ip if (lookup('env', 'ipareplica_setup_dns') | default(false, True) | bool) else default(omit) }}"
     # IPA Client hosts
     ipaclients:
       hosts:
-        "cli-01.ipa.test":
+        "client":
           # Ansible connection configuration
           ansible_ssh_user: vagrant
           ansible_ssh_private_key_file: ".vagrant/machines/client/libvirt/private_key"
@@ -83,5 +83,5 @@ all:
         # Add client DNS entries
         ipasssd_enable_dns_updates: true
         # Automatically handle DNS nameservers (ansible-freeipa v1.9.0+)
-        ipaclient_configure_dns_resolver: "{{ ipaserver_setup_dns | default(false) }}"
-        ipaclient_dns_servers: ["{{ server_ip if (ipaserver_setup_dns | default(false)) else omit}}"]
+        ipaclient_configure_dns_resolver: "{{ lookup('env', 'ipareplica_setup_dns') | default(false, True) | bool }}"
+        ipaclient_dns_servers: "{{ server_ip if (lookup('env', 'ipareplica_setup_dns') | default(false, True) | bool) else default(omit) }}"
