@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
   # Prevent SharedFoldersEnableSymlinksCreate errors
   config.vm.synced_folder ".", "/vagrant", disabled: true
   # boot timeout (in seconds).
-  config.vm.boot_timeout = 12 * 60
+  config.vm.boot_timeout = 15 * 60
 
   config.vm.define "server.ipa.test" do |server|
     server.vm.hostname = "server.ipa.test"
