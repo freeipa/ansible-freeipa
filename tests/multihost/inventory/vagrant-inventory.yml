@@ -38,7 +38,7 @@ all:
         ipaserver_no_dnssec_validation: true
         # trust vars
         ipaserver_setup_adtrust: "{{ lookup('env', 'ipaserver_setup_adtrust') | default(false) | bool }}"
-        ipaserver_netbios_name: "{{ lookup('env', 'ipaserver_netbios_name') | default(omit) }}"
+        ipaserver_netbios_name: "{{ lookup('env', 'ipaserver_netbios_name') | default('IPA') }}"
         # disable 'allow all' HBAC rule
         ipaserver_no_hbac_allow: true
         # other vars
@@ -63,8 +63,8 @@ all:
         ipareplica_forwarders: "{{ lookup('env', 'ipareplica_forwarders') | default([], True) }}"
         ipareplica_auto_reverse: "{{ lookup('env', 'ipareplica_auto_reverse') | default(true, True) | bool }}"
         # Trust backup
-        ipareplica_setup_trust: "{{ lookup('env', 'ipaserver_setup_trust') | default(false) | bool }}"
-        ipareplica_netbios_name: "{{ lookup('env', 'ipaserver_netbios_name') | default(omit) }}"
+        ipareplica_setup_adtrust: "{{ lookup('env', 'ipaserver_setup_adtrust') | default(false) | bool }}"
+        ipareplica_netbios_name: "{{ lookup('env', 'ipaserver_netbios_name') | default('IPA') }}"
         # Update IP addressess
         ipasssd_enable_dns_updates: true
         # Automatically handle DNS nameservers (ansible-freeipa v1.9.0+)
