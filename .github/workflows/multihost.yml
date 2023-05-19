@@ -54,7 +54,7 @@ jobs:
 
       - name: Log scenario configuration
         run: ansible -i inventory --ssh-extra-args "-F vagrant-ssh" -m debug -a var=hostvars localhost | tee 'scenario.log'
-      
+
       # Here is where you add tests...
       - name: Test IPA server deploy
         run: ansible-playbook -i inventory --ssh-extra-args "-F vagrant-ssh" playbooks/install-server.yml
@@ -85,16 +85,15 @@ jobs:
 
       - name: Save artifacts
         if: failure()
-        # if: github.event.state == 'error' || github.event.state == 'failure'
         uses: actions/upload-artifact@v3
         with:
           name: test-results
           # path: multihost-logs.tar.gz
           path: |
             logs/
-            inventory/
-            vagrant-ssh
-            scenario.log
+            tests/multihost/inventory/
+            tests/multihost/vagrant-ssh
+            tests/multihost/scenario.log
           if-no-files-found: "ignore"
 
       # Cleanup
