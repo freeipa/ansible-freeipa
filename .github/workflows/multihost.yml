@@ -48,10 +48,13 @@ jobs:
         run: |
           vagrant ssh-config | tee "vagrant-ssh" | ./get_ip.sh > inventory/group_vars/all.yml
 
-      - name: Ansible ping target hosts.
+      - name: Test host connection
         run: |
           ansible -i inventory --ssh-extra-args "-F vagrant-ssh" -m ping all
 
+      - name: Log scenario configuration
+        run: ansible -i inventory --ssh-extra-args "-F vagrant-ssh" -m debug -a var=hostvars localhost | tee 'scenario.log'
+      
       # Here is where you add tests...
       - name: Test IPA server deploy
         run: ansible-playbook -i inventory --ssh-extra-args "-F vagrant-ssh" playbooks/install-server.yml
@@ -78,14 +81,20 @@ jobs:
           ssh -F tests/multihost/vagrant-ssh cli-01.ipa.test "sudo chmod a+r /var/log/*.log"
           mkdir -p logs/client-logs
           scp -F tests/multihost/vagrant-ssh vagrant@cli-01.ipa.test:/var/log/ipaclient-install.log logs/client-logs || true
-          tar czvf multihost-logs.tar.gz logs
+          # tar czvf multihost-logs.tar.gz logs
 
       - name: Save artifacts
         if: failure()
         # if: github.event.state == 'error' || github.event.state == 'failure'
         uses: actions/upload-artifact@v3
         with:
-          path: multihost-logs.tar.gz
+          name: test-results
+          # path: multihost-logs.tar.gz
+          path: |
+            logs/
+            inventory/
+            vagrant-ssh
+            scenario.log
           if-no-files-found: "ignore"
 
       # Cleanup
