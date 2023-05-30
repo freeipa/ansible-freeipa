@@ -35,6 +35,7 @@ skip_list:
   - yaml   # yamllint should be executed separately.
   - experimental   # Do not run any experimental tests
   - name[template] # Allow Jinja templating inside task names
+  - var-naming
 
 use_default_rules: true
 
