@@ -521,6 +521,11 @@ def main():
             ansible_module.fail_json(
                 msg="NTP configuration cannot be updated during promotion")
 
+    # host_name an domain_name must be different at this point.
+    if options.host_name.lower() == options.domain_name.lower():
+        ansible_module.fail_json(
+            msg="hostname cannot be the same as the domain name")
+
     # done #
 
     ansible_module.exit_json(
