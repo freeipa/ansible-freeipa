@@ -1,0 +1,200 @@
+---
+- name: Test service with certificates with and without trailing new line
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Include tasks ../../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../../env_freeipa_facts.yml
+
+  - name: Setup test environment
+    ansible.builtin.include_tasks: ../env_vars.yml
+
+  - name: Generate self-signed certificates.
+    ansible.builtin.shell:
+      cmd: |
+        openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout "private{{ item }}.key" -out "cert{{ item }}.pem" -subj '/CN=test'
+        openssl x509 -outform der -in "cert{{ item }}.pem" -out "cert{{ item }}.der"
+        base64 "cert{{ item }}.der" -w5000 > "cert{{ item }}.b64"
+    with_items: [1, 2, 3]
+    become: no
+    delegate_to: localhost
+
+  # The rstrip=False for lookup will add keep the newline at the end of the
+  # cert and this is automatically revoved in IPA, This is an additional
+  # test of ipaservice later on to behave correctly in both cases.
+  - name: Set fact cert1,2,3 from lookup
+    ansible.builtin.set_fact:
+      cert1: "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+      cert2: "{{ lookup('file', 'cert2.b64', rstrip=True) }}"
+      cert3: "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
+
+  - name: Host {{ svc_fqdn }} absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ svc_fqdn }}"
+      state: absent
+
+  - name: Host {{ svc_fqdn }} present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ svc_fqdn }}"
+      force: true
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      continue: true
+      state: absent
+
+  - name: Service FOO/{{ svc_fqdn }} present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      force: yes
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} certs 1,2 members present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      certificate:
+        - "{{ cert1 }}"
+        - "{{ cert2 }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} certs 1,2 members present again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      certificate:
+        - "{{ cert1 }}"
+        - "{{ cert2 }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} certs 1,2,3 members present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      certificate:
+        - "{{ cert1 }}"
+        - "{{ cert2 }}"
+        - "{{ cert3 }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} certs 1,2,3 members present again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      certificate:
+        - "{{ cert1 }}"
+        - "{{ cert2 }}"
+        - "{{ cert3 }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} certs 2,3 member absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      certificate:
+        - "{{ cert2 }}"
+        - "{{ cert3 }}"
+      state: absent
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} certs 2,3 member absent again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      certificate:
+        - "{{ cert2 }}"
+        - "{{ cert3 }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} certs 1,2,3 members absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      certificate:
+        - "{{ cert1 }}"
+        - "{{ cert2 }}"
+        - "{{ cert3 }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} certs 1,2,3 members absent again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      certificate:
+        - "{{ cert1 }}"
+        - "{{ cert2 }}"
+        - "{{ cert3 }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      continue: true
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO/{{ svc_fqdn }} absent again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "FOO/{{ svc_fqdn }}"
+      continue: true
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Host {{ svc_fqdn }} absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ svc_fqdn }}"
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Remove certificate files.  # noqa: deprecated-command-syntax
+    ansible.builtin.shell:
+      cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
+    with_items: [1, 2, 3]
+    become: no
+    delegate_to: localhost

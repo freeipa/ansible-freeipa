@@ -1,32 +1,15 @@
 ---
-- name: Include create_services_json.yml
-  ansible.builtin.import_playbook: create_services_json.yml
-
 - name: Test services absent
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  - name: Include services.json
-    ansible.builtin.include_vars:
-      file: services.json  # noqa 505
-
-  - name: Create dict with service names
-    ansible.builtin.set_fact:
-      services_names: "{{ services_names | default([]) + [{'name': item.name}] }}"
-    loop: "{{ service_list }}"
+  - name: Include generate_test_data.yml
+    ansible.builtin.include_tasks: generate_test_data.yml
 
   - name: Services absent len:{{ service_list | length }}
     ipaservice:
       ipaadmin_password: SomeADMINpassword
-      services: "{{ services_names }}"
+      services: "{{ service_absent_list }}"
       state: absent
-
-- name: Remove services.json
-  hosts: localhost
-  tasks:
-  - name: Remove services.json
-    ansible.builtin.file:
-      state: absent
-      path: services.json
