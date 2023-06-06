@@ -590,6 +590,12 @@ def main():
     # service attributes
     principal = ansible_module.params_get("principal")
     certificate = ansible_module.params_get("certificate")
+    # Any leading or trailing whitespace is removed while adding the
+    # certificate with serive_add_cert. To be able to compare the results
+    # from service_show with the given certificates we have to remove the
+    # white space also.
+    if certificate is not None:
+        certificate = [cert.strip() for cert in certificate]
     pac_type = ansible_module.params_get("pac_type", allow_empty_string=True)
     auth_ind = ansible_module.params_get("auth_ind", allow_empty_string=True)
     skip_host_check = ansible_module.params_get("skip_host_check")
@@ -649,6 +655,12 @@ def main():
                 service_set.add(name)
                 principal = service.get("principal")
                 certificate = service.get("certificate")
+                # Any leading or trailing whitespace is removed while adding
+                # the certificate with serive_add_cert. To be able to compare
+                # the results from service_show with the given certificates
+                # we have to remove the white space also.
+                if certificate is not None:
+                    certificate = [cert.strip() for cert in certificate]
                 pac_type = service.get("pac_type")
                 auth_ind = service.get("auth_ind")
                 skip_host_check = service.get("skip_host_check")
