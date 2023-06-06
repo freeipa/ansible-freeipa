@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Authors:
+#   Denis Karpelevich <dkarpele@redhat.com>
 #   Rafael Guterres Jeffman <rjeffman@redhat.com>
 #   Thomas Woerner <twoerner@redhat.com>
 #
