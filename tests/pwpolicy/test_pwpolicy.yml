@@ -223,7 +223,7 @@
       ipapwpolicy:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
-        maxrepeat: 4
+        maxsequence: 4
       register: result
       failed_when: not result.changed or result.failed
 
@@ -231,7 +231,7 @@
       ipapwpolicy:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
-        maxrepeat: 4
+        maxsequence: 4
       register: result
       failed_when: result.changed or result.failed
 
@@ -239,7 +239,7 @@
       ipapwpolicy:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
-        maxrepeat: 0
+        maxsequence: 0
       register: result
       failed_when: not result.changed or result.failed
 
