@@ -1,0 +1,71 @@
+---
+- name: Test services present
+  hosts: ipaserver
+  become: true
+  gather_facts: true
+
+  tasks:
+  - name: Include generate_test_data.yml
+    ansible.builtin.include_tasks: generate_test_data.yml
+
+  - name: Hosts present len:{{ host_list | length }}
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts: "{{ host_list }}"
+      force: true
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Hosts present len:{{ host_list | length }}, again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts: "{{ host_list }}"
+      force: true
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Services present len:{{ service_list | length }}
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services: "{{ service_list }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Services present len:{{ service_list | length }}, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services: "{{ service_list }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Services absent len:{{ service_list | length }}
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services: "{{ service_absent_list }}"
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Services absent len:{{ service_list | length }}, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services: "{{ service_absent_list }}"
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Hosts absent len:{{ host_list | length }}
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts: "{{ host_absent_list }}"
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Hosts absent len:{{ host_list | length }}, again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts: "{{ host_absent_list }}"
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed

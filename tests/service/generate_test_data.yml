@@ -1,0 +1,98 @@
+# Generate lists for hosts and services
+---
+- name: Get Domain from server name
+  ansible.builtin.set_fact:
+    ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
+  when: ipaserver_domain is not defined
+
+- name: Create present services.json data
+  ansible.builtin.shell: |
+    echo "["
+    for i in $(seq 1 "{{ NUM }}"); do
+        echo "  {"
+        echo "    \"name\": \"HTTP/www$i.{{ DOMAIN }}\","
+        echo "    \"principal\": \"host/test$i.{{ DOMAIN }}\","
+        echo "    \"force\": \"true\""
+        if [ "$i" -lt "{{ NUM }}" ]; then
+           echo "  },"
+        else
+           echo "  }"
+        fi
+    done
+    echo "]"
+  vars:
+    NUM: 500
+    DOMAIN: "{{ ipaserver_domain }}"
+  register: command
+
+- name: Set service_list
+  ansible.builtin.set_fact:
+    service_list: "{{ command.stdout | from_json }}"
+
+- name: Create absent services.json data
+  ansible.builtin.shell: |
+    echo "["
+    for i in $(seq 1 "{{ NUM }}"); do
+        echo "  {"
+        echo "    \"name\": \"HTTP/www$i.{{ DOMAIN }}\","
+        echo "    \"continue\": \"true\""
+        if [ "$i" -lt "{{ NUM }}" ]; then
+           echo "  },"
+        else
+           echo "  }"
+        fi
+    done
+    echo "]"
+  vars:
+    NUM: 500
+    DOMAIN: "{{ ipaserver_domain }}"
+  register: command
+
+- name: Set service_absent_list
+  ansible.builtin.set_fact:
+    service_absent_list: "{{ command.stdout | from_json }}"
+
+- name: Create present hosts.json data
+  ansible.builtin.shell: |
+    echo "["
+    for i in $(seq 1 "{{ NUM }}"); do
+        echo "  {"
+        echo "    \"name\": \"www$i.{{ DOMAIN }}\","
+        echo "    \"force\": \"true\""
+        if [ "$i" -lt "{{ NUM }}" ]; then
+           echo "  },"
+        else
+           echo "  }"
+        fi
+    done
+    echo "]"
+  vars:
+    NUM: 500
+    DOMAIN: "{{ ipaserver_domain }}"
+  register: command
+
+- name: Set host_list
+  ansible.builtin.set_fact:
+    host_list: "{{ command.stdout | from_json }}"
+
+- name: Create absent hosts.json data
+  ansible.builtin.shell: |
+    echo "["
+    for i in $(seq 1 "{{ NUM }}"); do
+        echo "  {"
+        echo "    \"name\": \"www$i.{{ DOMAIN }}\""
+        if [ "$i" -lt "{{ NUM }}" ]; then
+           echo "  },"
+        else
+           echo "  }"
+        fi
+    done
+    echo "]"
+  vars:
+    NUM: 500
+    DOMAIN: "{{ ipaserver_domain }}"
+  register: command
+
+- name: Set host_absent_list
+  ansible.builtin.set_fact:
+    host_absent_list: "{{ command.stdout | from_json }}"

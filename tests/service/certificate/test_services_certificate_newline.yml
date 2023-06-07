@@ -1,0 +1,314 @@
+---
+- name: Test services with certificates with and without trailing new line
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Include tasks ../../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../../env_freeipa_facts.yml
+
+  - name: Setup test environment
+    ansible.builtin.include_tasks: ../env_vars.yml
+
+  - name: Generate self-signed certificates.
+    ansible.builtin.shell:
+      cmd: |
+        openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout "private{{ item }}.key" -out "cert{{ item }}.pem" -subj '/CN=test'
+        openssl x509 -outform der -in "cert{{ item }}.pem" -out "cert{{ item }}.der"
+        base64 "cert{{ item }}.der" -w5000 > "cert{{ item }}.b64"
+    with_items: [11, 12, 13, 21, 22, 23, 31, 32, 33]
+    become: no
+    delegate_to: localhost
+
+  # The rstrip=False for lookup will add keep the newline at the end of the
+  # cert and this is automatically revoved in IPA, This is an additional
+  # test of ipaservice later on to behave correctly in both cases.
+  - name: Set fact for certs 11,12,13,21,22,23,31,32,33 from lookup
+    ansible.builtin.set_fact:
+      cert11: "{{ lookup('file', 'cert11.b64', rstrip=True) }}"
+      cert12: "{{ lookup('file', 'cert12.b64', rstrip=False) }}"
+      cert13: "{{ lookup('file', 'cert13.b64', rstrip=True) }}"
+      cert21: "{{ lookup('file', 'cert21.b64', rstrip=False) }}"
+      cert22: "{{ lookup('file', 'cert22.b64', rstrip=False) }}"
+      cert23: "{{ lookup('file', 'cert23.b64', rstrip=True) }}"
+      cert31: "{{ lookup('file', 'cert31.b64', rstrip=False) }}"
+      cert32: "{{ lookup('file', 'cert32.b64', rstrip=True) }}"
+      cert33: "{{ lookup('file', 'cert33.b64', rstrip=False) }}"
+
+  - name: Services FOO,BAR,BAZ/{{ svc_fqdn }} absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name:
+      - "FOO/{{ svc_fqdn }}"
+      - "BAR/{{ svc_fqdn }}"
+      - "BAZ/{{ svc_fqdn }}"
+      continue: true
+      state: absent
+
+  - name: Host {{ svc_fqdn }} absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ svc_fqdn }}"
+      state: absent
+
+  - name: Host {{ svc_fqdn }} present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ svc_fqdn }}"
+      force: true
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Services FOO,BAR,BAZ/{{ svc_fqdn }} present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      services:
+      - name: "FOO/{{ svc_fqdn }}"
+        force: yes
+      - name: "BAR/{{ svc_fqdn }}"
+        force: yes
+      - name: "BAZ/{{ svc_fqdn }}"
+        force: yes
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Services FOO,BAR,BAZ/{{ svc_fqdn }} present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      services:
+      - name: "FOO/{{ svc_fqdn }}"
+        force: yes
+      - name: "BAR/{{ svc_fqdn }}"
+        force: yes
+      - name: "BAZ/{{ svc_fqdn }}"
+        force: yes
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Service FOO,BAR,BAZ/{{ svc_fqdn }} certs x1,x2 members present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      services:
+      - name: "FOO/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert11 }}"
+          - "{{ cert12 }}"
+      - name: "BAR/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert21 }}"
+          - "{{ cert22 }}"
+      - name: "BAZ/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert31 }}"
+          - "{{ cert32 }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO,BAR,BAZ/{{ svc_fqdn }} certs x1,x2 members present again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      services:
+      - name: "FOO/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert11 }}"
+          - "{{ cert12 }}"
+      - name: "BAR/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert21 }}"
+          - "{{ cert22 }}"
+      - name: "BAZ/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert31 }}"
+          - "{{ cert32 }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Service FOO,BAR,BAZ/{{ svc_fqdn }} certs x1,x2,x3 members present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      services:
+      - name: "FOO/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert11 }}"
+          - "{{ cert12 }}"
+          - "{{ cert13 }}"
+      - name: "BAR/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert21 }}"
+          - "{{ cert22 }}"
+          - "{{ cert23 }}"
+      - name: "BAZ/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert31 }}"
+          - "{{ cert32 }}"
+          - "{{ cert33 }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO,BAR,BAZ/{{ svc_fqdn }} certs x1,x2,x3 members present again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      services:
+      - name: "FOO/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert11 }}"
+          - "{{ cert12 }}"
+          - "{{ cert13 }}"
+      - name: "BAR/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert21 }}"
+          - "{{ cert22 }}"
+          - "{{ cert23 }}"
+      - name: "BAZ/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert31 }}"
+          - "{{ cert32 }}"
+          - "{{ cert33 }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Service FOO,BAR,BAZ/{{ svc_fqdn }} certs x2,x3 members absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      services:
+      - name: "FOO/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert12 }}"
+          - "{{ cert13 }}"
+      - name: "BAR/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert22 }}"
+          - "{{ cert23 }}"
+      - name: "BAZ/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert32 }}"
+          - "{{ cert33 }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO,BAR,BAZ/{{ svc_fqdn }} certs x2,x3 members absent, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      services:
+      - name: "FOO/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert12 }}"
+          - "{{ cert13 }}"
+      - name: "BAR/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert22 }}"
+          - "{{ cert23 }}"
+      - name: "BAZ/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert32 }}"
+          - "{{ cert33 }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Service FOO,BAR,BAZ/{{ svc_fqdn }} certs x1,x2,x3 members absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      services:
+      - name: "FOO/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert11 }}"
+          - "{{ cert12 }}"
+          - "{{ cert13 }}"
+      - name: "BAR/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert21 }}"
+          - "{{ cert22 }}"
+          - "{{ cert23 }}"
+      - name: "BAZ/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert31 }}"
+          - "{{ cert32 }}"
+          - "{{ cert33 }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Service FOO,BAR,BAZ/{{ svc_fqdn }} certs x1,x2,x3 members absent, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      services:
+      - name: "FOO/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert11 }}"
+          - "{{ cert12 }}"
+          - "{{ cert13 }}"
+      - name: "BAR/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert21 }}"
+          - "{{ cert22 }}"
+          - "{{ cert23 }}"
+      - name: "BAZ/{{ svc_fqdn }}"
+        certificate:
+          - "{{ cert31 }}"
+          - "{{ cert32 }}"
+          - "{{ cert33 }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Services FOO,BAR,BAZ/{{ svc_fqdn }} absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name:
+      - "FOO/{{ svc_fqdn }}"
+      - "BAR/{{ svc_fqdn }}"
+      - "BAZ/{{ svc_fqdn }}"
+      continue: true
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Services FOO,BAR,BAZ/{{ svc_fqdn }} absent, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name:
+      - "FOO/{{ svc_fqdn }}"
+      - "BAR/{{ svc_fqdn }}"
+      - "BAZ/{{ svc_fqdn }}"
+      continue: true
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Host {{ svc_fqdn }} absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: "{{ svc_fqdn }}"
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Remove certificate files.  # noqa: deprecated-command-syntax
+    ansible.builtin.shell:
+      cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
+    with_items: [11, 12, 13, 21, 22, 23, 31, 32, 33]
+    become: no
+    delegate_to: localhost

@@ -1,0 +1,15 @@
+---
+- name: Test services absent
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: Include generate_test_data.yml
+    ansible.builtin.include_tasks: generate_test_data.yml
+
+  - name: Services absent len:{{ service_list | length }}
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services: "{{ service_absent_list }}"
+      state: absent

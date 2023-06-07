@@ -1,0 +1,91 @@
+---
+- name: Test services present slice
+  hosts: ipaserver
+  become: true
+  gather_facts: true
+
+  vars:
+    slice_size: 100
+  tasks:
+  - name: Include generate_test_data.yml
+    ansible.builtin.include_tasks: generate_test_data.yml
+
+  - name: Size of slice
+    ansible.builtin.debug:
+      msg: "{{ slice_size }}"
+
+  - name: Size of services list
+    ansible.builtin.debug:
+      msg: "{{ service_list | length }}"
+
+  - name: Size of hosts list
+    ansible.builtin.debug:
+      msg: "{{ host_list | length }}"
+
+  - name: Hosts present
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts: "{{ host_list[item : item + slice_size] }}"
+    loop: "{{ range(0, host_list | length, slice_size) | list }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Hosts present, again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts: "{{ host_list[item : item + slice_size] }}"
+    loop: "{{ range(0, host_list | length, slice_size) | list }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Services present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services: "{{ service_list[item : item + slice_size] }}"
+    loop: "{{ range(0, service_list | length, slice_size) | list }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Services present, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services: "{{ service_list[item : item + slice_size] }}"
+    loop: "{{ range(0, service_list | length, slice_size) | list }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Services absent
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services: "{{ service_absent_list[item : item + slice_size] }}"
+      state: absent
+    loop: "{{ range(0, service_absent_list | length, slice_size) | list }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Services absent, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services: "{{ service_absent_list[item : item + slice_size] }}"
+      state: absent
+    loop: "{{ range(0, service_absent_list | length, slice_size) | list }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Hosts absent
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts: "{{ host_absent_list[item : item + slice_size] }}"
+      state: absent
+    loop: "{{ range(0, host_absent_list | length, slice_size) | list }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Hosts absent, again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts: "{{ host_absent_list[item : item + slice_size] }}"
+      state: absent
+    loop: "{{ range(0, host_absent_list | length, slice_size) | list }}"
+    register: result
+    failed_when: result.changed or result.failed
