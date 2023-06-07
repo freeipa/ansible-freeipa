@@ -1,0 +1,213 @@
+---
+- name: Test user certificate requests
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipacert:
+      ipaadmin_password: SomeADMINpassword
+      # ipacert only supports client context
+      ipaapi_context: "client"
+
+  tasks:
+
+  # Ensure test files do not exist
+
+  - name: Check retrieved certificate file
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "/root/retrieved.pem"
+      - "/root/cert_1.pem"
+      - "/root/user.csr"
+
+  # Ensure test items exist.
+
+  - name: Ensure test user exists
+    ipauser:
+      name: certuser
+      first: certificate
+      last: user
+
+  - name: Crete CSR
+    ansible.builtin.shell:
+      cmd:
+        'openssl req -newkey rsa:1024 -keyout /dev/null -nodes -subj /CN=certuser -reqexts IECUserRoles
+          -config <(cat /etc/pki/tls/openssl.cnf; printf "[IECUserRoles]\n1.2.840.10070.8.1=ASN1:UTF8String:hello world")'
+      executable: /bin/bash
+    register: user_req
+
+  - name: Create CSR file
+    ansible.builtin.copy:
+      dest: "/root/user.csr"
+      content: "{{ user_req.stdout }}"
+      mode: 0644
+
+  # TESTS
+
+  - name: Request certificate for user
+    ipacert:
+      csr: '{{ user_req.stdout }}'
+      principal: certuser
+      profile: IECUserRoles
+      state: requested
+    register: user_cert
+    failed_when: not user_cert.changed or user_cert.failed
+
+  - name: Display data from the requested certificate.
+    ansible.builtin.debug:
+      var: user_cert
+
+  - name: Retrieve certificate for user
+    ipacert:
+      serial_number: "{{ user_cert.certificate.serial_number }}"
+      state: retrieved
+    register: retrieved
+    failed_when: retrieved.certificate.serial_number != user_cert.certificate.serial_number
+
+  - name: Display data from the retrieved certificate.
+    ansible.builtin.debug:
+      var: retrieved
+
+  - name: Place certificate on hold
+    ipacert:
+      serial_number: '{{ user_cert.certificate.serial_number }}'
+      state: held
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Place certificate on hold, again
+    ipacert:
+      serial_number: '{{ user_cert.certificate.serial_number }}'
+      state: held
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Release hold on certificate
+    ipacert:
+      serial_number: '{{ user_cert.certificate.serial_number }}'
+      state: released
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Release hold on certificate, again
+    ipacert:
+      serial_number: '{{ user_cert.certificate.serial_number }}'
+      state: released
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Revoke certificate
+    ipacert:
+      serial_number: '{{ user_cert.certificate.serial_number }}'
+      state: revoked
+      reason: keyCompromise
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Revoke certificate, again
+    ipacert:
+      serial_number: '{{ user_cert.certificate.serial_number }}'
+      state: revoked
+      reason: keyCompromise
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Try to revoke inexistent certificate
+    ipacert:
+      serial_number: 0x123456789
+      reason: 9
+      state: revoked
+    register: result
+    failed_when: not (result.failed and ("Request failed with status 404" in result.msg or "Certificate serial number 0x123456789 not found" in result.msg))
+
+  - name: Try to release revoked certificate
+    ipacert:
+      serial_number: '{{ user_cert.certificate.serial_number }}'
+      state: released
+    register: result
+    failed_when: not result.failed or "Cannot release hold on certificate revoked with reason" not in result.msg
+
+  - name: Request certificate for user and save to file
+    ipacert:
+      csr: '{{ user_req.stdout }}'
+      principal: certuser
+      profile: IECUserRoles
+      certificate_out: "/root/cert_1.pem"
+      state: requested
+    register: result
+    failed_when: not result.changed or result.failed or result.certificate
+
+  - name: Check requested certificate file
+    ansible.builtin.file:
+      path: "/root/cert_1.pem"
+    check_mode: true
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Retrieve certificate for user to a file
+    ipacert:
+      serial_number: "{{ user_cert.certificate.serial_number }}"
+      certificate_out: "/root/retrieved.pem"
+      state: retrieved
+    register: result
+    failed_when: result.changed or result.failed or result.certificate
+
+  - name: Check retrieved certificate file
+    ansible.builtin.file:
+      path: "/root/retrieved.pem"
+    check_mode: true
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Request with invalid CSR.
+    ipacert:
+      csr: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        BNxXqLcHylNEyg8SH0u63bWyxtgoDBfdZwdGAhYuJ+g4ev79J5eYoB0CAwEAAaAr
+        MCkGCSqGSIb3DQEJDjEcMBowGAYHKoZIzlYIAQQNDAtoZWxsbyB3b3JsZDANBgkq
+        hkiG9w0BAQsFAAOBgQADCi5BHDv1mrBFDWqYytFpQ1mrvr/mdax3AYXxNL2UEV8j
+        AqZAFTEnJXL/u1eVQtI1yotqxakyUBN4XZBP2CBgJRO93Mtry8cgvU1sPdU8Mavx
+        5gSnlP74Hio2ziscWWydlxpYxFx0gkKvu+0nyIpz954SVYwQ2wwk5FRqZnxI5w==
+        -----END CERTIFICATE REQUEST-----
+      principal: certuser
+      state: requested
+    register: result
+    failed_when: not (result.failed and "Failure decoding Certificate Signing Request" in result.msg)
+
+  - name: Request certificate using a file
+    ipacert:
+      csr_file: "/root/user.csr"
+      principal: certuser
+      state: requested
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Request certificate using an invalid profile
+    ipacert:
+      csr_file: "/root/user.csr"
+      principal: certuser
+      profile: invalid_profile
+      state: requested
+    register: result
+    failed_when: not (result.failed and "Request failed with status 400" in result.msg)
+
+  # CLEANUP TEST ITEMS
+
+  - name: Remove test user
+    ipauser:
+      name: certuser
+      state: absent
+
+  - name: Check retrieved certificate file
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - "/root/retrieved.pem"
+      - "/root/cert_1.pem"
+      - "/root/user.csr"

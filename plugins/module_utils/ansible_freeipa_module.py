@@ -29,7 +29,8 @@ __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "DEFAULT_CONFIG", "LDAP_GENERALIZED_TIME_FORMAT",
            "kinit_password", "kinit_keytab", "run", "DN", "VERSION",
            "paths", "tasks", "get_credentials_if_valid", "Encoding",
-           "load_pem_x509_certificate", "DNSName", "getargspec"]
+           "DNSName", "getargspec", "certificate_loader",
+           "write_certificate_list"]
 
 import os
 # ansible-freeipa requires locale to be C, IPA requires utf-8.
@@ -106,6 +107,7 @@ try:
     except ImportError:
         from ipalib.x509 import load_certificate
         certificate_loader = load_certificate
+    from ipalib.x509 import write_certificate_list
 
     # Try to import is_ipa_configured or use a fallback implementation.
     try:

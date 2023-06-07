@@ -17,6 +17,7 @@ Features
 * Modules for automount key management
 * Modules for automount location management
 * Modules for automount map management
+* Modules for certificate management
 * Modules for config management
 * Modules for delegation management
 * Modules for dns config management
@@ -436,6 +437,7 @@ Modules in plugin/modules
 * [ipaautomountkey](README-automountkey.md)
 * [ipaautomountlocation](README-automountlocation.md)
 * [ipaautomountmap](README-automountmap.md)
+* [ipacert](README-cert.md)
 * [ipaconfig](README-config.md)
 * [ipadelegation](README-delegation.md)
 * [ipadnsconfig](README-dnsconfig.md)
