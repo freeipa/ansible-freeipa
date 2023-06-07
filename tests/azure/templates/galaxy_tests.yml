@@ -34,8 +34,9 @@ jobs:
     scenario: ${{ parameters.scenario }}
     ansible_version: ${{ parameters.ansible_version }}
 
-- template: galaxy_pytest_script.yml
-  parameters:
-    build_number: ${{ parameters.build_number }}
-    scenario: ${{ parameters.scenario }}
-    ansible_version: ${{ parameters.ansible_version }}
+# Temporarily disable due to issues with ansible docker plugin.
+#- template: galaxy_pytest_script.yml
+#  parameters:
+#    build_number: ${{ parameters.build_number }}
+#    scenario: ${{ parameters.scenario }}
+#    ansible_version: ${{ parameters.ansible_version }}
