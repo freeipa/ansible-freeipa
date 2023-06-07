@@ -1055,6 +1055,11 @@ def main():
 
     domain_name = domain_name.lower()
 
+    # Both host_name and domain_name are lowercase at this point.
+    if host_name == domain_name:
+        ansible_module.fail_json(
+            msg="hostname cannot be the same as the domain name")
+
     if not options.realm_name:
         realm_name = domain_name.upper()
     else:
