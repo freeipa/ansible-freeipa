@@ -197,7 +197,7 @@ def gen_args(module,
     if maxrepeat is not None:
         _args["ipapwdmaxrepeat"] = maxrepeat
     if maxsequence is not None:
-        _args["ipapwdmaxrsequence"] = maxsequence
+        _args["ipapwdmaxsequence"] = maxsequence
     if dictcheck is not None:
         if module.ipa_check_version("<", "4.9.10"):
             # Allowed values: "TRUE", "FALSE", ""
