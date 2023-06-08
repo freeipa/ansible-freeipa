@@ -1,6 +1,14 @@
 ---
 # tasks file for ipareplica
 
+- name: Gather facts
+  ansible.builtin.setup:
+    gather_subset: min
+  when: ansible_facts.distribution is not defined or
+        ansible_facts.distribution_version is not defined or
+        ansible_facts.distribution_major_version is not defined or
+        ansible_facts.os_family is not defined
+
 - name: Import variables specific to distribution
   ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
