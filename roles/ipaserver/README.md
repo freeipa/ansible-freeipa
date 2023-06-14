@@ -179,7 +179,7 @@ ipaserver_domain=example.com
 ipaserver_realm=EXAMPLE.COM
 ipaadmin_password=MySecretPassword123
 ipadm_password=MySecretPassword234
-ipaserver_random_serial_number=true
+ipaserver_random_serial_numbers=true
 ```
 
 By setting the variable in the inventory file, the same ipaserver deployment playbook, shown before, can be used.
