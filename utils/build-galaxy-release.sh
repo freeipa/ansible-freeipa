@@ -114,7 +114,7 @@ echo -e "\033[ACreating CHANGELOG.rst... \033[32;1mDONE\033[0m"
 
 sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.${collection_prefix}.plugins.module_utils.ansible_freeipa_module/" plugins/modules/*.py
 
-python utils/create_action_group.py "meta/runtime.yml" "$collection_prefix"
+python3 utils/create_action_group.py "meta/runtime.yml" "$collection_prefix"
 
 (cd plugins/module_utils && {
     ln -sf ../../roles/*/module_utils/*.py .
@@ -145,7 +145,7 @@ done
 echo "Fixing examples in plugins/modules..."
 find plugins/modules -name "*.py" -print0 |
     while IFS= read -d '' -r line; do
-        python utils/galaxyfy-module-EXAMPLES.py "$line" \
+        python3 utils/galaxyfy-module-EXAMPLES.py "$line" \
                "ipa" "$collection_prefix"
     done
 echo -e "\033[AFixing examples in plugins/modules... \033[32;1mDONE\033[0m"
@@ -153,35 +153,35 @@ echo -e "\033[AFixing examples in plugins/modules... \033[32;1mDONE\033[0m"
 echo "Fixing examples in roles/*/library..."
 find roles/*/library -name "*.py" -print0 |
     while IFS= read -d '' -r line; do
-        python utils/galaxyfy-module-EXAMPLES.py "$line" \
+        python3 utils/galaxyfy-module-EXAMPLES.py "$line" \
                "ipa" "$collection_prefix"
     done
 echo -e "\033[AFixing examples in roles/*/library... \033[32;1mDONE\033[0m"
 
 echo "Fixing playbooks in roles/*/tasks..."
 for line in roles/*/tasks/*.yml; do
-    python utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
+    python3 utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
 done
 echo -e "\033[AFixing playbooks in roles/*tasks... \033[32;1mDONE\033[0m"
 
 echo "Fixing playbooks in playbooks..."
 find playbooks -name "*.yml" -print0 |
     while IFS= read -d '' -r line; do
-        python utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
+        python3 utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
     done
 echo -e "\033[AFixing playbooks in playbooks... \033[32;1mDONE\033[0m"
 
 echo "Fixing README(s)..."
 find . -name "README*.md" -print0 |
     while IFS= read -d '' -r line; do
-        python utils/galaxyfy-README.py "$line" "ipa" "$collection_prefix"
+        python3 utils/galaxyfy-README.py "$line" "ipa" "$collection_prefix"
     done
 echo -e "\033[AFixing examples in plugins/modules... \033[32;1mDONE\033[0m"
 
 echo "Fixing playbooks in tests..."
 find tests -name "*.yml" -print0 |
     while IFS= read -d '' -r line; do
-        python utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
+        python3 utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
     done
 echo -e "\033[AFixing playbooks in tests... \033[32;1mDONE\033[0m"
 

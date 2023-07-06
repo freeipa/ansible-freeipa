@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Authors:
 #   Sergio Oliveira Campos <seocam@redhat.com>
