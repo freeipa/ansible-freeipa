@@ -80,6 +80,10 @@ options:
         description: The home directory
         type: str
         required: false
+      gecos:
+        description: The GECOS
+        type: str
+        required: false
       shell:
         description: The login shell
         type: str
@@ -302,6 +306,10 @@ options:
     required: false
   homedir:
     description: The home directory
+    type: str
+    required: false
+  gecos:
+    description: The GECOS
     type: str
     required: false
   shell:
@@ -652,8 +660,8 @@ def find_user(module, name):
     return _result
 
 
-def gen_args(first, last, fullname, displayname, initials, homedir, shell,
-             email, principalexpiration, passwordexpiration, password,
+def gen_args(first, last, fullname, displayname, initials, homedir, gecos,
+             shell, email, principalexpiration, passwordexpiration, password,
              random, uid, gid, city, userstate, postalcode, phone, mobile,
              pager, fax, orgunit, title, carlicense, sshpubkey, userauthtype,
              userclass, radius, radiususer, departmentnumber, employeenumber,
@@ -672,6 +680,8 @@ def gen_args(first, last, fullname, displayname, initials, homedir, shell,
         _args["initials"] = initials
     if homedir is not None:
         _args["homedirectory"] = homedir
+    if gecos is not None:
+        _args["gecos"] = gecos
     if shell is not None:
         _args["loginshell"] = shell
     if email is not None and len(email) > 0:
@@ -735,7 +745,7 @@ def gen_args(first, last, fullname, displayname, initials, homedir, shell,
 
 def check_parameters(  # pylint: disable=unused-argument
         module, state, action, first, last, fullname, displayname, initials,
-        homedir, shell, email, principal, principalexpiration,
+        homedir, gecos, shell, email, principal, principalexpiration,
         passwordexpiration, password, random, uid, gid, city, phone, mobile,
         pager, fax, orgunit, title, manager, carlicense, sshpubkey,
         userauthtype, userclass, radius, radiususer, departmentnumber,
@@ -745,7 +755,8 @@ def check_parameters(  # pylint: disable=unused-argument
     if state == "present":
         if action == "member":
             invalid = ["first", "last", "fullname", "displayname", "initials",
-                       "homedir", "shell", "email", "principalexpiration",
+                       "homedir", "gecos", "shell", "email",
+                       "principalexpiration",
                        "passwordexpiration", "password", "random", "uid",
                        "gid", "city", "phone", "mobile", "pager", "fax",
                        "orgunit", "title", "carlicense", "sshpubkey",
@@ -756,7 +767,7 @@ def check_parameters(  # pylint: disable=unused-argument
 
     else:
         invalid = ["first", "last", "fullname", "displayname", "initials",
-                   "homedir", "shell", "email", "principalexpiration",
+                   "homedir", "gecos", "shell", "email", "principalexpiration",
                    "passwordexpiration", "password", "random", "uid",
                    "gid", "city", "phone", "mobile", "pager", "fax",
                    "orgunit", "title", "carlicense", "sshpubkey",
@@ -902,6 +913,7 @@ def main():
         displayname=dict(type="str", default=None),
         initials=dict(type="str", default=None),
         homedir=dict(type="str", default=None),
+        gecos=dict(type="str", default=None),
         shell=dict(type="str", aliases=["loginshell"], default=None),
         email=dict(type="list", elements="str", default=None),
         principal=dict(type="list", elements="str",
@@ -1015,6 +1027,7 @@ def main():
     displayname = ansible_module.params_get("displayname")
     initials = ansible_module.params_get("initials")
     homedir = ansible_module.params_get("homedir")
+    gecos = ansible_module.params_get("gecos")
     shell = ansible_module.params_get("shell")
     email = ansible_module.params_get("email")
     principal = ansible_module.params_get("principal")
@@ -1080,7 +1093,8 @@ def main():
 
     check_parameters(
         ansible_module, state, action,
-        first, last, fullname, displayname, initials, homedir, shell, email,
+        first, last, fullname, displayname, initials, homedir, gecos, shell,
+        email,
         principal, principalexpiration, passwordexpiration, password, random,
         uid, gid, city, phone, mobile, pager, fax, orgunit, title, manager,
         carlicense, sshpubkey, userauthtype, userclass, radius, radiususer,
@@ -1133,6 +1147,7 @@ def main():
                 displayname = user.get("displayname")
                 initials = user.get("initials")
                 homedir = user.get("homedir")
+                gecos = user.get("gecos")
                 shell = user.get("shell")
                 email = user.get("email")
                 principal = user.get("principal")
@@ -1178,7 +1193,7 @@ def main():
                 check_parameters(
                     ansible_module, state, action,
                     first, last, fullname, displayname, initials, homedir,
-                    shell, email, principal, principalexpiration,
+                    gecos, shell, email, principal, principalexpiration,
                     passwordexpiration, password, random, uid, gid, city,
                     phone, mobile, pager, fax, orgunit, title, manager,
                     carlicense, sshpubkey, userauthtype, userclass, radius,
@@ -1235,6 +1250,7 @@ def main():
                 # Generate args
                 args = gen_args(
                     first, last, fullname, displayname, initials, homedir,
+                    gecos,
                     shell, email, principalexpiration, passwordexpiration,
                     password, random, uid, gid, city, userstate, postalcode,
                     phone, mobile, pager, fax, orgunit, title, carlicense,

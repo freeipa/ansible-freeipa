@@ -9,7 +9,7 @@
     ipauser:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: manager1,manager2,manager3,pinky,pinky2
+      name: manager1,manager2,manager3,pinky,pinky2,igagarin
       state: absent
 
   - name: User manager1 present
@@ -342,9 +342,107 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure user with GECOS information exists.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: igagarin
+      first: Iuri
+      last: Gagarin
+      gecos: Юрий Алексеевич Гагарин
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure user with GECOS information exists, again.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: igagarin
+      first: Iuri
+      last: Gagarin
+      gecos: Юрий Алексеевич Гагарин
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Modify GECOS information.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: igagarin
+      gecos: Юрий Гагарин
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Updating with existent data, should not change user.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: igagarin
+      first: Iuri
+      last: Gagarin
+      gecos: Юрий Гагарин
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure GECOS parameter is cleared.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: igagarin
+      gecos: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure GECOS parameter is cleared, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: igagarin
+      gecos: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure GECOS parameter cannot be used with state absent.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: igagarin
+      gecos: Юрий Гагарин
+      state: absent
+    register: result
+    failed_when: not result.failed or "Argument 'gecos' can not be used with action 'user' and state 'absent'" not in result.msg
+
+  - name: Ensure user igagarin is absent.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: igagarin
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure user with non-ascii name exists.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: igagarin
+      first: Юрий
+      last: Гагарин
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure user with non-ascii name exists has proper GECOS value.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: igagarin
+      gecos: Юрий Гагарин
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: Remove test users
     ipauser:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: manager1,manager2,manager3,pinky,pinky2
+      name: manager1,manager2,manager3,pinky,pinky2,igagarin
       state: absent
