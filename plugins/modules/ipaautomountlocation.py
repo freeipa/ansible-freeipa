@@ -92,8 +92,7 @@ class AutomountLocation(IPAAnsibleModule):
             )
         except ipalib_errors.NotFound:
             return None
-        else:
-            return response.get("result", None)
+        return response.get("result", None)
 
     def check_ipa_params(self):
         if len(self.params_get("name")) == 0:

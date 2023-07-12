@@ -121,8 +121,7 @@ class AutomountKey(IPAAnsibleModule):
             resp = self.ipa_command("automountkey_show", location, args)
         except ipalib_errors.NotFound:
             return None
-        else:
-            return resp.get("result")
+        return resp.get("result")
 
     def check_ipa_params(self):
         invalid = []

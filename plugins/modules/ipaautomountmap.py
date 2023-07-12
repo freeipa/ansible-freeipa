@@ -126,8 +126,7 @@ class AutomountMap(IPAAnsibleModule):
             )
         except Exception:  # pylint: disable=broad-except
             return None
-        else:
-            return response["result"]
+        return response["result"]
 
     def get_indirect_map_keys(self, location, name):
         """Check if 'name' is an indirect map for 'parentmap'."""
