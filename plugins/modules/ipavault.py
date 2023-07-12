@@ -977,12 +977,14 @@ def main():
                     changed = 'Archived data into' in result['summary']
                 elif command == 'vault_retrieve':
                     if 'result' not in result:
+                        # pylint: disable=W0012,broad-exception-raised
                         raise Exception("No result obtained.")
                     if "data" in result["result"]:
                         data_return = exit_args.setdefault("vault", {})
                         data_return["data"] = result["result"]["data"]
                     else:
                         if not datafile_out:
+                            # pylint: disable=W0012,broad-exception-raised
                             raise Exception("No data retrieved.")
                     changed = False
                 else:
@@ -993,7 +995,7 @@ def main():
                         changed = True
             except ipalib_errors.EmptyModlist:
                 result = {}
-            except Exception as exception:
+            except Exception as exception:  # pylint: disable=broad-except
                 ansible_module.fail_json(
                     msg="%s: %s: %s" % (command, name, str(exception)))
 
