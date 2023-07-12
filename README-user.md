@@ -397,6 +397,7 @@ Variable | Description | Required
 `uid` \| `uidnumber` | User ID Number (system will assign one if not provided). | no
 `gid` \| `gidnumber` | Group ID Number. | no
 `gecos` | GECOS | no
+`street` | Street address | no
 `city` | City | no
 `userstate` \| `st` | State/Province | no
 `postalcode` \| `zip` | Postalcode/ZIP | no
@@ -444,3 +445,4 @@ Authors
 =======
 
 Thomas Woerner
+Rafael Jeffman

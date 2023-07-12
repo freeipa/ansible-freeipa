@@ -137,6 +137,10 @@ options:
         type: int
         required: false
         aliases: ["gidnumber"]
+      street:
+        description: Street address
+        type: str
+        required: false
       city:
         description: City
         type: str
@@ -365,6 +369,10 @@ options:
     type: int
     required: false
     aliases: ["gidnumber"]
+  street:
+    description: Street address
+    type: str
+    required: false
   city:
     description: City
     type: str
@@ -662,10 +670,11 @@ def find_user(module, name):
 
 def gen_args(first, last, fullname, displayname, initials, homedir, gecos,
              shell, email, principalexpiration, passwordexpiration, password,
-             random, uid, gid, city, userstate, postalcode, phone, mobile,
-             pager, fax, orgunit, title, carlicense, sshpubkey, userauthtype,
-             userclass, radius, radiususer, departmentnumber, employeenumber,
-             employeetype, preferredlanguage, noprivate, nomembers):
+             random, uid, gid, street, city, userstate, postalcode, phone,
+             mobile, pager, fax, orgunit, title, carlicense, sshpubkey,
+             userauthtype, userclass, radius, radiususer, departmentnumber,
+             employeenumber, employeetype, preferredlanguage, noprivate,
+             nomembers):
     # principal, manager, certificate and certmapdata are handled not in here
     _args = {}
     if first is not None:
@@ -698,6 +707,8 @@ def gen_args(first, last, fullname, displayname, initials, homedir, gecos,
         _args["uidnumber"] = to_text(str(uid))
     if gid is not None:
         _args["gidnumber"] = to_text(str(gid))
+    if street is not None:
+        _args["street"] = street
     if city is not None:
         _args["l"] = city
     if userstate is not None:
@@ -746,39 +757,31 @@ def gen_args(first, last, fullname, displayname, initials, homedir, gecos,
 def check_parameters(  # pylint: disable=unused-argument
         module, state, action, first, last, fullname, displayname, initials,
         homedir, gecos, shell, email, principal, principalexpiration,
-        passwordexpiration, password, random, uid, gid, city, phone, mobile,
-        pager, fax, orgunit, title, manager, carlicense, sshpubkey,
+        passwordexpiration, password, random, uid, gid, street, city, phone,
+        mobile, pager, fax, orgunit, title, manager, carlicense, sshpubkey,
         userauthtype, userclass, radius, radiususer, departmentnumber,
         employeenumber, employeetype, preferredlanguage, certificate,
         certmapdata, noprivate, nomembers, preserve, update_password):
-    invalid = []
-    if state == "present":
-        if action == "member":
-            invalid = ["first", "last", "fullname", "displayname", "initials",
-                       "homedir", "gecos", "shell", "email",
-                       "principalexpiration",
-                       "passwordexpiration", "password", "random", "uid",
-                       "gid", "city", "phone", "mobile", "pager", "fax",
-                       "orgunit", "title", "carlicense", "sshpubkey",
-                       "userauthtype", "userclass", "radius", "radiususer",
-                       "departmentnumber", "employeenumber", "employeetype",
-                       "preferredlanguage", "noprivate", "nomembers",
-                       "preserve", "update_password"]
-
+    if state == "present" and action == "user":
+        invalid = ["preserve"]
     else:
-        invalid = ["first", "last", "fullname", "displayname", "initials",
-                   "homedir", "gecos", "shell", "email", "principalexpiration",
-                   "passwordexpiration", "password", "random", "uid",
-                   "gid", "city", "phone", "mobile", "pager", "fax",
-                   "orgunit", "title", "carlicense", "sshpubkey",
-                   "userauthtype", "userclass", "radius", "radiususer",
-                   "departmentnumber", "employeenumber", "employeetype",
-                   "preferredlanguage", "noprivate", "nomembers",
-                   "update_password"]
-        if action == "user":
-            invalid.extend(["principal", "manager",
-                            "certificate", "certmapdata",
-                            ])
+        invalid = [
+            "first", "last", "fullname", "displayname", "initials", "homedir",
+            "shell", "email", "principalexpiration", "passwordexpiration",
+            "password", "random", "uid", "gid", "street", "city", "phone",
+            "mobile", "pager", "fax", "orgunit", "title", "carlicense",
+            "sshpubkey", "userauthtype", "userclass", "radius", "radiususer",
+            "departmentnumber", "employeenumber", "employeetype",
+            "preferredlanguage", "noprivate", "nomembers", "update_password",
+            "gecos",
+        ]
+
+        if state == "present" and action == "member":
+            invalid.append("preserve")
+        else:
+            if action == "user":
+                invalid.extend(
+                    ["principal", "manager", "certificate", "certmapdata"])
 
         if state != "absent" and preserve is not None:
             module.fail_json(
@@ -929,6 +932,7 @@ def main():
         random=dict(type='bool', default=None),
         uid=dict(type="int", aliases=["uidnumber"], default=None),
         gid=dict(type="int", aliases=["gidnumber"], default=None),
+        street=dict(type="str", default=None),
         city=dict(type="str", default=None),
         userstate=dict(type="str", aliases=["st"], default=None),
         postalcode=dict(type="str", aliases=["zip"], default=None),
@@ -1046,6 +1050,7 @@ def main():
     random = ansible_module.params_get("random")
     uid = ansible_module.params_get("uid")
     gid = ansible_module.params_get("gid")
+    street = ansible_module.params_get("street")
     city = ansible_module.params_get("city")
     userstate = ansible_module.params_get("userstate")
     postalcode = ansible_module.params_get("postalcode")
@@ -1096,11 +1101,11 @@ def main():
         first, last, fullname, displayname, initials, homedir, gecos, shell,
         email,
         principal, principalexpiration, passwordexpiration, password, random,
-        uid, gid, city, phone, mobile, pager, fax, orgunit, title, manager,
-        carlicense, sshpubkey, userauthtype, userclass, radius, radiususer,
-        departmentnumber, employeenumber, employeetype, preferredlanguage,
-        certificate, certmapdata, noprivate, nomembers, preserve,
-        update_password)
+        uid, gid, street, city, phone, mobile, pager, fax, orgunit, title,
+        manager, carlicense, sshpubkey, userauthtype, userclass, radius,
+        radiususer, departmentnumber, employeenumber, employeetype,
+        preferredlanguage, certificate, certmapdata, noprivate, nomembers,
+        preserve, update_password)
     certmapdata = convert_certmapdata(certmapdata)
 
     # Use users if names is None
@@ -1165,6 +1170,7 @@ def main():
                 random = user.get("random")
                 uid = user.get("uid")
                 gid = user.get("gid")
+                street = user.get("street")
                 city = user.get("city")
                 userstate = user.get("userstate")
                 postalcode = user.get("postalcode")
@@ -1194,8 +1200,8 @@ def main():
                     ansible_module, state, action,
                     first, last, fullname, displayname, initials, homedir,
                     gecos, shell, email, principal, principalexpiration,
-                    passwordexpiration, password, random, uid, gid, city,
-                    phone, mobile, pager, fax, orgunit, title, manager,
+                    passwordexpiration, password, random, uid, gid, street,
+                    city, phone, mobile, pager, fax, orgunit, title, manager,
                     carlicense, sshpubkey, userauthtype, userclass, radius,
                     radiususer, departmentnumber, employeenumber,
                     employeetype, preferredlanguage, certificate,
@@ -1252,10 +1258,10 @@ def main():
                     first, last, fullname, displayname, initials, homedir,
                     gecos,
                     shell, email, principalexpiration, passwordexpiration,
-                    password, random, uid, gid, city, userstate, postalcode,
-                    phone, mobile, pager, fax, orgunit, title, carlicense,
-                    sshpubkey, userauthtype, userclass, radius, radiususer,
-                    departmentnumber, employeenumber, employeetype,
+                    password, random, uid, gid, street, city, userstate,
+                    postalcode, phone, mobile, pager, fax, orgunit, title,
+                    carlicense, sshpubkey, userauthtype, userclass, radius,
+                    radiususer, departmentnumber, employeenumber, employeetype,
                     preferredlanguage, noprivate, nomembers)
 
                 if action == "user":

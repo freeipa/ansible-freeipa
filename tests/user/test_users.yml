@@ -151,6 +151,7 @@
       #password: foo2
       principal: pa
       random: yes
+      street: PinkyStreet
       city: PinkyCity
       userstate: PinkyState
       postalcode: PinkyZip
@@ -194,6 +195,7 @@
       #password: foo2
       principal: pa
       random: yes
+      street: PinkyStreet
       city: PinkyCity
       userstate: PinkyState
       postalcode: PinkyZip
