@@ -258,7 +258,7 @@ def main():
         invalid = [
             "forwarders", "forwardpolicy", "skip_overlap_check", "permission"
         ]
-        wants_enable = (state == "enabled")
+        wants_enable = state == "enabled"
 
     if operation == "del":
         invalid = [
