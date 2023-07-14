@@ -30,7 +30,7 @@ __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "kinit_password", "kinit_keytab", "run", "DN", "VERSION",
            "paths", "tasks", "get_credentials_if_valid", "Encoding",
            "DNSName", "getargspec", "certificate_loader",
-           "write_certificate_list"]
+           "write_certificate_list", "boolean"]
 
 import os
 # ansible-freeipa requires locale to be C, IPA requires utf-8.
@@ -49,6 +49,7 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.common.text.converters import jsonify
 from ansible.module_utils import six
 from ansible.module_utils.common._collections_compat import Mapping
+from ansible.module_utils.parsing.convert_bool import boolean
 
 # Import getargspec from inspect or provide own getargspec for
 # Python 2 compatibility with Python 3.11+.

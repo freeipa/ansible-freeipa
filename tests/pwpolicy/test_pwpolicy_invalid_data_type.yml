@@ -103,7 +103,7 @@
       name: ops
       dictcheck: "error"
     register: result
-    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'dictcheck" not in result.msg)
+    failed_when: result.changed or (result.failed and "is not a valid boolean" not in result.msg)
     when: ipa_version is version("4.9", ">=")
 
   - name: Ensure invalid values for usercheck raise proper error.
@@ -113,7 +113,7 @@
       name: ops
       usercheck: "error"
     register: result
-    failed_when: result.changed or (result.failed and "Invalid value 'error' for argument 'usercheck'" not in result.msg)
+    failed_when: result.changed or (result.failed and "is not a valid boolean" not in result.msg)
     when: ipa_version is version("4.9", ">=")
 
   - name: Ensure invalid values for gracelimit raise proper error.
