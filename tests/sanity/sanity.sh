@@ -8,7 +8,7 @@ ANSIBLE_COLLECTION=freeipa-ansible_freeipa
 
 use_docker=$(docker -v >/dev/null 2>&1 && echo "True" || echo "False")
 
-virtualenv "$VENV"
+python -m venv "$VENV"
 # shellcheck disable=SC1091
 source "$VENV"/bin/activate
 
