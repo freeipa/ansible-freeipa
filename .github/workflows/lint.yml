@@ -16,7 +16,7 @@ jobs:
           python-version: "3.x"
       - name: Run ansible-lint
         run: |
-          pip install "ansible-core >=2.14,<2.15" ansible-lint
+          pip install "ansible-core >=2.15,<2.16" ansible-lint
           utils/build-galaxy-release.sh -ki
           cd .galaxy-build
           ansible-lint

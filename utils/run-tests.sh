@@ -162,7 +162,7 @@ list_images() {
 
 # Defaults
 
-ANSIBLE_VERSION=${ANSIBLE_VERSION:-'ansible-core>=2.12,<2.13'}
+ANSIBLE_VERSION=${ANSIBLE_VERSION:-'ansible-core'}
 verbose=""
 FORCE_ENV="N"
 CONTINUE_ON_ERROR=""

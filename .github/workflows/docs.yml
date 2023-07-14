@@ -5,23 +5,6 @@ on:
   - pull_request
 jobs:
   check_docs_oldest_supported:
-    name: Check Ansible Documentation with ansible-core 2.12.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3.1.0
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v4.3.0
-        with:
-          python-version: '3.x'
-      - name: Install Ansible 2.12
-        run: |
-          python -m pip install "ansible-core >=2.12,<2.13"
-      - name: Run ansible-doc-test
-        run: |
-          ANSIBLE_LIBRARY="." ANSIBLE_DOC_FRAGMENT_PLUGINS="." python utils/ansible-doc-test -v roles plugins
-
-  check_docs_previous:
     name: Check Ansible Documentation with ansible-core 2.13.
     runs-on: ubuntu-latest
     steps:
@@ -38,7 +21,7 @@ jobs:
         run: |
           ANSIBLE_LIBRARY="." ANSIBLE_DOC_FRAGMENT_PLUGINS="." python utils/ansible-doc-test -v roles plugins
 
-  check_docs_current:
+  check_docs_previous:
     name: Check Ansible Documentation with ansible-core 2.14.
     runs-on: ubuntu-latest
     steps:
@@ -51,6 +34,23 @@ jobs:
       - name: Install Ansible 2.14
         run: |
           python -m pip install "ansible-core >=2.14,<2.15"
+      - name: Run ansible-doc-test
+        run: |
+          ANSIBLE_LIBRARY="." ANSIBLE_DOC_FRAGMENT_PLUGINS="." python utils/ansible-doc-test -v roles plugins
+
+  check_docs_current:
+    name: Check Ansible Documentation with ansible-core 2.15.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v4.3.0
+        with:
+          python-version: '3.x'
+      - name: Install Ansible 2.15
+        run: |
+          python -m pip install "ansible-core >=2.15,<2.16"
       - name: Run ansible-doc-test
         run: |
           ANSIBLE_LIBRARY="." ANSIBLE_DOC_FRAGMENT_PLUGINS="." python utils/ansible-doc-test -v roles plugins
