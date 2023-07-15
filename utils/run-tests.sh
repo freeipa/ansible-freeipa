@@ -259,15 +259,16 @@ then
     log info "Installing Ansible: ${ANSIBLE_VERSION}"
     pip install --quiet "${ANSIBLE_VERSION}"
     log debug "Ansible version: $(ansible --version | sed -n "1p")${RST}"
-    if [ -n "${ANSIBLE_COLLECTIONS}" ]
-    then
-        log warn "Installed collections will not be removed after execution."
-        log none "Installing: Ansible Collection ${ANSIBLE_COLLECTIONS}"
-        # shellcheck disable=SC2086
-        quiet ansible-galaxy collection install ${ANSIBLE_COLLECTIONS} || die "Failed to install Ansible collections."
-    fi
 else
    log info "Using current virtual environment."
+fi
+
+if [ -n "${ANSIBLE_COLLECTIONS}" ]
+then
+    log warn "Installed collections will not be removed after execution."
+    log none "Installing: Ansible Collection ${ANSIBLE_COLLECTIONS}"
+    # shellcheck disable=SC2086
+    quiet ansible-galaxy collection install ${ANSIBLE_COLLECTIONS} || die "Failed to install Ansible collections."
 fi
 
 # Ansible configuration
