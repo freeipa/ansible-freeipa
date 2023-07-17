@@ -1,0 +1,17 @@
+---
+- name: Plabook to handle users
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+
+  tasks:
+  - name: Ensure user 'smbuser' is present with smb attributes
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: smbuser
+      first: SMB
+      last: User
+      smb_logon_script: N:\logonscripts\startup
+      smb_profile_path: \\server\profiles\some_profile
+      smb_home_dir: \\users\home\smbuser
+      smb_home_drive: "U:"
