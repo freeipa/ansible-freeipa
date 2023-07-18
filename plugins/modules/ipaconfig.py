@@ -160,7 +160,8 @@ options:
         required: false
         type: list
         elements: str
-        choices: ["password", "radius", "otp", "disabled", ""]
+        choices: ["password", "radius", "otp", "pkinit", "hardened", "idp",
+                  "disabled", ""]
         aliases: ["ipauserauthtype"]
     ca_renewal_master_server:
         description: Renewal master for IPA certificate authority.
@@ -425,6 +426,7 @@ def main():
                           choices=["MS-PAC", "PAD", "nfs:NONE", ""]),
             user_auth_type=dict(type="list", elements="str", required=False,
                                 choices=["password", "radius", "otp",
+                                         "pkinit", "hardened", "idp",
                                          "disabled", ""],
                                 aliases=["ipauserauthtype"]),
             ca_renewal_master_server=dict(type="str", required=False),
@@ -525,6 +527,15 @@ def main():
         result = config_show(ansible_module)
 
         if params:
+            # Verify ipauserauthtype(s)
+            if "ipauserauthtype" in params and params["ipauserauthtype"]:
+                _invalid = ansible_module.ipa_command_invalid_param_choices(
+                    "config_mod", "ipauserauthtype", params["ipauserauthtype"])
+                if _invalid:
+                    ansible_module.fail_json(
+                        msg="The use of userauthtype '%s' is not "
+                        "supported by your IPA version" % "','".join(_invalid))
+
             enable_sid = params.get("enable_sid")
             sid_is_enabled = has_enable_sid and is_enable_sid(ansible_module)
 
