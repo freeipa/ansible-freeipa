@@ -42,6 +42,7 @@ import tempfile
 import shutil
 import socket
 import base64
+import ast
 from datetime import datetime
 from contextlib import contextmanager
 from ansible.module_utils.basic import AnsibleModule
@@ -1168,6 +1169,32 @@ class IPAAnsibleModule(AnsibleModule):
 
         """
         return api_check_param(command, name)
+
+    def ipa_command_invalid_param_choices(self, command, name, value):
+        """
+        Return invalid parameter choices for IPA command.
+
+        Parameters
+        ----------
+        command: string
+            The IPA API command to test.
+        name: string
+            The parameter name to check.
+        value: string
+            The parameter value to verify.
+
+        """
+        if command not in api.Command:
+            self.fail_json(msg="The command '%s' does not exist." % command)
+        if name not in api.Command[command].params:
+            self.fail_json(msg="The command '%s' does not have a parameter "
+                           "named '%s'." % (command, name))
+        if not hasattr(api.Command[command].params[name], "cli_metavar"):
+            self.fail_json(msg="The parameter '%s' of the command '%s' does "
+                           "not have choices." % (name, command))
+        _choices = ast.literal_eval(
+            api.Command[command].params[name].cli_metavar)
+        return (set(value or []) - set([""])) - set(_choices)
 
     @staticmethod
     def ipa_check_version(oper, requested_version):
