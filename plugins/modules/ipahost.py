@@ -184,7 +184,7 @@ options:
         type: list
         elements: str
         aliases: ["krbprincipalauthind"]
-        choices: ["radius", "otp", "pkinit", "hardened", ""]
+        choices: ["radius", "otp", "pkinit", "hardened", "idp", ""]
         required: false
       requires_pre_auth:
         description: Pre-authentication is required for the service
@@ -356,7 +356,7 @@ options:
     type: list
     elements: str
     aliases: ["krbprincipalauthind"]
-    choices: ["radius", "otp", "pkinit", "hardened", ""]
+    choices: ["radius", "otp", "pkinit", "hardened", "idp", ""]
     required: false
   requires_pre_auth:
     description: Pre-authentication is required for the service
@@ -667,6 +667,15 @@ def check_parameters(   # pylint: disable=unused-argument
     module.params_fail_used_invalid(invalid, state, action)
 
 
+def check_authind(module, auth_ind):
+    _invalid = module.ipa_command_invalid_param_choices(
+        "host_add", "krbprincipalauthind", auth_ind)
+    if _invalid:
+        module.fail_json(
+            msg="The use of krbprincipalauthind '%s' is not supported "
+            "by your IPA version" % "','".join(_invalid))
+
+
 # pylint: disable=unused-argument
 def result_handler(module, result, command, name, args, errors, exit_args,
                    single_host):
@@ -776,7 +785,8 @@ def main():
                        default=None),
         auth_ind=dict(type='list', elements="str",
                       aliases=["krbprincipalauthind"], default=None,
-                      choices=['radius', 'otp', 'pkinit', 'hardened', '']),
+                      choices=["radius", "otp", "pkinit", "hardened", "idp",
+                               ""]),
         requires_pre_auth=dict(type="bool", aliases=["ipakrbrequirespreauth"],
                                default=None),
         ok_as_delegate=dict(type="bool", aliases=["ipakrbokasdelegate"],
@@ -919,6 +929,8 @@ def main():
 
         # Check version specific settings
 
+        check_authind(ansible_module, auth_ind)
+
         server_realm = ansible_module.ipa_get_realm()
 
         commands = []
@@ -961,6 +973,7 @@ def main():
                 sshpubkey = host.get("sshpubkey")
                 userclass = host.get("userclass")
                 auth_ind = host.get("auth_ind")
+                check_authind(ansible_module, auth_ind)
                 requires_pre_auth = host.get("requires_pre_auth")
                 ok_as_delegate = host.get("ok_as_delegate")
                 ok_to_auth_as_delegate = host.get("ok_to_auth_as_delegate")
