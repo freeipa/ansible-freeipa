@@ -145,7 +145,7 @@ Variable | Description | Required
 `selinuxusermaporder` \| `ipaselinuxusermaporder`| Set ordered list in increasing priority of SELinux users | no
 `selinuxusermapdefault`\| `ipaselinuxusermapdefault` |  Set default SELinux user when no match is found in SELinux map rule | no
 `pac_type` \| `ipakrbauthzdata` |  set default types of PAC supported for services (choices: `MS-PAC`, `PAD`, `nfs:NONE`). Use `""` to clear this variable. | no
-`user_auth_type` \| `ipauserauthtype` |  set default types of supported user authentication (choices: `password`, `radius`, `otp`, `disabled`). Use `""` to clear this variable. | no
+`user_auth_type` \| `ipauserauthtype` |  set default types of supported user authentication (choices: `password`, `radius`, `otp`, `pkinit`, `hardened`, `idp`, `disabled`, `""`). An additional check ensures that only types can be used that are supported by the IPA version. Use `""` to clear this variable. | no
 `domain_resolution_order` \| `ipadomainresolutionorder` | Set list of domains used for short name qualification | no
 `ca_renewal_master_server` \| `ipacarenewalmasterserver`| Renewal master for IPA certificate authority. | no
 `enable_sid` | New users and groups automatically get a SID assigned. Cannot be deactivated once activated. Requires IPA 4.9.8+. (bool) | no

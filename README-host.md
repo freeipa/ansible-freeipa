@@ -354,7 +354,7 @@ Variable | Description | Required
 `mac_address` \| `macaddress` | List of hardware MAC addresses. | no
 `sshpubkey` \| `ipasshpubkey` | List of SSH public keys | no
 `userclass` \| `class` | Host category (semantics placed on this attribute are for local interpretation) | no
-`auth_ind` \| `krbprincipalauthind` | Defines an allow list for Authentication Indicators. Use 'otp' to allow OTP-based 2FA authentications. Use 'radius' to allow RADIUS-based 2FA authentications. Use empty string to reset auth_ind to the initial value. Other values may be used for custom configurations. choices: ["radius", "otp", "pkinit", "hardened", ""] | no
+`auth_ind` \| `krbprincipalauthind` | Defines an allow list for Authentication Indicators. Use 'otp' to allow OTP-based 2FA authentications. Use 'radius' to allow RADIUS-based 2FA authentications. Use empty string to reset auth_ind to the initial value. Other values may be used for custom configurations. An additional check ensures that only types can be used that are supported by the IPA version. Choices: ["radius", "otp", "pkinit", "hardened", "idp", ""] | no
 `requires_pre_auth` \| `ipakrbrequirespreauth` | Pre-authentication is required for the service (bool) | no
 `ok_as_delegate` \| `ipakrbokasdelegate` | Client credentials may be delegated to the service (bool) | no
 `ok_to_auth_as_delegate` \| `ipakrboktoauthasdelegate` | The service is allowed to authenticate on behalf of a client (bool) | no
