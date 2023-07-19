@@ -74,7 +74,7 @@ options:
         type: list
         elements: str
         required: false
-        choices: ["otp", "radius", "pkinit", "hardened", ""]
+        choices: ["otp", "radius", "pkinit", "hardened", "idp", ""]
         aliases: ["krbprincipalauthind"]
       skip_host_check:
         description: Skip checking if host object exists.
@@ -185,7 +185,7 @@ options:
     type: list
     elements: str
     required: false
-    choices: ["otp", "radius", "pkinit", "hardened", ""]
+    choices: ["otp", "radius", "pkinit", "hardened", "idp", ""]
     aliases: ["krbprincipalauthind"]
   skip_host_check:
     description: Skip checking if host object exists.
@@ -491,6 +491,15 @@ def check_parameters(module, state, action, names):
     module.params_fail_used_invalid(invalid, state, action)
 
 
+def check_authind(module, auth_ind):
+    _invalid = module.ipa_command_invalid_param_choices(
+        "service_add", "krbprincipalauthind", auth_ind)
+    if _invalid:
+        module.fail_json(
+            msg="The use of krbprincipalauthind '%s' is not supported "
+            "by your IPA version" % "','".join(_invalid))
+
+
 def init_ansible_module():
     service_spec = dict(
         # service attributesstr
@@ -506,7 +515,8 @@ def init_ansible_module():
                       choices=["MS-PAC", "PAD", "NONE", ""]),
         auth_ind=dict(type="list", elements="str",
                       aliases=["krbprincipalauthind"],
-                      choices=["otp", "radius", "pkinit", "hardened", ""]),
+                      choices=["otp", "radius", "pkinit", "hardened", "idp",
+                               ""]),
         skip_host_check=dict(type="bool"),
         force=dict(type="bool"),
         requires_pre_auth=dict(
@@ -642,6 +652,7 @@ def main():
         if skip_host_check and not has_skip_host_check:
             ansible_module.fail_json(
                 msg="Skipping host check is not supported by your IPA version")
+        check_authind(ansible_module, auth_ind)
 
         commands = []
         keytab_members = ["user", "group", "host", "hostgroup"]
@@ -664,6 +675,7 @@ def main():
                     certificate = [cert.strip() for cert in certificate]
                 pac_type = service.get("pac_type")
                 auth_ind = service.get("auth_ind")
+                check_authind(ansible_module, auth_ind)
                 skip_host_check = service.get("skip_host_check")
                 if skip_host_check and not has_skip_host_check:
                     ansible_module.fail_json(

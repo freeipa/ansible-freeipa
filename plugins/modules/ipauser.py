@@ -208,7 +208,7 @@ options:
           Use empty string to reset userauthtype to the initial value.
         type: list
         elements: str
-        choices: ['password', 'radius', 'otp', '']
+        choices: ["password", "radius", "otp", "pkinit", "hardened", "idp", ""]
         required: false
         aliases: ["ipauserauthtype"]
       userclass:
@@ -465,7 +465,7 @@ options:
       Use empty string to reset userauthtype to the initial value.
     type: list
     elements: str
-    choices: ['password', 'radius', 'otp', '']
+    choices: ["password", "radius", "otp", "pkinit", "hardened", "idp", ""]
     required: false
     aliases: ["ipauserauthtype"]
   userclass:
@@ -888,6 +888,15 @@ def check_parameters(  # pylint: disable=unused-argument
                     module.fail_json(msg="certmapdata: subject is missing")
 
 
+def check_userauthtype(module, userauthtype):
+    _invalid = module.ipa_command_invalid_param_choices(
+        "user_add", "ipauserauthtype", userauthtype)
+    if _invalid:
+        module.fail_json(
+            msg="The use of userauthtype '%s' is not supported "
+            "by your IPA version" % "','".join(_invalid))
+
+
 def extend_emails(email, default_email_domain):
     if email is not None:
         return ["%s@%s" % (_email, default_email_domain)
@@ -1023,7 +1032,8 @@ def main():
                        default=None),
         userauthtype=dict(type='list', elements="str",
                           aliases=["ipauserauthtype"], default=None,
-                          choices=['password', 'radius', 'otp', '']),
+                          choices=["password", "radius", "otp", "pkinit",
+                                   "hardened", "idp", ""]),
         userclass=dict(type="list", elements="str", aliases=["class"],
                        default=None),
         radius=dict(type="str", aliases=["ipatokenradiusconfiglink"],
@@ -1213,6 +1223,10 @@ def main():
 
         server_realm = ansible_module.ipa_get_realm()
 
+        # Check API specific parameters
+
+        check_userauthtype(ansible_module, userauthtype)
+
         # Default email domain
 
         result = ansible_module.ipa_command_no_name("config_show", {})
@@ -1302,6 +1316,10 @@ def main():
                     update_password, smb_logon_script, smb_profile_path,
                     smb_home_dir, smb_home_drive)
                 certmapdata = convert_certmapdata(certmapdata)
+
+                # Check API specific parameters
+
+                check_userauthtype(ansible_module, userauthtype)
 
                 # Extend email addresses
 
