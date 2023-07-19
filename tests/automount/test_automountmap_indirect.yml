@@ -1,0 +1,143 @@
+---
+- name: Test automountmap
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  tasks:
+  # setup environment
+  - name: Ensure test maps are absent
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name:
+        - DirectMap
+        - IndirectMap
+        - IndirectMapDefault
+        - IndirectMapDefaultAbsolute
+      state: absent
+
+  - name: Ensure test location is present
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestIndirect
+
+  - name: Ensure parent map is present
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: DirectMap
+
+  # TESTS
+  - name: Mount point cannot start with '/' if parentmap is not 'auto.master'
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: IndirectMap
+      parentmap: DirectMap
+      mount: '/absolute/path/will/fail'
+    register: result
+    failed_when: not result.failed or 'mount point is relative to parent map' not in result.msg
+
+  - name: Ensure indirect map is present
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: IndirectMap
+      parentmap: DirectMap
+      mount: indirect
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure indirect map is present, again
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: IndirectMap
+      parentmap: DirectMap
+      mount: indirect
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure indirect map is absent
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: IndirectMap
+      state: absent
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure indirect map is absent, again
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: IndirectMap
+      state: absent
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure indirect map is present, after being deleted
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: IndirectMap
+      parentmap: DirectMap
+      mount: indirect
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure indirect map is present, after being deleted, again
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: IndirectMap
+      parentmap: DirectMap
+      mount: indirect
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Ensure indirect map is present with default parent (auto.master)
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: IndirectMapDefault
+      mount: indirect_with_default
+    register: result
+    failed_when: result.failed or not result.changed
+
+  - name: Ensure indirect map is present with default parent (auto.master), again
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: IndirectMapDefault
+      mount: indirect_with_default
+    register: result
+    failed_when: result.failed or result.changed
+
+  - name: Absolute paths must workd with 'auto.master'
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name: IndirectMapDefaultAbsolute
+      mount: /valid/path/indirect_with_default
+    register: result
+    failed_when: result.failed or not result.changed
+
+  # Cleanup
+  - name: Ensure test maps are absent
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      location: TestIndirect
+      name:
+        - DirectMap
+        - IndirectMap
+        - IndirectMapDefault
+        - IndirectMapDefaultAbsolute
+      state: absent
+
+  - name: Ensure test location is absent
+    ipaautomountlocation:
+      ipaadmin_password: SomeADMINpassword
+      name: TestIndirect
+      state: absent

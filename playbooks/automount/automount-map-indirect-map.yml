@@ -1,0 +1,14 @@
+---
+- name: Managed automount maps
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+
+  tasks:
+  - name: Playbook to add an indirect automount map
+    ipaautomountmap:
+      ipaadmin_password: SomeADMINpassword
+      name: auto.indirect
+      location: DMZ
+      parent: auto.DMZ
+      mount: dmz_indirect
