@@ -25,7 +25,7 @@ Supported Distributions
 
 * RHEL/CentOS 7.6+
 * Fedora 26+
-* Ubuntu
+* Ubuntu 16.04 and 18.04
 
 
 Requirements
