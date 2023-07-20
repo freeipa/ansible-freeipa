@@ -26,7 +26,7 @@ playbook_dirs=(
     "tests"
     "playbooks"
 )
-ansible-lint --force-color "${playbook_dirs[@]}"
+ansible-lint --offline --profile production --exclude tests/integration/ --exclude tests/unit/ --parseable --force-color "${playbook_dirs[@]}"
 
 echo -e "${INFO}Running 'ansible-doc-test'...${RST}"
 python "${topdir}/ansible-doc-test" -v roles plugins
