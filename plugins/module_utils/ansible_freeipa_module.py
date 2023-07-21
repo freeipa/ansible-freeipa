@@ -1192,8 +1192,21 @@ class IPAAnsibleModule(AnsibleModule):
         if not hasattr(api.Command[command].params[name], "cli_metavar"):
             self.fail_json(msg="The parameter '%s' of the command '%s' does "
                            "not have choices." % (name, command))
-        _choices = ast.literal_eval(
-            api.Command[command].params[name].cli_metavar)
+        # For IPA 4.6 (RHEL-7):
+        # - krbprincipalauthind in host_add does not have choices defined
+        # - krbprincipalauthind in service_add does not have choices defined
+        #
+        # api.Command[command].params[name].cli_metavar returns "STR" and
+        # ast.literal_eval failes with a ValueError "malformed string".
+        #
+        # There is no way to verify that the given values are valid or not in
+        # this case. The check is done later on while applying the change
+        # with host_add, host_mod, service_add and service_mod.
+        try:
+            _choices = ast.literal_eval(
+                api.Command[command].params[name].cli_metavar)
+        except ValueError:
+            return None
         return (set(value or []) - set([""])) - set(_choices)
 
     @staticmethod
