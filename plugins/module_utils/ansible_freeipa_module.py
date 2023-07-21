@@ -1192,9 +1192,10 @@ class IPAAnsibleModule(AnsibleModule):
         if not hasattr(api.Command[command].params[name], "cli_metavar"):
             self.fail_json(msg="The parameter '%s' of the command '%s' does "
                            "not have choices." % (name, command))
-        _choices = ast.literal_eval(
-            api.Command[command].params[name].cli_metavar)
-        return (set(value or []) - set([""])) - set(_choices)
+        _choices = ast.literal_eval(to_text(
+            api.Command[command].params[name].cli_metavar))
+        _value = [to_text(val) for val in value or []]
+        return (set(_value) - set([""])) - set(_choices)
 
     @staticmethod
     def ipa_check_version(oper, requested_version):
