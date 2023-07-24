@@ -56,6 +56,7 @@ jobs:
     env:
       IPA_SERVER_HOST: ${{ parameters.scenario }}
       RUN_TESTS_IN_DOCKER: true
+      IPA_VERBOSITY: "-vvv"
 
   - task: PublishTestResults@2
     inputs:

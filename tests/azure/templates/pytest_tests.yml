@@ -66,6 +66,7 @@ jobs:
       IPA_DISABLED_TESTS: ${{ variables.ipa_disabled_tests }}
       IPA_ENABLED_MODULES: ${{ variables.ipa_enabled_modules }}
       IPA_ENABLED_TESTS: ${{ variables.ipa_enabled_tests }}
+      IPA_VERBOSITY: "-vvv"
 
   - task: PublishTestResults@2
     inputs:
