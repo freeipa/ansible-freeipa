@@ -24,8 +24,10 @@ Supported Distributions
 -----------------------
 
 * RHEL/CentOS 7.4+
+* CentOS Stream 8+
 * Fedora 26+
 * Ubuntu
+* Debian
 
 
 Requirements
