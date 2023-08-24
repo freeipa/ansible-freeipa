@@ -1,0 +1,13 @@
+---
+- name: Idview host member unapplied example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure host testhost.example.com is not applied to idview test_idview
+    ipaidview:
+      ipaadmin_password: SomeADMINpassword
+      name: test_idview
+      host: testhost.example.com
+      action: member
+      state: absent

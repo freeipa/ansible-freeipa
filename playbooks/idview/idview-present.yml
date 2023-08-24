@@ -1,0 +1,10 @@
+---
+- name: Idview present example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure idview test_idview is present
+    ipaidview:
+      ipaadmin_password: SomeADMINpassword
+      name: test_idview

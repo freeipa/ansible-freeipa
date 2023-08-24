@@ -1,0 +1,11 @@
+---
+- name: Idview absent example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure idview test_idview is absent
+    ipaidview:
+      ipaadmin_password: SomeADMINpassword
+      name: test_idview
+      state: absent
