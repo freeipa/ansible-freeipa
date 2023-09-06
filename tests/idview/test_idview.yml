@@ -1,0 +1,316 @@
+---
+- name: Test idview
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  # It is normally not needed to set "become" to "true" for a module test.
+  # Only set it to true if it is needed to execute commands as root.
+  become: false
+  # Enable "gather_facts" only if "ansible_facts" variable needs to be used.
+  gather_facts: false
+  module_defaults:
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipaidview:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  - name: Get Domain from server name
+    ansible.builtin.set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Set host1_fqdn .. host2_fqdn
+    ansible.builtin.set_fact:
+      host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
+      host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+
+  # CLEANUP TEST ITEMS
+
+  - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" are absent
+    ipahost:
+      hosts:
+      - name: "{{ host1_fqdn }}"
+      - name: "{{ host2_fqdn }}"
+      state: absent
+
+  - name: Ensure idview test1_idview, test2_idview and renamed_idview are absent
+    ipaidview:
+      name:
+      - test1_idview
+      - test2_idview
+      - renamed_idview
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" are present
+    ipahost:
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        force: true
+      - name: "{{ host2_fqdn }}"
+        force: true
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # TESTS
+
+  - name: Ensure idview test1_idview is present
+    ipaidview:
+      name: test1_idview
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure idview test1_idview is present again
+    ipaidview:
+      name: test1_idview
+      # Add needed parameters here
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure idview test2_idview is present
+    ipaidview:
+      name: test2_idview
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure idview test2_idview is present again
+    ipaidview:
+      name: test2_idview
+      # Add needed parameters here
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Rename test1_idview to renamed_idview
+    ipaidview:
+      name: test1_idview
+      rename: renamed_idview
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  # This task will fail as there is no idview to be renamed
+  - name: Rename test1_idview to renamed_idview, again
+    ipaidview:
+      name: test1_idview
+      rename: renamed_idview
+      state: renamed
+    register: result
+    failed_when: result.changed or (not result.failed and "No idview 'test1_idview'" not in result.msg)
+
+  - name: Rename renamed_idview back to to test1_idview
+    ipaidview:
+      name: renamed_idview
+      rename: test1_idview
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure idview test1_idview is present with description
+    ipaidview:
+      name: test1_idview
+      description: "Test IDView"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure idview test1_idview is present with description, again
+    ipaidview:
+      name: test1_idview
+      description: "Test IDView"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure idview test1_idview is present with empty description
+    ipaidview:
+      name: test1_idview
+      description: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure idview test1_idview is present with empty description, again
+    ipaidview:
+      name: test1_idview
+      description: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure idview test1_idview is present with domain reolution order "{{ ipaserver_domain }}"
+    ipaidview:
+      name: test1_idview
+      domain_resolution_order: "{{ ipaserver_domain }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure idview test1_idview is present with domain reolution order "{{ ipaserver_domain }}", again
+    ipaidview:
+      name: test1_idview
+      domain_resolution_order: "{{ ipaserver_domain }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure idview test1_idview is present with empty domain reolution order
+    ipaidview:
+      name: test1_idview
+      domain_resolution_order: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure idview test1_idview is present with empty domain reolution order, again
+    ipaidview:
+      name: test1_idview
+      domain_resolution_order: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" is applied to idview test1_idview
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" is applied to idview test1_idview, again
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure host "{{ host2_fqdn }}" is applied to idview test1_idview
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host2_fqdn }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host "{{ host2_fqdn }}" is applied to idview test1_idview, again
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host2_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure hosts "{{ host1_fqdn }}" and "{{ host1_fqdn }}" are applied to idview test1_idview
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure hosts "{{ host1_fqdn }}" and "{{ host1_fqdn }}" are not applied to idview test1_idview
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure hosts "{{ host1_fqdn }}" and "{{ host1_fqdn }}" are not applied to idview test1_idview, again
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" is applied to idview test1_idview
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" is applied to idview test1_idview, again
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" is applied to idview test2_idview
+    ipaidview:
+      name: test2_idview
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" is applied to idview test2_idview, again
+    ipaidview:
+      name: test2_idview
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" is not applied to idview test1_idview anymore
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" is not applied to idview test2_idview
+    ipaidview:
+      name: test2_idview
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" is not applied to idview test2_idview, again
+    ipaidview:
+      name: test2_idview
+      host:
+      - "{{ host1_fqdn }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" absent
+    ipahost:
+      hosts:
+      - name: "{{ host1_fqdn }}"
+      - name: "{{ host2_fqdn }}"
+      state: absent
+
+  - name: Ensure idview test1_idview, test2_idview and renamed_idview are absent
+    ipaidview:
+      name:
+      - test1_idview
+      - test2_idview
+      - renamed_idview
+      state: absent

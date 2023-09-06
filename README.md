@@ -31,6 +31,7 @@ Features
 * Modules for host management
 * Modules for hostgroup management
 * Modules for idrange management
+* Modules for idview management
 * Modules for location management
 * Modules for netgroup management
 * Modules for permission management
@@ -451,6 +452,7 @@ Modules in plugin/modules
 * [ipahost](README-host.md)
 * [ipahostgroup](README-hostgroup.md)
 * [idrange](README-idrange.md)
+* [idview](README-idview.md)
 * [ipalocation](README-location.md)
 * [ipanetgroup](README-netgroup.md)
 * [ipapermission](README-permission.md)
