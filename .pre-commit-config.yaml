@@ -1,15 +1,25 @@
 ---
 repos:
 - repo: https://github.com/ansible/ansible-lint.git
-  rev: v6.6.1
+  rev: v6.17.2
   hooks:
   - id: ansible-lint
     always_run: false
     pass_filenames: true
     files: \.(yaml|yml)$
     exclude: /env[^/]*.(yaml|yml)$
-    entry: |
-        env ANSIBLE_LIBRARY=./plugins/modules ANSIBLE_MODULE_UTILS=./plugins/module_utils ANSIBLE_DOC_FRAGMENT_PLUGINS=./plugins/doc_fragments ansible-lint
+    entry: >-
+        env
+        ANSIBLE_LIBRARY=./plugins/modules
+        ANSIBLE_MODULE_UTILS=./plugins/module_utils
+        ANSIBLE_DOC_FRAGMENT_PLUGINS=./plugins/doc_fragments
+        ansible-lint
+          --offline
+          --profile production
+          --exclude tests/integration/
+          --exclude tests/unit/
+          --parseable
+          --nocolor
 - repo: https://github.com/adrienverge/yamllint.git
   rev: v1.28.0
   hooks:
