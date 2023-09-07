@@ -77,6 +77,23 @@ Example playbook to revoke an existing certificate:
     ipacert:
       ipaadmin_password: SomeADMINpassword
       serial_number: 123456789
+      reason: 5
+      state: revoked
+```
+
+When revoking a certificate a mnemonic can also be used to set the revocation reason:
+
+```yaml
+---
+- name: Revoke certificate
+  hosts: ipaserver
+
+  tasks:
+  - name Revoke a certificate
+    ipacert:
+      ipaadmin_password: SomeADMINpassword
+      serial_number: 123456789
+      reason: cessationOfOperation
       state: revoked
 ```
 
