@@ -24,6 +24,7 @@ Supported Distributions
 -----------------------
 
 * RHEL/CentOS 7.6+
+* CentOS Stream 8+
 * Fedora 26+
 
 
