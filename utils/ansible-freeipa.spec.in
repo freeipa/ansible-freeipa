@@ -35,6 +35,7 @@ Features
 - Modules for automount key management
 - Modules for automount location management
 - Modules for automount map management
+- Modules for certificate management
 - Modules for config management
 - Modules for delegation management
 - Modules for dns config management
@@ -48,7 +49,9 @@ Features
 - Modules for host management
 - Modules for hostgroup management
 - Modules for idrange management
+- Modules for idview management
 - Modules for location management
+- Modules for netgroup management
 - Modules for permission management
 - Modules for privilege management
 - Modules for pwpolicy management
