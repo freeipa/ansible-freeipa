@@ -70,7 +70,7 @@ Requirements
 ------------
 
 **Controller**
-* Ansible version: 2.8+ (ansible-freeipa is an Ansible Collection)
+* Ansible version: 2.13+
 
 **Node**
 * Supported FreeIPA version (see above)
@@ -130,17 +130,7 @@ This command will get the whole collection from galaxy:
 ansible-galaxy collection install freeipa.ansible_freeipa
 ```
 
-Installing collections using the ansible-galaxy command is only supported with ansible 2.9+.
-
-The mazer tool can be used for to install the collection for ansible 2.8:
-
-```bash
-mazer install freeipa.ansible_freeipa
-```
-
 Ansible galaxy does not support the use of dash ('-') in a name and is automatically replacing this with an underscore ('\_'). Therefore the name is `ansible_freeipa`. The ansible_freeipa collection will be placed in the directory `~/.ansible/collections/ansible_collections/freeipa/ansible_freeipa` where it will be automatically be found for this user.
-
-The needed adaptions of collection prefixes for `modules` and `module_utils` will be done with ansible-freeipa release `0.1.6` for galaxy.
 
 
 Ansible inventory file
