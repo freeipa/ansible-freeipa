@@ -1,0 +1,14 @@
+---
+- name: Playbook to manage idoverrideuser
+  hosts: ipaserver
+  become: false
+
+  tasks:
+  - name: Ensure test user test_user certificate member is present in idview test_idview
+    ipaidoverrideuser:
+      ipaadmin_password: SomeADMINpassword
+      idview: test_idview
+      anchor: test_user
+      certificate:
+      - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+      action: member

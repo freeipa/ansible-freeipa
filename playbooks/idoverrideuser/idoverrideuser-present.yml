@@ -1,0 +1,11 @@
+---
+- name: Playbook to manage idoverrideuser
+  hosts: ipaserver
+  become: false
+
+  tasks:
+  - name: Ensure test user test_user is present in idview test_idview.
+    ipaidoverrideuser:
+      ipaadmin_password: SomeADMINpassword
+      idview: test_idview
+      anchor: test_user

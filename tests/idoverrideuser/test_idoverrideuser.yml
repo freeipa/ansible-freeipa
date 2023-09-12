@@ -1,0 +1,506 @@
+---
+- name: Test idoverrideuser
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipaidoverrideuser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipaidview:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure test user test_user does not exist
+    ipauser:
+      name: test_user
+      state: absent
+
+  - name: Ensure test user test_user is absent in idview test_idview
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      continue: true
+      state: absent
+
+  - name: Ensure test idview test_idview does not exist
+    ipaidview:
+      name: test_idview
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure test user test_user exists
+    ipauser:
+      name: test_user
+      first: test
+      last: user
+
+  - name: Ensure test idview test_idview exists
+    ipaidview:
+      name: test_idview
+
+  - name: Generate self-signed certificates.
+    ansible.builtin.shell:
+      cmd: |
+        openssl req -x509 -newkey rsa:2048 -days 365 -nodes -keyout "private{{ item }}.key" -out "cert{{ item }}.pem" -subj '/CN=test'
+        openssl x509 -outform der -in "cert{{ item }}.pem" -out "cert{{ item }}.der"
+        base64 "cert{{ item }}.der" -w5000 > "cert{{ item }}.b64"
+    with_items: [1, 2, 3]
+    become: no
+    delegate_to: localhost
+
+  # TESTS
+
+  - name: Ensure test user test_user is present in idview test_idview
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+    register: result
+    failed_when: result.changed or result.failed
+
+  # description
+
+  - name: Ensure test user test_user is present in idview test_idview with description
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      description: "test_user description"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with description, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      description: "test_user description"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without description
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      description: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without description, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      description: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # name
+
+  - name: Ensure test user test_user is present in idview test_idview with internal name test_123_user
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      name: test_123_user
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with internal name test_123_user, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      name: test_123_user
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without internal name
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      name: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without internal name, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      name: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # uid
+
+  - name: Ensure test user test_user is present in idview test_idview with uid 20001
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      uid: 20001
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with uid 20001, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      uid: 20001
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without uid
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      uid: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without uid, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      uid: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # gecos
+
+  - name: Ensure test user test_user is present in idview test_idview with gecos "Gecos Test"
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      gecos: Gecos Test öäüÇœß
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with gecos "Gecos Test", again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      gecos: Gecos Test öäüÇœß
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without gecos
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      gecos: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without gecos, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      gecos: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # gidnumber
+
+  - name: Ensure test user test_user is present in idview test_idview with gidnumber 20001
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      gidnumber: 20001
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with gidnumber 20001, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      gidnumber: 20001
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without gidnumber
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      gidnumber: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without gidnumber, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      gidnumber: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # homedir
+
+  - name: Ensure test user test_user is present in idview test_idview with homedir /Users
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      homedir: /Users
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with homedir /Users, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      homedir: /Users
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without homedir
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      homedir: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without homedir, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      homedir: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # shell
+
+  - name: Ensure test user test_user is present in idview test_idview with shell /bin/someshell
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      shell: /bin/someshell
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with shell /bin/someshell, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      shell: /bin/someshell
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without shell
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      shell: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without shell, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      shell: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # sshpubkey
+
+  - name: Ensure test user test_user is present in idview test_idview with sshpubkey
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      sshpubkey:
+      # yamllint disable-line rule:line-length
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCqmVDpEX5gnSjKuv97AyzOhaUMMKz8ahOA3GY77tVC4o68KNgMCmDSEG1/kOIaElngNLaCha3p/2iAcU9Bi1tLKUlm2bbO5NHNwHfRxY/3cJtq+/7D1vxJzqThYwI4F9vr1WxyY2+mMTv3pXbfAJoR8Mu06XaEY5PDetlDKjHLuNWF+/O7ZU8PsULTa1dJZFrtXeFpmUoLoGxQBvlrlcPI1zDciCSU24t27Zan5Py2l5QchyI7yhCyMM77KDtj5+AFVpmkb9+zq50rYJAyFVeyUvwjzErvQrKJzYpA0NyBp7vskWbt36M16/M/LxEK7HA6mkcakO3ESWx5MT1LAjvdlnxbWG3787MxweHXuB8CZU+9bZPFBaJ+VQtOfJ7I8eH0S16moPC4ak8FlcFvOH8ERDPWLFDqfy09yaZ7bVIF0//5ZI7Nf3YDe3S7GrBX5ieYuECyP6UNkTx9BRsAQeVvXEc6otzB7iCSnYBMGUGzCqeigoAWaVQUONsSR3Uatks= pinky@ipaserver.el81.local  # noqa 204
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with sshpubkey, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      sshpubkey:
+      # yamllint disable-line rule:line-length
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCqmVDpEX5gnSjKuv97AyzOhaUMMKz8ahOA3GY77tVC4o68KNgMCmDSEG1/kOIaElngNLaCha3p/2iAcU9Bi1tLKUlm2bbO5NHNwHfRxY/3cJtq+/7D1vxJzqThYwI4F9vr1WxyY2+mMTv3pXbfAJoR8Mu06XaEY5PDetlDKjHLuNWF+/O7ZU8PsULTa1dJZFrtXeFpmUoLoGxQBvlrlcPI1zDciCSU24t27Zan5Py2l5QchyI7yhCyMM77KDtj5+AFVpmkb9+zq50rYJAyFVeyUvwjzErvQrKJzYpA0NyBp7vskWbt36M16/M/LxEK7HA6mkcakO3ESWx5MT1LAjvdlnxbWG3787MxweHXuB8CZU+9bZPFBaJ+VQtOfJ7I8eH0S16moPC4ak8FlcFvOH8ERDPWLFDqfy09yaZ7bVIF0//5ZI7Nf3YDe3S7GrBX5ieYuECyP6UNkTx9BRsAQeVvXEc6otzB7iCSnYBMGUGzCqeigoAWaVQUONsSR3Uatks= pinky@ipaserver.el81.local  # noqa 204
+
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without sshpubkey
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      sshpubkey: []
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without sshpubkey, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      sshpubkey: []
+    register: result
+    failed_when: result.changed or result.failed
+
+  # certificate
+
+  - name: Ensure test user test_user is present in idview test_idview with 1 certificate
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      certificate:
+      - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with 1 certificate, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      certificate:
+      - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with 1 certificate member
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      certificate:
+      - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with 3 certificate members
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      certificate:
+      - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+      - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
+      - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
+      action: member
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview with 3 certificate members, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      certificate:
+      - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+      - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
+      - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
+      action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without certificate members
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      certificate:
+      - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
+      - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without certificate members, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      certificate:
+      - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
+      - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without certificates
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      certificate: []
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without certificates, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      certificate: []
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user is present in idview test_idview without certificate members
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      certificate:
+      - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
+      - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
+      - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # no fallback_to_ldap tests
+
+  # absent
+
+  - name: Ensure test user test_user is absent in idview test_idview
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      continue: true
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user is absent in idview test_idview, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      continue: true
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure test user test_user does not exist
+    ipauser:
+      name: test_user
+      state: absent
+
+  - name: Ensure test user test_user is absent in idview test_idview
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user
+      continue: true
+      state: absent
+
+  - name: Ensure test idview test_idview does not exist
+    ipaidview:
+      name: test_idview
+      state: absent
+
+  - name: Remove certificate files.  # noqa: deprecated-command-syntax
+    ansible.builtin.shell:
+      cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
+    with_items: [1, 2, 3]
+    become: no
+    delegate_to: localhost
