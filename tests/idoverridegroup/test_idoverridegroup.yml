@@ -1,0 +1,205 @@
+---
+- name: Test idoverridegroup
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipaidoverridegroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipaidview:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure test group test_group does not exist
+    ipagroup:
+      name: test_group
+      state: absent
+
+  - name: Ensure test group test_group is absent in idview test_idview
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      continue: true
+      state: absent
+
+  - name: Ensure test idview test_idview does not exist
+    ipaidview:
+      name: test_idview
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure test group test_group exists
+    ipagroup:
+      name: test_group
+
+  - name: Ensure test idview test_idview exists
+    ipaidview:
+      name: test_idview
+
+  # TESTS
+
+  - name: Ensure test group test_group is present in idview test_idview
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test group test_group is present in idview test_idview, again
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+    register: result
+    failed_when: result.changed or result.failed
+
+  # description
+
+  - name: Ensure test group test_group is present in idview test_idview with description
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      description: "test_group description"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test group test_group is present in idview test_idview with description, again
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      description: "test_group description"
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test group test_group is present in idview test_idview without description
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      description: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test group test_group is present in idview test_idview without description, again
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      description: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # name
+
+  - name: Ensure test group test_group is present in idview test_idview with internal name test_123_group
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      name: test_123_group
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test group test_group is present in idview test_idview with internal name test_123_group, again
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      name: test_123_group
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test group test_group is present in idview test_idview without internal name
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      name: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test group test_group is present in idview test_idview without internal name, again
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      name: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # gid
+
+  - name: Ensure test group test_group is present in idview test_idview with gid 20001
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      gid: 20001
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test group test_group is present in idview test_idview with gid 20001, again
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      gid: 20001
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test group test_group is present in idview test_idview without gid
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      gid: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test group test_group is present in idview test_idview without gid, again
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      gid: ""
+    register: result
+    failed_when: result.changed or result.failed
+
+  # no fallback_to_ldap tests
+
+  # absent
+
+  - name: Ensure test group test_group is absent in idview test_idview
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      continue: true
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test group test_group is absent in idview test_idview, again
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      continue: true
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  # CLEANUP TEST ITEMS
+
+  - name: Ensure test group test_group does not exist
+    ipagroup:
+      name: test_group
+      state: absent
+
+  - name: Ensure test group test_group is absent in idview test_idview
+    ipaidoverridegroup:
+      idview: test_idview
+      anchor: test_group
+      continue: true
+      state: absent
+
+  - name: Ensure test idview test_idview does not exist
+    ipaidview:
+      name: test_idview
+      state: absent

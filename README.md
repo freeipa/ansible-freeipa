@@ -30,6 +30,7 @@ Features
 * Modules for hbacsvcgroup management
 * Modules for host management
 * Modules for hostgroup management
+* Modules for idoverridegroup management
 * Modules for idoverrideuser management
 * Modules for idrange management
 * Modules for idview management
@@ -442,6 +443,7 @@ Modules in plugin/modules
 * [ipahbacsvcgroup](README-hbacsvcgroup.md)
 * [ipahost](README-host.md)
 * [ipahostgroup](README-hostgroup.md)
+* [idoverridegroup](README-idoverridegroup.md)
 * [idoverrideuser](README-idoverrideuser.md)
 * [idrange](README-idrange.md)
 * [idview](README-idview.md)
