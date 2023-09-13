@@ -9,7 +9,7 @@
 
   tasks:
   - name: Include FreeIPA facts.
-    include_tasks: ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   # Test will only be executed if host is not a server.
   - name: Execute with server context in the client.
