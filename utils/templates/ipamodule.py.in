@@ -128,7 +128,7 @@ def main():
             PARAMETER2=dict(required=False, type='list', elements='str',
                             aliases=["API_PARAMETER_NAME"], default=None),
             # state
-            state=dict(type="str", default="present", type="str",
+            state=dict(type="str", default="present",
                        choices=["present", "absent"]),
         ),
         supports_check_mode=True,
