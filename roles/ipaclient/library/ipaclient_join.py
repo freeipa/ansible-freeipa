@@ -272,7 +272,7 @@ def main():
                 get_ca_cert(fstore, options, servers[0], basedn)
             else:
                 get_ca_certs(fstore, options, servers[0], basedn, realm)
-            del os.environ['KRB5_CONFIG']
+            os.environ.pop('KRB5_CONFIG', None)
         except errors.FileError as e:
             module.fail_json(msg='%s' % e)
         except Exception as e:
