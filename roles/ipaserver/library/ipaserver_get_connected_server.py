@@ -108,7 +108,7 @@ def temp_kdestroy(ccache_dir, ccache_name):
     """Destroy temporary ticket and remove temporary ccache."""
     if ccache_name is not None:
         run([paths.KDESTROY, '-c', ccache_name], raiseonerr=False)
-        del os.environ['KRB5CCNAME']
+        os.environ.pop('KRB5CCNAME', None)
     if ccache_dir is not None:
         shutil.rmtree(ccache_dir, ignore_errors=True)
 
