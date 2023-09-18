@@ -503,6 +503,48 @@ def module_params_get_lowercase(module, name, allow_empty_list_item=False):
     return value
 
 
+def module_params_get_with_type_cast(
+    module, name, datatype, allow_empty=False
+):
+    """
+    Retrieve value set for module parameter as a specific data type.
+
+    Parameters
+    ----------
+    module: AnsibleModule
+        The module from where to get the parameter value from.
+    name: string
+        The name of the parameter to retrieve.
+    datatype: type
+        The type to convert the value to, if value is not empty.
+    allow_empty: bool
+        Allow an empty string for non list parameters or a list
+        containing (only) an empty string item. This is used for
+        resetting parameters to the default value.
+
+    """
+    value = module_params_get(module, name, allow_empty)
+    if not allow_empty and value == "":
+        module.fail_json(
+            msg="Argument '%s' must not be an empty string" % (name,)
+        )
+    if value is not None and value != "":
+        try:
+            if datatype is bool:
+                # We let Ansible handle bool values
+                value = boolean(value)
+            else:
+                value = datatype(value)
+        except ValueError:
+            module.fail_json(
+                msg="Invalid value '%s' for argument '%s'" % (value, name)
+            )
+        except TypeError as terr:
+            # If Ansible fails to parse a boolean, it will raise TypeError
+            module.fail_json(msg="Param '%s': %s" % (name, str(terr)))
+    return value
+
+
 def api_get_domain():
     return api.env.domain
 
@@ -1077,6 +1119,29 @@ class IPAAnsibleModule(AnsibleModule):
 
         """
         return module_params_get_lowercase(self, name, allow_empty_list_item)
+
+    def params_get_with_type_cast(
+        self, name, datatype, allow_empty=True
+    ):
+        """
+        Retrieve value set for module parameter as a specific data type.
+
+        Parameters
+        ----------
+        name: string
+            The name of the parameter to retrieve.
+        datatype: type
+            The type to convert the value to, if not empty.
+        datatype: type
+            The type to convert the value to, if value is not empty.
+        allow_empty: bool
+            Allow an empty string for non list parameters or a list
+            containing (only) an empty string item. This is used for
+            resetting parameters to the default value.
+
+        """
+        return module_params_get_with_type_cast(
+            self, name, datatype, allow_empty)
 
     def params_fail_used_invalid(self, invalid_params, state, action=None):
         """
