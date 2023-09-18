@@ -476,7 +476,7 @@ def main():
     params = {}
     for x in field_map:
         val = ansible_module.params_get(
-            x, allow_empty_list_item=(x in allow_empty_list_item))
+            x, allow_empty_list_item=x in allow_empty_list_item)
 
         if val is not None:
             params[field_map.get(x, x)] = val
