@@ -1,0 +1,13 @@
+---
+- name: Playbook to manage idoverridegroup
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure idoverridegroup test_group is absent in idview test_idview.
+    ipaidoverridegroup:
+      ipaadmin_password: SomeADMINpassword
+      idview: test_idview
+      anchor: test_group
+      continue: true
+      state: absent
