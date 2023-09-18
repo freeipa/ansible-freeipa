@@ -470,12 +470,11 @@ def _afm_convert(value):
     return value
 
 
-def module_params_get(module, name, allow_empty_string=False):
+def module_params_get(module, name, allow_empty_list_item=False):
     value = _afm_convert(module.params.get(name))
 
-    # Fail on empty strings in the list or if allow_empty_string is True
-    # if there is another entry in the list together with the empty
-    # string.
+    # Fail on empty strings in the list or if allow_empty_list_item is True
+    # if there is another entry in the list together with the empty string.
     # Due to an issue in Ansible it is possible to use the empty string
     # "" for lists with choices, even if the empty list is not part of
     # the choices.
@@ -483,7 +482,7 @@ def module_params_get(module, name, allow_empty_string=False):
     if isinstance(value, list):
         for val in value:
             if isinstance(val, (str, unicode)) and not val:
-                if not allow_empty_string:
+                if not allow_empty_list_item:
                     module.fail_json(
                         msg="Parameter '%s' contains an empty string" %
                         name)
@@ -495,8 +494,8 @@ def module_params_get(module, name, allow_empty_string=False):
     return value
 
 
-def module_params_get_lowercase(module, name, allow_empty_string=False):
-    value = module_params_get(module, name, allow_empty_string)
+def module_params_get_lowercase(module, name, allow_empty_list_item=False):
+    value = module_params_get(module, name, allow_empty_list_item)
     if isinstance(value, list):
         value = [v.lower() for v in value]
     if isinstance(value, (str, unicode)):
@@ -1051,7 +1050,7 @@ class IPAAnsibleModule(AnsibleModule):
             finally:
                 temp_kdestroy(ccache_dir, ccache_name)
 
-    def params_get(self, name, allow_empty_string=False):
+    def params_get(self, name, allow_empty_list_item=False):
         """
         Retrieve value set for module parameter.
 
@@ -1059,13 +1058,13 @@ class IPAAnsibleModule(AnsibleModule):
         ----------
         name: string
             The name of the parameter to retrieve.
-        allow_empty_string: bool
+        allow_empty_list_item: bool
             The parameter allowes to have empty strings in a list
 
         """
-        return module_params_get(self, name, allow_empty_string)
+        return module_params_get(self, name, allow_empty_list_item)
 
-    def params_get_lowercase(self, name, allow_empty_string=False):
+    def params_get_lowercase(self, name, allow_empty_list_item=False):
         """
         Retrieve value set for module parameter as lowercase, if not None.
 
@@ -1073,11 +1072,11 @@ class IPAAnsibleModule(AnsibleModule):
         ----------
         name: string
             The name of the parameter to retrieve.
-        allow_empty_string: bool
+        allow_empty_list_item: bool
             The parameter allowes to have empty strings in a list
 
         """
-        return module_params_get_lowercase(self, name, allow_empty_string)
+        return module_params_get_lowercase(self, name, allow_empty_list_item)
 
     def params_fail_used_invalid(self, invalid_params, state, action=None):
         """

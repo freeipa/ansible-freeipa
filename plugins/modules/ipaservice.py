@@ -607,8 +607,10 @@ def main():
     # white space also.
     if certificate is not None:
         certificate = [cert.strip() for cert in certificate]
-    pac_type = ansible_module.params_get("pac_type", allow_empty_string=True)
-    auth_ind = ansible_module.params_get("auth_ind", allow_empty_string=True)
+    pac_type = ansible_module.params_get(
+        "pac_type", allow_empty_list_item=True)
+    auth_ind = ansible_module.params_get(
+        "auth_ind", allow_empty_list_item=True)
     skip_host_check = ansible_module.params_get("skip_host_check")
     force = ansible_module.params_get("force")
     requires_pre_auth = ansible_module.params_get("requires_pre_auth")

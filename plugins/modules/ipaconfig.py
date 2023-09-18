@@ -470,13 +470,13 @@ def main():
         "netbios_name": "netbios_name",
         "add_sids": "add_sids",
     }
-    allow_empty_string = ["pac_type", "user_auth_type", "configstring"]
     reverse_field_map = {v: k for k, v in field_map.items()}
+    allow_empty_list_item = ["pac_type", "user_auth_type", "configstring"]
 
     params = {}
     for x in field_map:
         val = ansible_module.params_get(
-            x, allow_empty_string=x in allow_empty_string)
+            x, allow_empty_list_item=(x in allow_empty_list_item))
 
         if val is not None:
             params[field_map.get(x, x)] = val
