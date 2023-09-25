@@ -1,10 +1,10 @@
 -r requirements-tests.txt
 ipdb==0.13.4
 pre-commit==2.20.0
-flake8==5.0.3
-flake8-bugbear==22.10.27
-pylint==2.14.4
-wrapt == 1.14.0
-pydocstyle==6.0.0
-yamllint==1.28.0
+flake8==6.0.0
+flake8-bugbear
+pylint==2.17.2
+wrapt==1.14.1
+pydocstyle==6.3.0
+yamllint==1.32.0
 ansible-lint

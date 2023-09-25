@@ -31,7 +31,7 @@ def set_env_if_not_set(envvar, value):
         os.environ[envvar] = value
 
 
-def pytest_configure(config):
+def pytest_configure(config):  # pylint: disable=unused-argument
     test_dir = os.getenv("TWD")
     if not test_dir:
         return

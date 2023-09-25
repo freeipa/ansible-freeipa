@@ -171,8 +171,7 @@ try:
 
     else:
         # IPA version < 4.6
-
-        raise Exception("freeipa version '%s' is too old" % VERSION)
+        raise RuntimeError("freeipa version '%s' is too old" % VERSION)
 
 except ImportError as _err:
     ANSIBLE_IPA_REPLICA_MODULE_IMPORT_ERROR = str(_err)

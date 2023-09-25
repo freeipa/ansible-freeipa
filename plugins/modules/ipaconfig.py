@@ -358,8 +358,7 @@ def get_netbios_name(module):
         _result = module.ipa_command_no_name("trustconfig_show", {"all": True})
     except Exception:  # pylint: disable=broad-except
         return None
-    else:
-        return _result["result"]["ipantflatname"][0]
+    return _result["result"]["ipantflatname"][0]
 
 
 def is_enable_sid(module):
@@ -477,7 +476,7 @@ def main():
     params = {}
     for x in field_map:
         val = ansible_module.params_get(
-            x, allow_empty_string=(x in allow_empty_string))
+            x, allow_empty_string=x in allow_empty_string)
 
         if val is not None:
             params[field_map.get(x, x)] = val
@@ -620,7 +619,7 @@ def main():
                         # boolean values, so we need to convert it to str
                         # for comparison.
                         # See: https://github.com/freeipa/freeipa/pull/6294
-                        exit_args[k] = (str(value[0]).upper() == "TRUE")
+                        exit_args[k] = str(value[0]).upper() == "TRUE"
                     else:
                         if arg_type not in type_map:
                             raise ValueError(

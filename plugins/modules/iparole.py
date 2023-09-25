@@ -143,8 +143,7 @@ def find_role(module, name):
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if role name is not found.
         return None
-    else:
-        return _result["result"]
+    return _result["result"]
 
 
 def gen_args(module):

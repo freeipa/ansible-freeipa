@@ -123,8 +123,7 @@ def find_selfservice(module, name):
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if selfservice name is not found.
         return None
-    else:
-        return _result["result"]
+    return _result["result"]
 
 
 def gen_args(permission, attribute):

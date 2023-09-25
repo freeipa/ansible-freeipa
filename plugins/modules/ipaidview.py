@@ -141,8 +141,7 @@ def find_idview(module, name):
     except Exception:  # pylint: disable=broad-except
         # An exception is raised if idview name is not found.
         return None
-    else:
-        return _result["result"]
+    return _result["result"]
 
 
 def gen_args(description, domain_resolution_order):

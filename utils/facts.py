@@ -1,10 +1,10 @@
 import os
 
 
-def get_roles(dir):
+def get_roles(directory):
     roles = []
 
-    _rolesdir = "%s/roles/" % dir
+    _rolesdir = "%s/roles/" % directory
     for _role in os.listdir(_rolesdir):
         _roledir = "%s/%s" % (_rolesdir, _role)
         if not os.path.isdir(_roledir) or \
@@ -16,19 +16,19 @@ def get_roles(dir):
     return sorted(roles)
 
 
-def get_modules(dir):
+def get_modules(directory):
     management_modules = []
     roles_modules = []
 
-    for root, _dirs, files in os.walk(dir):
-        if not root.startswith("%s/plugins/" % dir) and \
-           not root.startswith("%s/roles/" % dir):
+    for root, _dirs, files in os.walk(directory):
+        if not root.startswith("%s/plugins/" % directory) and \
+           not root.startswith("%s/roles/" % directory):
             continue
         for _file in files:
             if _file.endswith(".py"):
-                if root == "%s/plugins/modules" % dir:
+                if root == "%s/plugins/modules" % directory:
                     management_modules.append(_file[:-3])
-                elif root.startswith("%s/roles/" % dir):
+                elif root.startswith("%s/roles/" % directory):
                     if root.endswith("/library"):
                         roles_modules.append(_file[:-3])
 

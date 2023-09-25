@@ -414,15 +414,15 @@ def gen_args(pac_type, auth_ind, skip_host_check, force, requires_pre_auth,
     if auth_ind is not None:
         _args['krbprincipalauthind'] = auth_ind
     if skip_host_check is not None:
-        _args['skip_host_check'] = (skip_host_check)
+        _args['skip_host_check'] = skip_host_check
     if force is not None:
-        _args['force'] = (force)
+        _args['force'] = force
     if requires_pre_auth is not None:
-        _args['ipakrbrequirespreauth'] = (requires_pre_auth)
+        _args['ipakrbrequirespreauth'] = requires_pre_auth
     if ok_as_delegate is not None:
-        _args['ipakrbokasdelegate'] = (ok_as_delegate)
+        _args['ipakrbokasdelegate'] = ok_as_delegate
     if ok_to_auth_as_delegate is not None:
-        _args['ipakrboktoauthasdelegate'] = (ok_to_auth_as_delegate)
+        _args['ipakrboktoauthasdelegate'] = ok_to_auth_as_delegate
 
     return _args
 
@@ -433,9 +433,9 @@ def gen_args_smb(netbiosname, ok_as_delegate, ok_to_auth_as_delegate):
     if netbiosname is not None:
         _args['ipantflatname'] = netbiosname
     if ok_as_delegate is not None:
-        _args['ipakrbokasdelegate'] = (ok_as_delegate)
+        _args['ipakrbokasdelegate'] = ok_as_delegate
     if ok_to_auth_as_delegate is not None:
-        _args['ipakrboktoauthasdelegate'] = (ok_to_auth_as_delegate)
+        _args['ipakrboktoauthasdelegate'] = ok_to_auth_as_delegate
 
     return _args
 
