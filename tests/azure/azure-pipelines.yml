@@ -20,6 +20,17 @@ stages:
 
 # Fedora
 
+- stage: Fedora_Ansible_min_supported
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      scenario: fedora-latest
+      ansible_version: "-core <2.14"
+
+# Fedora
+
 - stage: Fedora_Latest
   dependsOn: []
   jobs:
