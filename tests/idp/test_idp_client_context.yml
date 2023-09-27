@@ -1,0 +1,40 @@
+---
+- name: Test idp
+  hosts: ipaclients, ipaserver
+  # It is normally not needed to set "become" to "true" for a module test.
+  # Only set it to true if it is needed to execute commands as root.
+  become: false
+  # Enable "gather_facts" only if "ansible_facts" variable needs to be used.
+  gather_facts: false
+
+  tasks:
+  - name: Include FreeIPA facts.
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  # Test will only be executed if host is not a server.
+  - name: Execute with server context in the client.
+    ipaidp:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: server
+      name: ThisShouldNotWork
+    register: result
+    failed_when: not (result.failed and result.msg is regex("No module named '*ipaserver'*"))
+    when: ipa_host_is_client
+
+# Import basic module tests, and execute with ipa_context set to 'client'.
+# If ipaclients is set, it will be executed using the client, if not,
+# ipaserver will be used.
+#
+# With this setup, tests can be executed against an IPA client, against
+# an IPA server using "client" context, and ensure that tests are executed
+# in upstream CI.
+
+- name: Test idp using client context, in client host.
+  import_playbook: test_idp.yml
+  when: groups['ipaclients']
+  vars:
+    ipa_test_host: ipaclients
+
+- name: Test idp using client context, in server host.
+  import_playbook: test_idp.yml
+  when: groups['ipaclients'] is not defined or not groups['ipaclients']
