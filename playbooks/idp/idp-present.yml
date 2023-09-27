@@ -1,0 +1,12 @@
+---
+- name: Idp present example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure github idp my-github-idp is present
+    ipaidp:
+      ipaadmin_password: SomeADMINpassword
+      name: my-github-idp
+      provider: github
+      client_id: my-github-client-id

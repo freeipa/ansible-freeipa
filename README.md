@@ -32,6 +32,7 @@ Features
 * Modules for hostgroup management
 * Modules for idoverridegroup management
 * Modules for idoverrideuser management
+* Modules for idp management
 * Modules for idrange management
 * Modules for idview management
 * Modules for location management
@@ -445,6 +446,7 @@ Modules in plugin/modules
 * [ipahostgroup](README-hostgroup.md)
 * [idoverridegroup](README-idoverridegroup.md)
 * [idoverrideuser](README-idoverrideuser.md)
+* [idp](README-idp.md)
 * [idrange](README-idrange.md)
 * [idview](README-idview.md)
 * [ipalocation](README-location.md)

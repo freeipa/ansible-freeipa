@@ -1,0 +1,141 @@
+---
+- name: Test idp
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipaidp:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  # CHECK IF WE HAVE IDP SUPPORT
+
+  - name: Verify if ipd management is supported
+    ansible.builtin.shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
+        RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa command-show idp_add)
+        kdestroy -A -c {{ krb5ccname }}
+        echo $RESULT
+    vars:
+      krb5ccname: "__check_command_idp_add__"
+    register: check_command_idp_add
+
+  - name: Run tests for idp
+    when: not "idp_add" in check_command_idp_add.stderr
+    block:
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure idps my-keycloak-idp, my-github-idp and my-google-idp are absent
+      ipaidp:
+        name:
+        - my-keycloak-idp
+        - my-github-idp
+        - my-google-idp
+        delete_continue: true
+        state: absent
+
+    # CREATE TEST ITEMS
+
+    # TESTS
+
+    - name: Ensure keycloak idp my-keycloak-idp is present
+      ipaidp:
+        name: my-keycloak-idp
+        provider: keycloak
+        organization: main
+        base_url: keycloak.idm.example.com:8443/auth
+        client_id: my-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp is present, again
+      ipaidp:
+        name: my-keycloak-idp
+        provider: keycloak
+        organization: main
+        base_url: keycloak.idm.example.com:8443/auth
+        client_id: my-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure idp my-keycloak-idp is absent
+      ipaidp:
+        name: my-keycloak-idp
+        delete_continue: true
+        state: absent
+
+    - name: Ensure keycloak idp my-keycloak-idp is failing with missing parameters
+      ipaidp:
+        name: my-keycloak-idp
+        provider: keycloak
+        client_id: my-client-id
+      register: result
+      failed_when: result.changed or not result.failed or
+                   " is missing" not in result.msg
+
+    - name: Ensure github idp my-github-idp is present
+      ipaidp:
+        name: my-github-idp
+        provider: github
+        client_id: my-github-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure github idp my-github-idp is present, again
+      ipaidp:
+        name: my-github-idp
+        provider: github
+        client_id: my-github-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure google idp my-google-idp is present using provider defaults without specifying provider
+      ipaidp:
+        name: my-google-idp
+        auth_uri: https://accounts.google.com/o/oauth2/auth
+        dev_auth_uri: https://oauth2.googleapis.com/device/code
+        token_uri: https://oauth2.googleapis.com/token
+        keys_uri: https://www.googleapis.com/oauth2/v3/certs
+        userinfo_uri: https://openidconnect.googleapis.com/v1/userinfo
+        client_id: my-google-client-id
+        scope: "openid email"
+        idp_user_id: email
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure google idp my-google-idp is present using provider defaults without specifying provider, again
+      ipaidp:
+        name: my-google-idp
+        auth_uri: https://accounts.google.com/o/oauth2/auth
+        dev_auth_uri: https://oauth2.googleapis.com/device/code
+        token_uri: https://oauth2.googleapis.com/token
+        keys_uri: https://www.googleapis.com/oauth2/v3/certs
+        userinfo_uri: https://openidconnect.googleapis.com/v1/userinfo
+        client_id: my-google-client-id
+        scope: "openid email"
+        idp_user_id: email
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure google idp my-google-idp is present without changes using provider
+      ipaidp:
+        name: my-google-idp
+        provider: google
+        client_id: my-google-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure idps my-keycloak-idp, my-github-idp and my-google-idp are absent
+      ipaidp:
+        name:
+        - my-keycloak-idp
+        - my-github-idp
+        - my-google-idp
+        delete_continue: true
+        state: absent

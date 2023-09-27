@@ -1,0 +1,11 @@
+---
+- name: Idp absent example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Ensure github idp my-github-idp is absent
+    ipaidp:
+      ipaadmin_password: SomeADMINpassword
+      name: my-github-idp
+      state: absent

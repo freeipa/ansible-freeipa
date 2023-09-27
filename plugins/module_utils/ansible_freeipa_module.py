@@ -30,7 +30,7 @@ __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "kinit_password", "kinit_keytab", "run", "DN", "VERSION",
            "paths", "tasks", "get_credentials_if_valid", "Encoding",
            "DNSName", "getargspec", "certificate_loader",
-           "write_certificate_list", "boolean"]
+           "write_certificate_list", "boolean", "template_str"]
 
 import os
 # ansible-freeipa requires locale to be C, IPA requires utf-8.
@@ -90,6 +90,7 @@ try:
     except ImportError:
         from ipapython.ipautil import kinit_password, kinit_keytab
     from ipapython.ipautil import run
+    from ipapython.ipautil import template_str
     from ipapython.dn import DN
     from ipapython.version import VERSION
     from ipaplatform.paths import paths
