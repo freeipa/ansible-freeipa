@@ -142,6 +142,11 @@ options:
        salt.
     required: false
     type: str
+  permission:
+    description: Set per-zone access delegation permission.
+    required: false
+    type: bool
+    aliases: ["managedby"]
   skip_overlap_check:
     description: |
       Force DNS zone creation even if it will overlap with an existing zone
@@ -154,6 +159,7 @@ options:
 author:
   - Sergio Oliveira Campos (@seocam)
   - Thomas Woerner (@t-woerner)
+  - Rafael Jeffman (@rjeffman)
 """  # noqa: E501
 
 EXAMPLES = """
@@ -253,6 +259,9 @@ class DNSZoneModule(IPAAnsibleModule):
             "idnsallowdynupdate": "dynamic_update",
             "idnssecinlinesigning": "dnssec",
             "idnsupdatepolicy": "update_policy",
+            # FreeIPA uses 'managedby' for dnszone and dnsforwardzone
+            # to manage 'permissions'.
+            "managedby": "permission",
             # Mapping by method
             "idnsforwarders": self.get_ipa_idnsforwarders,
             "idnsallowtransfer": self.get_ipa_idnsallowtransfer,
@@ -434,7 +443,7 @@ class DNSZoneModule(IPAAnsibleModule):
             is_zone_active = False
         else:
             zone = response["result"]
-            # FreeIPA 4.9.10+ and 4.10 use proper mapping for boolean vaalues.
+            # FreeIPA 4.9.10+ and 4.10 use proper mapping for boolean values.
             # See: https://github.com/freeipa/freeipa/pull/6294
             is_zone_active = (
                 str(zone.get("idnszoneactive")[0]).upper() == "TRUE"
@@ -462,18 +471,24 @@ class DNSZoneModule(IPAAnsibleModule):
             self.fail_json(
                 msg="Either `name` or `name_from_ip` must be provided."
             )
+        # check invalid parameters
+        invalid = []
         if self.ipa_params.state != "present":
-            invalid = ["name_from_ip"]
-
-            self.params_fail_used_invalid(invalid, self.ipa_params.state)
+            invalid .extend(["name_from_ip"])
+        if self.ipa_params.state == "absent":
+            invalid.extend(["permission"])
+        self.params_fail_used_invalid(invalid, self.ipa_params.state)
 
     def define_ipa_commands(self):
         for zone_name in self.get_zone_names():
             # Look for existing zone in IPA
             zone, is_zone_active = self.get_zone(zone_name)
-            args = self.ipa_params.get_ipa_command_args(zone=zone)
 
             if self.ipa_params.state in ["present", "enabled", "disabled"]:
+                args = self.ipa_params.get_ipa_command_args(zone=zone)
+                # We'll handle "managedby" after dnszone add/mod.
+                args.pop("managedby", None)
+
                 if not zone:
                     # Since the zone doesn't exist we just create it
                     #   with given args
@@ -486,6 +501,16 @@ class DNSZoneModule(IPAAnsibleModule):
                     #   matches the current config. If not we updated it.
                     if not compare_args_ipa(self, args, zone):
                         self.commands.append((zone_name, "dnszone_mod", args))
+
+                # Permissions must be set on existing zones.
+                if self.ipa_params.permission is not None:
+                    is_managed = zone.get("managedby")
+                    if self.ipa_params.permission and not is_managed:
+                        self.commands.append(
+                            (zone_name, "dnszone_add_permission", {}))
+                    if not self.ipa_params.permission and is_managed:
+                        self.commands.append(
+                            (zone_name, "dnszone_remove_permission", {}))
 
             if self.ipa_params.state == "enabled" and not is_zone_active:
                 self.commands.append((zone_name, "dnszone_enable", {}))
@@ -555,6 +580,8 @@ def get_argument_spec():
         ttl=dict(type="int", required=False, default=None),
         default_ttl=dict(type="int", required=False, default=None),
         nsec3param_rec=dict(type="str", required=False, default=None),
+        permission=dict(type="bool", required=False, default=None,
+                        aliases=["managedby"]),
         skip_nameserver_check=dict(type="bool", required=False, default=None),
         skip_overlap_check=dict(type="bool", required=False, default=None),
     )

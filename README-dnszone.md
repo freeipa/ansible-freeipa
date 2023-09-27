@@ -133,6 +133,22 @@ Example playbook to enable a zone:
       state: enabled
 ```
 
+Example playbook to allow per-zone privilege delegation:
+
+``` yaml
+---
+- name: Playbook to enable per-zone privilege delegation
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Enable privilege delegation.
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      name: testzone.local
+      permission: true
+```
+
 
 Example playbook to remove a zone:
 ```yaml
@@ -223,6 +239,7 @@ Variable | Description | Required
 `ttl`| Time to live for records at zone apex | no
 `default_ttl`| Time to live for records without explicit TTL definition | no
 `nsec3param_rec`| NSEC3PARAM record for zone in format: hash_algorithm flags iterations salt | no
+`permission` \| `managedby` | Set per-zone access delegation permission. | no
 `skip_overlap_check`| Force DNS zone creation even if it will overlap with an existing zone | no
 `skip_nameserver_check` | Force DNS zone creation even if nameserver is not resolvable | no
 
@@ -238,4 +255,6 @@ Variable | Description | Returned When
 Authors
 =======
 
-Sergio Oliveira Campos
+- Sergio Oliveira Campos
+- Thomas Woerner
+- Rafael Jeffman
