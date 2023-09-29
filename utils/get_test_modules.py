@@ -23,8 +23,6 @@ def get_plugins_from_playbook(playbook):
         for tasks in task_block:
             for task in tasks:
                 original_task = task
-                if "." in task:
-                    task = task.split(".")[-1]
                 if task == "block":
                     _result.update(get_tasks(tasks["block"]))
                 elif task in ["include_tasks", "import_tasks"
@@ -127,8 +125,16 @@ def parse_playbooks(test_module):
                             "builtins.__import__", side_effect=import_mock
                         ):
                             # pylint: disable=no-value-for-parameter
-                            loader = SourceFileLoader(playbook, source)
-                            loader.exec_module(types.ModuleType(loader.name))
+                            try:
+                                loader = SourceFileLoader(playbook, source)
+                                loader.exec_module(
+                                    types.ModuleType(loader.name)
+                                )
+                            except Exception:  # pylint: disable=broad-except
+                                # If import fails, we'll assume there's no
+                                # plugin to be loaded. This is of little risk
+                                # it is rare that a plugin includes another.
+                                pass
                         # pylint: disable=no-member
                         candidates = [
                             f.split(".")[1:]
