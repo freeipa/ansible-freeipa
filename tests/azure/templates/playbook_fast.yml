@@ -72,6 +72,7 @@ jobs:
         --suppress-no-test-exit-code \
         --splits=${{ parameters.number_of_groups }} \
         --group=${{ parameters.group_number }} \
+        --randomly-seed=$(date "+%Y%m%d") \
         --junit-xml=TEST-results-group-${{ parameters.group_number }}.xml
       then
         [ $? -eq 5 ] && true || false

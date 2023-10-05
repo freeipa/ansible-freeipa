@@ -69,6 +69,7 @@ jobs:
         --color=yes \
         --splits=${{ parameters.number_of_groups }} \
         --group=${{ parameters.group_number }} \
+        --randomly-seed=$(date "+%Y%m%d") \
         --junit-xml=TEST-results-group-${{ parameters.group_number }}.xml
     displayName: Run playbook tests
     env:
