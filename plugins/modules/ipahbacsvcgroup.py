@@ -146,21 +146,6 @@ def gen_member_args(hbacsvc):
     return _args
 
 
-# pylint: disable=unused-argument
-def result_handler(module, result, command, name, args, errors):
-    # Get all errors
-    # All "already a member" and "not a member" failures in the
-    # result are ignored. All others are reported.
-    if "failed" in result and "member" in result["failed"]:
-        failed = result["failed"]["member"]
-        for member_type in failed:
-            for member, failure in failed[member_type]:
-                if "already a member" not in failure \
-                   and "not a member" not in failure:
-                    errors.append("%s: %s %s: %s" % (
-                        command, member_type, member, failure))
-
-
 def main():
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
@@ -303,7 +288,8 @@ def main():
                                  }])
 
         # Execute commands
-        changed = ansible_module.execute_ipa_commands(commands, result_handler)
+        changed = ansible_module.execute_ipa_commands(
+            commands, fail_on_member_errors=True)
 
     # Done
 
