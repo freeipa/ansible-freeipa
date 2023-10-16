@@ -25,6 +25,7 @@
     ansible.builtin.set_fact:
       host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
       host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+      host3_fqdn: "{{ 'host3.' + ipaserver_domain }}"
 
   # CLEANUP TEST ITEMS
 
@@ -179,6 +180,27 @@
       host:
       - "{{ host1_fqdn }}"
       action: member
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure invalid host "{{ host3_fqdn }}" fails to applied to idview test1_idview
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host3_fqdn }}"
+      action: member
+    register: result
+    failed_when: result.changed or not result.failed or
+                 "Invalid host" not in result.msg or
+                 host3_fqdn not in result.msg
+
+  - name: Ensure invalid host "{{ host3_fqdn }}" does not fail to unapply from idview test1_idview
+    ipaidview:
+      name: test1_idview
+      host:
+      - "{{ host3_fqdn }}"
+      action: member
+      state: absent
     register: result
     failed_when: result.changed or result.failed
 
