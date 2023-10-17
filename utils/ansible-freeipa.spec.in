@@ -48,6 +48,7 @@ Features
 - Modules for hbacsvcgroup management
 - Modules for host management
 - Modules for hostgroup management
+- Modules for idoverridegroup management
 - Modules for idoverrideuser management
 - Modules for idp management
 - Modules for idrange management
