@@ -17,6 +17,7 @@ jobs:
     build_number: ${{ parameters.build_number }}
     scenario: ${{ parameters.scenario }}
     ansible_version: ${{ parameters.ansible_version }}
+    python_version: '< 3.12'
 
 - template: galaxy_script.yml
   parameters:
@@ -25,6 +26,7 @@ jobs:
     build_number: ${{ parameters.build_number }}
     scenario: ${{ parameters.scenario }}
     ansible_version: ${{ parameters.ansible_version }}
+    python_version: '< 3.12'
 
 - template: galaxy_script.yml
   parameters:
@@ -33,6 +35,7 @@ jobs:
     build_number: ${{ parameters.build_number }}
     scenario: ${{ parameters.scenario }}
     ansible_version: ${{ parameters.ansible_version }}
+    python_version: '< 3.12'
 
 # Temporarily disable due to issues with ansible docker plugin.
 #- template: galaxy_pytest_script.yml
@@ -40,3 +43,4 @@ jobs:
 #    build_number: ${{ parameters.build_number }}
 #    scenario: ${{ parameters.scenario }}
 #    ansible_version: ${{ parameters.ansible_version }}
+#    python_version: '< 3.12'
