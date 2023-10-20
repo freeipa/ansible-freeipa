@@ -13,28 +13,10 @@ jobs:
 - template: playbook_fast.yml
   parameters:
     group_number: 1
-    number_of_groups: 3
+    number_of_groups: 1
     build_number: ${{ parameters.build_number }}
     scenario: ${{ parameters.scenario }}
     ansible_version: ${{ parameters.ansible_version }}
-    python_version: '< 3.12'
-
-- template: playbook_fast.yml
-  parameters:
-    group_number: 2
-    number_of_groups: 3
-    build_number: ${{ parameters.build_number }}
-    scenario: ${{ parameters.scenario }}
-    ansible_version: ${{ parameters.ansible_version }}
-    python_version: '< 3.12'
-
-- template: playbook_fast.yml
-  parameters:
-    group_number: 3
-    number_of_groups: 3
-    build_number: ${{ parameters.build_number }}
-    scenario: ${{ parameters.scenario }}
-    ansible_version: ${{ parameters.ansible_version }}z
     python_version: '< 3.12'
 
 # - template: pytest_tests.yml
