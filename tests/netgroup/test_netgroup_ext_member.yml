@@ -1,0 +1,131 @@
+---
+
+- name: Test netgroup with external members
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: true
+  gather_facts: true
+
+  tasks:
+  - name: Test netgroup with external members
+    block:
+    # setup
+    - name: Ensure netgroups are absent
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - testnetgroup1
+          - testnetgroup2
+        state: absent
+
+    - name: Ensure external host is absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+          - external.host
+        state: absent
+
+    - name: Ensure host is present
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: "{{ ansible_facts['fqdn'] }}"
+
+    - name: Ensure netgroup testnetgroup2 is present
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testnetgroup2
+
+    # tests
+    - name: Ensure netgroup is present with hosts (action netgroup)
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testnetgroup1
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure netgroup is present with hosts (action netgroup) again
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testnetgroup1
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure netgroup is present with hosts (action member)
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testnetgroup2
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure netgroup is present with hosts (action member) again
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testnetgroup2
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure hosts are absent in netgroup (action member)
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testnetgroup2
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure hosts are absent in netgroup (action member) again
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: testnetgroup2
+        host:
+          - "{{ ansible_facts['fqdn'] }}"
+          - external.host
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    always:
+    # cleanup
+    - name: Ensure netgroups are absent
+      ipanetgroup:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+        - testnetgroup1
+        - testnetgroup2
+        state: absent
+
+    - name: Ensure external host is absent
+      ipahost:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name:
+        - external.host
+        state: absent

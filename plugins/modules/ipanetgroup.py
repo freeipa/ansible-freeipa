@@ -159,7 +159,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
-    gen_add_list, gen_intersection_list, ensure_fqdn
+    gen_add_list, gen_intersection_list, concat_attr_list, ensure_fqdn
 
 
 def find_netgroup(module, name):
@@ -341,8 +341,13 @@ def main():
                         group_add, group_del = gen_add_del_lists(
                             group, res_find.get("memberuser_group"))
 
+                        # `externalhost` adds an entity to the "External host"
+                        # list for `ipanetgroup`. Hosts enrolled to IPA are in
+                        # "Member Host" list.
                         host_add, host_del = gen_add_del_lists(
-                            host, res_find.get("memberhost_host"))
+                            host, concat_attr_list(res_find,
+                                                   "memberhost_host",
+                                                   "externalhost"))
 
                         hostgroup_add, hostgroup_del = gen_add_del_lists(
                             hostgroup, res_find.get("memberhost_hostgroup"))
@@ -362,7 +367,9 @@ def main():
                     group_add = gen_add_list(
                         group, res_find.get("memberuser_group"))
                     host_add = gen_add_list(
-                        host, res_find.get("memberhost_host"))
+                        host, concat_attr_list(res_find,
+                                               "memberhost_host",
+                                               "externalhost"))
                     hostgroup_add = gen_add_list(
                         hostgroup, res_find.get("memberhost_hostgroup"))
                     netgroup_add = gen_add_list(
@@ -381,7 +388,9 @@ def main():
                     group_del = gen_intersection_list(
                         group, res_find.get("memberuser_group"))
                     host_del = gen_intersection_list(
-                        host, res_find.get("memberhost_host"))
+                        host, concat_attr_list(res_find,
+                                               "memberhost_host",
+                                               "externalhost"))
                     hostgroup_del = gen_intersection_list(
                         hostgroup, res_find.get("memberhost_hostgroup"))
                     netgroup_del = gen_intersection_list(
