@@ -100,6 +100,7 @@
           - "{{ hbacsvc_list[1] }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] }}"
+          - Sudo
         check_mode: yes
         register: result
         failed_when: not result.changed or result.failed
@@ -124,6 +125,7 @@
           - "{{ hbacsvc_list[1] }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] }}"
+          - Sudo
         register: result
         failed_when: not result.changed or result.failed
 
@@ -147,6 +149,7 @@
           - "{{ hbacsvc_list[1] }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] }}"
+          - Sudo
         check_mode: yes
         register: result
         failed_when: result.changed or result.failed
@@ -171,6 +174,7 @@
           - "{{ hbacsvc_list[1] | lower }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] | lower }}"
+          - sudo
         register: result
         failed_when: result.changed or result.failed
 
@@ -194,6 +198,7 @@
           - "{{ hbacsvc_list[1] | upper }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] | upper }}"
+          - SUDO
         register: result
         failed_when: result.changed or result.failed
 
@@ -230,6 +235,7 @@
           - "{{ hbacsvc_list[1] }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] }}"
+          - Sudo
         check_mode: yes
         register: result
         failed_when: not result.changed or result.failed
@@ -254,6 +260,7 @@
           - "{{ hbacsvc_list[1] }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] }}"
+          - Sudo
           action: member
         register: result
         failed_when: not result.changed or result.failed
@@ -278,6 +285,7 @@
           - "{{ hbacsvc_list[1] }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] }}"
+          - Sudo
         check_mode: yes
         register: result
         failed_when: result.changed or result.failed
@@ -302,6 +310,7 @@
           - "{{ hbacsvc_list[1] | lower }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] | lower }}"
+          - sudo
           action: member
         register: result
         failed_when: result.changed or result.failed
@@ -326,6 +335,7 @@
           - "{{ hbacsvc_list[1] | upper }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] | upper }}"
+          - SUDO
           action: member
         register: result
         failed_when: result.changed or result.failed
@@ -352,6 +362,7 @@
           - "{{ hbacsvc_list[1] | upper }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] | upper }}"
+          - SUDO
           action: member
           state: absent
         check_mode: yes
@@ -378,6 +389,7 @@
           - "{{ hbacsvc_list[1] | upper }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] | upper }}"
+          - SUDO
           action: member
           state: absent
         register: result
@@ -403,6 +415,7 @@
           - "{{ hbacsvc_list[1] | upper }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] | upper }}"
+          - SUDO
           action: member
           state: absent
         check_mode: yes
@@ -449,6 +462,7 @@
           - "{{ hbacsvc_list[1] | lower }}"
           hbacsvcgroup:
           - "{{ hbacsvcgroup_list[0] | lower }}"
+          - sudo
           action: member
           state: absent
         register: result

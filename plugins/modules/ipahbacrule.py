@@ -186,7 +186,17 @@ def find_hbacrule(module, name):
         module.fail_json(
             msg="There is more than one hbacrule '%s'" % (name))
     elif len(_result["result"]) == 1:
-        return _result["result"][0]
+        res = _result["result"][0]
+        # hbacsvcgroup names are converted to lower case while creation with
+        # hbacsvcgroup_add.
+        # The hbacsvcgroup for sudo is builtin with the name "Sudo" though.
+        # This breaks the lower case comparison. Therefore all
+        # memberservice_hbacsvcgroup items are converted to lower case if
+        # "Sudo" is in the list.
+        _member = "memberservice_hbacsvcgroup"
+        if _member in res and "Sudo" in res[_member]:
+            res[_member] = [item.lower() for item in res[_member]]
+        return res
 
     return None
 
