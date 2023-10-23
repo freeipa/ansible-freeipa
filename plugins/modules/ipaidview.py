@@ -127,7 +127,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list
+    gen_intersection_list, ipalib_errors
 from ansible.module_utils import six
 
 if six.PY3:
@@ -142,6 +142,14 @@ def find_idview(module, name):
         # An exception is raised if idview name is not found.
         return None
     return _result["result"]
+
+
+def valid_host(module, name):
+    try:
+        module.ipa_command("host_show", name, {})
+    except ipalib_errors.NotFound:
+        return False
+    return True
 
 
 def gen_args(description, domain_resolution_order):
@@ -327,6 +335,9 @@ def main():
 
             # Add members
             if host_add:
+                for host in host_add:
+                    if not valid_host(ansible_module, host):
+                        ansible_module.fail_json("Invalid host '%s'" % host)
                 commands.append([name, "idview_apply", {"host": host_add}])
 
             # Remove members
