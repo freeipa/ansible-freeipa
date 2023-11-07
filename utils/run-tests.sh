@@ -32,7 +32,7 @@ interrupt_exception() {
 usage() {
     local prog="${0##*/}"
     cat <<EOF
-usage: ${prog} [-h] [-l] [-e] [-g] [-s TESTS_SUITE] [-i IMAGE] [TEST...]
+usage: ${prog} [-h] [-l] [-e] [-K] [-c CONTAINER] [-s TESTS_SUITE] [-x] [-A SEED.GRP] [-i IMAGE] [-m MEMORY] [-v...] [TEST...]
     ${prog} runs playbook(s) TEST using an ansible-freeipa testing image.
 
 EOF
@@ -51,10 +51,13 @@ optional arguments:
   -K              keep container, even if tests succeed
   -l              list available images
   -e              force recreation of the virtual environment
-  -i              select image to run the tests (default: fedora-latest)
+  -i IMAGE        select image to run the tests (default: fedora-latest)
   -m              container memory, in GiB (default: 3)
   -s TEST_SUITE   run all playbooks for test suite, which is a directory
                   under ${WHITE}tests${RST}
+  -A SEED.GROUP   Replicate Azure's test group and seed (seed is YYYYMMDD)
+  -v              Increase Ansible verbosity (can be used multiple times)
+  -x              Stop on first error.
 EOF
 )"
 }
@@ -179,15 +182,29 @@ IMAGE_TAG="fedora-latest"
 scenario=""
 MEMORY=3
 hostname="ipaserver.test.local"
-
+SEED=""
+GROUP=0
+SPLITS=0
 ANSIBLE_COLLECTIONS=${ANSIBLE_COLLECTIONS:-"containers.podman"}
+
+EXTRA_OPTIONS=""
 
 # Process command options
 
-while getopts ":hc:ei:Klms:v" option
+while getopts ":hA:c:ei:Klms:vx" option
 do
     case "$option" in
         h) help && exit 0 ;;
+        A)
+            [ ${#ENABLED_MODULES[@]} -eq 0 ] || die -u "Can't use '-A' with '-s'"
+            SEED="$(cut -d. -f1 <<< "${OPTARG}" | tr -d "-")"
+            GROUP="$(cut -d. -f2 <<< "${OPTARG}")"
+            if [ -z "${SEED}" ] || [ -z "${GROUP}" ]
+            then
+                die -u "Seed for '-A' must have the format YYYYMMDD.N"
+            fi
+            SPLITS=3
+        ;;
         c) scenario="${OPTARG}" ;;
         e) FORCE_ENV="Y" ;;
         i) IMAGE_TAG="${OPTARG}" ;;
@@ -195,6 +212,7 @@ do
         l) list_images && exit 0 || exit 1;;
         m) MEMORY="${OPTARG}" ;;
         s)
+           [ ${SPLITS} -ne 0 ] && die -u "Can't use '-A' with '-s'"
            if [ -d "${TOPDIR}/tests/${OPTARG}" ]
            then
                ENABLED_MODULES+=("${OPTARG}")
@@ -203,6 +221,7 @@ do
            fi
            ;;
         v) verbose=${verbose:--}${option} ;;
+        x) EXTRA_OPTIONS="$EXTRA_OPTIONS --exitfirst" ;;
         *) die -u "Invalid option: ${OPTARG}" ;;
     esac
 done
@@ -212,13 +231,14 @@ do
     # shellcheck disable=SC2207
     if stat "$test" >/dev/null 2>&1
     then
+        [ ${SPLITS} -ne 0 ] && die -u "Can't define tests and use '-A'"
         ENABLED_TESTS+=($(basename "${test}" .yml))
     else
         log error "Test not found: ${test}"
     fi
 done
 
-[ ${#ENABLED_MODULES[@]} -eq 0 ] && [ ${#ENABLED_TESTS[@]} -eq 0 ] && die -u "No test defined."
+[ ${SPLITS} -eq 0 ] && [ ${#ENABLED_MODULES[@]} -eq 0 ] && [ ${#ENABLED_TESTS[@]} -eq 0 ] && die -u "No test defined."
 
 # Prepare virtual environment
 VENV=$(in_python_virtualenv && echo Y || echo N)
@@ -373,23 +393,31 @@ EOF
 
 # run tests
 RESULT=0
-# shellcheck disable=SC2086
+
 export RUN_TESTS_IN_DOCKER=${engine}
 export IPA_SERVER_HOST="${scenario}"
-joined="$(printf "%s," "${ENABLED_MODULES[@]}")"
-# shelcheck disable=SC2178
-IPA_ENABLED_MODULES="${joined%,}"
-joined="$(printf "%s," "${ENABLED_TESTS[@]}")"
-# shelcheck disable=SC2178
-IPA_ENABLED_TESTS="${joined%,}"
-export IPA_ENABLED_MODULES IPA_ENABLED_TESTS
-[ -n "${IPA_ENABLED_MODULES}" ] && log info "Test suites: ${IPA_ENABLED_MODULES}"
-[ -n "${IPA_ENABLED_TESTS}" ] && log info "Individual tests: ${IPA_ENABLED_TESTS}"
+if [ ${SPLITS} -ne 0 ]
+then
+    EXTRA_OPTIONS="${EXTRA_OPTIONS} --splits=${SPLITS} --group=${GROUP} --randomly-seed=${SEED}"
+    log info "Running tests for group ${GROUP} of ${SPLITS} with seed ${SEED}"
+else
+    # shellcheck disable=SC2086
+    joined="$(printf "%s," "${ENABLED_MODULES[@]}")"
+    # shelcheck disable=SC2178
+    IPA_ENABLED_MODULES="${joined%,}"
+    joined="$(printf "%s," "${ENABLED_TESTS[@]}")"
+    # shelcheck disable=SC2178
+    IPA_ENABLED_TESTS="${joined%,}"
+    export IPA_ENABLED_MODULES IPA_ENABLED_TESTS
+    [ -n "${IPA_ENABLED_MODULES}" ] && log info "Test suites: ${IPA_ENABLED_MODULES}"
+    [ -n "${IPA_ENABLED_TESTS}" ] && log info "Individual tests: ${IPA_ENABLED_TESTS}"
+fi
 
 IPA_VERBOSITY="${verbose}"
 [ -n "${IPA_VERBOSITY}" ] && export IPA_VERBOSITY
 
-if ! pytest -m "playbook" --verbose --color=yes
+# shellcheck disable=SC2086
+if ! pytest -m "playbook" --verbose --color=yes ${EXTRA_OPTIONS}
 then
     RESULT=2
     log error "Container not stopped for verification: ${scenario}"
