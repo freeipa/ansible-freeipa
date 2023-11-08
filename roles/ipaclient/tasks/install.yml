@@ -397,7 +397,7 @@
       ipaclient_setup_automount:
         servers: "{{ result_ipaclient_test.servers }}"
         sssd: "{{ result_ipaclient_test.sssd }}"
-        automount_location: "{{ ipaautomount_location | default(omit) }}"
+        automount_location: "{{ ipaclient_automount_location | default(omit) }}"
 
     - name: Install - Configure firefox
       ipaclient_setup_firefox:
