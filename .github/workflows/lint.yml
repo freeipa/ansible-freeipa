@@ -16,7 +16,7 @@ jobs:
           python-version: "3.x"
       - name: Run ansible-lint
         run: |
-          pip install "ansible-core >=2.15,<2.16" 'ansible-lint<6.21'
+          pip install "ansible-core>=2.16,<2.17" 'ansible-lint>=6.21'
           utils/build-galaxy-release.sh -ki
           cd .galaxy-build
           ansible-lint --profile production --exclude tests/integration/ --exclude tests/unit/ --parseable --nocolor
@@ -76,7 +76,7 @@ jobs:
           python-version: "3.x"
       - name: Run pylint
         run: |
-            pip install pylint==2.17.2
+            pip install 'pylint>=3.0'
             pylint plugins roles --disable=import-error
 
   shellcheck:
