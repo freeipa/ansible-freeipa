@@ -32,6 +32,26 @@
       update_dns: yes
       state: absent
 
+  - name: Ensure leftover DNS records for test hosts are not present.
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      zone_name: "{{ ipaserver_domain }}"
+      records:
+      - name: "host1"
+        del_all: true
+      - name: "host2"
+        del_all: true
+      - name: "host3"
+        del_all: true
+      - name: "host4"
+        del_all: true
+      - name: "host5"
+        del_all: true
+      - name: "host6"
+        del_all: true
+      state: absent
+
   - name: Get IPv4 address prefix from server node
     ansible.builtin.set_fact:
       ipv4_prefix: "{{ ansible_facts['default_ipv4'].address.split('.')[:-1] |
