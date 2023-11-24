@@ -13,34 +13,49 @@ trigger: none
 pool:
   vmImage: 'ubuntu-20.04'
 
-jobs:
+stages:
 
-- template: templates/build_container.yml
-  parameters:
-    job_name_suffix: Centos7
-    container_name: centos-7
-    build_scenario_name: centos-7-build
+- stage: CentOS_7
+  dependsOn: []
+  jobs:
+  - template: templates/build_container.yml
+    parameters:
+      job_name_suffix: Centos7
+      container_name: centos-7
+      build_scenario_name: centos-7-build
 
-- template: templates/build_container.yml
-  parameters:
-    job_name_suffix: C8S
-    container_name: c8s
-    build_scenario_name: c8s-build
+- stage: CentOS_8_Stream
+  dependsOn: []
+  jobs:
+  - template: templates/build_container.yml
+    parameters:
+      job_name_suffix: C8S
+      container_name: c8s
+      build_scenario_name: c8s-build
 
-- template: templates/build_container.yml
-  parameters:
-    job_name_suffix: C9S
-    container_name: c9s
-    build_scenario_name: c9s-build
+- stage: CentOS_9_Stream
+  dependsOn: []
+  jobs:
+  - template: templates/build_container.yml
+    parameters:
+      job_name_suffix: C9S
+      container_name: c9s
+      build_scenario_name: c9s-build
 
-- template: templates/build_container.yml
-  parameters:
-    job_name_suffix: FedoraLatest
-    container_name: fedora-latest
-    build_scenario_name: fedora-latest-build
+- stage: Fedora_Latest
+  dependsOn: []
+  jobs:
+  - template: templates/build_container.yml
+    parameters:
+      job_name_suffix: FedoraLatest
+      container_name: fedora-latest
+      build_scenario_name: fedora-latest-build
 
-- template: templates/build_container.yml
-  parameters:
-    job_name_suffix: FedoraRawhide
-    container_name: fedora-rawhide
-    build_scenario_name: fedora-rawhide-build
+- stage: Fedora_Rawhide
+  dependsOn: []
+  jobs:
+  - template: templates/build_container.yml
+    parameters:
+      job_name_suffix: FedoraRawhide
+      container_name: fedora-rawhide
+      build_scenario_name: fedora-rawhide-build
