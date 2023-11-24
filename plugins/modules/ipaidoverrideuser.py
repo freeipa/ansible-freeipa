@@ -572,7 +572,7 @@ def main():
                              merge_dicts(
                                  {
                                      "ipaanchoruuid": anchor,
-                                     "continue": delete_continue
+                                     "continue": delete_continue or False
                                  },
                                  runtime_args
                              )]

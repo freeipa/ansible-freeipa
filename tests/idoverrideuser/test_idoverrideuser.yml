@@ -18,16 +18,21 @@
 
   # CLEANUP TEST ITEMS
 
-  - name: Ensure test user test_user does not exist
+  - name: Ensure test users test_user1..3 do not exist
     ipauser:
-      name: test_user
+      name:
+      - test_user1
+      - test_user2
+      - test_user3
       state: absent
 
-  - name: Ensure test user test_user is absent in idview test_idview
+  - name: Ensure test users test_user1..3 are absent in idview test_idview
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
-      continue: true
+      anchor:
+      - test_user1
+      - test_user2
+      - test_user3
       state: absent
 
   - name: Ensure test idview test_idview does not exist
@@ -37,11 +42,18 @@
 
   # CREATE TEST ITEMS
 
-  - name: Ensure test user test_user exists
+  - name: Ensure test users test_user1..3 exist
     ipauser:
-      name: test_user
-      first: test
-      last: user
+      users:
+      - name: test_user1
+        first: test
+        last: user1
+      - name: test_user2
+        first: test
+        last: user2
+      - name: test_user3
+        first: test
+        last: user3
 
   - name: Ensure test idview test_idview exists
     ipaidview:
@@ -59,274 +71,302 @@
 
   # TESTS
 
-  - name: Ensure test user test_user is present in idview test_idview
+  - name: Ensure test user test_user1 is present in idview test_idview
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview, again
+  - name: Ensure test user test_user1 is present in idview test_idview, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user2 is present in idview test_idview
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user2
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user2 is present in idview test_idview, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user2
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user3 is present in idview test_idview
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user3
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test user test_user3 is present in idview test_idview, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user3
     register: result
     failed_when: result.changed or result.failed
 
   # description
 
-  - name: Ensure test user test_user is present in idview test_idview with description
+  - name: Ensure test user test_user1 is present in idview test_idview with description
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
-      description: "test_user description"
+      anchor: test_user1
+      description: "test_user1 description"
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with description, again
+  - name: Ensure test user test_user1 is present in idview test_idview with description, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
-      description: "test_user description"
+      anchor: test_user1
+      description: "test_user1 description"
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without description
+  - name: Ensure test user test_user1 is present in idview test_idview without description
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       description: ""
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without description, again
+  - name: Ensure test user test_user1 is present in idview test_idview without description, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       description: ""
     register: result
     failed_when: result.changed or result.failed
 
   # name
 
-  - name: Ensure test user test_user is present in idview test_idview with internal name test_123_user
+  - name: Ensure test user test_user1 is present in idview test_idview with internal name test_123_user
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       name: test_123_user
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with internal name test_123_user, again
+  - name: Ensure test user test_user1 is present in idview test_idview with internal name test_123_user, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       name: test_123_user
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without internal name
+  - name: Ensure test user test_user1 is present in idview test_idview without internal name
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       name: ""
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without internal name, again
+  - name: Ensure test user test_user1 is present in idview test_idview without internal name, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       name: ""
     register: result
     failed_when: result.changed or result.failed
 
   # uid
 
-  - name: Ensure test user test_user is present in idview test_idview with uid 20001
+  - name: Ensure test user test_user1 is present in idview test_idview with uid 20001
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       uid: 20001
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with uid 20001, again
+  - name: Ensure test user test_user1 is present in idview test_idview with uid 20001, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       uid: 20001
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without uid
+  - name: Ensure test user test_user1 is present in idview test_idview without uid
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       uid: ""
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without uid, again
+  - name: Ensure test user test_user1 is present in idview test_idview without uid, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       uid: ""
     register: result
     failed_when: result.changed or result.failed
 
   # gecos
 
-  - name: Ensure test user test_user is present in idview test_idview with gecos "Gecos Test"
+  - name: Ensure test user test_user1 is present in idview test_idview with gecos "Gecos Test"
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       gecos: Gecos Test öäüÇœß
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with gecos "Gecos Test", again
+  - name: Ensure test user test_user1 is present in idview test_idview with gecos "Gecos Test", again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       gecos: Gecos Test öäüÇœß
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without gecos
+  - name: Ensure test user test_user1 is present in idview test_idview without gecos
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       gecos: ""
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without gecos, again
+  - name: Ensure test user test_user1 is present in idview test_idview without gecos, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       gecos: ""
     register: result
     failed_when: result.changed or result.failed
 
   # gidnumber
 
-  - name: Ensure test user test_user is present in idview test_idview with gidnumber 20001
+  - name: Ensure test user test_user1 is present in idview test_idview with gidnumber 20001
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       gidnumber: 20001
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with gidnumber 20001, again
+  - name: Ensure test user test_user1 is present in idview test_idview with gidnumber 20001, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       gidnumber: 20001
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without gidnumber
+  - name: Ensure test user test_user1 is present in idview test_idview without gidnumber
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       gidnumber: ""
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without gidnumber, again
+  - name: Ensure test user test_user1 is present in idview test_idview without gidnumber, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       gidnumber: ""
     register: result
     failed_when: result.changed or result.failed
 
   # homedir
 
-  - name: Ensure test user test_user is present in idview test_idview with homedir /Users
+  - name: Ensure test user test_user1 is present in idview test_idview with homedir /Users
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       homedir: /Users
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with homedir /Users, again
+  - name: Ensure test user test_user1 is present in idview test_idview with homedir /Users, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       homedir: /Users
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without homedir
+  - name: Ensure test user test_user1 is present in idview test_idview without homedir
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       homedir: ""
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without homedir, again
+  - name: Ensure test user test_user1 is present in idview test_idview without homedir, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       homedir: ""
     register: result
     failed_when: result.changed or result.failed
 
   # shell
 
-  - name: Ensure test user test_user is present in idview test_idview with shell /bin/someshell
+  - name: Ensure test user test_user1 is present in idview test_idview with shell /bin/someshell
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       shell: /bin/someshell
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with shell /bin/someshell, again
+  - name: Ensure test user test_user1 is present in idview test_idview with shell /bin/someshell, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       shell: /bin/someshell
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without shell
+  - name: Ensure test user test_user1 is present in idview test_idview without shell
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       shell: ""
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without shell, again
+  - name: Ensure test user test_user1 is present in idview test_idview without shell, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       shell: ""
     register: result
     failed_when: result.changed or result.failed
 
   # sshpubkey
 
-  - name: Ensure test user test_user is present in idview test_idview with sshpubkey
+  - name: Ensure test user test_user1 is present in idview test_idview with sshpubkey
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       sshpubkey:
       # yamllint disable-line rule:line-length
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCqmVDpEX5gnSjKuv97AyzOhaUMMKz8ahOA3GY77tVC4o68KNgMCmDSEG1/kOIaElngNLaCha3p/2iAcU9Bi1tLKUlm2bbO5NHNwHfRxY/3cJtq+/7D1vxJzqThYwI4F9vr1WxyY2+mMTv3pXbfAJoR8Mu06XaEY5PDetlDKjHLuNWF+/O7ZU8PsULTa1dJZFrtXeFpmUoLoGxQBvlrlcPI1zDciCSU24t27Zan5Py2l5QchyI7yhCyMM77KDtj5+AFVpmkb9+zq50rYJAyFVeyUvwjzErvQrKJzYpA0NyBp7vskWbt36M16/M/LxEK7HA6mkcakO3ESWx5MT1LAjvdlnxbWG3787MxweHXuB8CZU+9bZPFBaJ+VQtOfJ7I8eH0S16moPC4ak8FlcFvOH8ERDPWLFDqfy09yaZ7bVIF0//5ZI7Nf3YDe3S7GrBX5ieYuECyP6UNkTx9BRsAQeVvXEc6otzB7iCSnYBMGUGzCqeigoAWaVQUONsSR3Uatks= pinky@ipaserver.el81.local  # noqa 204
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with sshpubkey, again
+  - name: Ensure test user test_user1 is present in idview test_idview with sshpubkey, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       sshpubkey:
       # yamllint disable-line rule:line-length
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCqmVDpEX5gnSjKuv97AyzOhaUMMKz8ahOA3GY77tVC4o68KNgMCmDSEG1/kOIaElngNLaCha3p/2iAcU9Bi1tLKUlm2bbO5NHNwHfRxY/3cJtq+/7D1vxJzqThYwI4F9vr1WxyY2+mMTv3pXbfAJoR8Mu06XaEY5PDetlDKjHLuNWF+/O7ZU8PsULTa1dJZFrtXeFpmUoLoGxQBvlrlcPI1zDciCSU24t27Zan5Py2l5QchyI7yhCyMM77KDtj5+AFVpmkb9+zq50rYJAyFVeyUvwjzErvQrKJzYpA0NyBp7vskWbt36M16/M/LxEK7HA6mkcakO3ESWx5MT1LAjvdlnxbWG3787MxweHXuB8CZU+9bZPFBaJ+VQtOfJ7I8eH0S16moPC4ak8FlcFvOH8ERDPWLFDqfy09yaZ7bVIF0//5ZI7Nf3YDe3S7GrBX5ieYuECyP6UNkTx9BRsAQeVvXEc6otzB7iCSnYBMGUGzCqeigoAWaVQUONsSR3Uatks= pinky@ipaserver.el81.local  # noqa 204
@@ -334,56 +374,56 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without sshpubkey
+  - name: Ensure test user test_user1 is present in idview test_idview without sshpubkey
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       sshpubkey: []
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without sshpubkey, again
+  - name: Ensure test user test_user1 is present in idview test_idview without sshpubkey, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       sshpubkey: []
     register: result
     failed_when: result.changed or result.failed
 
   # certificate
 
-  - name: Ensure test user test_user is present in idview test_idview with 1 certificate
+  - name: Ensure test user test_user1 is present in idview test_idview with 1 certificate
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       certificate:
       - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with 1 certificate, again
+  - name: Ensure test user test_user1 is present in idview test_idview with 1 certificate, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       certificate:
       - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with 1 certificate member
+  - name: Ensure test user test_user1 is present in idview test_idview with 1 certificate member
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       certificate:
       - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
       action: member
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with 3 certificate members
+  - name: Ensure test user test_user1 is present in idview test_idview with 3 certificate members
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       certificate:
       - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
       - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
@@ -392,10 +432,10 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview with 3 certificate members, again
+  - name: Ensure test user test_user1 is present in idview test_idview with 3 certificate members, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       certificate:
       - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
       - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
@@ -404,50 +444,50 @@
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without certificate members
+  - name: Ensure test user test_user1 is present in idview test_idview without certificate members
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
-      certificate:
-      - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
-      - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
-      action: member
-      state: absent
-    register: result
-    failed_when: not result.changed or result.failed
-
-  - name: Ensure test user test_user is present in idview test_idview without certificate members, again
-    ipaidoverrideuser:
-      idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       certificate:
       - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
       - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
       action: member
       state: absent
     register: result
-    failed_when: result.changed or result.failed
+    failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without certificates
+  - name: Ensure test user test_user1 is present in idview test_idview without certificate members, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
+      certificate:
+      - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
+      - "{{ lookup('file', 'cert3.b64', rstrip=False) }}"
+      action: member
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test user test_user1 is present in idview test_idview without certificates
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor: test_user1
       certificate: []
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without certificates, again
+  - name: Ensure test user test_user1 is present in idview test_idview without certificates, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       certificate: []
     register: result
     failed_when: result.changed or result.failed
 
-  - name: Ensure test user test_user is present in idview test_idview without certificate members
+  - name: Ensure test user test_user1 is present in idview test_idview without certificate members
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
+      anchor: test_user1
       certificate:
       - "{{ lookup('file', 'cert1.b64', rstrip=False) }}"
       - "{{ lookup('file', 'cert2.b64', rstrip=False) }}"
@@ -461,36 +501,56 @@
 
   # absent
 
-  - name: Ensure test user test_user is absent in idview test_idview
+  - name: Ensure test user test_user1 is absent in idview test_idview
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
-      continue: true
+      anchor: test_user1
       state: absent
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Ensure test user test_user is absent in idview test_idview, again
+  - name: Ensure test user test_user1 is absent in idview test_idview, again
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
-      continue: true
+      anchor: test_user1
+      state: absent
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test users test_user2,3 are absent in idview test_idview
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor:
+      - test_user2
+      - test_user3
+      state: absent
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure test users test_user2,3 are absent in idview test_idview, again
+    ipaidoverrideuser:
+      idview: test_idview
+      anchor:
+      - test_user2
+      - test_user3
       state: absent
     register: result
     failed_when: result.changed or result.failed
 
   # CLEANUP TEST ITEMS
 
-  - name: Ensure test user test_user does not exist
+  - name: Ensure test user test_user1 does not exist
     ipauser:
-      name: test_user
+      name: test_user1
       state: absent
 
-  - name: Ensure test user test_user is absent in idview test_idview
+  - name: Ensure test users test_user1..3 are absent in idview test_idview
     ipaidoverrideuser:
       idview: test_idview
-      anchor: test_user
-      continue: true
+      anchor:
+      - test_user1
+      - test_user2
+      - test_user3
       state: absent
 
   - name: Ensure test idview test_idview does not exist
