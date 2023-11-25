@@ -31,7 +31,7 @@
 
   - name: Ensure group group3, group2 and group1 are absent
     ipagroup:
-      name: group3,group2,group1
+      name: groupren,group3,group2,group1
       state: absent
 
   # CREATE TEST ITEMS
@@ -64,6 +64,38 @@
       name: group1
     register: result
     failed_when: result.changed or result.failed
+
+  - name: Rename group1 to groupren
+    ipagroup:
+      name: group1
+      rename: groupren
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Rename group1 to groupren
+    ipagroup:
+      name: group1
+      rename: groupren
+      state: renamed
+    register: result
+    failed_when: not result.failed or "No group 'group1'" not in result.msg
+
+  - name: Rename group groupren to groupren
+    ipagroup:
+      name: groupren
+      rename: groupren
+      state: renamed
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Rename group groupren back to group1
+    ipagroup:
+      name: groupren
+      rename: group1
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
 
   - name: Ensure group2 is present
     ipagroup:
