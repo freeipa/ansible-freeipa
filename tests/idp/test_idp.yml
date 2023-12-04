@@ -62,6 +62,162 @@
       register: result
       failed_when: result.changed or result.failed
 
+    - name: Ensure keycloak idp my-keycloak-idp is present with all params
+      ipaidp:
+        name: my-keycloak-idp
+        organization: main
+        base_url: https://keycloak.idm.example.com:8443/auth
+        keys_uri: https://keycloak.idm.example.com:8443/certs
+        issuer_url: https://keycloak.idm.example.com:8443/issuer
+        secret: secret
+        scope: https://keycloak.idm.example.com:8443/scope
+        idp_user_id: testuser
+        client_id: my-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp is present with all params, again
+      ipaidp:
+        name: my-keycloak-idp
+        organization: main
+        base_url: https://keycloak.idm.example.com:8443/auth
+        keys_uri: https://keycloak.idm.example.com:8443/certs
+        issuer_url: https://keycloak.idm.example.com:8443/issuer
+        secret: secret
+        scope: https://keycloak.idm.example.com:8443/scope
+        idp_user_id: testuser
+        client_id: my-client-id
+      register: result
+      # failed_when: result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp auth_uri is empty
+      ipaidp:
+        name: my-keycloak-idp
+        auth_uri: ""
+        client_id: my-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp auth_uri is empty, again
+      ipaidp:
+        name: my-keycloak-idp
+        auth_uri: ""
+        client_id: my-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp dev_auth_uri is empty
+      ipaidp:
+        name: my-keycloak-idp
+        dev_auth_uri: ""
+        client_id: my-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp dev_auth_uri is empty, again
+      ipaidp:
+        name: my-keycloak-idp
+        dev_auth_uri: ""
+        client_id: my-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp token_uri is empty
+      ipaidp:
+        name: my-keycloak-idp
+        token_uri: ""
+        client_id: my-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp token_uri is empty, again
+      ipaidp:
+        name: my-keycloak-idp
+        token_uri: ""
+        client_id: my-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp userinfo_uri is empty
+      ipaidp:
+        name: my-keycloak-idp
+        userinfo_uri: ""
+        client_id: my-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp userinfo_uri is empty, again
+      ipaidp:
+        name: my-keycloak-idp
+        userinfo_uri: ""
+        client_id: my-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp keys_uri is empty
+      ipaidp:
+        name: my-keycloak-idp
+        keys_uri: ""
+        client_id: my-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp keys_uri is empty, again
+      ipaidp:
+        name: my-keycloak-idp
+        keys_uri: ""
+        client_id: my-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp issuer_url is empty
+      ipaidp:
+        name: my-keycloak-idp
+        issuer_url: ""
+        client_id: my-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp issuer_url is empty, again
+      ipaidp:
+        name: my-keycloak-idp
+        issuer_url: ""
+        client_id: my-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp scope is empty
+      ipaidp:
+        name: my-keycloak-idp
+        scope: ""
+        client_id: my-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp scope is empty, again
+      ipaidp:
+        name: my-keycloak-idp
+        scope: ""
+        client_id: my-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp idp_user_id is empty
+      ipaidp:
+        name: my-keycloak-idp
+        idp_user_id: ""
+        client_id: my-client-id
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure keycloak idp my-keycloak-idp idp_user_id is empty, again
+      ipaidp:
+        name: my-keycloak-idp
+        idp_user_id: ""
+        client_id: my-client-id
+      register: result
+      failed_when: result.changed or result.failed
+
     - name: Ensure idp my-keycloak-idp is absent
       ipaidp:
         name: my-keycloak-idp

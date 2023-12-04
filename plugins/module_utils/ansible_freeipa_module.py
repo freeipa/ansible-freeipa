@@ -30,7 +30,8 @@ __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "kinit_password", "kinit_keytab", "run", "DN", "VERSION",
            "paths", "tasks", "get_credentials_if_valid", "Encoding",
            "DNSName", "getargspec", "certificate_loader",
-           "write_certificate_list", "boolean", "template_str"]
+           "write_certificate_list", "boolean", "template_str",
+           "urlparse"]
 
 import os
 # ansible-freeipa requires locale to be C, IPA requires utf-8.
@@ -146,6 +147,11 @@ try:
         _dcerpc_bindings_installed = True  # pylint: disable=invalid-name
     except ImportError:
         _dcerpc_bindings_installed = False  # pylint: disable=invalid-name
+
+    try:
+        from urllib.parse import urlparse
+    except ImportError:
+        from ansible.module_utils.six.moves.urllib.parse import urlparse
 
 except ImportError as _err:
     ANSIBLE_FREEIPA_MODULE_IMPORT_ERROR = str(_err)

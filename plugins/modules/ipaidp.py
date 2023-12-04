@@ -185,7 +185,7 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, template_str
+    IPAAnsibleModule, compare_args_ipa, template_str, urlparse
 from ansible.module_utils import six
 from copy import deepcopy
 import string
@@ -274,7 +274,14 @@ def find_idp(module, name):
         # An exception is raised if idp name is not found.
         return None
 
-    return _result["result"]
+    res = _result["result"]
+
+    # Decode binary string secret
+    if "ipaidpclientsecret" in res and len(res["ipaidpclientsecret"]) > 0:
+        res["ipaidpclientsecret"][0] = \
+            res["ipaidpclientsecret"][0].decode("ascii")
+
+    return res
 
 
 def gen_args(auth_uri, dev_auth_uri, token_uri, userinfo_uri, keys_uri,
@@ -331,6 +338,16 @@ def convert_provider_to_endpoints(module, _args, provider):
             points[_k] = _args[_k]
 
     _args.update(points)
+
+
+def validate_uri(module, uri):
+    try:
+        parsed = urlparse(uri, 'https')
+    except Exception:
+        module.fail_json(msg="Invalid URI '%s': not an https scheme" % uri)
+
+    if not parsed.netloc:
+        module.fail_json(msg="Invalid URI '%s': missing netloc" % uri)
 
 
 def main():
@@ -426,19 +443,6 @@ def main():
             if provider not in idp_providers:
                 ansible_module.fail_json(
                     msg="Provider '%s' is unknown" % provider)
-        else:
-            if not auth_uri:
-                ansible_module.fail_json(
-                    msg="Parameter '%s' is missing" % "auth_uri")
-            if not dev_auth_uri:
-                ansible_module.fail_json(
-                    msg="Parameter '%s' is missing" % "dev_auth_uri")
-            if not token_uri:
-                ansible_module.fail_json(
-                    msg="Parameter '%s' is missing" % "token_uri")
-            if not userinfo_uri:
-                ansible_module.fail_json(
-                    msg="Parameter '%s' is missing" % "userinfo_uri")
         invalid = ["rename", "delete_continue"]
     else:
         # state renamed and absent
@@ -458,6 +462,19 @@ def main():
         invalid += ["rename"]
 
     ansible_module.params_fail_used_invalid(invalid, state)
+
+    # Empty client_id test
+    if client_id is not None and client_id == "":
+        ansible_module.fail_json(msg="'client_id' is required")
+
+    # Normalize base_url
+    if base_url is not None and base_url.startswith('https://'):
+        base_url = base_url[len('https://'):]
+
+    # Validate uris
+    for uri in [auth_uri, dev_auth_uri, token_uri, userinfo_uri, keys_uri]:
+        if uri is not None and uri != "":
+            validate_uri(ansible_module, uri)
 
     # Init
 
@@ -507,6 +524,19 @@ def main():
                                             res_find):
                         commands.append([name, "idp_mod", args])
                 else:
+                    if "ipaidpauthendpoint" not in args:
+                        ansible_module.fail_json(
+                            msg="Parameter '%s' is missing" % "auth_uri")
+                    if "ipaidpdevauthendpoint" not in args:
+                        ansible_module.fail_json(
+                            msg="Parameter '%s' is missing" % "dev_auth_uri")
+                    if "ipaidptokenendpoint" not in args:
+                        ansible_module.fail_json(
+                            msg="Parameter '%s' is missing" % "token_uri")
+                    if "ipaidpuserinfoendpoint" not in args:
+                        ansible_module.fail_json(
+                            msg="Parameter '%s' is missing" % "userinfo_uri")
+
                     commands.append([name, "idp_add", args])
 
             elif state == "absent":
