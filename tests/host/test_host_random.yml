@@ -13,6 +13,7 @@
     ansible.builtin.set_fact:
       host1_fqdn: "{{ 'host1.' + ipaserver_domain }}"
       host2_fqdn: "{{ 'host2.' + ipaserver_domain }}"
+      server_fqdn: "{{ ansible_facts['fqdn'] }}"
 
   - name: Test hosts absent
     ipahost:
@@ -86,10 +87,8 @@
   - name: Assert randompassword is defined for host1 and host2.
     ansible.builtin.assert:
       that:
-      - ipahost.host["{{ host1_fqdn }}"].randompassword is
-        defined
-      - ipahost.host["{{ host2_fqdn }}"].randompassword is
-        defined
+      - ipahost.host[host1_fqdn].randompassword is defined
+      - ipahost.host[host2_fqdn].randompassword is defined
 
   - name: Print generated random password for "{{ host1_fqdn }}"
     ansible.builtin.debug:
@@ -99,11 +98,11 @@
     ansible.builtin.debug:
       var: ipahost.host["{{ host2_fqdn }}"].randompassword
 
-  - name: Enrolled host "{{ ansible_facts['fqdn'] }}" fails to set random password with update_password always
+  - name: Enrolled host "{{ server_fqdn }}" fails to set random password with update_password always
     ipahost:
       ipaadmin_password: SomeADMINpassword
       hosts:
-      - name: "{{ ansible_facts['fqdn'] }}"
+      - name: "{{ server_fqdn }}"
         random: yes
       update_password: always
     register: ipahost
@@ -112,8 +111,7 @@
   - name: Assert randompassword is not defined for 'ansible_fqdn'.
     ansible.builtin.assert:
       that:
-      - ipahost.host["{{ ansible_facts['fqdn'] }}"].randompassword is
-        not defined
+      - ipahost.host[server_fqdn].randompassword is not defined
       - "'Password cannot be set on enrolled host' in ipahost.msg"
 
   - name: Hosts "{{ host1_fqdn }}" and "{{ host2_fqdn }}" absent
