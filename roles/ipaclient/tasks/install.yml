@@ -166,18 +166,19 @@
       register: result_ipaclient_get_otp
       delegate_to: "{{ result_ipaclient_test.servers[0] }}"
 
-    - name: Install - Report error for OTP generation
-      ansible.builtin.debug:
-        msg: "{{ result_ipaclient_get_otp.msg }}"
-      when: result_ipaclient_get_otp is failed
-      failed_when: yes
-
     - name: Install - Store the previously obtained OTP
       no_log: yes
       ansible.builtin.set_fact:
         ipaadmin_orig_password: "{{ ipaadmin_password | default(omit) }}"
         ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword
                                if result_ipaclient_get_otp.host is defined }}"
+    rescue:
+    - name: Install - Report error for OTP generation
+      ansible.builtin.debug:
+        msg: "{{ result_ipaclient_get_otp.msg }}"
+      when: result_ipaclient_get_otp is failed
+      failed_when: yes
+
     always:
     - name: Install - Remove keytab temporary file
       ansible.builtin.file:
