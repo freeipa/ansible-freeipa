@@ -57,6 +57,11 @@
     ipareplica_servers: "{{ groups['ipaservers'] | list }}"
   when: groups.ipaservers is defined and ipareplica_servers is not defined
 
+- name: Install - Set ipareplica_servers from cluster inventory
+  ansible.builtin.set_fact:
+    ipareplica_servers: "{{ groups['ipaserver'] | list }}"
+  when: ipareplica_servers is not defined and groups.ipaserver is defined
+
 - name: Install - Set default principal if no keytab is given
   ansible.builtin.set_fact:
     ipaadmin_principal: admin
