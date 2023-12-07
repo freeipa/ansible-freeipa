@@ -17,46 +17,6 @@
 variables:
   empty: true
   # ipa_enabled_modules: >-
-  ipa_enabled_modules: >-
-    idp,
-    permission,
-    service
   # ipa_enabled_tests: >-
   # ipa_disabled_modules: >-
-  ipa_disabled_modules: >-
-    automember,
-    automount,
-    cert,
-    config,
-    delegation,
-    dnsconfig,
-    dnsforwardzone,
-    dnsrecord,
-    dnszone,
-    environment,
-    group,
-    hbacrule,
-    hbacsvc,
-    hbacsvcgroup,
-    host,
-    hostgroup,
-    idoverridegroup,
-    idoverrideuser,
-    idrange,
-    idview,
-    location,
-    netgroup,
-    privilege,
-    pwpolicy,
-    role,
-    selfservice,
-    server,
-    service,
-    servicedelegationrule,
-    servicedelegationtarget,
-    sudocmd,
-    sudocmdgroup,
-    sudorule,
-    user,
-    vault
   # ipa_disabled_tests: >-
