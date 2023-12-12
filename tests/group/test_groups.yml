@@ -114,7 +114,7 @@
     ipagroup:
       ipaadmin_password: SomeADMINpassword
     register: result
-    failed_when: result.changed or not result.failed or "one of the following is required" not in result.msg
+    failed_when: result.changed or not result.failed or "At least one name or groups is required" not in result.msg
 
   - name: Name is absent
     ipagroup:
