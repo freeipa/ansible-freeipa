@@ -171,7 +171,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, ensure_fqdn
+    gen_intersection_list, ListOf, Hostname
 
 
 def find_hbacrule(module, name):
@@ -268,7 +268,6 @@ def main():
     hostcategory = ansible_module.params_get("hostcategory")
     servicecategory = ansible_module.params_get("servicecategory")
     nomembers = ansible_module.params_get("nomembers")
-    host = ansible_module.params_get_lowercase("host")
     hostgroup = ansible_module.params_get_lowercase("hostgroup")
     hbacsvc = ansible_module.params_get_lowercase("hbacsvc")
     hbacsvcgroup = ansible_module.params_get_lowercase("hbacsvcgroup")
@@ -290,9 +289,7 @@ def main():
             invalid = ["description", "usercategory", "hostcategory",
                        "servicecategory", "nomembers"]
         else:
-            if hostcategory == 'all' and any([host, hostgroup]):
-                ansible_module.fail_json(
-                    msg="Hosts cannot be added when host category='all'")
+            # Delay check for usercategory until we have 'hosts'.
             if usercategory == 'all' and any([user, group]):
                 ansible_module.fail_json(
                     msg="Users cannot be added when user category='all'")
@@ -331,14 +328,15 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
-
-        # Get default domain
-        default_domain = ansible_module.ipa_get_domain()
-
-        # Ensure fqdn host names, use default domain for simple names
-        if host is not None:
-            _host = [ensure_fqdn(x, default_domain).lower() for x in host]
-            host = _host
+        # Ensure fqdn host names
+        host = ansible_module.params_get_with_type_cast(
+            "host",
+            ListOf(Hostname(ansible_module.ipa_get_domain())),
+        )
+        # Check hostcategory argument.
+        if hostcategory == 'all' and any([host, hostgroup]):
+            ansible_module.fail_json(
+                msg="Hosts cannot be added when host category='all'")
 
         commands = []
 
