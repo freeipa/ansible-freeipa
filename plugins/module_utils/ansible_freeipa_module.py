@@ -551,6 +551,31 @@ def ensure_fqdn(name, domain):
     return name
 
 
+def Hostname(domain_name):  # pylint: disable=invalid-name
+    """Return a function that entsure a FQDN representation of a hostname."""
+    def _converter(data):
+        return ensure_fqdn(data, domain_name).lower()
+
+    return _converter
+
+
+def ListOf(datatype):  # pylint: disable=invalid-name
+    """Ensure a list of values contain the requested datatype."""
+    def _converter(listdata):
+        if not isinstance(listdata, (list, tuple, set)):
+            raise TypeError("Expected sequence of items.")
+        if listdata is not None:
+            try:
+                return [datatype(data) for data in listdata]
+            except TypeError:
+                raise ValueError(
+                    "Cannot convert list item to %s" % datatype.__name__
+                )
+        return listdata
+
+    return _converter
+
+
 def api_get_realm():
     return api.env.realm
 
