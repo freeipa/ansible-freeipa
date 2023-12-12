@@ -159,7 +159,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
-    gen_add_list, gen_intersection_list, ensure_fqdn
+    gen_add_list, gen_intersection_list, ListOf, Hostname
 
 
 def find_netgroup(module, name):
@@ -257,7 +257,6 @@ def main():
     nomembers = ansible_module.params_get("nomembers")
     user = ansible_module.params_get_lowercase("user")
     group = ansible_module.params_get_lowercase("group")
-    host = ansible_module.params_get_lowercase("host")
     hostgroup = ansible_module.params_get_lowercase("hostgroup")
     netgroup = ansible_module.params_get_lowercase("netgroup")
     action = ansible_module.params_get("action")
@@ -294,11 +293,11 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
-        # Ensure fqdn host names, use default domain for simple names
-        if host is not None:
-            default_domain = ansible_module.ipa_get_domain()
-            host = [ensure_fqdn(_host, default_domain).lower()
-                    for _host in host]
+        # Ensure fqdn host names
+        host = ansible_module.params_get_with_type_cast(
+            "host",
+            ListOf(Hostname(ansible_module.ipa_get_domain())),
+        )
 
         commands = []
         for name in names:
