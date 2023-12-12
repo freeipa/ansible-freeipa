@@ -129,7 +129,7 @@ EXAMPLES = """
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, gen_add_del_lists, compare_args_ipa, \
-    gen_intersection_list, ensure_fqdn
+    gen_intersection_list, list_of, hostname
 from ansible.module_utils import six
 
 if six.PY3:
@@ -194,17 +194,6 @@ def check_parameters(module):
     module.params_fail_used_invalid(invalid, state, action)
 
 
-def get_member_host_with_fqdn_lowercase(module, mod_member):
-    """Retrieve host members from module, as FQDN, lowercase."""
-    default_domain = module.ipa_get_domain()
-    hosts = module.params_get(mod_member)
-    return (
-        [ensure_fqdn(host, default_domain).lower() for host in hosts]
-        if hosts
-        else hosts
-    )
-
-
 def ensure_absent_state(module, name, action, res_find):
     """Define commands to ensure absent state."""
     commands = []
@@ -225,9 +214,17 @@ def ensure_absent_state(module, name, action, res_find):
                                  {"privilege": del_list}])
 
         member_args = {}
-        for key in ['user', 'group', 'hostgroup']:
-            _members = module.params_get_lowercase(key)
-            if _members:
+
+        member_types = [
+            ("user", lambda value: value.lower()),
+            ("group", lambda value: value.lower()),
+            ("hostgroup", lambda value: value.lower()),
+            ("host", Hostname(module.ipa_get_domain())),
+            ("service", Service(module.ipa_get_realm())),
+        ]
+        for key, datatype in member_types:
+            _members = module.params_get_with_type_cast(key, ListOf(datatype))
+            if _members is not None:
                 del_list = gen_intersection_list(
                     _members,
                     result_get_value_lowercase(res_find, "member_%s" % key)
@@ -236,7 +233,10 @@ def ensure_absent_state(module, name, action, res_find):
                     member_args[key] = del_list
 
         # ensure hosts are FQDN.
-        _members = get_member_host_with_fqdn_lowercase(module, "host")
+        _members = module.params_get_with_type_cast(
+            "host",
+            list_of(hostname(module.ipa_get_domain())),
+        )
         if _members:
             del_list = gen_intersection_list(
                 _members, res_find.get('member_host'))
@@ -335,8 +335,15 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
     add_members = {}
     del_members = {}
 
-    for key in ["user", "group", "hostgroup"]:
-        _members = module.params_get_lowercase(key)
+    member_types = [
+        ("user", lambda value: value.lower()),
+        ("group", lambda value: value.lower()),
+        ("hostgroup", lambda value: value.lower()),
+        ("host", Hostname(module.ipa_get_domain())),
+        ("service", Service(module.ipa_get_realm())),
+    ]
+    for key, datatype in member_types:
+        _members = module.params_get_with_type_cast(key, ListOf(datatype))
         if _members is not None:
             add_list, del_list = gen_add_del_lists(
                 _members,
@@ -348,7 +355,10 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
                 del_members[key] = del_list
 
     # ensure hosts are FQDN.
-    _members = get_member_host_with_fqdn_lowercase(module, "host")
+    _members = module.params_get_with_type_cast(
+        "host",
+        list_of(hostname(module.ipa_get_domain())),
+    )
     if _members:
         add_list, del_list = gen_add_del_lists(
             _members, res_find.get('member_host'))
