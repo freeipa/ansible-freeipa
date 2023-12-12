@@ -149,7 +149,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, ensure_fqdn
+    gen_intersection_list, ListOf, Hostname
 
 
 def find_hostgroup(module, name):
@@ -229,7 +229,6 @@ def main():
     # present
     description = ansible_module.params_get("description")
     nomembers = ansible_module.params_get("nomembers")
-    host = ansible_module.params_get("host")
     hostgroup = ansible_module.params_get("hostgroup")
     membermanager_user = ansible_module.params_get("membermanager_user")
     membermanager_group = ansible_module.params_get("membermanager_group")
@@ -279,7 +278,6 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
-
         has_add_membermanager = ansible_module.ipa_command_exists(
             "hostgroup_add_member_manager")
         if ((membermanager_user is not None or
@@ -294,14 +292,12 @@ def main():
             ansible_module.fail_json(
                 msg="Renaming hostgroups is not supported by your IPA version")
 
-        # If hosts are given, ensure that the hosts are FQDN and also
-        # lowercase to be able to do a proper comparison to exising hosts
-        # in the hostgroup.
-        # Fixes #666 (ipahostgroup not idempotent and with error)
-        if host is not None:
-            default_domain = ansible_module.ipa_get_domain()
-            host = [ensure_fqdn(_host, default_domain).lower()
-                    for _host in host]
+        # Hostnames must be FQDN, and we can only ensure that after API
+        # is initialized.
+        host = ansible_module.params_get_with_type_cast(
+            "host",
+            ListOf(Hostname(ansible_module.ipa_get_domain())),
+        )
 
         commands = []
 
