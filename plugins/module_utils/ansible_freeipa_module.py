@@ -551,6 +551,30 @@ def ensure_fqdn(name, domain):
     return name
 
 
+def Service(realm):  # pylint: disable=invalid-name
+    def _converter(data):
+        class _Service:
+            def __init__(self, svc, realm):
+                self.svc = to_text(
+                    data if '@' in to_text(data) else '%s@%s' % (svc, realm)
+                )
+
+            def __hash__(self):
+                return hash(self.svc.lower())
+
+            def __eq__(self, other):
+                if isinstance(other, _Service):
+                    return self.svc.lower() == other.svc.lower()
+                return self.svc.lower() == to_text(other).lower()
+
+            def __str__(self):
+                return self.svc
+
+        return _Service(data, realm)
+
+    return _converter
+
+
 def Hostname(domain_name):  # pylint: disable=invalid-name
     """Return a function that entsure a FQDN representation of a hostname."""
     def _converter(data):
