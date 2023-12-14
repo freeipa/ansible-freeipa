@@ -1449,6 +1449,10 @@ def main():
                                 del args["userpassword"]
                             if "random" in args:
                                 del args["random"]
+                        # if using "random:false" password should not be
+                        # generated.
+                        if not args.get("random", True):
+                            del args["random"]
                         if "noprivate" in args:
                             del args["noprivate"]
 

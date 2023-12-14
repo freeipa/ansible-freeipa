@@ -87,6 +87,17 @@
     register: result
     failed_when: not result.changed or result.failed
 
+  - name: Ensure user presence with 'random:false'
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      first: pinky
+      last: Acme
+      random: false
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: Set street, again
     ipauser:
       ipaadmin_password: SomeADMINpassword
