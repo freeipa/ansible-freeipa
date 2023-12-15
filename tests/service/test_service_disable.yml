@@ -30,6 +30,7 @@
     ipaservice:
       ipaadmin_password: SomeADMINpassword
       name: "mysvc1/{{ ansible_facts['fqdn'] }}"
+      continue: true
       state: absent
 
   - name: Ensure service is present

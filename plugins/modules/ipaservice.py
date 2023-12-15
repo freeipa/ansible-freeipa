@@ -378,7 +378,7 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, encode_certificate, \
     gen_add_del_lists, gen_add_list, gen_intersection_list, ipalib_errors, \
-    api_get_realm, to_text
+    to_text, ListOf, Service
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -599,7 +599,6 @@ def main():
     services = ansible_module.params_get("services")
 
     # service attributes
-    principal = ansible_module.params_get("principal")
     certificate = ansible_module.params_get("certificate")
     # Any leading or trailing whitespace is removed while adding the
     # certificate with serive_add_cert. To be able to compare the results
@@ -656,6 +655,11 @@ def main():
                 msg="Skipping host check is not supported by your IPA version")
         check_authind(ansible_module, auth_ind)
 
+        # We need API to be available to ensure valid pricipals.
+        service_cast = Service(ansible_module.ipa_get_realm())
+        principal = ansible_module.params_get_with_type_cast(
+            "principal", ListOf(service_cast))
+
         commands = []
         keytab_members = ["user", "group", "host", "hostgroup"]
         service_set = set()
@@ -668,6 +672,8 @@ def main():
                         msg="service '%s' is used more than once" % name)
                 service_set.add(name)
                 principal = service.get("principal")
+                if principal:
+                    principal = [service_cast(item) for item in principal]
                 certificate = service.get("certificate")
                 # Any leading or trailing whitespace is removed while adding
                 # the certificate with serive_add_cert. To be able to compare
@@ -716,27 +722,17 @@ def main():
             principal_add, principal_del = [], []
 
             if principal and res_find:
-                # When comparing principals to the existing ones,
-                # the REALM is needded, and are added here for those
-                # that do not have it.
-                principal = [
-                    p if "@" in p
-                    else "%s@%s" % (p, api_get_realm())
-                    for p in principal
-                ]
-                principal = list(set(principal))
-
                 # Create list of existing principal aliases as strings
                 # to compare with provided ones.
                 canonicalname = {
-                    to_text(p)
-                    for p in res_find.get("krbcanonicalname", [])
+                    service_cast(elem)
+                    for elem in res_find.get("krbcanonicalname")
                 }
                 res_principals = [
-                    to_text(elem)
+                    service_cast(elem)
                     for elem in res_find.get("krbprincipalname", [])
+                    if service_cast(elem) not in canonicalname
                 ]
-                res_principals = list(set(res_principals) - canonicalname)
 
             if state == "present":
                 if action == "service":
@@ -891,9 +887,11 @@ def main():
 
             # Manage members
             if principal_add:
+                principal_add = [to_text(item) for item in principal_add]
                 commands.append([name, "service_add_principal",
                                  {"krbprincipalname": principal_add}])
             if principal_del:
+                principal_del = [to_text(item) for item in principal_del]
                 commands.append([name, "service_remove_principal",
                                  {"krbprincipalname": principal_del}])
 
