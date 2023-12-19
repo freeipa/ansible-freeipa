@@ -201,6 +201,7 @@ Variable | Description | Required
 `ipasssd_preserve_sssd` | The bool value defines if the old SSSD configuration will be preserved if it is not possible to merge it with a new one. `ipasssd_preserve_sssd` defaults to `no`. | no
 `ipaclient_request_cert` | The bool value defines if the certificate for the machine wil be requested. The certificate will be stored in /etc/ipa/nssdb under the nickname "Local IPA host". . `ipaclient_request_cert` defaults to `no`. The option is deprecated and will be removed in a future release. | no
 `ipaclient_keytab` | The string value contains the path on the node of a backup host keytab from a previous enrollment. | no
+`ipaclient_automount_location` | Automount location | no
 
 
 Server Variables
