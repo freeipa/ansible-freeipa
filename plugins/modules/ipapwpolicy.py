@@ -153,7 +153,7 @@ RETURN = """
 """
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, boolean
+    IPAAnsibleModule, compare_args_ipa
 
 
 def find_pwpolicy(module, name):
@@ -294,20 +294,34 @@ def main():
     names = ansible_module.params_get("name")
 
     # present
-    maxlife = ansible_module.params_get("maxlife")
-    minlife = ansible_module.params_get("minlife")
-    history = ansible_module.params_get("history")
-    minclasses = ansible_module.params_get("minclasses")
-    minlength = ansible_module.params_get("minlength")
-    priority = ansible_module.params_get("priority")
-    maxfail = ansible_module.params_get("maxfail")
-    failinterval = ansible_module.params_get("failinterval")
-    lockouttime = ansible_module.params_get("lockouttime")
-    maxrepeat = ansible_module.params_get("maxrepeat")
-    maxsequence = ansible_module.params_get("maxsequence")
-    dictcheck = ansible_module.params_get("dictcheck")
-    usercheck = ansible_module.params_get("usercheck")
-    gracelimit = ansible_module.params_get("gracelimit")
+    maxlife = ansible_module.params_get_with_type_cast(
+        "maxlife", int, allow_empty=True)
+    minlife = ansible_module.params_get_with_type_cast(
+        "minlife", int, allow_empty=True)
+    history = ansible_module.params_get_with_type_cast(
+        "history", int, allow_empty=True)
+    minclasses = ansible_module.params_get_with_type_cast(
+        "minclasses", int, allow_empty=True)
+    minlength = ansible_module.params_get_with_type_cast(
+        "minlength", int, allow_empty=True)
+    priority = ansible_module.params_get_with_type_cast(
+        "priority", int, allow_empty=True)
+    maxfail = ansible_module.params_get_with_type_cast(
+        "maxfail", int, allow_empty=True)
+    failinterval = ansible_module.params_get_with_type_cast(
+        "failinterval", int, allow_empty=True)
+    lockouttime = ansible_module.params_get_with_type_cast(
+        "lockouttime", int, allow_empty=True)
+    maxrepeat = ansible_module.params_get_with_type_cast(
+        "maxrepeat", int, allow_empty=True)
+    maxsequence = ansible_module.params_get_with_type_cast(
+        "maxsequence", int, allow_empty=True)
+    dictcheck = ansible_module.params_get_with_type_cast(
+        "dictcheck", bool, allow_empty=True)
+    usercheck = ansible_module.params_get_with_type_cast(
+        "usercheck", bool, allow_empty=True)
+    gracelimit = ansible_module.params_get_with_type_cast(
+        "gracelimit", int, allow_empty=True)
 
     # state
     state = ansible_module.params_get("state")
@@ -335,41 +349,6 @@ def main():
                    "usercheck", "gracelimit"]
 
     ansible_module.params_fail_used_invalid(invalid, state)
-
-    # Ensure parameter values are valid and have proper type.
-    def int_or_empty_param(value, param):
-        if value is not None and value != "":
-            try:
-                value = int(value)
-            except ValueError:
-                ansible_module.fail_json(
-                    msg="Invalid value '%s' for argument '%s'" % (value, param)
-                )
-        return value
-
-    maxlife = int_or_empty_param(maxlife, "maxlife")
-    minlife = int_or_empty_param(minlife, "minlife")
-    history = int_or_empty_param(history, "history")
-    minclasses = int_or_empty_param(minclasses, "minclasses")
-    minlength = int_or_empty_param(minlength, "minlength")
-    priority = int_or_empty_param(priority, "priority")
-    maxfail = int_or_empty_param(maxfail, "maxfail")
-    failinterval = int_or_empty_param(failinterval, "failinterval")
-    lockouttime = int_or_empty_param(lockouttime, "lockouttime")
-    maxrepeat = int_or_empty_param(maxrepeat, "maxrepeat")
-    maxsequence = int_or_empty_param(maxsequence, "maxsequence")
-    gracelimit = int_or_empty_param(gracelimit, "gracelimit")
-
-    def bool_or_empty_param(value, param):  # pylint: disable=R1710
-        if value is None or value == "":
-            return value
-        try:
-            return boolean(value)
-        except TypeError as terr:
-            ansible_module.fail_json(msg="Param '%s': %s" % (param, str(terr)))
-
-    dictcheck = bool_or_empty_param(dictcheck, "dictcheck")
-    usercheck = bool_or_empty_param(usercheck, "usercheck")
 
     # Ensure gracelimit has proper limit.
     if gracelimit:

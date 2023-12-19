@@ -439,9 +439,9 @@ def main():
     # present
     description = ansible_module.params_get("description")
     name = ansible_module.params_get("name")
-    uid = ansible_module.params_get("uid")
+    uid = ansible_module.params_get_with_type_cast("uid", int)
     gecos = ansible_module.params_get("gecos")
-    gidnumber = ansible_module.params_get("gidnumber")
+    gidnumber = ansible_module.params_get_with_type_cast("gidnumber", int)
     homedir = ansible_module.params_get("homedir")
     shell = ansible_module.params_get("shell")
     sshpubkey = ansible_module.params_get("sshpubkey")
@@ -478,20 +478,6 @@ def main():
             invalid += ["certificate"]
 
     ansible_module.params_fail_used_invalid(invalid, state, action)
-
-    # Ensure parameter values are valid and have proper type.
-    def int_or_empty_param(value, param):
-        if value is not None and value != "":
-            try:
-                value = int(value)
-            except ValueError:
-                ansible_module.fail_json(
-                    msg="Invalid value '%s' for argument '%s'" % (value, param)
-                )
-        return value
-
-    uid = int_or_empty_param(uid, "uid")
-    gidnumber = int_or_empty_param(gidnumber, "gidnumber")
 
     if certificate is not None:
         certificate = [cert.strip() for cert in certificate]

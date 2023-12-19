@@ -243,7 +243,7 @@ def main():
     # present
     description = ansible_module.params_get("description")
     name = ansible_module.params_get("name")
-    gid = ansible_module.params_get("gid")
+    gid = ansible_module.params_get_with_type_cast("gid", int)
 
     # runtime flags
     fallback_to_ldap = ansible_module.params_get("fallback_to_ldap")
@@ -270,19 +270,6 @@ def main():
         invalid = ["description", "name", "gid"]
 
     ansible_module.params_fail_used_invalid(invalid, state)
-
-    # Ensure parameter values are valid and have proper type.
-    def int_or_empty_param(value, param):
-        if value is not None and value != "":
-            try:
-                value = int(value)
-            except ValueError:
-                ansible_module.fail_json(
-                    msg="Invalid value '%s' for argument '%s'" % (value, param)
-                )
-        return value
-
-    gid = int_or_empty_param(gid, "gid")
 
     # Init
 

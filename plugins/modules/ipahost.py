@@ -876,10 +876,11 @@ def main():
     allow_retrieve_keytab_hostgroup = ansible_module.params_get(
         "allow_retrieve_keytab_hostgroup")
     mac_address = ansible_module.params_get("mac_address")
-    sshpubkey = ansible_module.params_get("sshpubkey",
-                                          allow_empty_string=True)
+    sshpubkey = ansible_module.params_get(
+        "sshpubkey", allow_empty_list_item=True)
     userclass = ansible_module.params_get("userclass")
-    auth_ind = ansible_module.params_get("auth_ind", allow_empty_string=True)
+    auth_ind = ansible_module.params_get(
+        "auth_ind", allow_empty_list_item=True)
     requires_pre_auth = ansible_module.params_get("requires_pre_auth")
     ok_as_delegate = ansible_module.params_get("ok_as_delegate")
     ok_to_auth_as_delegate = ansible_module.params_get(

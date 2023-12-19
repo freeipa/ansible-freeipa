@@ -1185,9 +1185,9 @@ def main():
     manager = ansible_module.params_get("manager")
     carlicense = ansible_module.params_get("carlicense")
     sshpubkey = ansible_module.params_get("sshpubkey",
-                                          allow_empty_string=True)
+                                          allow_empty_list_item=True)
     userauthtype = ansible_module.params_get("userauthtype",
-                                             allow_empty_string=True)
+                                             allow_empty_list_item=True)
     userclass = ansible_module.params_get("userclass")
     radius = ansible_module.params_get("radius")
     radiususer = ansible_module.params_get("radiususer")
