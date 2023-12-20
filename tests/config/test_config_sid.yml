@@ -30,7 +30,7 @@
       check_mode: yes
       register: sid_disabled
 
-    - name: Ensure netbios_name can't be changed without SID enabled.  # noqa 503
+    - name: Ensure netbios_name can't be changed without SID enabled.  # noqa no-handler
       ipaconfig:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
@@ -39,7 +39,7 @@
       failed_when: not result.failed and "SID generation must be enabled" in result.msg
       when: sid_disabled.changed
 
-    - name: Ensure SIDs can't be changed without SID enabled.  # noqa 503
+    - name: Ensure SIDs can't be changed without SID enabled.  # noqa no-handler
       ipaconfig:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"

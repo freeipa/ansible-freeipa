@@ -1,3 +1,4 @@
+---
 - name: Certificate manage example
   hosts: ipaserver
   become: false
