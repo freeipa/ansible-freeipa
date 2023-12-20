@@ -8,6 +8,12 @@
   - name: Remove test users
     ipauser:
       ipaadmin_password: SomeADMINpassword
+      name: manager1,manager2,manager3,pinky,pinky2,mod1,mod2
+      state: absent
+
+  - name: Remove test users
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
       name: user1,user2,user3,user4,user5,user6,user7,user8,user9,user10
       state: absent
 
@@ -48,7 +54,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Users user1..10 present
+  - name: Users user1..10 present, again
     ipauser:
       ipaadmin_password: SomeADMINpassword
       users:
@@ -84,6 +90,42 @@
         last: Last
     register: result
     failed_when: result.changed or result.failed
+
+  - name: Rename users user1 and user2 to mod1 and mod1
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+        - name: user1
+          rename: mod1
+        - name: user2
+          rename: mod2
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Rename users mod1 and mod2 to the same name
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+        - name: mod1
+          rename: mod1
+        - name: mod2
+          rename: mod2
+      state: renamed
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Rename users mod1 and mod2 back to user1 and user2
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users:
+        - name: mod1
+          rename: user1
+        - name: mod2
+          rename: user2
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
 
   # failed_when: not result.failed has been added as this test needs to
   # fail because two users with the same name should be added in the same

@@ -279,7 +279,6 @@ Example playbook to disable a user:
 
 This can also be done as an alternative with the `users` variable containing only names.
 
-
 Example playbook to enable users:
 
 ```yaml
@@ -298,6 +297,22 @@ Example playbook to enable users:
 
 This can also be done as an alternative with the `users` variable containing only names.
 
+Example playbook to rename users:
+
+```yaml
+---
+- name: Playbook to handle users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  # Rename user pinky to reddy
+  - ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      rename: reddy
+      state: enabled
+```
 
 Example playbook to unlock users:
 
@@ -401,7 +416,7 @@ Variable | Description | Required
 `update_password` | Set password for a user in present state only on creation or always. It can be one of `always` or `on_create` and defaults to `always`. | no
 `preserve` | Delete a user, keeping the entry available for future use. (bool)  | no
 `action` | Work on user or member level. It can be on of `member` or `user` and defaults to `user`. | no
-`state` | The state to ensure. It can be one of `present`, `absent`, `enabled`, `disabled`, `unlocked` or `undeleted`, default: `present`. Only `names` or `users` with only `name` set are allowed if state is not `present`. | yes
+`state` | The state to ensure. It can be one of `present`, `absent`, `enabled`, `disabled`, `renamed`, `unlocked` or `undeleted`, default: `present`. Only `names` or `users` with only `name` set are allowed if state is not `present`. | yes
 
 
 
@@ -458,8 +473,8 @@ Variable | Description | Required
 `smb_profile_path:` \| `ipantprofilepath` | SMB profile path, in UNC format. Requires FreeIPA version 4.8.0+. | no 
 `smb_home_dir` \| `ipanthomedirectory` | SMB Home Directory, in UNC format. Requires FreeIPA version 4.8.0+.  | no 
 `smb_home_drive` \| `ipanthomedirectorydrive` | SMB Home Directory Drive, a single upercase letter (A-Z) followed by a colon (:), for example "U:". Requires FreeIPA version 4.8.0+. | no 
+`rename` \| `new_name` | Rename the user object to the new name string. Only usable with `state: renamed`. | no
 `nomembers` | Suppress processing of membership attributes. (bool) | no
-
 
 
 Return Values
@@ -477,5 +492,5 @@ Variable | Description | Returned When
 Authors
 =======
 
-Thomas Woerner
-Rafael Jeffman
+- Thomas Woerner
+- Rafael Jeffman

@@ -319,6 +319,11 @@ options:
         description: Suppress processing of membership attributes
         required: false
         type: bool
+      rename:
+        description: Rename the user object
+        required: false
+        type: str
+        aliases: ["new_name"]
     required: false
   first:
     description: The first name. Required if user does not exist.
@@ -586,6 +591,11 @@ options:
     description: Suppress processing of membership attributes
     required: false
     type: bool
+  rename:
+    description: Rename the user object
+    required: false
+    type: str
+    aliases: ["new_name"]
   preserve:
     description: Delete a user, keeping the entry available for future use
     required: false
@@ -607,7 +617,8 @@ options:
     default: present
     choices: ["present", "absent",
               "enabled", "disabled",
-              "unlocked", "undeleted"]
+              "unlocked", "undeleted",
+              "renamed"]
 author:
   - Thomas Woerner (@t-woerner)
 """
@@ -694,6 +705,13 @@ EXAMPLES = """
     smb_profile_path: \\\\server\\profiles\\some_profile
     smb_home_dir: \\\\users\\home\\smbuser
     smb_home_drive: "U:"
+
+# Rename an existing user
+- ipauser:
+    ipaadmin_password: SomeADMINpassword
+    name: someuser
+    rename: anotheruser
+    state: renamed
 """
 
 RETURN = """
@@ -857,7 +875,7 @@ def check_parameters(  # pylint: disable=unused-argument
         employeenumber, employeetype, preferredlanguage, certificate,
         certmapdata, noprivate, nomembers, preserve, update_password,
         smb_logon_script, smb_profile_path, smb_home_dir, smb_home_drive,
-        idp, ipa_user_id,
+        idp, ipa_user_id, rename
 ):
     if state == "present" and action == "user":
         invalid = ["preserve"]
@@ -884,6 +902,19 @@ def check_parameters(  # pylint: disable=unused-argument
         if state != "absent" and preserve is not None:
             module.fail_json(
                 msg="Preserve is only possible for state=absent")
+
+    if state != "renamed":
+        invalid.append("rename")
+    else:
+        invalid.extend([
+            "preserve", "principal", "manager", "certificate", "certmapdata",
+        ])
+        if not rename:
+            module.fail_json(
+                msg="A value for attribute 'rename' must be provided.")
+        if action == "member":
+            module.fail_json(
+                msg="Action member can not be used with state: renamed.")
 
     module.params_fail_used_invalid(invalid, state, action)
 
@@ -1097,6 +1128,8 @@ def main():
         idp=dict(type="str", default=None, aliases=['ipaidpconfiglink']),
         idp_user_id=dict(type="str", default=None,
                          aliases=['ipaidpconfiglink']),
+        rename=dict(type="str", required=False, default=None,
+                    aliases=["new_name"]),
     )
 
     ansible_module = IPAAnsibleModule(
@@ -1128,7 +1161,7 @@ def main():
                         choices=["member", "user"]),
             state=dict(type="str", default="present",
                        choices=["present", "absent", "enabled", "disabled",
-                                "unlocked", "undeleted"]),
+                                "unlocked", "undeleted", "renamed"]),
 
             # Add user specific parameters for simple use case
             **user_spec
@@ -1209,6 +1242,8 @@ def main():
     preserve = ansible_module.params_get("preserve")
     # mod
     update_password = ansible_module.params_get("update_password")
+    # rename
+    rename = ansible_module.params_get("rename")
     # general
     action = ansible_module.params_get("action")
     state = ansible_module.params_get("state")
@@ -1219,27 +1254,30 @@ def main():
        (users is None or len(users) < 1):
         ansible_module.fail_json(msg="One of name and users is required")
 
-    if state == "present":
+    if state in ["present", "renamed"]:
         if names is not None and len(names) != 1:
+            act = "renamed" if state == "renamed" else "added"
             ansible_module.fail_json(
-                msg="Only one user can be added at a time using name.")
-
-    check_parameters(
-        ansible_module, state, action,
-        first, last, fullname, displayname, initials, homedir, gecos, shell,
-        email,
-        principal, principalexpiration, passwordexpiration, password, random,
-        uid, gid, street, city, phone, mobile, pager, fax, orgunit, title,
-        manager, carlicense, sshpubkey, userauthtype, userclass, radius,
-        radiususer, departmentnumber, employeenumber, employeetype,
-        preferredlanguage, certificate, certmapdata, noprivate, nomembers,
-        preserve, update_password, smb_logon_script, smb_profile_path,
-        smb_home_dir, smb_home_drive, idp, idp_user_id)
-    certmapdata = convert_certmapdata(certmapdata)
+                msg="Only one user can be %s at a time using name." % (act))
 
     # Use users if names is None
     if users is not None:
         names = users
+    else:
+        check_parameters(
+            ansible_module, state, action,
+            first, last, fullname, displayname, initials, homedir, gecos,
+            shell, email,
+            principal, principalexpiration, passwordexpiration, password,
+            random,
+            uid, gid, street, city, phone, mobile, pager, fax, orgunit, title,
+            manager, carlicense, sshpubkey, userauthtype, userclass, radius,
+            radiususer, departmentnumber, employeenumber, employeetype,
+            preferredlanguage, certificate, certmapdata, noprivate, nomembers,
+            preserve, update_password, smb_logon_script, smb_profile_path,
+            smb_home_dir, smb_home_drive, idp, idp_user_id, rename,
+        )
+        certmapdata = convert_certmapdata(certmapdata)
 
     # Init
 
@@ -1330,6 +1368,7 @@ def main():
                 smb_home_drive = user.get("smb_home_drive")
                 idp = user.get("idp")
                 idp_user_id = user.get("idp_user_id")
+                rename = user.get("rename")
                 certificate = user.get("certificate")
                 certmapdata = user.get("certmapdata")
                 noprivate = user.get("noprivate")
@@ -1346,7 +1385,8 @@ def main():
                     employeetype, preferredlanguage, certificate,
                     certmapdata, noprivate, nomembers, preserve,
                     update_password, smb_logon_script, smb_profile_path,
-                    smb_home_dir, smb_home_drive, idp, idp_user_id)
+                    smb_home_dir, smb_home_drive, idp, idp_user_id, rename,
+                )
                 certmapdata = convert_certmapdata(certmapdata)
 
                 # Check API specific parameters
@@ -1737,6 +1777,12 @@ def main():
                 else:
                     raise ValueError("No user '%s'" % name)
 
+            elif state == "renamed":
+                if res_find is None:
+                    ansible_module.fail_json(msg="No user '%s'" % name)
+                else:
+                    if rename != name:
+                        commands.append([name, 'user_mod', {"rename": rename}])
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 

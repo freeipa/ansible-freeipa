@@ -9,7 +9,7 @@
     ipauser:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: manager1,manager2,manager3,pinky,pinky2,igagarin
+      name: manager1,manager2,manager3,pinky,pinky2,igagarin,reddy
       state: absent
 
   - name: User manager1 present
@@ -351,6 +351,46 @@
       state: enabled
     register: result
     failed_when: result.changed or result.failed
+
+  - name: Rename user pinky to reddy
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      rename: reddy
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Rename user pinky to reddy, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      rename: reddy
+      state: renamed
+    register: result
+    failed_when: not result.failed or "No user 'pinky'" not in result.msg
+
+  - name: Rename user reddy to reddy
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: reddy
+      rename: reddy
+      state: renamed
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Rename user reddy back to pinky
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: reddy
+      rename: pinky
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
 
   - name: User pinky absent and preserved for future exclusion.
     ipauser:
