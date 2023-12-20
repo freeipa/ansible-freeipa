@@ -214,7 +214,7 @@
       update_dns: yes
       state: absent
 
-  - name: Remove certificate files.  # noqa: deprecated-command-syntax
+  - name: Remove certificate files.
     ansible.builtin.shell:
       cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
     with_items: [1, 2]

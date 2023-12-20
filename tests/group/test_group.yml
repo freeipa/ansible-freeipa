@@ -283,7 +283,7 @@
       register: result
       failed_when: result.changed or result.failed
 
-    # user
+  # user
 
   - name: Ensure users user1, user2 and user3 are present in group group1
     ipagroup:

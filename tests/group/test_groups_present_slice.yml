@@ -11,7 +11,7 @@
   tasks:
   - name: Include groups.json
     ansible.builtin.include_vars:
-      file: groups.json  # noqa 505
+      file: groups.json
 
   - name: Size of groups slice.
     ansible.builtin.debug:

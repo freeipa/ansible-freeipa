@@ -98,7 +98,7 @@
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Remove certificate files.  # noqa: deprecated-command-syntax
+  - name: Remove certificate files.
     ansible.builtin.shell:
       cmd: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
     with_items: [1, 2, 3]

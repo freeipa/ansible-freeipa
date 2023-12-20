@@ -1549,7 +1549,7 @@
   - name: Cleanup test environment.
     ansible.builtin.include_tasks: env_cleanup.yml
 
-  - name: Remove certificate files.  # noqa: deprecated-command-syntax
+  - name: Remove certificate files.
     ansible.builtin.shell: rm -f "private{{ item }}.key" "cert{{ item }}.pem" "cert{{ item }}.der" "cert{{ item }}.b64"
     with_items: [1]
     become: no
