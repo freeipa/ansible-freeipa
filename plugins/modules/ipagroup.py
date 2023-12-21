@@ -123,6 +123,11 @@ options:
         required: false
         type: list
         elements: str
+      rename:
+        description: Rename the group object
+        required: false
+        type: str
+        aliases: ["new_name"]
   description:
     description: The group description
     type: str
@@ -198,11 +203,16 @@ options:
     type: str
     default: group
     choices: ["member", "group"]
+  rename:
+    description: Rename the group object
+    required: false
+    type: str
+    aliases: ["new_name"]
   state:
     description: State to ensure
     type: str
     default: present
-    choices: ["present", "absent"]
+    choices: ["present", "absent", "renamed"]
 author:
   - Thomas Woerner (@t-woerner)
 """
@@ -266,6 +276,13 @@ EXAMPLES = """
     - name: appops
       group:
         - group2
+
+# Rename a group
+- ipagroup:
+    ipaadmin_password: SomeADMINpassword
+    name: oldname
+    rename: newestname
+    state: renamed
 
 # Create a non-POSIX group
 - ipagroup:
@@ -380,18 +397,20 @@ def gen_member_args(user, group, service, externalmember, idoverrideuser):
 
 
 def check_parameters(module, state, action):
-    invalid = []
-    if state == "present":
-        if action == "member":
-            invalid = ["description", "gid", "posix", "nonposix", "external",
-                       "nomembers"]
-
-    else:
-        invalid = ["description", "gid", "posix", "nonposix", "external",
-                   "nomembers"]
-        if action == "group":
+    invalid = ["description", "gid", "posix", "nonposix", "external",
+               "nomembers"]
+    if action == "group":
+        if state == "present":
+            invalid = []
+        elif state == "absent":
             invalid.extend(["user", "group", "service", "externalmember"])
-
+    if state == "renamed":
+        if action == "member":
+            module.fail_json(
+                msg="Action member can not be used with state: renamed.")
+        invalid.extend(["user", "group", "service", "externalmember"])
+    else:
+        invalid.append("rename")
     module.params_fail_used_invalid(invalid, state, action)
 
 
@@ -448,7 +467,9 @@ def main():
                             aliases=[
                                 "ipaexternalmember",
                                 "external_member"
-                            ])
+                            ]),
+        rename=dict(type="str", required=False, default=None,
+                    aliases=["new_name"]),
     )
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
@@ -470,7 +491,7 @@ def main():
             action=dict(type="str", default="group",
                         choices=["member", "group"]),
             state=dict(type="str", default="present",
-                       choices=["present", "absent"]),
+                       choices=["present", "absent", "renamed"]),
 
             # Add group specific parameters for simple use case
             **group_spec
@@ -506,8 +527,10 @@ def main():
     membermanager_user = ansible_module.params_get("membermanager_user")
     membermanager_group = ansible_module.params_get("membermanager_group")
     externalmember = ansible_module.params_get("externalmember")
+    # rename
+    rename = ansible_module.params_get("rename")
+    # state and action
     action = ansible_module.params_get("action")
-    # state
     state = ansible_module.params_get("state")
 
     # Check parameters
@@ -516,10 +539,11 @@ def main():
        (groups is None or len(groups) < 1):
         ansible_module.fail_json(msg="At least one name or groups is required")
 
-    if state == "present":
+    if state in ["present", "renamed"]:
         if names is not None and len(names) != 1:
+            what = "renamed" if state == "renamed" else "added"
             ansible_module.fail_json(
-                msg="Only one group can be added at a time using 'name'.")
+                msg="Only one group can be %s at a time using 'name'." % what)
 
     check_parameters(ansible_module, state, action)
 
@@ -633,6 +657,7 @@ def main():
                 membermanager_group = group_name.get("membermanager_group")
                 externalmember = group_name.get("externalmember")
                 nomembers = group_name.get("nomembers")
+                rename = group_name.get("rename")
 
                 check_parameters(ansible_module, state, action)
 
@@ -794,6 +819,11 @@ def main():
                         membermanager_group,
                         res_find.get("membermanager_group")
                     )
+            elif state == "renamed":
+                if res_find is None:
+                    ansible_module.fail_json(msg="No group '%s'" % name)
+                elif rename != name:
+                    commands.append([name, 'group_mod', {"rename": rename}])
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 

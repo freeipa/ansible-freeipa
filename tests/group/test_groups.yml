@@ -19,7 +19,7 @@
   - name: Remove test groups
     ipagroup:
       ipaadmin_password: SomeADMINpassword
-      name: group1,group2,group3,group4,group5,group6,group7,group8,group9,group10
+      name: group1,group2,group3,group4,group5,group6,group7,group8,group9,group10,newgroup1,newgroup2
       state: absent
 
   - name: Remove test users
@@ -130,10 +130,53 @@
     register: result
     failed_when: result.changed or not result.failed or "Only one group can be added at a time using 'name'." not in result.msg
 
+  - name: Ensure group1 and group2 exist
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+        - name: group1
+        - name: group2
+
+  - name: Rename group1 and group2 to newgroup1 and newgroup2, respectively
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+        - name: group1
+          rename: newgroup1
+        - name: group2
+          rename: newgroup2
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Rename newgroup1 and newgroup2 to the same name
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+        - name: newgroup1
+          rename: newgroup1
+        - name: newgroup2
+          rename: newgroup2
+      state: renamed
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Rename newgroup1 and newgroup2 back to group1 and group2, respectively
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+        - name: newgroup1
+          rename: group1
+        - name: newgroup2
+          rename: group2
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
   - name: Remove test groups
     ipagroup:
       ipaadmin_password: SomeADMINpassword
-      name: group1,group2,group3,group4,group5,group6,group7,group8,group9,group10
+      name: group1,group2,group3,group4,group5,group6,group7,group8,group9,group10,newgroup1,newgroup2
       state: absent
 
   - name: Remove test users

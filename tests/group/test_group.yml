@@ -3,6 +3,13 @@
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
   gather_facts: true
+  module_defaults:
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
 
   tasks:
   # setup
@@ -19,24 +26,18 @@
 
   - name: Ensure users user1, user2 and user3 are absent
     ipauser:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: user1,user2,user3
       state: absent
 
   - name: Ensure group group3, group2 and group1 are absent
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name: group3,group2,group1
+      name: groupren,group3,group2,group1
       state: absent
 
   # CREATE TEST ITEMS
 
   - name: Ensure users user1..user3 are present
     ipauser:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       users:
       - name: user1
         first: user1
@@ -54,56 +55,74 @@
 
   - name: Ensure group1 is present
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
     register: result
     failed_when: not result.changed or result.failed
 
   - name: Ensure group1 is present again
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Rename group1 to groupren
+    ipagroup:
+      name: group1
+      rename: groupren
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Rename group1 to groupren
+    ipagroup:
+      name: group1
+      rename: groupren
+      state: renamed
+    register: result
+    failed_when: not result.failed or "No group 'group1'" not in result.msg
+
+  - name: Rename group groupren to groupren
+    ipagroup:
+      name: groupren
+      rename: groupren
+      state: renamed
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Rename group groupren back to group1
+    ipagroup:
+      name: groupren
+      rename: group1
+      state: renamed
+    register: result
+    failed_when: not result.changed or result.failed
+
   - name: Ensure group2 is present
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group2
     register: result
     failed_when: not result.changed or result.failed
 
   - name: Ensure group2 is present again
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group2
     register: result
     failed_when: result.changed or result.failed
 
   - name: Ensure group3 is present
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group3
     register: result
     failed_when: not result.changed or result.failed
 
   - name: Ensure group3 is present again
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group3
     register: result
     failed_when: result.changed or result.failed
 
   - name: Ensure groups group2 and group3 are present in group group1
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       group:
       - group2
@@ -114,8 +133,6 @@
 
   - name: Ensure groups group2 and group3 are present in group group1 again
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       group:
       - group2
@@ -126,8 +143,6 @@
 
   - name: Ensure group3 ia present in group group1
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       group:
       - group3
@@ -143,8 +158,6 @@
 
     - name: Ensure service "{{ 'HTTP/' + fqdn_at_domain }}" is present in group group1
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'HTTP/' + fqdn_at_domain }}"
@@ -154,8 +167,6 @@
 
     - name: Ensure service "{{ 'HTTP/' + fqdn_at_domain }}" is present in group group1, again
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'HTTP/' + fqdn_at_domain }}"
@@ -165,8 +176,6 @@
 
     - name: Ensure service "{{ 'ldap/' + fqdn_at_domain }}" is present in group group1
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'ldap/' + fqdn_at_domain }}"
@@ -176,8 +185,6 @@
 
     - name: Ensure service "{{ 'ldap/' + fqdn_at_domain }}" is present in group group1, again
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'ldap/' + fqdn_at_domain }}"
@@ -187,8 +194,6 @@
 
     - name: Ensure service "{{ 'HTTP/' + fqdn_at_domain }}" is absent in group group1
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'HTTP/' + fqdn_at_domain }}"
@@ -199,8 +204,6 @@
 
     - name: Ensure service "{{ 'HTTP/' + fqdn_at_domain }}" is absent in group group1, again
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'HTTP/' + fqdn_at_domain }}"
@@ -211,8 +214,6 @@
 
     - name: Ensure service "{{ 'ldap/' + fqdn_at_domain }}" is absent in group group1
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'ldap/' + fqdn_at_domain }}"
@@ -223,8 +224,6 @@
 
     - name: Ensure service "{{ 'ldap/' + fqdn_at_domain }}" is absent in group group1, again
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'ldap/' + fqdn_at_domain }}"
@@ -235,8 +234,6 @@
 
     - name: Ensure services are present in group group1
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'HTTP/' + fqdn_at_domain }}"
@@ -247,8 +244,6 @@
 
     - name: Ensure services are present in group group1, again
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'http/' + fqdn_at_domain }}"
@@ -259,8 +254,6 @@
 
     - name: Ensure services are absent in group group1
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'HTTP/' + fqdn_at_domain }}"
@@ -272,8 +265,6 @@
 
     - name: Ensure services are absent in group group1, again
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        ipaapi_context: "{{ ipa_context | default(omit) }}"
         name: group1
         service:
         - "{{ 'HTTP/' + fqdn_at_domain }}"
@@ -287,8 +278,6 @@
 
   - name: Ensure users user1, user2 and user3 are present in group group1
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user1
@@ -300,8 +289,6 @@
 
   - name: Ensure users user1, user2 and user3 are present in group group1 again
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user1
@@ -312,8 +299,6 @@
     failed_when: result.changed or result.failed
 
   #- ipagroup:
-  #    ipaadmin_password: SomeADMINpassword
-  #    ipaapi_context: "{{ ipa_context | default(omit) }}"
   #    name: group1
   #    user:
   #    - user7
@@ -321,8 +306,6 @@
 
   - name: Ensure user user7 is absent in group group1
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user7
@@ -333,8 +316,6 @@
 
   - name: Ensure group group4 is absent
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group4
       state: absent
     register: result
@@ -342,8 +323,6 @@
 
   - name: Ensure groups group3, group2, and group1 are absent
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group3,group2,group1
       state: absent
     register: result
@@ -351,16 +330,12 @@
 
   - name: Ensure group group1 is present
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
     register: result
     failed_when: not result.changed or result.failed
 
   - name: Ensure users user1, user2 are present in group group1
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user1
@@ -371,8 +346,6 @@
 
   - name: Ensure users user1, user2 and user3 are present in group group1
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user1
@@ -384,8 +357,6 @@
 
   - name: Ensure users user1, user2 are present in group group1, again
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user1
@@ -396,8 +367,6 @@
 
   - name: Ensure users user1, user2 and user3 are present in group group1, again
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user1
@@ -409,8 +378,6 @@
 
   - name: Ensure group group1 is absent
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       state: absent
     register: result
@@ -418,8 +385,6 @@
 
   - name: Ensure group group1 with users user1, user2 is present
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user1
@@ -429,8 +394,6 @@
 
   - name: Ensure group group1 with users user1, user2 and user3 is present
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user1
@@ -441,8 +404,6 @@
 
   - name: Ensure group group1 with users user1, user2 and user3 is present, again
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user1
@@ -454,8 +415,6 @@
 
   - name: Ensure only users user1, user2 are present in group group1
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group1
       user:
       - user1
@@ -467,8 +426,6 @@
 
   - name: Ensure group group3, group2 and group1 are absent
     ipagroup:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: group3,group2,group1
       state: absent
     register: result
@@ -476,8 +433,6 @@
 
   - name: Ensure users user1, user2 and user3 are absent
     ipauser:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: user1,user2,user3
       state: absent
     register: result

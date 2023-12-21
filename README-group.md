@@ -130,6 +130,45 @@ And ensure the presence of the groups with this example playbook:
       groups: "{{ groups }}"
 ```
 
+Example playbook to rename a group:
+
+```yaml
+---
+- name: Playbook to rename a single group
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+
+  tasks:
+  - name: Rename group appops to webops
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: appops
+      rename: webops
+      state: renamed
+```
+
+Several groups can also be renamed with a single task, as in the example playbook:
+
+```yaml
+---
+- name: Playbook to rename multiple groups
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+
+  tasks:
+  - name Rename group1 to newgroup1 and group2 to newgroup2
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+      - name: group1
+        rename: newgroup1
+      - name: group2
+        rename: newgroup2
+      state: renamed
+```
+
 Example playbook to add users to a group:
 
 ```yaml
@@ -262,11 +301,13 @@ Variable | Description | Required
 `membermanager_group` | List of member manager groups assigned to this group. Only usable with IPA versions 4.8.4 and up. | no
 `externalmember` \| `ipaexternalmember`  \| `external_member`| List of members of a trusted domain in DOM\\name or name@domain form. | no
 `idoverrideuser` | List of user ID overrides to manage. Only usable with IPA versions 4.8.7 and up.| no
+`rename` \| `new_name` | Rename the user object to the new name string. Only usable with `state: renamed`. | no
 `action` | Work on group or member level. It can be on of `member` or `group` and defaults to `group`. | no
-`state` | The state to ensure. It can be one of `present` or `absent`, default: `present`. | yes
+`state` | The state to ensure. It can be one of `present`, `absent` or `renamed`, default: `present`. | yes
 
 
 Authors
 =======
 
-Thomas Woerner
+- Thomas Woerner
+- Rafael Jeffman
