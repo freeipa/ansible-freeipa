@@ -8,27 +8,35 @@ jobs:
     name: Verify ansible-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@main
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v4.3.0
+      - uses: actions/setup-python@main
         with:
           python-version: "3.x"
-      - name: Run ansible-lint
+      - name: Install ansible-lint
+        run: pip install "ansible-core" 'ansible-lint>=6.22'
+      - name: Build ansible-freeipa collection
         run: |
-          pip install "ansible-core>=2.16,<2.17" 'ansible-lint>=6.22'
           utils/build-galaxy-release.sh -ki
           cd .galaxy-build
-          ansible-lint --profile production --exclude tests/integration/ --exclude tests/unit/ --parseable --nocolor
+      - name: Run ansible-lint
+        run: ansible-lint --profile production --exclude tests/integration/ --exclude tests/unit/ --parseable --nocolor
+      #- name: Run ansible-lint
+      #  run: |
+      #    pip install "ansible-core" 'ansible-lint>=6.22'
+      #    utils/build-galaxy-release.sh -ki
+      #    cd .galaxy-build
+      #    ansible-lint --profile production --exclude tests/integration/ --exclude tests/unit/ --parseable --nocolor
 
   yamllint:
     name: Verify yamllint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@main
         with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v4.3.0
+          fetch-depth: 1
+      - uses: actions/setup-python@main
         with:
           python-version: "3.x"
       - name: Run yaml-lint
@@ -38,10 +46,10 @@ jobs:
     name: Verify pydocstyle
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@main
         with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v4.3.0
+          fetch-depth: 1
+      - uses: actions/setup-python@main
         with:
           python-version: "3.x"
       - name: Run pydocstyle
@@ -53,10 +61,10 @@ jobs:
     name: Verify flake8
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@main
         with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v4.3.0
+          fetch-depth: 1
+      - uses: actions/setup-python@main
         with:
           python-version: "3.x"
       - name: Run flake8
@@ -68,10 +76,10 @@ jobs:
     name: Verify pylint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@main
         with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v4.3.0
+          fetch-depth: 1
+      - uses: actions/setup-python@main
         with:
           python-version: "3.x"
       - name: Run pylint
@@ -83,8 +91,8 @@ jobs:
     name: Shellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@main
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
