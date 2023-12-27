@@ -636,7 +636,24 @@ def api_get_basedn():
     return api.env.basedn
 
 
-def gen_add_del_lists(user_list, res_list):
+def _identity_datatype(value):
+    """Return value, providing an identity function."""
+    return value
+
+
+def gen_user_res_sets(user_list, res_list, attr_datatype=None):
+    """Generate user and result lists based on attribute datatype."""
+    if attr_datatype:
+        user_set = {attr_datatype(item) for item in (user_list or [])}
+        res_set = {attr_datatype(item) for item in (res_list or [])}
+    else:
+        user_set = set(user_list or [])
+        res_set = set(res_list or [])
+
+    return user_set, res_set
+
+
+def gen_add_del_lists(user_list, res_list, attr_datatype=None):
     """
     Generate the lists for the addition and removal of members.
 
@@ -646,18 +663,32 @@ def gen_add_del_lists(user_list, res_list):
     For the addition of new and the removal of existing members with
     action: members gen_add_list and gen_intersection_list should
     be used.
+
+    If attr_datatype is provided, all values in user_list and res_list
+    will we converted to it before the list is created.
     """
     # The user list is None, no need to do anything, return empty lists
     if user_list is None:
         return [], []
 
-    add_list = list(set(user_list or []) - set(res_list or []))
-    del_list = list(set(res_list or []) - set(user_list or []))
+    if not attr_datatype:
+        attr_datatype = _identity_datatype
+
+    user_set, res_set = gen_user_res_sets(user_list, res_list, attr_datatype)
+    add_list = list(
+        set(item for item in user_list if attr_datatype(item) not in res_set)
+    )
+    del_list = list(
+        set(
+            item for item in (res_list or [])
+            if attr_datatype(item) not in user_set
+        )
+    )
 
     return add_list, del_list
 
 
-def gen_add_list(user_list, res_list):
+def gen_add_list(user_list, res_list, attr_datatype=None):
     """
     Generate add list for addition of new members.
 
@@ -666,15 +697,26 @@ def gen_add_list(user_list, res_list):
 
     It is returning the difference of the user and res list if the user
     list is not None.
+
+    If attr_datatype is provided, all values in user_list and res_list
+    will we converted to it before the list is created.
     """
     # The user list is None, no need to do anything, return empty list
     if user_list is None:
         return []
 
-    return list(set(user_list or []) - set(res_list or []))
+    if not attr_datatype:
+        attr_datatype = _identity_datatype
+
+    _user_set, res_set = gen_user_res_sets(user_list, res_list, attr_datatype)
+    add_list = list(
+        set(item for item in user_list if attr_datatype(item) not in res_set)
+    )
+
+    return add_list
 
 
-def gen_intersection_list(user_list, res_list):
+def gen_intersection_list(user_list, res_list, attr_datatype=None):
     """
     Generate the intersection list for removal of existing members.
 
@@ -683,12 +725,26 @@ def gen_intersection_list(user_list, res_list):
 
     It is returning the intersection of the user and res list if the
     user list is not None.
+
+    If attr_datatype is provided, all values in user_list and res_list
+    will we converted to it before the list is created.
     """
     # The user list is None, no need to do anything, return empty list
     if user_list is None:
         return []
+    if not res_list:
+        return []
 
-    return list(set(res_list or []).intersection(set(user_list or [])))
+    if not attr_datatype:
+        attr_datatype = _identity_datatype
+
+    user_set, _res_set = gen_user_res_sets(user_list, res_list, attr_datatype)
+
+    intersection_list = list(
+        set(item for item in res_list if attr_datatype(item) in user_set)
+    )
+
+    return intersection_list
 
 
 def encode_certificate(cert):
