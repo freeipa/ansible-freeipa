@@ -551,6 +551,34 @@ def ensure_fqdn(name, domain):
     return name
 
 
+def CaseInsensitive():  # pylint: disable=invalid-name
+    """Create a case-insensitive string comparator."""
+    def _converter(data):
+        class _CaseInsensitive(str):
+            # Operations rely on str.casefold(), as it may not be available,
+            # all calls are wrapped in a try-except block using str.lower as
+            # fallback.
+            def __hash__(self):
+                try:
+                    _hash = hash(self.casefold())
+                except Exception:  # pylint: disable=broad-except
+                    _hash = hash(self.lower())
+                return _hash
+
+            def __eq__(self, other):
+                if not isinstance(other, (str, _CaseInsensitive)):
+                    other = to_text(other)
+                try:
+                    _result = self.casefold() == other.casefold()
+                except Exception:  # pylint: disable=broad-except
+                    _result = self.lower() == other.lower()
+                return _result
+
+        return _CaseInsensitive(data)
+
+    return _converter
+
+
 def Service(realm):  # pylint: disable=invalid-name
     def _converter(data):
         class _Service:
