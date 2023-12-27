@@ -171,7 +171,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, ListOf, Hostname
+    gen_intersection_list, ListOf, Hostname, CaseInsensitive
 
 
 def find_hbacrule(module, name):
@@ -398,7 +398,9 @@ def main():
 
                     if hbacsvc is not None:
                         hbacsvc_add, hbacsvc_del = gen_add_del_lists(
-                            hbacsvc, res_find.get("memberservice_hbacsvc"))
+                            hbacsvc, res_find.get("memberservice_hbacsvc"),
+                            attr_datatype=CaseInsensitive()
+                        )
 
                     if hbacsvcgroup is not None:
                         hbacsvcgroup_add, hbacsvcgroup_del = gen_add_del_lists(
