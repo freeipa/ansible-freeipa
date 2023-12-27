@@ -124,7 +124,7 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa
+    IPAAnsibleModule, compare_args_ipa, CaseInsensitive
 
 
 def find_delegation(module, name):
@@ -180,10 +180,10 @@ def main():
     names = ansible_module.params_get("name")
 
     # present
-    permission = ansible_module.params_get("permission")
-    attribute = ansible_module.params_get("attribute")
+    permission = ansible_module.params_get_lowercase("permission")
+    attribute = ansible_module.params_get_lowercase("attribute")
     membergroup = ansible_module.params_get("membergroup")
-    group = ansible_module.params_get("group")
+    group = ansible_module.params_get_lowercase("group")
     action = ansible_module.params_get("action")
     # state
     state = ansible_module.params_get("state")
@@ -248,8 +248,10 @@ def main():
                         # For all settings is args, check if there are
                         # different settings in the find result.
                         # If yes: modify
-                        if not compare_args_ipa(ansible_module, args,
-                                                res_find):
+                        if not compare_args_ipa(
+                            ansible_module, args, res_find,
+                            arg_conv={"memberof": CaseInsensitive()}
+                        ):
                             commands.append([name, "delegation_mod", args])
                     else:
                         commands.append([name, "delegation_add", args])

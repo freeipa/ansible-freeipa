@@ -1,0 +1,203 @@
+---
+- name: Test delegation
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Test delegation, and ensure cleanup is executed in case of an error
+    block:
+      # CLEANUP TEST ITEMS
+
+      - name: Ensure delegation "basic manager attributes" is absent
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          state: absent
+
+      # CREATE TEST ITEMS
+
+      - name: Ensure test group managers is present
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: managers
+
+      - name: Ensure test group employees is present
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: employees
+
+      # TESTS
+
+      - name: Ensure delegation "basic manager attributes" is present, with mixed case attributes
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: Read
+          attribute:
+          - BusinessCategory
+          group: Managers
+          membergroup: Employees
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, group lowercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: Read
+          attribute:
+          - BusinessCategory
+          group: "{{ 'Managers' | lower }}"
+          membergroup: Employees
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, group uppercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: Read
+          attribute:
+          - BusinessCategory
+          group: "{{ 'Managers' | upper }}"
+          membergroup: Employees
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, permission uppercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: "{{ 'read' | upper }}"
+          attribute:
+          - BusinessCategory
+          group: managers
+          membergroup: Employees
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, permission lowercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: "{{ 'Read' | lower }}"
+          attribute:
+          - BusinessCategory
+          group: managers
+          membergroup: Employees
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, attribute uppercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: read
+          attribute:
+          - "{{ 'BusinessCategory' | upper }}"
+          group: managers
+          membergroup: Employees
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, attribute lowercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: read
+          attribute:
+          - "{{ 'BusinessCategory' | lower }}"
+          group: managers
+          membergroup: Employees
+        register: result
+        failed_when: result.changed or result.failed
+
+      # membergroup uses case insensitive comparison, but is case preserving.
+
+      - name: Ensure delegation "basic manager attributes" is present, membergroup lowercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: read
+          attribute:
+          - businesscategory
+          group: managers
+          membergroup: "{{ 'Employees' | lower }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" is present, membergroup uppercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: read
+          attribute:
+          - businesscategory
+          group: managers
+          membergroup: "{{ 'Employees' | upper }}"
+        register: result
+        failed_when: result.changed or result.failed
+
+      # tests for action: member
+      - name: Ensure delegation "basic manager attributes" is present, attribute mixed case
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          permission: read
+          attribute:
+          - BusinessCategory
+          group: managers
+          membergroup: employees
+
+      - name: Ensure delegation "basic manager attributes" member is present, attribute uppercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          attribute:
+          - "{{ 'BusinessCategory' | upper }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure delegation "basic manager attributes" member is present, attribute lowercase
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          attribute:
+          - "{{ 'BusinessCategory' | lower }}"
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+    always:
+      # CLEANUP TEST ITEMS
+
+      - name: Ensure delegation "basic manager attributes" is absent
+        ipadelegation:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: "basic manager attributes"
+          state: absent
+
+      - name: Ensure test groups are absent
+        ipagroup:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: managers,employees
+          state: absent
