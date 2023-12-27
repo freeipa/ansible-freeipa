@@ -352,8 +352,9 @@ def date_format(value):
     raise ValueError("Invalid date '%s'" % value)
 
 
-def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
-    """Compare IPA object attributes against command arguments.
+def compare_args_ipa(module, args, ipa, ignore=None, arg_conv=None):
+    """
+    Compare IPA object attributes against command arguments.
 
     This function compares 'ipa' attributes with the 'args' the module
     is intending to use as parameters to an IPA API command. A list of
@@ -392,10 +393,14 @@ def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
         An optional list of attribute names that should be ignored and
         not evaluated.
 
+    arg_conv: dict
+        An option dict mapping attributes to a conversion function.
+
     Return
     ------
         True is returned if all attribute values in 'args' are
         equivalent to the corresponding attribute value in 'ipa'.
+
     """
     base_debug_msg = "Ansible arguments and IPA commands differed. "
 
@@ -409,6 +414,8 @@ def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
     if not (isinstance(args, dict) and isinstance(ipa, dict)):
         raise TypeError("Expected 'dicts' to compare.")
 
+    arg_conv = arg_conv or {}
+
     # Create filtered_args using ignore
     if ignore is None:
         ignore = []
@@ -417,43 +424,32 @@ def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
     for key in filtered_args:
         arg = args[key]
         ipa_arg = ipa.get(key, [""])
-        # If ipa_arg is a list and arg is not, replace arg
-        # with list containing arg. Most args in a find result
-        # are lists, but not all.
-        if isinstance(ipa_arg, (list, tuple)):
-            if not isinstance(arg, list):
-                arg = [arg]
-            if len(ipa_arg) != len(arg):
-                module.debug(
-                    base_debug_msg
-                    + "List length doesn't match for key %s: %d %d"
-                    % (key, len(arg), len(ipa_arg),)
-                )
-                return False
-            # ensure list elements types are the same.
-            if not (
-                isinstance(ipa_arg[0], type(arg[0]))
-                or isinstance(arg[0], type(ipa_arg[0]))
-            ):
-                arg = [to_text(_arg) for _arg in arg]
-        try:
-            arg_set = set(arg)
-            ipa_arg_set = set(ipa_arg)
-        except TypeError:
-            if arg != ipa_arg:
-                module.debug(
-                    base_debug_msg
-                    + "Different values: %s %s" % (arg, ipa_arg)
-                )
-                return False
-        else:
-            if arg_set != ipa_arg_set:
-                module.debug(
-                    base_debug_msg
-                    + "Different set content: %s %s"
-                    % (arg_set, ipa_arg_set,)
-                )
-                return False
+        # ensure both values are lists or tuples, so we compare the items.
+        if not isinstance(arg, (list, tuple)):
+            arg = [arg]
+        if not isinstance(ipa_arg, (list, tuple)):
+            ipa_arg = [ipa_arg]
+
+        # number of elements is lists must be the same.
+        if len(ipa_arg) != len(arg):
+            module.debug(
+                base_debug_msg
+                + "List length doesn't match for key %s: %d %d"
+                % (key, len(arg), len(ipa_arg),)
+            )
+            return False
+
+        arg_type = arg_conv.get(key, lambda identity: identity)
+        # Compare lists as sets to cope with different ordering.
+        arg_set = set(arg_type(item) for item in arg)
+        ipa_arg_set = set(arg_type(item) for item in ipa_arg)
+        if arg_set != ipa_arg_set:
+            module.debug(
+                base_debug_msg
+                + "Different set content: %s %s"
+                % (arg_set, ipa_arg_set,)
+            )
+            return False
     return True
 
 
