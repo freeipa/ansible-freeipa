@@ -1,0 +1,179 @@
+---
+- name: Test hostgroup membermanagers
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+  module_defaults:
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  - name: Tests requiring IPA version 4.8.4+
+    when: ipa_version is version('4.8.4', '>=')
+    block:
+      # setup environment
+      - name: Ensure host-group testhostgroup is absent
+        ipahostgroup:
+          name: testhostgroup
+          state: absent
+
+      - name: Ensure user manageruser1 and manageruser2 are present
+        ipauser:
+          users:
+          - name: manageruser1
+            first: manageruser1
+            last: Last1
+          - name: manageruser2
+            first: manageruser2
+            last: Last2
+
+      - name: Ensure managergroup1 and managergroup2 are present
+        ipagroup:
+          groups:
+          - name: managergroup1
+          - name: managergroup2
+
+      # tests
+      - name: Ensure host-group testhostgroup is present
+        ipahostgroup:
+          name: testhostgroup
+
+      - name: Test membermanager_user parameter presence
+        vars:
+          test_cases:
+            - { id: 1, value: "{{ 'ManagerUser1' | lower }}", expected: true }
+            - { id: 2, value: "{{ 'ManagerUser1' | upper }}", expected: false }
+            - { id: 3, value: 'ManagerUser1', expected: false }
+        block:
+          - name: "Ensure membermanager_user 'manageruser1' is present for testhostgroup"
+            ipahostgroup:
+              name: testhostgroup
+              membermanager_user: "{{ item.value }}"
+              action: member
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "{{ item.value }}"
+
+      - name: Test membermanager_group parameter presence
+        vars:
+          test_cases:
+            - { id: 1, value: "{{ 'ManagerGroup1' | upper }}", expected: true }
+            - { id: 2, value: "{{ 'ManagerGroup1' | lower }}", expected: false }
+            - { id: 3, value: 'ManagerGroup1', expected: false }
+        block:
+          - name: "Ensure membermanager_group 'managergroup1' is present for testhostgroup"
+            ipahostgroup:
+              name: testhostgroup
+              membermanager_group: "{{ item.value }}"
+              action: member
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "{{ item.value }}"
+
+      - name: Test membermanager_group and membermanager_user parameters presence
+        vars:
+          test_cases:
+            - { id: 1, user: 'ManagerUser2', group: 'ManagerGroup2', expected: true }
+            - { id: 2, user: "{{ 'ManagerUser2' | upper }}", group: "{{ 'ManagerGroup2' | upper }}", expected: false }
+            - { id: 3, user: "{{ 'ManagerUser2' | lower }}", group: "{{ 'ManagerGroup2' | lower }}", expected: false }
+        block:
+          - name: "Ensure membermanager_group 'managergroup2' and membermanager_user 'manageruser2' are present for testhostgroup"
+            ipahostgroup:
+              name: testhostgroup
+              membermanager_group: "{{ item.group }}"
+              membermanager_user: "{{ item.user }}"
+              action: member
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+
+      - name: Test membermanager_group parameter absence
+        vars:
+          test_cases:
+            - { id: 1, value: 'ManagerGroup1', expected: true }
+            - { id: 2, value: "{{ 'ManagerGroup1' | lower }}", expected: false }
+            - { id: 3, value: "{{ 'ManagerGroup1' | upper }}", expected: false }
+        block:
+          - name: "Ensure membermanager_group 'managergroup1' is absent for testhostgroup"
+            ipahostgroup:
+              name: testhostgroup
+              membermanager_group: "{{ item.value }}"
+              action: member
+              state: absent
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "{{ item.value }}"
+
+      - name: Test membermanager_user parameter absence
+        vars:
+          test_cases:
+            - { id: 1, value: 'ManagerUser1', expected: true }
+            - { id: 2, value: "{{ 'ManagerUser1' | lower }}", expected: false }
+            - { id: 3, value: "{{ 'ManagerUser1' | upper }}", expected: false }
+        block:
+          - name: "Ensure membermanager_user 'manageruser1' is absent for testhostgroup"
+            ipahostgroup:
+              name: testhostgroup
+              membermanager_user: "{{ item.value }}"
+              action: member
+              state: absent
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "{{ item.value }}"
+
+      - name: Test membermanager_group and membermanager_user parameters absence
+        vars:
+          test_cases:
+            - { id: 1, user: "{{ 'ManagerUser2' | lower }}", group: "{{ 'ManagerGroup2' | lower }}", expected: true }
+            - { id: 2, user: 'ManagerUser2', group: 'ManagerGroup2', expected: false }
+            - { id: 3, user: "{{ 'ManagerUser2' | upper }}", group: "{{ 'ManagerGroup2' | upper }}", expected: false }
+        block:
+          - name: "Ensure membermanager_user 'manageruser2' and membermanager_group 'managergroup2' are absent for testhostgroup"
+            ipahostgroup:
+              name: testhostgroup
+              membermanager_group: "{{ item.group }}"
+              membermanager_user: "{{ item.user }}"
+              action: member
+              state: absent
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+
+    always:
+      # cleanup
+      - name: Ensure host-group testhostgroup is absent
+        ipahostgroup:
+          name: testhostgroup
+          state: absent
+
+      - name: Ensure user manangeruser1 and manageruser2 is absent
+        ipauser:
+          name: manageruser1,manageruser2
+          state: absent
+
+      - name: Ensure group managergroup1 and managergroup2 are absent
+        ipagroup:
+          name: managergroup1,managergroup2
+          state: absent
