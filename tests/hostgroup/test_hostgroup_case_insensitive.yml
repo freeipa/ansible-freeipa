@@ -1,0 +1,162 @@
+---
+- name: Test hostgroup members case insensitive
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+  module_defaults:
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  vars:
+    # Hostnames are supposed to have first letter
+    # capitalized for this test.
+    test_hosts:
+      - Host1
+      - Host2
+    test_hostgroups:
+      - testhostgroup1
+      # TestHostgrop2 is meant to use CamelCase here.
+      - TestHostgroup2
+
+  tasks:
+  - name: Test in all supported versions of IPA
+    block:
+      # setup environment
+      - name: Ensure domain name is set
+        ansible.builtin.set_fact:
+          ipa_domain: "test.local"
+        when: ipa_domain is not defined
+
+      - name: Ensure hostgroup testhostgroup1 and testhostgroup2 are absent
+        ipahostgroup:
+          name: "{{ test_hostgroups }}"
+          state: absent
+
+      - name: Ensure test hosts are present
+        ipahost:
+          name: "{{ item }}.{{ ipa_domain }}"
+          force: true
+        loop: "{{ test_hosts }}"
+
+      - name: Ensure hostgroup testhostgroup2 is present
+        ipahostgroup:
+          name: testhostgroup2
+
+      # tests
+      - name: Test hostgroup presence with single host and action hostgroup
+        vars:
+          test_cases:
+            - { value: "{{ test_hosts[0] | lower }}", expected: true }
+            - { value: "{{ test_hosts[0] | upper }}", expected: false }
+            - { value: "{{ test_hosts[0] }}", expected: false }
+        block:
+          - name: "Ensure hostgroup testhostgroup with host 'host1'"
+            ipahostgroup:
+              name: testhostgroup1
+              host: "{{ item.value }}"
+            register: output
+            loop: "{{ test_cases }}"
+            loop_control:
+              index_var: index
+              label: "{{ item }}"
+          - name: "Verify results"
+            ansible.builtin.assert:
+              that: run.changed == run.item.expected or run.failed
+              fail_msg: "{{ run.msg | default('Failed condition: expected=' ~ run.item.expected ~ ', observed=' ~ run.changed) }}"
+              quiet: true
+            loop: "{{ output.results }}"
+            loop_control:
+              loop_var: run
+              label: "{{ run.item }}, output={'changed': {{ run.changed }}, 'failed': {{ run.failed}} }"
+
+      - name: Test hostgroup presence with multiple hosts and action hostgroup
+        vars:
+          test_cases:
+            - { value: "{{ test_hosts | lower }}", expected: true }
+            - { value: "{{ test_hosts | upper }}", expected: false }
+            - { value: "{{ test_hosts }}", expected: false }
+            - { value: "{{ test_hosts[1] }}", expected: true }
+            - { value: "{{ test_hosts[1] | lower }}", expected: false }
+            - { value: "{{ test_hosts[1] | upper }}", expected: false }
+            - { value: "{{ test_hosts[0] }}", expected: true }
+            - { value: "{{ test_hosts[0] | lower }}", expected: false }
+            - { value: "{{ test_hosts[0] | upper }}", expected: false }
+        block:
+          - name: "Ensure hostgroup testhostgroup with host 'host1'"
+            ipahostgroup:
+              name: testhostgroup1
+              host: "{{ item.value }}"
+            register: output
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "{{ item }}"
+          - name: "Verify results"
+            ansible.builtin.assert:
+              that: run.changed == run.item.expected or run.failed
+              fail_msg: "{{ run.msg | default('Failed condition: expected=' ~ run.item.expected ~ ', observed=' ~ run.changed) }}"
+              quiet: true
+            loop: "{{ output.results }}"
+            loop_control:
+              loop_var: run
+              label: "{{ run.item }}, output={'changed': {{ run.changed }}, 'failed': {{ run.failed}} }"
+
+      - name: Test hostgroup with multiple hosts and action member
+        vars:
+          test_cases:
+            - { value: "{{ test_hosts | lower }}", state: "absent", expected: true }
+            - { value: "{{ test_hosts | upper }}", state: "absent", expected: false }
+            - { value: "{{ test_hosts }}", state: "present", expected: true }
+            - { value: "{{ test_hosts[1] }}", state: "absent", expected: true }
+            - { value: "{{ test_hosts[1] | lower }}", state: "absent", expected: false }
+            - { value: "{{ test_hosts[1] | upper }}", state: "absent", expected: false }
+            - { value: "{{ test_hosts[0] | lower }}", state: "present", expected: false }
+            - { value: "{{ test_hosts[0] }}", state: "present", expected: false }
+            - { value: "{{ test_hosts[0] | upper }}", state: "present", expected: false }
+            - { value: "{{ test_hosts | upper }}", state: "present", expected: true }
+            - { value: "{{ test_hosts[1] }}", state: "present", expected: false }
+            - { value: "{{ test_hosts[0] | lower }}", state: "present", expected: false }
+            - { value: "{{ test_hosts[0] }}", state: "absent", expected: true }
+            - { value: "{{ test_hosts[0] | lower }}", state: "absent", expected: false }
+            - { value: "{{ test_hosts[0] | upper }}", state: "absent", expected: false }
+        block:
+          - name: "Ensure hostgroup testhostgroup with host 'host1'"
+            ipahostgroup:
+              name: testhostgroup1
+              host: "{{ item.value }}"
+              action: member
+              state: "{{ item.state }}"
+            register: output
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "{{ item }}"
+          - name: "Verify results"
+            ansible.builtin.assert:
+              that: run.changed == run.item.expected or run.failed
+              fail_msg: "{{ run.msg | default('Failed condition: expected=' ~ run.item.expected ~ ', observed=' ~ run.changed) }}"
+              quiet: true
+            loop: "{{ output.results }}"
+            loop_control:
+              loop_var: run
+              label: "{{ run.item }}, output={'changed': {{ run.changed }}, 'failed': {{ run.failed}} }"
+
+    always:
+      # cleanup
+      - name: Ensure hostgroup testhostgroup is absent
+        ipahostgroup:
+          name: "{{ test_hostgroups }}"
+          state: absent
+
+      - name: Ensure test hosts are absent
+        ipahost:
+          name: "{{ test_hosts | product([ipa_domain]) | map('join') | list }}"
+          state: absent

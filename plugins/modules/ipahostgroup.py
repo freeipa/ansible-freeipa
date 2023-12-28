@@ -149,7 +149,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, ListOf, Hostname
+    gen_intersection_list, CaseInsensitive, Hostname, ListOf
 
 
 def find_hostgroup(module, name):
@@ -302,6 +302,12 @@ def main():
         commands = []
 
         for name in names:
+            # clean add/del lists
+            host_add, host_del = [], []
+            hostgroup_add, hostgroup_del = [], []
+            membermanager_user_add, membermanager_user_del = [], []
+            membermanager_group_add, membermanager_group_del = [], []
+
             # Make sure hostgroup exists
             res_find = find_hostgroup(ansible_module, name)
 
@@ -324,63 +330,31 @@ def main():
                         # Set res_find to empty dict for next step
                         res_find = {}
 
-                    member_args = gen_member_args(host, hostgroup)
-                    if not compare_args_ipa(ansible_module, member_args,
-                                            res_find):
-                        # Generate addition and removal lists
-                        host_add, host_del = gen_add_del_lists(
-                            host, res_find.get("member_host"))
+                    # Generate addition and removal lists
+                    host_add, host_del = gen_add_del_lists(
+                        host, res_find.get("member_host"),
+                        attr_datatype=(
+                            Hostname(ansible_module.ipa_get_domain())),
+                    )
 
-                        hostgroup_add, hostgroup_del = gen_add_del_lists(
-                            hostgroup, res_find.get("member_hostgroup"))
-
-                        # Add members
-                        if len(host_add) > 0 or len(hostgroup_add) > 0:
-                            commands.append([name, "hostgroup_add_member",
-                                             {
-                                                 "host": host_add,
-                                                 "hostgroup": hostgroup_add,
-                                             }])
-                        # Remove members
-                        if len(host_del) > 0 or len(hostgroup_del) > 0:
-                            commands.append([name, "hostgroup_remove_member",
-                                             {
-                                                 "host": host_del,
-                                                 "hostgroup": hostgroup_del,
-                                             }])
-
-                    membermanager_user_add, membermanager_user_del = \
-                        gen_add_del_lists(
-                            membermanager_user,
-                            res_find.get("membermanager_user")
-                        )
-
-                    membermanager_group_add, membermanager_group_del = \
-                        gen_add_del_lists(
-                            membermanager_group,
-                            res_find.get("membermanager_group")
-                        )
+                    hostgroup_add, hostgroup_del = gen_add_del_lists(
+                        hostgroup, res_find.get("member_hostgroup"),
+                        attr_datatype=CaseInsensitive(),
+                    )
 
                     if has_add_membermanager:
-                        # Add membermanager users and groups
-                        if len(membermanager_user_add) > 0 or \
-                           len(membermanager_group_add) > 0:
-                            commands.append(
-                                [name, "hostgroup_add_member_manager",
-                                 {
-                                     "user": membermanager_user_add,
-                                     "group": membermanager_group_add,
-                                 }]
+                        membermanager_user_add, membermanager_user_del = \
+                            gen_add_del_lists(
+                                membermanager_user,
+                                res_find.get("membermanager_user"),
+                                attr_datatype=CaseInsensitive(),
                             )
-                        # Remove member manager
-                        if len(membermanager_user_del) > 0 or \
-                           len(membermanager_group_del) > 0:
-                            commands.append(
-                                [name, "hostgroup_remove_member_manager",
-                                 {
-                                     "user": membermanager_user_del,
-                                     "group": membermanager_group_del,
-                                 }]
+
+                        membermanager_group_add, membermanager_group_del = \
+                            gen_add_del_lists(
+                                membermanager_group,
+                                res_find.get("membermanager_group"),
+                                attr_datatype=CaseInsensitive(),
                             )
 
                 elif action == "member":
@@ -390,45 +364,30 @@ def main():
 
                     # Reduce add lists for member_host and member_hostgroup,
                     # to new entries only that are not in res_find.
-                    if host is not None and "member_host" in res_find:
-                        host = gen_add_list(host, res_find["member_host"])
-                    if hostgroup is not None \
-                       and "member_hostgroup" in res_find:
-                        hostgroup = gen_add_list(
-                            hostgroup, res_find["member_hostgroup"])
-
-                    # Ensure members are present
-                    commands.append([name, "hostgroup_add_member",
-                                     {
-                                         "host": host,
-                                         "hostgroup": hostgroup,
-                                     }])
+                    host_add = gen_add_list(
+                        host, res_find.get("member_host"),
+                        attr_datatype=(
+                            Hostname(ansible_module.ipa_get_domain())),
+                    )
+                    hostgroup_add = gen_add_list(
+                        hostgroup, res_find.get("member_hostgroup"),
+                        attr_datatype=CaseInsensitive(),
+                    )
 
                     if has_add_membermanager:
                         # Reduce add list for membermanager_user and
                         # membermanager_group to new entries only that are
                         # not in res_find.
-                        if membermanager_user is not None \
-                           and "membermanager_user" in res_find:
-                            membermanager_user = gen_add_list(
-                                membermanager_user,
-                                res_find["membermanager_user"])
-                        if membermanager_group is not None \
-                           and "membermanager_group" in res_find:
-                            membermanager_group = gen_add_list(
-                                membermanager_group,
-                                res_find["membermanager_group"])
-
-                        # Add membermanager users and groups
-                        if membermanager_user is not None or \
-                           membermanager_group is not None:
-                            commands.append(
-                                [name, "hostgroup_add_member_manager",
-                                 {
-                                     "user": membermanager_user,
-                                     "group": membermanager_group,
-                                 }]
-                            )
+                        membermanager_user_add = gen_add_list(
+                            membermanager_user,
+                            res_find.get("membermanager_user"),
+                            attr_datatype=CaseInsensitive(),
+                        )
+                        membermanager_group_add = gen_add_list(
+                            membermanager_group,
+                            res_find.get("membermanager_group"),
+                            attr_datatype=CaseInsensitive(),
+                        )
 
             elif state == "renamed":
                 if res_find is not None:
@@ -459,45 +418,76 @@ def main():
                     # Reduce del lists of member_host and member_hostgroup,
                     # to the entries only that are in res_find.
                     if host is not None:
-                        host = gen_intersection_list(
-                            host, res_find.get("member_host"))
+                        host_del = gen_intersection_list(
+                            host, res_find.get("member_host"),
+                            attr_datatype=(
+                                Hostname(ansible_module.ipa_get_domain())),
+                        )
                     if hostgroup is not None:
-                        hostgroup = gen_intersection_list(
-                            hostgroup, res_find.get("member_hostgroup"))
-
-                    # Ensure members are absent
-                    commands.append([name, "hostgroup_remove_member",
-                                     {
-                                         "host": host,
-                                         "hostgroup": hostgroup,
-                                     }])
+                        hostgroup_del = gen_intersection_list(
+                            hostgroup, res_find.get("member_hostgroup"),
+                            attr_datatype=CaseInsensitive(),
+                        )
 
                     if has_add_membermanager:
-                        # Reduce del lists of membermanager_user and
-                        # membermanager_group to the entries only that are
-                        # in res_find.
-                        if membermanager_user is not None:
-                            membermanager_user = gen_intersection_list(
-                                membermanager_user,
-                                res_find.get("membermanager_user"))
-                        if membermanager_group is not None:
-                            membermanager_group = gen_intersection_list(
-                                membermanager_group,
-                                res_find.get("membermanager_group"))
-
-                        # Remove membermanager users and groups
-                        if membermanager_user is not None or \
-                           membermanager_group is not None:
-                            commands.append(
-                                [name, "hostgroup_remove_member_manager",
-                                 {
-                                     "user": membermanager_user,
-                                     "group": membermanager_group,
-                                 }]
-                            )
+                        # Get lists of membermanager users that exist
+                        # in IPA and should be removed.
+                        membermanager_user_del = gen_intersection_list(
+                            membermanager_user,
+                            res_find.get("membermanager_user"),
+                            attr_datatype=CaseInsensitive(),
+                        )
+                        membermanager_group_del = gen_intersection_list(
+                            membermanager_group,
+                            res_find.get("membermanager_group"),
+                            attr_datatype=CaseInsensitive(),
+                        )
 
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+            # Manage members
+
+            # Add members
+            if host_add or hostgroup_add:
+                commands.append([
+                    name, "hostgroup_add_member",
+                    {
+                        "host": host_add,
+                        "hostgroup": hostgroup_add,
+                    }
+                ])
+
+            # Remove members
+            if host_del or hostgroup_del:
+                commands.append([
+                    name, "hostgroup_remove_member",
+                    {
+                        "host": host_del,
+                        "hostgroup": hostgroup_del,
+                    }
+                ])
+
+            #  Manage membermanager users and groups
+            if has_add_membermanager:
+                # Add membermanager users and groups
+                if membermanager_user_add or membermanager_group_add:
+                    commands.append([
+                        name, "hostgroup_add_member_manager",
+                        {
+                            "user": membermanager_user_add,
+                            "group": membermanager_group_add,
+                        }
+                    ])
+                # Remove membermanager users and groups
+                if membermanager_user_del or membermanager_group_del:
+                    commands.append([
+                        name, "hostgroup_remove_member_manager",
+                        {
+                            "user": membermanager_user_del,
+                            "group": membermanager_group_del,
+                        }
+                    ])
 
         # Execute commands
 
