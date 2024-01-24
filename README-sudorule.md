@@ -93,6 +93,26 @@ Example playbook to make sure sudocmds are not present in Sudo Rule:
       state: absent
 ```
 
+
+Example playbook to ensure a Group of RunAs User is present in sudo rule:
+
+```yaml
+---
+- name: Playbook to manage sudorule member
+  hosts: ipaserver
+  become: no
+  gather_facts: no
+
+  tasks:
+  - name: Ensure sudorule 'runasuser' has 'ipasuers' group as runas users.
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      name: testrule1
+      runasuser_group: ipausers
+      action: member
+```
+
+
 Example playbook to make sure Sudo Rule is absent:
 
 ```yaml
