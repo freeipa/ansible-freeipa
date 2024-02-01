@@ -275,7 +275,8 @@ from ansible.module_utils.ansible_ipa_replica import (
     check_domain_level_is_supported, errors, ScriptError, setup_logging,
     logger, check_dns_resolution, service, find_providing_server, ca, kra,
     dns, no_matching_interface_for_ip_address_warning, adtrust,
-    constants, api, redirect_stdout, replica_conn_check, tasks
+    constants, api, redirect_stdout, replica_conn_check, tasks,
+    is_ipa_client_configured, install_ca_cert,
 )
 from ansible.module_utils import six
 
@@ -601,10 +602,23 @@ def main():
     ansible_log.debug("-- CA_CRT --")
 
     cafile = paths.IPA_CA_CRT
-    if not os.path.isfile(cafile):
-        ansible_module.fail_json(
-            msg="CA cert file is not available! Please reinstall"
-            "the client and try again.")
+    if install_ca_cert is not None:
+        if not os.path.isfile(cafile):
+            ansible_module.fail_json(
+                msg="CA cert file is not available! Please reinstall"
+                "the client and try again.")
+    else:
+        if (
+            is_ipa_client_configured is not None
+            and is_ipa_client_configured(on_master=True)
+        ):
+            # host was already an IPA client, refresh client cert stores to
+            # ensure we have up to date CA certs.
+            try:
+                ipautil.run([paths.IPA_CERTUPDATE])
+            except ipautil.CalledProcessError:
+                ansible_module.fail_json(
+                    msg="ipa-certupdate failed to refresh certs.")
 
     ansible_log.debug("-- REMOTE_API --")
 
