@@ -352,8 +352,9 @@ def date_format(value):
     raise ValueError("Invalid date '%s'" % value)
 
 
-def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
-    """Compare IPA object attributes against command arguments.
+def compare_args_ipa(module, args, ipa, ignore=None, arg_conv=None):
+    """
+    Compare IPA object attributes against command arguments.
 
     This function compares 'ipa' attributes with the 'args' the module
     is intending to use as parameters to an IPA API command. A list of
@@ -392,10 +393,14 @@ def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
         An optional list of attribute names that should be ignored and
         not evaluated.
 
+    arg_conv: dict
+        An option dict mapping attributes to a conversion function.
+
     Return
     ------
         True is returned if all attribute values in 'args' are
         equivalent to the corresponding attribute value in 'ipa'.
+
     """
     base_debug_msg = "Ansible arguments and IPA commands differed. "
 
@@ -409,6 +414,8 @@ def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
     if not (isinstance(args, dict) and isinstance(ipa, dict)):
         raise TypeError("Expected 'dicts' to compare.")
 
+    arg_conv = arg_conv or {}
+
     # Create filtered_args using ignore
     if ignore is None:
         ignore = []
@@ -417,43 +424,32 @@ def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
     for key in filtered_args:
         arg = args[key]
         ipa_arg = ipa.get(key, [""])
-        # If ipa_arg is a list and arg is not, replace arg
-        # with list containing arg. Most args in a find result
-        # are lists, but not all.
-        if isinstance(ipa_arg, (list, tuple)):
-            if not isinstance(arg, list):
-                arg = [arg]
-            if len(ipa_arg) != len(arg):
-                module.debug(
-                    base_debug_msg
-                    + "List length doesn't match for key %s: %d %d"
-                    % (key, len(arg), len(ipa_arg),)
-                )
-                return False
-            # ensure list elements types are the same.
-            if not (
-                isinstance(ipa_arg[0], type(arg[0]))
-                or isinstance(arg[0], type(ipa_arg[0]))
-            ):
-                arg = [to_text(_arg) for _arg in arg]
-        try:
-            arg_set = set(arg)
-            ipa_arg_set = set(ipa_arg)
-        except TypeError:
-            if arg != ipa_arg:
-                module.debug(
-                    base_debug_msg
-                    + "Different values: %s %s" % (arg, ipa_arg)
-                )
-                return False
-        else:
-            if arg_set != ipa_arg_set:
-                module.debug(
-                    base_debug_msg
-                    + "Different set content: %s %s"
-                    % (arg_set, ipa_arg_set,)
-                )
-                return False
+        # ensure both values are lists or tuples, so we compare the items.
+        if not isinstance(arg, (list, tuple)):
+            arg = [arg]
+        if not isinstance(ipa_arg, (list, tuple)):
+            ipa_arg = [ipa_arg]
+
+        # number of elements is lists must be the same.
+        if len(ipa_arg) != len(arg):
+            module.debug(
+                base_debug_msg
+                + "List length doesn't match for key %s: %d %d"
+                % (key, len(arg), len(ipa_arg),)
+            )
+            return False
+
+        arg_type = arg_conv.get(key, lambda identity: identity)
+        # Compare lists as sets to cope with different ordering.
+        arg_set = set(arg_type(item) for item in arg)
+        ipa_arg_set = set(arg_type(item) for item in ipa_arg)
+        if arg_set != ipa_arg_set:
+            module.debug(
+                base_debug_msg
+                + "Different set content: %s %s"
+                % (arg_set, ipa_arg_set,)
+            )
+            return False
     return True
 
 
@@ -555,6 +551,83 @@ def ensure_fqdn(name, domain):
     return name
 
 
+def CaseInsensitive():  # pylint: disable=invalid-name
+    """Create a case-insensitive string comparator."""
+    def _converter(data):
+        class _CaseInsensitive(str):
+            # Operations rely on str.casefold(), as it may not be available,
+            # all calls are wrapped in a try-except block using str.lower as
+            # fallback.
+            def __hash__(self):
+                try:
+                    _hash = hash(self.casefold())
+                except Exception:  # pylint: disable=broad-except
+                    _hash = hash(self.lower())
+                return _hash
+
+            def __eq__(self, other):
+                if not isinstance(other, (str, _CaseInsensitive)):
+                    other = to_text(other)
+                try:
+                    _result = self.casefold() == other.casefold()
+                except Exception:  # pylint: disable=broad-except
+                    _result = self.lower() == other.lower()
+                return _result
+
+        return _CaseInsensitive(data)
+
+    return _converter
+
+
+def Service(realm):  # pylint: disable=invalid-name
+    def _converter(data):
+        class _Service:
+            def __init__(self, svc, realm):
+                self.svc = to_text(
+                    data if '@' in to_text(data) else '%s@%s' % (svc, realm)
+                )
+
+            def __hash__(self):
+                return hash(self.svc.lower())
+
+            def __eq__(self, other):
+                if isinstance(other, _Service):
+                    return self.svc.lower() == other.svc.lower()
+                return self.svc.lower() == to_text(other).lower()
+
+            def __str__(self):
+                return self.svc
+
+        return _Service(data, realm)
+
+    return _converter
+
+
+def Hostname(domain_name):  # pylint: disable=invalid-name
+    """Return a function that entsure a FQDN representation of a hostname."""
+    def _converter(data):
+        return ensure_fqdn(data, domain_name).lower()
+
+    return _converter
+
+
+def ListOf(datatype):  # pylint: disable=invalid-name
+    """Ensure a list of values contain the requested datatype."""
+    def _converter(listdata):
+        if not isinstance(listdata, (list, tuple, set)):
+            raise TypeError("Expected sequence of items.")
+        if listdata is not None:
+            try:
+                return [datatype(data) for data in listdata]
+            except TypeError:
+                raise ValueError(
+                    "Cannot convert list item to %s" % datatype.__name__
+                )
+        return listdata
+
+    return _converter
+
+
 def api_get_realm():
     return api.env.realm
 
@@ -563,7 +636,24 @@ def api_get_basedn():
     return api.env.basedn
 
 
-def gen_add_del_lists(user_list, res_list):
+def _identity_datatype(value):
+    """Return value, providing an identity function."""
+    return value
+
+
+def gen_user_res_sets(user_list, res_list, attr_datatype=None):
+    """Generate user and result lists based on attribute datatype."""
+    if attr_datatype:
+        user_set = {attr_datatype(item) for item in (user_list or [])}
+        res_set = {attr_datatype(item) for item in (res_list or [])}
+    else:
+        user_set = set(user_list or [])
+        res_set = set(res_list or [])
+
+    return user_set, res_set
+
+
+def gen_add_del_lists(user_list, res_list, attr_datatype=None):
     """
     Generate the lists for the addition and removal of members.
 
@@ -573,18 +663,32 @@ def gen_add_del_lists(user_list, res_list):
     For the addition of new and the removal of existing members with
     action: members gen_add_list and gen_intersection_list should
     be used.
+
+    If attr_datatype is provided, all values in user_list and res_list
+    will we converted to it before the list is created.
     """
     # The user list is None, no need to do anything, return empty lists
     if user_list is None:
         return [], []
 
-    add_list = list(set(user_list or []) - set(res_list or []))
-    del_list = list(set(res_list or []) - set(user_list or []))
+    if not attr_datatype:
+        attr_datatype = _identity_datatype
+
+    user_set, res_set = gen_user_res_sets(user_list, res_list, attr_datatype)
+    add_list = list(
+        set(item for item in user_list if attr_datatype(item) not in res_set)
+    )
+    del_list = list(
+        set(
+            item for item in (res_list or [])
+            if attr_datatype(item) not in user_set
+        )
+    )
 
     return add_list, del_list
 
 
-def gen_add_list(user_list, res_list):
+def gen_add_list(user_list, res_list, attr_datatype=None):
     """
     Generate add list for addition of new members.
 
@@ -593,15 +697,26 @@ def gen_add_list(user_list, res_list):
 
     It is returning the difference of the user and res list if the user
     list is not None.
+
+    If attr_datatype is provided, all values in user_list and res_list
+    will we converted to it before the list is created.
     """
     # The user list is None, no need to do anything, return empty list
     if user_list is None:
         return []
 
-    return list(set(user_list or []) - set(res_list or []))
+    if not attr_datatype:
+        attr_datatype = _identity_datatype
+
+    _user_set, res_set = gen_user_res_sets(user_list, res_list, attr_datatype)
+    add_list = list(
+        set(item for item in user_list if attr_datatype(item) not in res_set)
+    )
+
+    return add_list
 
 
-def gen_intersection_list(user_list, res_list):
+def gen_intersection_list(user_list, res_list, attr_datatype=None):
     """
     Generate the intersection list for removal of existing members.
 
@@ -610,12 +725,26 @@ def gen_intersection_list(user_list, res_list):
 
     It is returning the intersection of the user and res list if the
     user list is not None.
+
+    If attr_datatype is provided, all values in user_list and res_list
+    will we converted to it before the list is created.
     """
     # The user list is None, no need to do anything, return empty list
     if user_list is None:
         return []
+    if not res_list:
+        return []
 
-    return list(set(res_list or []).intersection(set(user_list or [])))
+    if not attr_datatype:
+        attr_datatype = _identity_datatype
+
+    user_set, _res_set = gen_user_res_sets(user_list, res_list, attr_datatype)
+
+    intersection_list = list(
+        set(item for item in res_list if attr_datatype(item) in user_set)
+    )
+
+    return intersection_list
 
 
 def encode_certificate(cert):

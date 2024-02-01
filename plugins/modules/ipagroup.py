@@ -520,12 +520,14 @@ def main():
     idoverrideuser = ansible_module.params_get("idoverrideuser")
     posix = ansible_module.params_get("posix")
     nomembers = ansible_module.params_get("nomembers")
-    user = ansible_module.params_get("user")
-    group = ansible_module.params_get("group")
+    user = ansible_module.params_get_lowercase("user")
+    group = ansible_module.params_get_lowercase("group")
     # Services are not case sensitive
     service = ansible_module.params_get_lowercase("service")
-    membermanager_user = ansible_module.params_get("membermanager_user")
-    membermanager_group = ansible_module.params_get("membermanager_group")
+    membermanager_user = (
+        ansible_module.params_get_lowercase("membermanager_user"))
+    membermanager_group = (
+        ansible_module.params_get_lowercase("membermanager_group"))
     externalmember = ansible_module.params_get("externalmember")
     # rename
     rename = ansible_module.params_get("rename")

@@ -239,7 +239,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, api_get_domain, ensure_fqdn, netaddr, to_text
+    gen_intersection_list, netaddr, to_text, ListOf, Hostname
 
 
 def find_sudorule(module, name):
@@ -361,7 +361,6 @@ def main():
                                            "runasgroupcategory")
     hostcategory = ansible_module.params_get("hostcategory")  # noqa
     nomembers = ansible_module.params_get("nomembers")  # noqa
-    host = ansible_module.params_get("host")
     hostgroup = ansible_module.params_get_lowercase("hostgroup")
     hostmask = ansible_module.params_get("hostmask")
     user = ansible_module.params_get_lowercase("user")
@@ -399,9 +398,7 @@ def main():
                        "runasgroupcategory", "order", "nomembers"]
 
         else:
-            if hostcategory == 'all' and any([host, hostgroup]):
-                ansible_module.fail_json(
-                    msg="Hosts cannot be added when host category='all'")
+            # hostcategory == 'all' test is postponed, until we may have hosts
             if usercategory == 'all' and any([user, group]):
                 ansible_module.fail_json(
                     msg="Users cannot be added when user category='all'")
@@ -448,13 +445,14 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
-        default_domain = api_get_domain()
-
-        # Ensure host is not short hostname.
-        if host:
-            host = list(
-                {ensure_fqdn(value.lower(), default_domain) for value in host}
-            )
+        # Ensure fqdn host names
+        host = ansible_module.params_get_with_type_cast(
+            "host",
+            ListOf(Hostname(ansible_module.ipa_get_domain())),
+        )
+        if hostcategory == 'all' and any([host, hostgroup]):
+            ansible_module.fail_json(
+                msg="Hosts cannot be added when host category='all'")
 
         commands = []
         host_add, host_del = [], []
