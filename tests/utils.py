@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import socket
 import pytest
 import re
 import subprocess
@@ -30,6 +31,18 @@ from unittest import TestCase
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def is_ip_addr(ipaddr):
+    """Test if given IPA_SERVER_HOST is an IP address."""
+    try:
+        socket.inet_pton(socket.AF_INET, ipaddr)
+    except socket.error:
+        try:
+            socket.inet_pton(socket.AF_INET6, ipaddr)
+        except socket.error:
+            return False
+    return True
 
 
 def get_docker_env():
@@ -88,8 +101,17 @@ def get_enabled_test(group_name, test_name):
 def get_inventory_content():
     """Create the content of an inventory file for a test run."""
     ipa_server_host = get_server_host()
-
     container_engine = get_docker_env()
+
+    if (
+        ipa_server_host
+        and container_engine is None
+        and not is_ip_addr(ipa_server_host)
+    ):
+        default_domain = ipa_server_host.split(".", 1)[-1]
+    else:
+        default_domain = "test.local"
+
     if container_engine is not None:
         ipa_server_host += f" ansible_connection={container_engine}"
 
@@ -97,12 +119,18 @@ def get_inventory_content():
     if sshpass:
         ipa_server_host += " ansible_ssh_pass=%s" % sshpass
 
+    ipaserver_domain = os.environ.get("IPA_SERVER_DOMAIN", default_domain)
+    ipaserver_realm = os.environ.get(
+        "IPA_SERVER_REALM",
+        ipaserver_domain.upper()
+    )
+
     lines = [
         "[ipaserver]",
         ipa_server_host,
         "[ipaserver:vars]",
-        "ipaserver_domain=test.local",
-        "ipaserver_realm=TEST.LOCAL",
+        "ipaserver_domain=%s" % ipaserver_domain,
+        "ipaserver_realm=%s" % ipaserver_realm,
     ]
     return "\n".join(lines).encode("utf8")
 

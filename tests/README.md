@@ -22,6 +22,12 @@ To run the tests run:
 IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest
 ```
 
+To use a specific domain or realm set `IPA_SERVER_DOMAIN` (defaults to 'test.local') or `IPA_SERVER_REALM` (defaults to uppercase `IPA_SERVER_DOMAIN`):
+
+```
+IPA_SERVER_DOMAIN=<ipaserver_domain> IPA_SERVER_REALM=<ipaserver_realm> pytest
+```
+
 If you need to run using a different user you can use `ANSIBLE_REMOTE_USER`
 environment variable. For example:
 
@@ -35,7 +41,6 @@ environment variable. For example:
 ```
 IPA_SSH_PASSWORD=<ipaserver_ssh_password> IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest
 ```
-
 
 To run a single test use the full path with the following format:
 
@@ -61,7 +66,7 @@ To see why tests were skipped use `-rs`. For example:
 IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest -rs
 ```
 
-For a complete list of options check `pytest --help`.
+For a complete list of `pytest` options check `pytest --help`.
 
 ### Disabling and enabling playbook tests
 
