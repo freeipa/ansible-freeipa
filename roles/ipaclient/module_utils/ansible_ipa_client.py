@@ -46,7 +46,8 @@ __all__ = ["gssapi", "version", "ipadiscovery", "api", "errors", "x509",
            "configure_nslcd_conf", "configure_ssh_config",
            "configure_sshd_config", "configure_automount",
            "configure_firefox", "sync_time", "check_ldap_conf",
-           "sssd_enable_ifp", "getargspec", "paths", "options",
+           "sssd_enable_ifp", "configure_selinux_for_client",
+           "getargspec", "paths", "options",
            "IPA_PYTHON_VERSION", "NUM_VERSION", "certdb", "get_ca_cert",
            "ipalib", "logger", "ipautil", "installer"]
 
@@ -301,6 +302,11 @@ try:
             from ipaclient.install.client import sssd_enable_ifp
         except ImportError:
             sssd_enable_ifp = None
+
+        try:
+            from ipaclient.install.client import configure_selinux_for_client
+        except ImportError:
+            configure_selinux_for_client = None
 
         logger = logging.getLogger("ipa-client-install")
         root_logger = logger

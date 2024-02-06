@@ -152,6 +152,10 @@ options:
       The dist of nss_ldap or nss-pam-ldapd files if sssd is disabled
     required: yes
     type: dict
+  selinux_works:
+    description: True if selinux status check passed
+    required: false
+    type: bool
   krb_name:
     description: The krb5 config file name
     type: str
@@ -189,7 +193,7 @@ from ansible.module_utils.ansible_ipa_client import (
     CalledProcessError, tasks, client_dns, services,
     update_ssh_keys, save_state, configure_ldap_conf, configure_nslcd_conf,
     configure_openldap_conf, hardcode_ldap_server, getargspec, NUM_VERSION,
-    serialization
+    serialization, configure_selinux_for_client
 )
 
 
@@ -224,6 +228,7 @@ def main():
             no_dns_sshfp=dict(required=False, type='bool', default=False),
             nosssd_files=dict(required=True, type='dict'),
             krb_name=dict(required=True, type='str'),
+            selinux_works=dict(required=False, type='bool', default=False),
         ),
         supports_check_mode=False,
     )
@@ -274,6 +279,7 @@ def main():
     options.sssd = not options.no_sssd
     options.no_ac = False
     nosssd_files = module.params.get('nosssd_files')
+    selinux_works = module.params.get('selinux_works')
     krb_name = module.params.get('krb_name')
     os.environ['KRB5_CONFIG'] = krb_name
 
@@ -474,6 +480,9 @@ def main():
             logger.info("%s enabled", "SSSD" if options.sssd else "LDAP")
 
             if options.sssd:
+                if selinux_works and configure_selinux_for_client is not None:
+                    configure_selinux_for_client(statestore)
+
                 sssd = services.service('sssd', api)
                 try:
                     sssd.restart()

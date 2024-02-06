@@ -226,6 +226,10 @@ nosssd_files:
   returned: always
   type: list
   elements: str
+selinux_works:
+  description: True if the selinux status check passed.
+  returned: always
+  type: bool
 '''
 
 import os
@@ -495,6 +499,8 @@ def main():
     #     not installer.no_krb5_offline_passwords
     installer.sssd = not installer.no_sssd
 
+    selinux_works = False
+
     try:
 
         # client
@@ -529,7 +535,7 @@ def main():
                 "You must be root to run ipa-client-install.",
                 rval=CLIENT_INSTALL_ERROR)
 
-        tasks.check_selinux_status()
+        selinux_works = tasks.check_selinux_status()
 
         # if is_ipa_client_installed(fstore, on_master=options.on_master):
         #     logger.error("IPA client is already configured on this system.")
@@ -971,7 +977,8 @@ def main():
                      ntp_pool=options.ntp_pool,
                      client_already_configured=client_already_configured,
                      ipa_python_version=IPA_PYTHON_VERSION,
-                     nosssd_files=nosssd_files)
+                     nosssd_files=nosssd_files,
+                     selinux_works=selinux_works)
 
 
 if __name__ == '__main__':
