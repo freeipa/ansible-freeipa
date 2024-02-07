@@ -9,12 +9,12 @@
 
 - name: Install - Set ipaclient_servers
   ansible.builtin.set_fact:
-    ipaclient_servers: "{{ groups['ipaservers'] | list }}"
+    ipaclient_servers: "{{ groups['ipaservers'] | map('extract', hostvars) | map(attribute='ansible_host') }}"
   when: groups.ipaservers is defined and ipaclient_servers is not defined
 
 - name: Install - Set ipaclient_servers from cluster inventory
   ansible.builtin.set_fact:
-    ipaclient_servers: "{{ groups['ipaserver'] | list }}"
+    ipaclient_servers: "{{ groups['ipaserver'] | map('extract', hostvars) | map(attribute='ansible_host') }}"
   when: ipaclient_no_dns_lookup | bool and groups.ipaserver is defined and
         ipaclient_servers is not defined
 
