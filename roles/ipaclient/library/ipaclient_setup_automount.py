@@ -68,7 +68,8 @@ RETURN = '''
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
-    setup_logging, check_imports, options, configure_automount
+    setup_logging, check_imports, options, configure_automount, sysrestore,
+    paths, getargspec
 )
 
 
@@ -95,7 +96,18 @@ def main():
     options.location = options.automount_location
 
     if options.automount_location:
-        configure_automount(options)
+        argspec = getargspec(configure_automount)
+        if len(argspec.args) > 1:
+            fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
+            statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
+
+            configure_automount(options, statestore)
+
+            # Reload the state as automount install may have modified it
+            fstore._load()
+            statestore._load()
+        else:
+            configure_automount(options)
 
     module.exit_json(changed=True)
 
