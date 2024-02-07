@@ -54,12 +54,12 @@
 
 - name: Install - Set ipareplica_servers
   ansible.builtin.set_fact:
-    ipareplica_servers: "{{ groups['ipaservers'] | list }}"
+    ipareplica_servers: "{{ groups['ipaservers'] | map('extract', hostvars) | map(attribute='ansible_host') }}"
   when: groups.ipaservers is defined and ipareplica_servers is not defined
 
 - name: Install - Set ipareplica_servers from cluster inventory
   ansible.builtin.set_fact:
-    ipareplica_servers: "{{ groups['ipaserver'] | list }}"
+    ipareplica_servers: "{{ groups['ipaserver'] | map('extract', hostvars) | map(attribute='ansible_host') }}"
   when: ipareplica_servers is not defined and groups.ipaserver is defined
 
 - name: Install - Set default principal if no keytab is given
