@@ -95,7 +95,9 @@ def main():
     options.automount_location = module.params.get('automount_location')
     options.location = options.automount_location
 
+    changed = False
     if options.automount_location:
+        changed = True
         argspec = getargspec(configure_automount)
         if len(argspec.args) > 1:
             fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
@@ -109,7 +111,7 @@ def main():
         else:
             configure_automount(options)
 
-    module.exit_json(changed=True)
+    module.exit_json(changed=changed)
 
 
 if __name__ == '__main__':
