@@ -188,13 +188,12 @@ def find_hbacrule(module, name):
     elif len(_result["result"]) == 1:
         res = _result["result"][0]
         # hbacsvcgroup names are converted to lower case while creation with
-        # hbacsvcgroup_add.
-        # The hbacsvcgroup for sudo is builtin with the name "Sudo" though.
-        # This breaks the lower case comparison. Therefore all
-        # memberservice_hbacsvcgroup items are converted to lower case if
-        # "Sudo" is in the list.
+        # hbacsvcgroup_add, but builtin names may have mixed case as "Sudo",
+        # breaking the lower case comparison. Therefore all
+        # memberservice_hbacsvcgroup items are converted to lower case.
+        # (See: https://pagure.io/freeipa/issue/9464).
         _member = "memberservice_hbacsvcgroup"
-        if _member in res and "Sudo" in res[_member]:
+        if _member in res:
             res[_member] = [item.lower() for item in res[_member]]
         return res
 
@@ -400,7 +399,8 @@ def main():
 
                     if hbacsvc is not None:
                         hbacsvc_add, hbacsvc_del = gen_add_del_lists(
-                            hbacsvc, res_find.get("memberservice_hbacsvc"))
+                            hbacsvc, res_find.get("memberservice_hbacsvc"),
+                        )
 
                     if hbacsvcgroup is not None:
                         hbacsvcgroup_add, hbacsvcgroup_del = gen_add_del_lists(

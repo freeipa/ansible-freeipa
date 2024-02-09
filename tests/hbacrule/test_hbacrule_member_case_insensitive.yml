@@ -468,11 +468,51 @@
         register: result
         failed_when: result.changed or result.failed
 
+      # Specifically test 'Sudo', as FreeIPA adds a "Sudo" hbacsvcgroup instead of "sudo"
+      - name: Ensure 'sudo' works as hbacsvcgroup.
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          name: "test_sudo"
+          hbacsvcgroup:
+          - sudo
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure 'sudo' works as hbacsvcgroup, again.
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          name: "test_sudo"
+          hbacsvcgroup:
+          - sudo
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure 'sudo' works as hbacsvcgroup, action member.
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          name: "test_sudo"
+          hbacsvcgroup:
+          - sudo
+          action: member
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Ensure 'Sudo' works as hbacsvcgroup, action member.
+        ipahbacrule:
+          ipaadmin_password: SomeADMINpassword
+          name: "test_sudo"
+          hbacsvcgroup:
+          - Sudo
+        register: result
+        failed_when: result.changed or result.failed
+
     always:
       - name: Ensure test hbacrule is absent
         ipahbacrule:
           ipaadmin_password: SomeADMINpassword
-          name: testrule
+          name:
+            - testrule
+            - test_sudo
           state: absent
 
       - name: Ensure test users are absent
