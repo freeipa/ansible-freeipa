@@ -15,8 +15,9 @@
 #
 ---
 variables:
-  empty: true
+  # empty: true
   # ipa_enabled_modules: >-
   # ipa_enabled_tests: >-
-  # ipa_disabled_modules: >-
+  ipa_disabled_modules: >-
+    config
   # ipa_disabled_tests: >-
