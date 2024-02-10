@@ -176,6 +176,7 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: c8s
       ansible_version: "-core >=2.13,<2.14"
+      python_interpreter: "/usr/libexec/platform-python"
 
 - stage: c8s_Ansible_Core_2_14
   dependsOn: []
@@ -185,6 +186,7 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: c8s
       ansible_version: "-core >=2.14,<2.15"
+      python_interpreter: "/usr/libexec/platform-python"
 
 - stage: c8s_Ansible_Core_2_15
   dependsOn: []
@@ -194,6 +196,7 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: c8s
       ansible_version: "-core >=2.15,<2.16"
+      python_interpreter: "/usr/libexec/platform-python"
 
 - stage: c8s_Ansible_latest
   dependsOn: []
@@ -203,6 +206,7 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: c8s
       ansible_version: ""
+      python_interpreter: "/usr/libexec/platform-python"
 
 # CentOS 7
 
