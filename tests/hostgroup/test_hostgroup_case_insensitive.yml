@@ -1,0 +1,144 @@
+---
+- name: Test hostgroup members case insensitive
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+  module_defaults:
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  vars:
+    # Hostnames are supposed to have first letter
+    # capitalized for this test.
+    test_hosts:
+      - Host1
+      - Host2
+    test_hostgroups:
+      - testhostgroup1
+      # TestHostgrop2 is meant to use CamelCase here.
+      - TestHostGroup2
+
+  tasks:
+  - name: Test in all supported versions of IPA
+    block:
+      # setup environment
+      - name: Ensure domain name is set
+        ansible.builtin.set_fact:
+          ipa_domain: "test.local"
+        when: ipa_domain is not defined
+
+      - name: Ensure hostgroup testhostgroup1 and testhostgroup2 are absent
+        ipahostgroup:
+          name: "{{ test_hostgroups }}"
+          state: absent
+
+      - name: Ensure test hosts are present
+        ipahost:
+          name: "{{ item }}.{{ ipa_domain }}"
+          force: true
+        loop: "{{ test_hosts }}"
+
+      - name: Ensure hostgroup testhostgroup2 is present
+        ipahostgroup:
+          name: testhostgroup2
+
+      # tests
+      - name: Hostgroup should not be renamed only due to case
+        ipahostgroup:
+          name: testhostgroup2
+          rename: testhostgroup2
+          state: renamed
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Test hostgroup presence with single host and action hostgroup
+        vars:
+          test_cases:
+            - { id: 1, value: "{{ test_hosts[0] | lower }}", expected: true }
+            - { id: 2, value: "{{ test_hosts[0] | upper }}", expected: false }
+            - { id: 3, value: "{{ test_hosts[0] }}", expected: false }
+        block:
+          - name: "Ensure hostgroup testhostgroup with host 'host1'"
+            ipahostgroup:
+              name: testhostgroup1
+              host: "{{ item.value }}"
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+
+      - name: Test hostgroup presence with multiple hosts and action hostgroup
+        vars:
+          test_cases:
+            - { id: 1, value: "{{ test_hosts | lower }}", expected: true }
+            - { id: 2, value: "{{ test_hosts | upper }}", expected: false }
+            - { id: 3, value: "{{ test_hosts }}", expected: false }
+            - { id: 4, value: "{{ test_hosts[1] }}", expected: true }
+            - { id: 5, value: "{{ test_hosts[1] | lower }}", expected: false }
+            - { id: 6, value: "{{ test_hosts[1] | upper }}", expected: false }
+            - { id: 7, value: "{{ test_hosts[0] }}", expected: true }
+            - { id: 8, value: "{{ test_hosts[0] | lower }}", expected: false }
+            - { id: 9, value: "{{ test_hosts[0] | upper }}", expected: false }
+        block:
+          - name: "Ensure hostgroup testhostgroup with host 'host1'"
+            ipahostgroup:
+              name: testhostgroup1
+              host: "{{ item.value }}"
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+
+      - name: Test hostgroup with multiple hosts and action member
+        vars:
+          test_cases:
+            - { id: 1, value: "{{ test_hosts | lower }}", state: "absent", expected: true }
+            - { id: 2, value: "{{ test_hosts | upper }}", state: "absent", expected: false }
+            - { id: 3, value: "{{ test_hosts }}", state: "present", expected: true }
+            - { id: 4, value: "{{ test_hosts[1] }}", state: "absent", expected: true }
+            - { id: 5, value: "{{ test_hosts[1] | lower }}", state: "absent", expected: false }
+            - { id: 6, value: "{{ test_hosts[1] | upper }}", state: "absent", expected: false }
+            - { id: 7, value: "{{ test_hosts[0] | lower }}", state: "present", expected: false }
+            - { id: 8, value: "{{ test_hosts[0] }}", state: "present", expected: false }
+            - { id: 9, value: "{{ test_hosts[0] | upper }}", state: "present", expected: false }
+            - { id: 10, value: "{{ test_hosts | upper }}", state: "present", expected: true }
+            - { id: 11, value: "{{ test_hosts[1] }}", state: "present", expected: false }
+            - { id: 12, value: "{{ test_hosts[0] | lower }}", state: "present", expected: false }
+            - { id: 13, value: "{{ test_hosts[0] }}", state: "absent", expected: true }
+            - { id: 14, value: "{{ test_hosts[0] | lower }}", state: "absent", expected: false }
+            - { id: 15, value: "{{ test_hosts[0] | upper }}", state: "absent", expected: false }
+        block:
+          - name: "Ensure hostgroup testhostgroup with host 'host1'"
+            ipahostgroup:
+              name: testhostgroup1
+              host: "{{ item.value }}"
+              action: member
+              state: "{{ item.state }}"
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+    always:
+      # cleanup
+      - name: Ensure hostgroup testhostgroup is absent
+        ipahostgroup:
+          name: "{{ test_hostgroups }}"
+          state: absent
+
+      - name: Ensure test hosts are absent
+        ipahost:
+          name: "{{ test_hosts | product([ipa_domain]) | map('join') | list }}"
+          state: absent
