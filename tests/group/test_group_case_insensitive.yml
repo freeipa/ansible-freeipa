@@ -1,0 +1,250 @@
+---
+- name: Test group members case insensitive
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+  module_defaults:
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  vars:
+    test_users:
+      - { name: useR1, first: user1, last: last }
+      - { name: User2, first: user2, last: last }
+    user_names: "{{ test_users | map(attribute='name') }}"
+    test_groups:
+      - name: Group1
+      - name: Group2
+    group_names: "{{ test_groups | map(attribute='name') }}"
+
+  tasks:
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  - name: Test in all supported versions of IPA
+    block:
+      # setup environment
+      - name: Ensure testgroup is absent
+        ipagroup:
+          name: testgroup
+          state: absent
+
+      - name: Ensure test users are present
+        ipauser:
+          users: "{{ test_users }}"
+
+      - name: Ensure test groups are present
+        ipagroup:
+          groups: "{{ test_groups }}"
+
+      # tests
+      - name: Test group presence with user members
+        vars:
+          test_cases:
+            - { id: 1, value: "{{ user_names[0] | lower }}", expected: true }
+            - { id: 2, value: "{{ user_names[0] | upper }}", expected: false }
+            - { id: 3, value: "{{ user_names[0] }}", expected: false }
+            - { id: 4, value: "{{ user_names }}", expected: true }
+            - { id: 5, value: "{{ user_names | upper }}", expected: false }
+            - { id: 6, value: "{{ user_names | lower }}", expected: false }
+            - { id: 7, value: "{{ user_names[1] }}", expected: true }
+            - { id: 8, value: "{{ user_names[1] | upper }}", expected: false }
+            - { id: 9, value: "{{ user_names[1] | lower }}", expected: false }
+            - { id: 10, value: [], expected: true }
+        block:
+          - name: Ensure group with user parameter present
+            ipagroup:
+              name: testgroup
+              user: "{{ item.value }}"
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+
+      - name: Test group presence with group parameter
+        vars:
+          test_cases:
+            - { id: 1, value: "{{ group_names[0] | lower }}", expected: true }
+            - { id: 2, value: "{{ group_names[0] | upper }}", expected: false }
+            - { id: 3, value: "{{ group_names[0] }}", expected: false }
+            - { id: 4, value: "{{ group_names }}", expected: true }
+            - { id: 5, value: "{{ group_names | upper }}", expected: false }
+            - { id: 6, value: "{{ group_names | lower }}", expected: false }
+            - { id: 7, value: "{{ group_names[1] }}", expected: true }
+            - { id: 8, value: "{{ group_names[1] | upper }}", expected: false }
+            - { id: 9, value: "{{ group_names[1] | lower }}", expected: false }
+            - { id: 10, value: [], expected: true }
+        block:
+          - name: Ensure group with group present
+            ipagroup:
+              name: testgroup
+              group: "{{ item.value }}"
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+
+      - name: Test group with group and user parameters, action member
+        vars:
+          test_cases:
+            - { id: 1, user: "{{ user_names }}", group: "{{ group_names }}", expected: true }
+            - { id: 2, user: "{{ user_names[0] }}", state: "absent", expected: true }
+            - { id: 3, user: "{{ user_names[1] }}", state: "present", expected: false }
+            - { id: 4, user: "{{ user_names[1] | upper }}", state: "present", expected: false }
+            - { id: 5, user: "{{ user_names[1] | lower }}", state: "present", expected: false }
+            - { id: 6, group: "{{ group_names[0] | upper }}", state: "present", expected: false }
+            - { id: 7, group: "{{ group_names[0] | lower }}", state: "present", expected: false }
+            - { id: 8, group: "{{ group_names[0] }}", state: "present", expected: false }
+            - { id: 9, user: "{{ user_names[0] }}", group: "{{ group_names[0] }}", state: "absent", expected: true }
+            - { id: 10, user: "{{ user_names[0] | lower }}", group: "{{ group_names[0] | upper }}", state: "absent", expected: false }
+            - { id: 11, user: "{{ user_names[0] | upper }}", group: "{{ group_names[0] | lower }}", state: "absent", expected: false }
+            - { id: 12, user: "{{ user_names[0] }}", group: "{{ group_names[0] }}", state: "absent", expected: false }
+            - { id: 13, group: "{{ group_names[0] | upper }}", state: "present", expected: true }
+            - { id: 14, group: "{{ group_names[0] | lower }}", state: "present", expected: false }
+            - { id: 15, group: "{{ group_names[0] }}", state: "present", expected: false }
+            - { id: 16, group: "{{ group_names[1] | upper }}", state: "present", expected: false }
+            - { id: 17, group: "{{ group_names[1] | lower }}", state: "present", expected: false }
+            - { id: 18, group: "{{ group_names[1] }}", state: "present", expected: false }
+            - { id: 19, user: "{{ user_names[1] | upper }}", state: "present", expected: false }
+            - { id: 20, user: "{{ user_names[1] | lower }}", state: "present", expected: false }
+            - { id: 21, user: "{{ user_names[1] }}", state: "present", expected: false }
+        block:
+          - name: Ensure group works with group/user attributes and action member
+            ipagroup:
+              name: testgroup
+              user: "{{ item.user | default(omit) }}"
+              group: "{{ item.group | default(omit) }}"
+              action: member
+              state: "{{ item.state | default('present') }}"
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+    always:
+      # cleanup
+      - name: "Ensure test groups test_groups are absent"
+        ipagroup:
+          name: "{{ group_names + ['testgroup'] }}"
+          state: absent
+
+      - name: "Ensure test users test_users are absent"
+        ipauser:
+          users: "{{ test_users }}"
+          state: absent
+
+  - name: Test in all IPA versions 8.4.4+
+    when: ipa_version is version('4.8.4', '>=')
+    block:
+      # setup environment
+      - name: Ensure test users are present
+        ipauser:
+          users: "{{ test_users }}"
+
+      - name: Ensure test groups are present
+        ipagroup:
+          groups: "{{ test_groups }}"
+
+      # tests
+      - name: Test group presence with memembermanager_user members
+        vars:
+          test_cases:
+            - { id: 1, value: "{{ user_names[0] | lower }}", expected: true }
+            - { id: 2, value: "{{ user_names[0] | upper }}", expected: false }
+            - { id: 3, value: "{{ user_names[0] }}", expected: false }
+            - { id: 4, value: "{{ user_names }}", expected: true }
+            - { id: 5, value: "{{ user_names | upper }}", expected: false }
+            - { id: 6, value: "{{ user_names | lower }}", expected: false }
+            - { id: 7, value: "{{ user_names[1] }}", expected: true }
+            - { id: 8, value: "{{ user_names[1] | upper }}", expected: false }
+            - { id: 9, value: "{{ user_names[1] | lower }}", expected: false }
+            - { id: 10, value: [], expected: true }
+        block:
+          - name: Ensure group with membermanager_user parameter present
+            ipagroup:
+              name: testgroup
+              membermanager_user: "{{ item.value }}"
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+
+      - name: Test group presence with membermanager_group parameter
+        vars:
+          test_cases:
+            - { id: 1, value: "{{ group_names[0] | lower }}", expected: true }
+            - { id: 2, value: "{{ group_names[0] | upper }}", expected: false }
+            - { id: 3, value: "{{ group_names[0] }}", expected: false }
+            - { id: 4, value: "{{ group_names }}", expected: true }
+            - { id: 5, value: "{{ group_names | upper }}", expected: false }
+            - { id: 6, value: "{{ group_names | lower }}", expected: false }
+            - { id: 7, value: "{{ group_names[1] }}", expected: true }
+            - { id: 8, value: "{{ group_names[1] | upper }}", expected: false }
+            - { id: 9, value: "{{ group_names[1] | lower }}", expected: false }
+            - { id: 10, value: [], expected: true }
+        block:
+          - name: Ensure group with membermanager_group present
+            ipagroup:
+              name: testgroup
+              membermanager_group: "{{ item.value }}"
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+
+      - name: Test group with membermanager_group and membermanager_user parameters, action member
+        vars:
+          test_cases:
+            - { id: 1, user: "{{ user_names }}", group: "{{ group_names }}", expected: true }
+            - { id: 2, user: "{{ user_names[0] }}", state: "absent", expected: true }
+            - { id: 3, user: "{{ user_names[1] }}", state: "present", expected: false }
+            - { id: 4, user: "{{ user_names[1] | upper }}", state: "present", expected: false }
+            - { id: 5, user: "{{ user_names[1] | lower }}", state: "present", expected: false }
+            - { id: 6, group: "{{ group_names[0] | upper }}", state: "present", expected: false }
+            - { id: 7, group: "{{ group_names[0] | lower }}", state: "present", expected: false }
+            - { id: 8, group: "{{ group_names[0] }}", state: "present", expected: false }
+            - { id: 9, user: "{{ user_names[0] }}", group: "{{ group_names[0] }}", state: "absent", expected: true }
+            - { id: 10, user: "{{ user_names[0] | lower }}", group: "{{ group_names[0] | upper }}", state: "absent", expected: false }
+            - { id: 11, user: "{{ user_names[0] | upper }}", group: "{{ group_names[0] | lower }}", state: "absent", expected: false }
+            - { id: 12, user: "{{ user_names[0] }}", group: "{{ group_names[0] }}", state: "absent", expected: false }
+            - { id: 13, group: "{{ group_names[0] | upper }}", state: "present", expected: true }
+            - { id: 14, group: "{{ group_names[0] | lower }}", state: "present", expected: false }
+            - { id: 15, group: "{{ group_names[0] }}", state: "present", expected: false }
+            - { id: 16, group: "{{ group_names[1] | upper }}", state: "present", expected: false }
+            - { id: 17, group: "{{ group_names[1] | lower }}", state: "present", expected: false }
+            - { id: 18, group: "{{ group_names[1] }}", state: "present", expected: false }
+            - { id: 19, user: "{{ user_names[1] | upper }}", state: "present", expected: false }
+            - { id: 20, user: "{{ user_names[1] | lower }}", state: "present", expected: false }
+            - { id: 21, user: "{{ user_names[1] }}", state: "present", expected: false }
+        block:
+          - name: Ensure group works with group/user attributes and action member
+            ipagroup:
+              name: testgroup
+              membermanager_user: "{{ item.user | default(omit) }}"
+              membermanager_group: "{{ item.group | default(omit) }}"
+              action: member
+              state: "{{ item.state | default('present') }}"
+            register: output
+            failed_when: output.changed != item.expected or output.failed
+            loop: "{{ test_cases }}"
+            loop_control:
+              label: "Test id: {{ item.id }}"
+    always:
+      # cleanup
+      - name: "Ensure test groups test_groups are absent"
+        ipagroup:
+          name: "{{ group_names + ['testgroup'] }}"
+          state: absent
+
+      - name: "Ensure test users test_users are absent"
+        ipauser:
+          name: "{{ user_names }}"
+          state: absent
