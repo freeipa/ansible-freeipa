@@ -7,9 +7,6 @@
   - name: Run generate-certificates.sh
     ansible.builtin.command: >
       /bin/bash
-      generate-certificates.sh delete "{{ item }}"
+      generate-certificates.sh cleanup
     args:
       chdir: "{{ playbook_dir }}"
-    with_items:
-      - "{{ groups.ipaserver[0] }}"
-      - "{{ groups.ipareplicas[0] }}"
