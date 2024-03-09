@@ -1,0 +1,7 @@
+# These collections are only required for testing and development.
+# You should be able to use ansible-freeipa without installing these.
+---
+collections:
+  - name: ansible.posix
+  - name: community.docker
+  - name: containers.podman
