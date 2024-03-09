@@ -1,0 +1,22 @@
+---
+- name: Configure IPv6
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+  # IPA depends on IPv6 and without it dirsrv service won't start.
+  - name: Ensure IPv6 is ENABLED
+    ansible.posix.sysctl:
+      name: "{{ item.name }}"
+      value: "{{ item.value }}"
+      sysctl_set: yes
+      state: present
+      reload: yes
+    with_items:
+      - name: net.ipv6.conf.all.disable_ipv6
+        value: 0
+      - name: net.ipv6.conf.lo.disable_ipv6
+        value: 0
+      - name: net.ipv6.conf.eth0.disable_ipv6
+        value: 1
