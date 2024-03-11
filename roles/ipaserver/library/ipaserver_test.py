@@ -1171,7 +1171,7 @@ def main():
         changed=False,
         ipa_python_version=IPA_PYTHON_VERSION,
         # basic
-        domain=options.domain_name,
+        domain=domain_name,
         realm=realm_name,
         hostname=host_name,
         _hostname_overridden=bool(options.host_name),
