@@ -197,7 +197,7 @@ def run_playbook(playbook, allow_failures=False):
 
     # Need to get the last bytes of msg otherwise Azure
     #   will cut it out.
-    assert result.returncode == 0, assert_msg[-2500:]
+    assert result.returncode == 0, assert_msg[-5000:]
 
     return result
 
