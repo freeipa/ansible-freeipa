@@ -1,7 +1,7 @@
 ---
 repos:
 - repo: https://github.com/ansible/ansible-lint.git
-  rev: v6.22.0
+  rev: v6.22.1
   hooks:
   - id: ansible-lint
     always_run: false
@@ -21,20 +21,20 @@ repos:
           --parseable
           --nocolor
 - repo: https://github.com/adrienverge/yamllint.git
-  rev: v1.32.0
+  rev: v1.33.0
   hooks:
   - id: yamllint
     files: \.(yaml|yml)$
 - repo: https://github.com/pycqa/flake8
-  rev: 6.0.0
+  rev: 6.1.0
   hooks:
   - id: flake8
 - repo: https://github.com/pycqa/pydocstyle
-  rev: 6.0.0
+  rev: 6.3.0
   hooks:
   - id: pydocstyle
 - repo: https://github.com/pycqa/pylint
-  rev: v3.0.2
+  rev: v3.0.3
   hooks:
   - id: pylint
     args:
