@@ -354,7 +354,7 @@ def main():
                       options.no_hbac_allow, options._dirsrv_pkcs12_info,
                       options.no_pkinit)
 
-    # setup CA ##############################################################
+    # setup custodia ########################################################
 
     if hasattr(custodiainstance, "get_custodia_instance"):
         if hasattr(custodiainstance.CustodiaModes, "FIRST_MASTER"):
@@ -362,9 +362,14 @@ def main():
         else:
             mode = custodiainstance.CustodiaModes.MASTER_PEER
         custodia = custodiainstance.get_custodia_instance(options, mode)
-        custodia.set_output(ansible_log)
-        with redirect_stdout(ansible_log):
-            custodia.create_instance()
+    else:
+        custodia = custodiainstance.CustodiaInstance(options.host_name,
+                                                     options.realm_name)
+    custodia.set_output(ansible_log)
+    with redirect_stdout(ansible_log):
+        custodia.create_instance()
+
+    # setup CA ##############################################################
 
     if options.setup_ca:
         if not options.external_cert_files and options.external_ca:
