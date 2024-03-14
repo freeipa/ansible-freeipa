@@ -267,12 +267,6 @@
       idmax: "{{ result_ipaserver_test.idmax }}"
       _pkinit_pkcs12_info: "{{ result_ipaserver_test._pkinit_pkcs12_info if result_ipaserver_test._pkinit_pkcs12_info != None else omit }}"
 
-  - name: Install - Setup custodia
-    ipaserver_setup_custodia:
-      realm: "{{ result_ipaserver_test.realm }}"
-      hostname: "{{ result_ipaserver_test.hostname }}"
-      setup_ca: "{{ result_ipaserver_test.setup_ca }}"
-
   - name: Install - Setup CA
     ipaserver_setup_ca:
       dm_password: "{{ ipadm_password }}"
