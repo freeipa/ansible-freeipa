@@ -8,18 +8,24 @@ pwd=$(pwd)
 
 usage() {
     cat <<EOF
-Usage: $prog [options] [namespace] [collection]
+Usage: $prog [options] [<namespace> <name>]
 
 Build Anible Collection for ansible-freeipa.
 
-The namespace defaults to freeipa an collection defaults to ansible_freeipa
-if namespace and collection are not given. Namespace and collection can not
-be givedn without the other one.
+The namespace defaults to freeipa an name defaults to ansible_freeipa,
+if namespace and name are not given. Namespace and name need to be set
+together.
 
 Options:
   -a          Add all files, no only files known to git repo
   -k          Keep build directory
   -i          Install the generated collection
+  -o <A.B.C>  Build offline without using git, using version A.B.C
+              Also enables -a
+  -p <path>   Installation the generated collection in the path, the
+              ansible_collections sub directory will be created and will
+              contain the collection: ansible_collections/<namespace>/<name>
+              Also enables -i
   -h          Print this help
 
 EOF
@@ -28,7 +34,10 @@ EOF
 all=0
 keep=0
 install=0
-while getopts "ahki" arg; do
+path=
+offline=0
+galaxy_version=
+while getopts "ahkio:p:" arg; do
     case $arg in
         a)
             all=1
@@ -41,6 +50,15 @@ while getopts "ahki" arg; do
             keep=1
             ;;
         i)
+            install=1
+            ;;
+        o)
+            galaxy_version=$OPTARG
+            offline=1
+            all=1
+            ;;
+        p)
+            path=$OPTARG
             install=1
             ;;
         \?)
@@ -57,25 +75,26 @@ if [ $# != 0 ] && [ $# != 2 ]; then
     exit 1
 fi
 namespace="${1-freeipa}"
-collection="${2-ansible_freeipa}"
+name="${2-ansible_freeipa}"
 if [ -z "$namespace" ]; then
     echo "Namespace might not be empty"
     exit 1
 fi
-if [ -z "$collection" ]; then
-    echo "Collection might not be empty"
+if [ -z "$name" ]; then
+    echo "Name might not be empty"
     exit 1
 fi
-collection_prefix="${namespace}.${collection}"
+collection_prefix="${namespace}.${name}"
 
-galaxy_version=$(git describe --tags 2>/dev/null | sed -e "s/^v//")
+[ -z "$galaxy_version" ] && \
+    galaxy_version=$(git describe --tags 2>/dev/null | sed -e "s/^v//")
 
 if [ -z "$galaxy_version" ]; then
     echo "Version could not be detected"
     exit 1
 fi
 
-echo "Building collection: ${namespace}-${collection}-${galaxy_version}"
+echo "Building collection: ${namespace}-${name}-${galaxy_version}"
 
 GALAXY_BUILD=".galaxy-build"
 
@@ -103,14 +122,18 @@ cd "$GALAXY_BUILD" || exit 1
 
 sed -i -e "s/version: .*/version: \"$galaxy_version\"/" galaxy.yml
 sed -i -e "s/namespace: .*/namespace: \"$namespace\"/" galaxy.yml
-sed -i -e "s/name: .*/name: \"$collection\"/" galaxy.yml
+sed -i -e "s/name: .*/name: \"$name\"/" galaxy.yml
 
 find . -name "*~" -exec rm {} \;
 
 
-echo "Creating CHANGELOG.rst..."
-"$(dirname "$0")/changelog" --galaxy > CHANGELOG.rst
-echo -e "\033[ACreating CHANGELOG.rst... \033[32;1mDONE\033[0m"
+if [ $offline == 0 ]; then
+    echo "Creating CHANGELOG.rst..."
+    "$(dirname "$0")/changelog" --galaxy > CHANGELOG.rst
+    echo -e "\033[ACreating CHANGELOG.rst... \033[32;1mDONE\033[0m"
+else
+    echo "Empty changelog, offline generated." > CHANGELOG.rst
+fi
 
 sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.${collection_prefix}.plugins.module_utils.ansible_freeipa_module/" plugins/modules/*.py
 
@@ -198,6 +221,6 @@ else
 fi
 
 if [ $install == 1 ]; then
-    echo "Installing collection ${namespace}-${collection}-${galaxy_version}.tar.gz ..."
-    ansible-galaxy collection install "${namespace}-${collection}-${galaxy_version}.tar.gz" --force
+    echo "Installing collection ${namespace}-${name}-${galaxy_version}.tar.gz ..."
+    ansible-galaxy collection install ${path:+"-p$path"} "${namespace}-${name}-${galaxy_version}.tar.gz" --force ${offline/1/--offline}
 fi
