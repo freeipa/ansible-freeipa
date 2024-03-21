@@ -226,7 +226,8 @@ from ansible.module_utils.ansible_ipa_server import (
     redirect_stdout, adtrust, api, default_subject_base,
     default_ca_subject_dn, ipautil, installutils, ca, kra, dns,
     get_server_ip_address, no_matching_interface_for_ip_address_warning,
-    services, logger, tasks, update_hosts_file, ScriptError
+    services, logger, tasks, update_hosts_file, ScriptError, IPAChangeConf,
+    realm_to_ldapi_uri
 )
 
 
@@ -365,6 +366,11 @@ def main():
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
     sstore = sysrestore.StateFile(paths.SYSRESTORE)
 
+    domain_name = options.domain_name
+    realm_name = options.realm_name
+    host_name = options.host_name
+    setup_ca = options.setup_ca
+
     # subject_base
     if not options.subject_base:
         options.subject_base = str(default_subject_base(options.realm_name))
@@ -391,27 +397,68 @@ def main():
 
         # Create the management framework config file and finalize api
         target_fname = paths.IPA_DEFAULT_CONF
-        # pylint: disable=invalid-name, consider-using-with
-        fd = open(target_fname, "w")
-        fd.write("[global]\n")
-        fd.write("host=%s\n" % options.host_name)
-        fd.write("basedn=%s\n" % ipautil.realm_to_suffix(options.realm_name))
-        fd.write("realm=%s\n" % options.realm_name)
-        fd.write("domain=%s\n" % options.domain_name)
-        fd.write("xmlrpc_uri=https://%s/ipa/xml\n" %
-                 ipautil.format_netloc(options.host_name))
-        fd.write("ldap_uri=ldapi://%%2fvar%%2frun%%2fslapd-%s.socket\n" %
-                 installutils.realm_to_serverid(options.realm_name))
-        if options.setup_ca:
-            fd.write("enable_ra=True\n")
-            fd.write("ra_plugin=dogtag\n")
-            fd.write("dogtag_version=10\n")
+        if realm_to_ldapi_uri is not None:
+            ipaconf = IPAChangeConf("IPA Server Install")
+            ipaconf.setOptionAssignment(" = ")
+            ipaconf.setSectionNameDelimiters(("[", "]"))
+
+            xmlrpc_uri = 'https://{0}/ipa/xml'.format(
+                ipautil.format_netloc(host_name))
+            ldapi_uri = realm_to_ldapi_uri(realm_name)
+
+            # [global] section
+            gopts = [
+                ipaconf.setOption('host', host_name),
+                ipaconf.setOption('basedn',
+                                  ipautil.realm_to_suffix(realm_name)),
+                ipaconf.setOption('realm', realm_name),
+                ipaconf.setOption('domain', domain_name),
+                ipaconf.setOption('xmlrpc_uri', xmlrpc_uri),
+                ipaconf.setOption('ldap_uri', ldapi_uri),
+                ipaconf.setOption('mode', 'production')
+            ]
+
+            if setup_ca:
+                gopts.extend([
+                    ipaconf.setOption('enable_ra', 'True'),
+                    ipaconf.setOption('ra_plugin', 'dogtag'),
+                    ipaconf.setOption('dogtag_version', '10')
+                ])
+            else:
+                gopts.extend([
+                    ipaconf.setOption('enable_ra', 'False'),
+                    ipaconf.setOption('ra_plugin', 'None')
+                ])
+
+            opts = [
+                ipaconf.setSection('global', gopts),
+                {'name': 'empty', 'type': 'empty'}
+            ]
+
+            ipaconf.newConf(target_fname, opts)
         else:
-            fd.write("enable_ra=False\n")
-            fd.write("ra_plugin=none\n")
-        fd.write("mode=production\n")
-        fd.close()
-        # pylint: enable=invalid-name, consider-using-with
+            # pylint: disable=invalid-name, consider-using-with
+            fd = open(target_fname, "w")
+            fd.write("[global]\n")
+            fd.write("host=%s\n" % options.host_name)
+            fd.write("basedn=%s\n" % ipautil.realm_to_suffix(
+                options.realm_name))
+            fd.write("realm=%s\n" % options.realm_name)
+            fd.write("domain=%s\n" % options.domain_name)
+            fd.write("xmlrpc_uri=https://%s/ipa/xml\n" %
+                     ipautil.format_netloc(options.host_name))
+            fd.write("ldap_uri=ldapi://%%2fvar%%2frun%%2fslapd-%s.socket\n" %
+                     installutils.realm_to_serverid(options.realm_name))
+            if options.setup_ca:
+                fd.write("enable_ra=True\n")
+                fd.write("ra_plugin=dogtag\n")
+                fd.write("dogtag_version=10\n")
+            else:
+                fd.write("enable_ra=False\n")
+                fd.write("ra_plugin=none\n")
+            fd.write("mode=production\n")
+            fd.close()
+            # pylint: enable=invalid-name, consider-using-with
 
         # Must be readable for everyone
         os.chmod(target_fname, 0o644)
