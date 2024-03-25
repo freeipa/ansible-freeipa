@@ -173,9 +173,13 @@ try:
             ipa_generate_password
         from ipapython.dn import DN
         try:
-            from ipalib.install.kinit import kinit_keytab, kinit_password
+            from ipalib.kinit import kinit_password, kinit_keytab
         except ImportError:
-            from ipapython.ipautil import kinit_keytab, kinit_password
+            try:
+                from ipalib.install.kinit import kinit_keytab, kinit_password
+            except ImportError:
+                # pre 4.5.0
+                from ipapython.ipautil import kinit_keytab, kinit_password
         from ipapython.ipa_log_manager import standard_logging_setup
         from gssapi.exceptions import GSSError
         try:

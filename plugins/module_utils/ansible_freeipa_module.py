@@ -87,9 +87,13 @@ try:
     from ipalib.constants import DEFAULT_CONFIG, LDAP_GENERALIZED_TIME_FORMAT
 
     try:
-        from ipalib.install.kinit import kinit_password, kinit_keytab
+        from ipalib.kinit import kinit_password, kinit_keytab
     except ImportError:
-        from ipapython.ipautil import kinit_password, kinit_keytab
+        try:
+            from ipalib.install.kinit import kinit_password, kinit_keytab
+        except ImportError:
+            # pre 4.5.0
+            from ipapython.ipautil import kinit_password, kinit_keytab
     from ipapython.ipautil import run
     from ipapython.ipautil import template_str
     from ipapython.dn import DN

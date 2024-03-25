@@ -104,7 +104,10 @@ try:
         from ipaclient.install.ipachangeconf import IPAChangeConf
         from ipalib.install import certstore, sysrestore
         from ipapython.ipautil import ipa_generate_password
-        from ipalib.install.kinit import kinit_keytab
+        try:
+            from ipalib.kinit import kinit_keytab
+        except ImportError:
+            from ipalib.install.kinit import kinit_keytab
         from ipapython import ipaldap, ipautil, kernel_keyring
         from ipapython.certdb import IPA_CA_TRUST_FLAGS, \
             EXTERNAL_CA_TRUST_FLAGS
