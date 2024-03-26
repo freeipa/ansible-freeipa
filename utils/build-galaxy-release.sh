@@ -35,7 +35,7 @@ all=0
 keep=0
 install=0
 path=
-offline=0
+offline=
 galaxy_version=
 while getopts "ahkio:p:" arg; do
     case $arg in
@@ -127,7 +127,7 @@ sed -i -e "s/name: .*/name: \"$name\"/" galaxy.yml
 find . -name "*~" -exec rm {} \;
 
 
-if [ $offline == 0 ]; then
+if [ $offline != 1 ]; then
     echo "Creating CHANGELOG.rst..."
     "$(dirname "$0")/changelog" --galaxy > CHANGELOG.rst
     echo -e "\033[ACreating CHANGELOG.rst... \033[32;1mDONE\033[0m"
