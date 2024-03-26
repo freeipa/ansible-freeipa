@@ -17,6 +17,9 @@ parameters:
     default: 3.x
   - name: build_number
     type: string
+  - name: python_interpreter
+    type: string
+    default: ""
 
 jobs:
 - job: Test_Group${{ parameters.group_number }}
@@ -80,6 +83,7 @@ jobs:
       IPA_ENABLED_MODULES: ${{ variables.ipa_enabled_modules }}
       IPA_ENABLED_TESTS: ${{ variables.ipa_enabled_tests }}
       IPA_VERBOSITY: "-vvv"
+      PYTHON_INTERPRETER: ${{ parameters.python_interpreter }}
 
   - task: PublishTestResults@2
     inputs:

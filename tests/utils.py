@@ -39,6 +39,10 @@ def get_docker_env():
     return docker_env
 
 
+def get_python_interpreter():
+    return os.getenv("PYTHON_INTERPRETER", None)
+
+
 def get_ssh_password():
     return os.getenv("IPA_SSH_PASSWORD")
 
@@ -92,6 +96,9 @@ def get_inventory_content():
     container_engine = get_docker_env()
     if container_engine is not None:
         ipa_server_host += f" ansible_connection={container_engine}"
+    python_interpreter = get_python_interpreter()
+    if python_interpreter is not None:
+        ipa_server_host += f" ansible_python_interpreter={python_interpreter}"
 
     sshpass = get_ssh_password()
     if sshpass:
