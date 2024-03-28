@@ -8,9 +8,9 @@ jobs:
     name: Verify readme
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.1.0
+      - uses: actions/checkout@v4.1.1
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Run readme test
         run: |
           error=0
