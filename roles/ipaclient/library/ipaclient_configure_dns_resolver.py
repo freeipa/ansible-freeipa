@@ -152,8 +152,10 @@ def configure_dns_resolver(nameservers, searchdomains, fstore=None):
     if not searchdomains or not isinstance(searchdomains, list):
         raise AssertionError("searchdomains must be of type list")
 
+    changed = False
     if fstore is not None and not fstore.has_file(paths.RESOLV_CONF):
         fstore.backup_file(paths.RESOLV_CONF)
+        changed = True
 
     resolve1_enabled = detect_resolve1_resolv_conf()
     if "NetworkManager" not in services.knownservices:
@@ -192,6 +194,7 @@ def configure_dns_resolver(nameservers, searchdomains, fstore=None):
                 sdrd_service = services.service("systemd-resolved.service")
             if sdrd_service.is_enabled():
                 sdrd_service.reload_or_restart()
+            changed = True
 
     # Then configure NetworkManager or resolve.conf
     if nm_service.is_enabled():
@@ -217,6 +220,7 @@ def configure_dns_resolver(nameservers, searchdomains, fstore=None):
                 outf.write(cfg)
             # reload NetworkManager
             nm_service.reload_or_restart()
+            changed = True
 
     # Configure resolv.conf if NetworkManager and systemd-resoled are not
     # enabled
@@ -231,6 +235,9 @@ def configure_dns_resolver(nameservers, searchdomains, fstore=None):
             cfg.append("nameserver %s" % nameserver)
         with open(paths.RESOLV_CONF, 'w') as outf:
             outf.write('\n'.join(cfg))
+        changed = True
+
+    return changed
 
 
 def unconfigure_dns_resolver(fstore=None):
@@ -239,8 +246,11 @@ def unconfigure_dns_resolver(fstore=None):
 
     :param fstore: optional file store for resolv.conf restore
     """
+    changed = False
+
     if fstore is not None and fstore.has_file(paths.RESOLV_CONF):
         fstore.restore_file(paths.RESOLV_CONF)
+        changed = True
 
     if os.path.isfile(NETWORK_MANAGER_IPA_CONF):
         os.unlink(NETWORK_MANAGER_IPA_CONF)
@@ -252,6 +262,7 @@ def unconfigure_dns_resolver(fstore=None):
             nm_service = services.knownservices['NetworkManager']
         if nm_service.is_enabled():
             nm_service.reload_or_restart()
+        changed = True
 
     if os.path.isfile(SYSTEMD_RESOLVED_IPA_CONF):
         os.unlink(SYSTEMD_RESOLVED_IPA_CONF)
@@ -261,6 +272,9 @@ def unconfigure_dns_resolver(fstore=None):
             sdrd_service = services.service("systemd-resolved.service")
         if sdrd_service.is_enabled():
             sdrd_service.reload_or_restart()
+        changed = True
+
+    return changed
 
 
 def main():
@@ -308,11 +322,12 @@ def main():
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
 
     if state == "present":
-        configure_dns_resolver(nameservers, searchdomains, fstore)
+        changed = configure_dns_resolver(nameservers,
+                                         searchdomains, fstore)
     else:
-        unconfigure_dns_resolver(fstore)
+        changed = unconfigure_dns_resolver(fstore)
 
-    module.exit_json(changed=True)
+    module.exit_json(changed=changed)
 
 
 if __name__ == '__main__':
