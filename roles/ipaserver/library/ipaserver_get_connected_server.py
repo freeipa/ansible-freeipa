@@ -77,9 +77,13 @@ try:
     from ipapython.ipautil import run
     from ipalib.constants import DEFAULT_CONFIG
     try:
-        from ipalib.install.kinit import kinit_password
+        from ipalib.kinit import kinit_password
     except ImportError:
-        from ipapython.ipautil import kinit_password
+        try:
+            from ipalib.install.kinit import kinit_password
+        except ImportError:
+            # pre 4.5.0
+            from ipapython.ipautil import kinit_password
 except ImportError as _err:
     MODULE_IMPORT_ERROR = str(_err)
 else:
