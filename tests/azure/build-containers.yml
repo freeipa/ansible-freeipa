@@ -59,3 +59,11 @@ stages:
       job_name_suffix: FedoraRawhide
       container_name: fedora-rawhide
       build_scenario_name: fedora-rawhide-build
+
+- stage: Fedora_Latest_No_IPA
+  dependsOn: []
+  jobs:
+  - template: templates/build_raw_container.yml
+    parameters:
+      job_name_suffix: FedoraLatest
+      container_name: fedora-latest
