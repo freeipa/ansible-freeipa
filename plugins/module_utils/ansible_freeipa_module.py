@@ -25,13 +25,24 @@ from __future__ import (absolute_import, division, print_function)
 
 __metaclass__ = type
 
-__all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
+__all__ = ["DEBUG_COMMAND_ALL", "DEBUG_COMMAND_LIST",
+           "DEBUG_COMMAND_COUNT", "DEBUG_COMMAND_BATCH",
+           "gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "DEFAULT_CONFIG", "LDAP_GENERALIZED_TIME_FORMAT",
            "kinit_password", "kinit_keytab", "run", "DN", "VERSION",
            "paths", "tasks", "get_credentials_if_valid", "Encoding",
            "DNSName", "getargspec", "certificate_loader",
            "write_certificate_list", "boolean", "template_str",
            "urlparse", "normalize_sshpubkey"]
+
+DEBUG_COMMAND_ALL = 0b1111
+# Print the while command list:
+DEBUG_COMMAND_LIST = 0b0001
+# Print the number of commands:
+DEBUG_COMMAND_COUNT = 0b0010
+# Print information about the batch slice size and currently executed batch
+# slice:
+DEBUG_COMMAND_BATCH = 0b0100
 
 import os
 # ansible-freeipa requires locale to be C, IPA requires utf-8.
@@ -44,6 +55,7 @@ import shutil
 import socket
 import base64
 import ast
+import time
 from datetime import datetime
 from contextlib import contextmanager
 from ansible.module_utils.basic import AnsibleModule
@@ -1315,7 +1327,8 @@ class IPAAnsibleModule(AnsibleModule):
     def execute_ipa_commands(self, commands, result_handler=None,
                              exception_handler=None,
                              fail_on_member_errors=False,
-                             **handlers_user_args):
+                             batch=False, batch_slice_size=100, debug=False,
+                             keeponly=None, **handlers_user_args):
         """
         Execute IPA API commands from command list.
 
@@ -1332,6 +1345,16 @@ class IPAAnsibleModule(AnsibleModule):
             Returns True to continue to next command, else False
         fail_on_member_errors: bool
             Use default member error handler handler member_error_handler
+        batch: bool
+            Enable batch command use to speed up processing
+        batch_slice_size: integer
+            Maximum mumber of commands processed in a slice with the batch
+            command
+        keeponly: list of string
+            The attributes to keep in the results returned from the commands
+            Default: None (Keep all)
+        debug: integer
+            Enable debug output for the exection using DEBUG_COMMAND_*
         handlers_user_args: dict (user args mapping)
             The user args to pass to result_handler and exception_handler
             functions
@@ -1401,34 +1424,125 @@ class IPAAnsibleModule(AnsibleModule):
                 if "errors" in argspec.args:
                     handlers_user_args["errors"] = _errors
 
+        if debug & DEBUG_COMMAND_LIST:
+            self.tm_warn("commands: %s" % repr(commands))
+        if debug & DEBUG_COMMAND_COUNT:
+            self.tm_warn("#commands: %s" % len(commands))
+
+        # Turn off batch use for server context when it lacks the keeponly
+        # option as it lacks https://github.com/freeipa/freeipa/pull/7335
+        # This is an important fix about reporting errors in the batch
+        # (example: "no modifications to be performed") that results in
+        # aborted processing of the batch and an error about missing
+        # attribute principal. FreeIPA issue #9583
+        batch_has_keeponly = "keeponly" in api.Command.batch.options
+        if batch and api.env.in_server and not batch_has_keeponly:
+            self.debug(
+                "Turning off batch processing for batch missing keeponly")
+            batch = False
+
         changed = False
-        for name, command, args in commands:
-            try:
-                if name is None:
-                    result = self.ipa_command_no_name(command, args)
-                else:
-                    result = self.ipa_command(command, name, args)
+        if batch:
+            # batch processing
+            batch_args = []
+            for ci, (name, command, args) in enumerate(commands):
+                if len(batch_args) < batch_slice_size:
+                    batch_args.append({
+                        "method": command,
+                        "params": ([name], args)
+                    })
 
-                if "completed" in result:
-                    if result["completed"] > 0:
-                        changed = True
-                else:
-                    changed = True
-
-                # If result_handler is not None, call it with user args
-                # defined in **handlers_user_args
-                if result_handler is not None:
-                    result_handler(self, result, command, name, args,
-                                   **handlers_user_args)
-
-            except Exception as e:
-                if exception_handler is not None and \
-                   exception_handler(self, e, **handlers_user_args):
+                if len(batch_args) < batch_slice_size and \
+                   ci < len(commands) - 1:
+                    # fill in more commands untill batch slice size is reached
+                    # or final slice of commands
                     continue
-                self.fail_json(msg="%s: %s: %s" % (command, name, str(e)))
+
+                if debug & DEBUG_COMMAND_BATCH:
+                    self.tm_warn("batch %d (size %d/%d)" %
+                                 (ci / batch_slice_size, len(batch_args),
+                                  batch_slice_size))
+
+                # run the batch command
+                if batch_has_keeponly:
+                    result = api.Command.batch(batch_args, keeponly=keeponly)
+                else:
+                    result = api.Command.batch(batch_args)
+
+                if len(batch_args) != result["count"]:
+                    self.fail_json(
+                        "Result size %d does not match batch size %d" % (
+                            result["count"], len(batch_args)))
+                if result["count"] > 0:
+                    for ri, res in enumerate(result["results"]):
+                        _res = res.get("result", None)
+                        if not batch_has_keeponly and keeponly is not None \
+                           and isinstance(_res, dict):
+                            res["result"] = dict(
+                                filter(lambda x: x[0] in keeponly,
+                                       _res.items())
+                            )
+                        self.tm_warn("res: %s" % repr(res))
+
+                        if "error" not in res or res["error"] is None:
+                            if result_handler is not None:
+                                result_handler(
+                                    self, res,
+                                    batch_args[ri]["method"],
+                                    batch_args[ri]["params"][0][0],
+                                    batch_args[ri]["params"][1],
+                                    **handlers_user_args)
+                            changed = True
+                        else:
+                            _errors.append(
+                                "%s %s %s: %s" %
+                                (batch_args[ri]["method"],
+                                 repr(batch_args[ri]["params"][0][0]),
+                                 repr(batch_args[ri]["params"][1]),
+                                 res["error"]))
+                # clear batch command list (python2 compatible)
+                del batch_args[:]
+        else:
+            # no batch processing
+            for name, command, args in commands:
+                try:
+                    if name is None:
+                        result = self.ipa_command_no_name(command, args)
+                    else:
+                        result = self.ipa_command(command, name, args)
+
+                    if "completed" in result:
+                        if result["completed"] > 0:
+                            changed = True
+                    else:
+                        changed = True
+
+                    # Handle keeponly
+                    res = result.get("result", None)
+                    if keeponly is not None and isinstance(res, dict):
+                        result["result"] = dict(
+                            filter(lambda x: x[0] in keeponly, res.items())
+                        )
+
+                    # If result_handler is not None, call it with user args
+                    # defined in **handlers_user_args
+                    if result_handler is not None:
+                        result_handler(self, result, command, name, args,
+                                       **handlers_user_args)
+
+                except Exception as e:
+                    if exception_handler is not None and \
+                       exception_handler(self, e, **handlers_user_args):
+                        continue
+                    self.fail_json(msg="%s: %s: %s" % (command, name, str(e)))
 
         # Fail on errors from result_handler and exception_handler
         if len(_errors) > 0:
             self.fail_json(msg=", ".join(_errors))
 
         return changed
+
+    def tm_warn(self, warning):
+        ts = time.time()
+        # pylint: disable=super-with-arguments
+        super(IPAAnsibleModule, self).warn("%f %s" % (ts, warning))
