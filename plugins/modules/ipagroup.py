@@ -900,7 +900,7 @@ def main():
 
         # Execute commands
         changed = ansible_module.execute_ipa_commands(
-            commands, fail_on_member_errors=True)
+            commands, batch=True, keeponly=[], fail_on_member_errors=True)
 
     # Done
 
