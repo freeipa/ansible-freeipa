@@ -13,6 +13,7 @@ Features
 * Repair mode for clients
 * Backup and restore, also to and from controller
 * Smartcard setup for servers and clients
+* Inventory plugin freeipa
 * Modules for automembership rule management
 * Modules for automount key management
 * Modules for automount location management
@@ -108,9 +109,10 @@ You can use the roles directly within the top directory of the git repo, but to 
 You can either adapt ansible.cfg:
 
 ```
-roles_path   = /my/dir/ansible-freeipa/roles
-library      = /my/dir/ansible-freeipa/plugins/modules
-module_utils = /my/dir/ansible-freeipa/plugins/module_utils
+roles_path        = /my/dir/ansible-freeipa/roles
+library           = /my/dir/ansible-freeipa/plugins/modules
+module_utils      = /my/dir/ansible-freeipa/plugins/module_utils
+inventory_plugins = /my/dir/ansible-freeipa/plugins/inventory
 ```
 
 Or you can link the directories:
@@ -470,3 +472,8 @@ Modules in plugin/modules
 * [ipavault](README-vault.md)
 
 If you want to write a new module please read [writing a new module](plugins/modules/README.md).
+
+Inventory plugins in plugin/inventory
+=====================================
+
+* [freeipa](README-inventory-plugin-freeipa.md)

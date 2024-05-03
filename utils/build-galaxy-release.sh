@@ -125,6 +125,7 @@ sed -i -e "s/namespace: .*/namespace: \"$namespace\"/" galaxy.yml
 sed -i -e "s/name: .*/name: \"$name\"/" galaxy.yml
 
 find . -name "*~" -exec rm {} \;
+find . -name "__py*__" -exec rm -rf {} \;
 
 
 if [ $offline != 1 ]; then
@@ -154,6 +155,13 @@ python utils/create_action_group.py "meta/runtime.yml" "$collection_prefix"
 #(cd plugins/action && {
 #    ln -sf ../../roles/*/action_plugins/*.py .
 #})
+
+# Adapt inventory plugin and inventory plugin README
+echo "Fixing inventory plugin and doc..."
+sed -i -e "s/plugin: freeipa/plugin: ${collection_prefix}.freeipa/g" plugins/inventory/freeipa.py
+sed -i -e "s/choices: \[\"freeipa\"\]/choices: \[\"${collection_prefix}.freeipa\"\]/g" plugins/inventory/freeipa.py
+sed -i -e "s/plugin: freeipa/plugin: ${collection_prefix}.freeipa/g" README-inventory-plugin-freeipa.md
+echo -e "\033[AFixing inventory plugin and doc... \033[32;1mDONE\033[0m"
 
 for doc_fragment in plugins/doc_fragments/*.py; do
     fragment=$(basename -s .py "$doc_fragment")
