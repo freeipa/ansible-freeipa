@@ -128,7 +128,7 @@ find . -name "*~" -exec rm {} \;
 find . -name "__py*__" -exec rm -rf {} \;
 
 
-if [ $offline != 1 ]; then
+if [ "$offline" != "" ]; then
     echo "Creating CHANGELOG.rst..."
     "$(dirname "$0")/changelog" --galaxy > CHANGELOG.rst
     echo -e "\033[ACreating CHANGELOG.rst... \033[32;1mDONE\033[0m"
