@@ -121,9 +121,10 @@ make_inventory() {
     local scenario=$1 engine=${2:-podman}
     inventory="${test_env}/inventory"
     log info "Inventory file: ${inventory}"
+    [ -n "${PYTHON_INTERPRETER}" ] && ADD_PYTHON_INTERPRETER="ansible_python_interpreter=${PYTHON_INTERPRETER}"
     cat << EOF > "${inventory}"
 [ipaserver]
-${scenario} ansible_connection=${engine}
+${scenario} ansible_connection=${engine} ${ADD_PYTHON_INTERPRETER}
 [ipaserver:vars]
 ipaserver_domain = test.local
 ipaserver_realm = TEST.LOCAL
@@ -288,7 +289,7 @@ then
     log warn "Installed collections will not be removed after execution."
     log none "Installing: Ansible Collection ${ANSIBLE_COLLECTIONS}"
     # shellcheck disable=SC2086
-    quiet ansible-galaxy collection install ${ANSIBLE_COLLECTIONS} || die "Failed to install Ansible collections."
+    ansible-galaxy collection install ${ANSIBLE_COLLECTIONS} || die "Failed to install Ansible collections."
 fi
 
 # Ansible configuration
