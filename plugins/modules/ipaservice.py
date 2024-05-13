@@ -840,7 +840,9 @@ def main():
             elif state == "absent":
                 if action == "service":
                     if res_find is not None:
-                        args = {'continue': delete_continue}
+                        args = {}
+                        if delete_continue is not None:
+                            args['continue'] = delete_continue
                         commands.append([name, 'service_del', args])
 
                 elif action == "member":
