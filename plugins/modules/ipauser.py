@@ -741,7 +741,7 @@ user:
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, date_format, \
     encode_certificate, load_cert_from_str, DN_x500_text, to_text, \
-    ipalib_errors
+    ipalib_errors, gen_add_list, gen_intersection_list
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -961,6 +961,13 @@ def extend_emails(email, default_email_domain):
     return email
 
 
+def convert_certificate(certificate):
+    if certificate is None:
+        return None
+
+    return [cert.strip() for cert in certificate]
+
+
 def convert_certmapdata(certmapdata):
     if certmapdata is None:
         return None
@@ -1006,9 +1013,8 @@ def gen_certmapdata_args(certmapdata):
 
 
 # pylint: disable=unused-argument
-def result_handler(module, result, command, name, args, errors, exit_args,
-                   single_user):
-
+def result_handler(module, result, command, name, args, exit_args,
+                   errors, single_user):
     if "random" in args and command in ["user_add", "user_mod"] \
        and "randompassword" in result["result"]:
         if single_user:
@@ -1018,31 +1024,8 @@ def result_handler(module, result, command, name, args, errors, exit_args,
             exit_args.setdefault(name, {})["randompassword"] = \
                 result["result"]["randompassword"]
 
-    # Get all errors
-    # All "already a member" and "not a member" failures in the
-    # result are ignored. All others are reported.
-    if "failed" in result and len(result["failed"]) > 0:
-        for item in result["failed"]:
-            failed_item = result["failed"][item]
-            for member_type in failed_item:
-                for member, failure in failed_item[member_type]:
-                    if "already a member" in failure \
-                       or "not a member" in failure:
-                        continue
-                    errors.append("%s: %s %s: %s" % (
-                        command, member_type, member, failure))
-
-
-# pylint: disable=unused-argument
-def exception_handler(module, ex, errors, exit_args, single_user):
-    msg = str(ex)
-    if "already contains" in msg \
-       or "does not contain" in msg:
-        return True
-    #  The canonical principal name may not be removed
-    if "equal to the canonical principal name must" in msg:
-        return True
-    return False
+    IPAAnsibleModule.member_error_handler(module, result, command, name, args,
+                                          errors)
 
 
 def main():
@@ -1277,6 +1260,7 @@ def main():
             preserve, update_password, smb_logon_script, smb_profile_path,
             smb_home_dir, smb_home_drive, idp, idp_user_id, rename,
         )
+        certificate = convert_certificate(certificate)
         certmapdata = convert_certmapdata(certmapdata)
 
     # Init
@@ -1387,6 +1371,7 @@ def main():
                     update_password, smb_logon_script, smb_profile_path,
                     smb_home_dir, smb_home_drive, idp, idp_user_id, rename,
                 )
+                certificate = convert_certificate(certificate)
                 certmapdata = convert_certmapdata(certmapdata)
 
                 # Check API specific parameters
@@ -1646,10 +1631,12 @@ def main():
                             msg="No user '%s'" % name)
 
                     # Ensure managers are present
-                    if manager is not None and len(manager) > 0:
+                    manager_add = gen_add_list(
+                        manager, res_find.get("manager"))
+                    if manager_add is not None and len(manager_add) > 0:
                         commands.append([name, "user_add_manager",
                                          {
-                                             "user": manager,
+                                             "user": manager_add,
                                          }])
 
                     # Principals need to be added and removed one by one,
@@ -1658,8 +1645,10 @@ def main():
                     # the removal of non-existing entries.
 
                     # Ensure principals are present
-                    if principal is not None and len(principal) > 0:
-                        for _principal in principal:
+                    principal_add = gen_add_list(
+                        principal, res_find.get("krbprincipalname"))
+                    if principal_add is not None and len(principal_add) > 0:
+                        for _principal in principal_add:
                             commands.append([name, "user_add_principal",
                                              {
                                                  "krbprincipalname":
@@ -1672,8 +1661,11 @@ def main():
                     # the removal of non-existing entries.
 
                     # Ensure certificates are present
-                    if certificate is not None and len(certificate) > 0:
-                        for _certificate in certificate:
+                    certificate_add = gen_add_list(
+                        certificate, res_find.get("usercertificate"))
+                    if certificate_add is not None and \
+                       len(certificate_add) > 0:
+                        for _certificate in certificate_add:
                             commands.append([name, "user_add_cert",
                                              {
                                                  "usercertificate":
@@ -1685,8 +1677,11 @@ def main():
                     # one reliably (https://pagure.io/freeipa/issue/8097)
 
                     # Ensure certmapdata are present
-                    if certmapdata is not None and len(certmapdata) > 0:
-                        for _data in certmapdata:
+                    certmapdata_add = gen_add_list(
+                        certmapdata, res_find.get("ipacertmapdata"))
+                    if certmapdata_add is not None and \
+                       len(certmapdata_add) > 0:
+                        for _data in certmapdata_add:
                             commands.append([name, "user_add_certmapdata",
                                              gen_certmapdata_args(_data)])
 
@@ -1707,10 +1702,12 @@ def main():
                             msg="No user '%s'" % name)
 
                     # Ensure managers are absent
-                    if manager is not None and len(manager) > 0:
+                    manager_del = gen_intersection_list(
+                        manager, res_find.get("manager"))
+                    if manager_del is not None and len(manager_del) > 0:
                         commands.append([name, "user_remove_manager",
                                          {
-                                             "user": manager,
+                                             "user": manager_del,
                                          }])
 
                     # Principals need to be added and removed one by one,
@@ -1719,10 +1716,12 @@ def main():
                     # the removal of non-existing entries.
 
                     # Ensure principals are absent
-                    if principal is not None and len(principal) > 0:
+                    principal_del = gen_intersection_list(
+                        principal, res_find.get("krbprincipalname"))
+                    if principal_del is not None and len(principal_del) > 0:
                         commands.append([name, "user_remove_principal",
                                          {
-                                             "krbprincipalname": principal,
+                                             "krbprincipalname": principal_del,
                                          }])
 
                     # Certificates need to be added and removed one by one,
@@ -1731,8 +1730,11 @@ def main():
                     # the removal of non-existing entries.
 
                     # Ensure certificates are absent
-                    if certificate is not None and len(certificate) > 0:
-                        for _certificate in certificate:
+                    certificate_del = gen_intersection_list(
+                        certificate, res_find.get("usercertificate"))
+                    if certificate_del is not None and \
+                       len(certificate_del) > 0:
+                        for _certificate in certificate_del:
                             commands.append([name, "user_remove_cert",
                                              {
                                                  "usercertificate":
@@ -1744,10 +1746,13 @@ def main():
                     # one reliably (https://pagure.io/freeipa/issue/8097)
 
                     # Ensure certmapdata are absent
-                    if certmapdata is not None and len(certmapdata) > 0:
+                    certmapdata_del = gen_intersection_list(
+                        certmapdata, res_find.get("ipacertmapdata"))
+                    if certmapdata_del is not None and \
+                       len(certmapdata_del) > 0:
                         # Using issuer and subject can only be done one by
                         # one reliably (https://pagure.io/freeipa/issue/8097)
-                        for _data in certmapdata:
+                        for _data in certmapdata_del:
                             commands.append([name, "user_remove_certmapdata",
                                              gen_certmapdata_args(_data)])
             elif state == "undeleted":
@@ -1791,7 +1796,7 @@ def main():
         # Execute commands
 
         changed = ansible_module.execute_ipa_commands(
-            commands, result_handler, exception_handler,
+            commands, result_handler,
             exit_args=exit_args, single_user=users is None)
 
     # Done
