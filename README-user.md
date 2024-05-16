@@ -311,7 +311,7 @@ Example playbook to rename users:
       ipaadmin_password: SomeADMINpassword
       name: pinky
       rename: reddy
-      state: enabled
+      state: renamed
 ```
 
 Example playbook to unlock users:
