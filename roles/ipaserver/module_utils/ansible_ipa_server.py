@@ -44,7 +44,7 @@ __all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
            "check_available_memory", "getargspec", "get_min_idstart",
            "paths", "api", "ipautil", "adtrust_imported", "NUM_VERSION",
            "time_service", "kra_imported", "dsinstance", "IPA_PYTHON_VERSION",
-           "NUM_VERSION", "SerialNumber"]
+           "NUM_VERSION", "SerialNumber", "realm_to_ldapi_uri"]
 
 import sys
 import logging
@@ -121,6 +121,10 @@ try:
         )
         from ipapython.dnsutil import check_zone_overlap
         from ipapython.dn import DN
+        try:
+            from ipapython.ipaldap import realm_to_ldapi_uri
+        except ImportError:
+            realm_to_ldapi_uri = None
         try:
             from ipaclient.install import timeconf
             from ipaclient.install.client import sync_time
