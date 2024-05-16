@@ -158,7 +158,7 @@ Several groups can also be renamed with a single task, as in the example playboo
   gather_facts: false
 
   tasks:
-  - name Rename group1 to newgroup1 and group2 to newgroup2
+  - name: Rename group1 to newgroup1 and group2 to newgroup2
     ipagroup:
       ipaadmin_password: SomeADMINpassword
       groups:
