@@ -31,7 +31,7 @@ __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "paths", "tasks", "get_credentials_if_valid", "Encoding",
            "DNSName", "getargspec", "certificate_loader",
            "write_certificate_list", "boolean", "template_str",
-           "urlparse"]
+           "urlparse", "normalize_sshpubkey"]
 
 import os
 # ansible-freeipa requires locale to be C, IPA requires utf-8.
@@ -156,6 +156,8 @@ try:
         from urllib.parse import urlparse
     except ImportError:
         from ansible.module_utils.six.moves.urllib.parse import urlparse
+
+    from ipalib.util import normalize_sshpubkey
 
 except ImportError as _err:
     ANSIBLE_FREEIPA_MODULE_IMPORT_ERROR = str(_err)
