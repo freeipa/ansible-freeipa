@@ -488,7 +488,7 @@ def module_params_get(module, name, allow_empty_list_item=False):
     if isinstance(value, list):
         for val in value:
             if (
-                isinstance(val, (str, unicode))  # pylint: disable=E0606
+                isinstance(val, (str, unicode))  # pylint: disable=W0012,E0606
                 and not val
             ):
                 if not allow_empty_list_item:

@@ -1382,7 +1382,11 @@ def main():
 
                 email = extend_emails(email, default_email_domain)
 
-            elif isinstance(user, (str, unicode)):  # pylint: disable=E0606
+            elif (
+                isinstance(
+                    user, (str, unicode)  # pylint: disable=W0012,E0606
+                )
+            ):
                 name = user
             else:
                 ansible_module.fail_json(msg="User '%s' is not valid" %

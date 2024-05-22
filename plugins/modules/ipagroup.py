@@ -664,7 +664,9 @@ def main():
                 check_parameters(ansible_module, state, action)
 
             elif (
-                isinstance(group_name, (str, unicode))  # pylint: disable=E0606
+                isinstance(
+                    group_name, (str, unicode)  # pylint: disable=W0012,E0606
+                )
             ):
                 name = group_name
             else:
