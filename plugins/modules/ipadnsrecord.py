@@ -1605,6 +1605,8 @@ def main():
 
             res_find = find_dnsrecord(ansible_module, zone_name, name)
 
+            cmds = []
+
             if state == 'present':
                 cmds = define_commands_for_present_state(
                     ansible_module, zone_name, entry, res_find)

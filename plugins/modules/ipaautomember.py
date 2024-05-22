@@ -450,6 +450,10 @@ def main():
         commands = []
 
         for name in names:
+            _type = None
+            inclusive_add, inclusive_del = [], []
+            exclusive_add, exclusive_del = [], []
+
             # Make sure automember rule exists
             res_find = find_automember(ansible_module, name, automember_type)
 
@@ -495,16 +499,12 @@ def main():
                             transform_conditions(inclusive),
                             res_find.get("automemberinclusiveregex", [])
                         )
-                    else:
-                        inclusive_add, inclusive_del = [], []
 
                     if exclusive is not None:
                         exclusive_add, exclusive_del = gen_add_del_lists(
                             transform_conditions(exclusive),
                             res_find.get("automemberexclusiveregex", [])
                         )
-                    else:
-                        exclusive_add, exclusive_del = [], []
 
                 elif action == "member":
                     if res_find is None:
@@ -512,9 +512,7 @@ def main():
                             msg="No automember '%s'" % name)
 
                     inclusive_add = transform_conditions(inclusive or [])
-                    inclusive_del = []
                     exclusive_add = transform_conditions(exclusive or [])
-                    exclusive_del = []
 
                 for _inclusive in inclusive_add:
                     key, regex = _inclusive.split("=", 1)
