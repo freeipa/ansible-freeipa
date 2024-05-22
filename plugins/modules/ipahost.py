@@ -988,7 +988,7 @@ def main():
                     sshpubkey = [str(normalize_sshpubkey(key)) for
                                  key in sshpubkey]
 
-            elif isinstance(host, (str, unicode)):
+            elif isinstance(host, (str, unicode)):  # pylint: disable=E0606
                 name = host
             else:
                 ansible_module.fail_json(msg="Host '%s' is not valid" %

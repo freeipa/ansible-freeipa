@@ -487,7 +487,10 @@ def module_params_get(module, name, allow_empty_list_item=False):
     # Ansible issue https://github.com/ansible/ansible/issues/77108
     if isinstance(value, list):
         for val in value:
-            if isinstance(val, (str, unicode)) and not val:
+            if (
+                isinstance(val, (str, unicode))  # pylint: disable=E0606
+                and not val
+            ):
                 if not allow_empty_list_item:
                     module.fail_json(
                         msg="Parameter '%s' contains an empty string" %
