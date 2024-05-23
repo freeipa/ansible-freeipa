@@ -510,7 +510,8 @@ host:
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
     encode_certificate, is_ipv4_addr, is_ipv6_addr, ipalib_errors, \
-    gen_add_list, gen_intersection_list, normalize_sshpubkey
+    gen_add_list, gen_intersection_list, normalize_sshpubkey, \
+    strip_encoded_certificates
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -680,13 +681,6 @@ def check_authind(module, auth_ind):
         module.fail_json(
             msg="The use of krbprincipalauthind '%s' is not supported "
             "by your IPA version" % "','".join(_invalid))
-
-
-def convert_certificate(certificate):
-    if certificate is None:
-        return None
-
-    return [cert.strip() for cert in certificate]
 
 
 # pylint: disable=unused-argument
@@ -894,7 +888,7 @@ def main():
         auth_ind, requires_pre_auth, ok_as_delegate, ok_to_auth_as_delegate,
         force, reverse, ip_address, update_dns, update_password)
 
-    certificate = convert_certificate(certificate)
+    certificate = strip_encoded_certificates(ansible_module, certificate)
 
     if sshpubkey is not None:
         sshpubkey = [str(normalize_sshpubkey(key)) for key in sshpubkey]
@@ -982,7 +976,8 @@ def main():
                     ok_to_auth_as_delegate, force, reverse, ip_address,
                     update_dns, update_password)
 
-                certificate = convert_certificate(certificate)
+                certificate = strip_encoded_certificates(ansible_module,
+                                                         certificate)
 
                 if sshpubkey is not None:
                     sshpubkey = [str(normalize_sshpubkey(key)) for
