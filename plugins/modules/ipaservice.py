@@ -378,7 +378,7 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, encode_certificate, \
     gen_add_del_lists, gen_add_list, gen_intersection_list, ipalib_errors, \
-    api_get_realm, to_text
+    api_get_realm, to_text, strip_encoded_certificates
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -605,8 +605,7 @@ def main():
     # certificate with serive_add_cert. To be able to compare the results
     # from service_show with the given certificates we have to remove the
     # white space also.
-    if certificate is not None:
-        certificate = [cert.strip() for cert in certificate]
+    certificate = strip_encoded_certificates(ansible_module, certificate)
     pac_type = ansible_module.params_get(
         "pac_type", allow_empty_list_item=True)
     auth_ind = ansible_module.params_get(
@@ -673,8 +672,8 @@ def main():
                 # the certificate with serive_add_cert. To be able to compare
                 # the results from service_show with the given certificates
                 # we have to remove the white space also.
-                if certificate is not None:
-                    certificate = [cert.strip() for cert in certificate]
+                certificate = strip_encoded_certificates(ansible_module,
+                                                         certificate)
                 pac_type = service.get("pac_type")
                 auth_ind = service.get("auth_ind")
                 check_authind(ansible_module, auth_ind)
