@@ -31,7 +31,7 @@ __all__ = ["gssapi", "netaddr", "api", "ipalib_errors", "Env",
            "paths", "tasks", "get_credentials_if_valid", "Encoding",
            "DNSName", "getargspec", "certificate_loader",
            "write_certificate_list", "boolean", "template_str",
-           "urlparse", "normalize_sshpubkey"]
+           "urlparse", "normalize_sshpubkey", "strip_encoded_certificates"]
 
 import os
 # ansible-freeipa requires locale to be C, IPA requires utf-8.
@@ -637,6 +637,27 @@ def encode_certificate(cert):
     if not six.PY2:
         encoded = encoded.decode('ascii')
     return encoded
+
+
+def strip_encoded_certificates(module, certificates):
+    """
+    Strip and verify base64 encoded certificates (list of certs or None).
+
+    The certificates are verified using base64.b64decode after removing
+    leading and training white space.
+    """
+    if certificates is None:
+        return None
+
+    converted = []
+    for cert in certificates:
+        cert = cert.strip()
+        try:
+            base64.b64decode(cert)
+        except (TypeError, ValueError) as e:
+            module.fail_json("Base64 decoding failed: %s" % str(e))
+        converted.append(cert)
+    return converted
 
 
 def load_cert_from_str(cert):
