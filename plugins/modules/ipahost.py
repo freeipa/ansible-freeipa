@@ -1601,7 +1601,7 @@ def main():
         # Execute commands
 
         changed = ansible_module.execute_ipa_commands(
-            commands, result_handler,
+            commands, result_handler, batch=True, keeponly=["randompassword"],
             exit_args=exit_args, single_host=hosts is None)
 
     # Done
