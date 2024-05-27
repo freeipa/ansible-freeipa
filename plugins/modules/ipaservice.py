@@ -693,7 +693,11 @@ def main():
 
                 delete_continue = service.get("delete_continue")
 
-            elif isinstance(service, (str, unicode)):
+            elif (
+                isinstance(
+                    service, (str, unicode)  # pylint: disable=W0012,E0606
+                )
+            ):
                 name = service
             else:
                 ansible_module.fail_json(msg="Service '%s' is not valid" %

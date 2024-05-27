@@ -250,6 +250,8 @@ def main():
         operation = "add"
 
     invalid = []
+    wants_enable = False
+
     if state in ["enabled", "disabled"]:
         if action == "member":
             ansible_module.fail_json(

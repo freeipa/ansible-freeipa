@@ -658,7 +658,7 @@ def main():
         # Check authorization
         result = remote_api.Command['hostgroup_find'](
             cn=u'ipaservers',
-            host=[unicode(api.env.host)]
+            host=[unicode(api.env.host)]  # pylint: disable=W0012,E0606
         )['result']
         add_to_ipaservers = not result
 

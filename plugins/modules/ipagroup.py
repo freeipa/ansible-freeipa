@@ -663,7 +663,11 @@ def main():
 
                 check_parameters(ansible_module, state, action)
 
-            elif isinstance(group_name, (str, unicode)):
+            elif (
+                isinstance(
+                    group_name, (str, unicode)  # pylint: disable=W0012,E0606
+                )
+            ):
                 name = group_name
             else:
                 ansible_module.fail_json(msg="Group '%s' is not valid" %

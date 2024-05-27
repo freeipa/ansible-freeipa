@@ -139,7 +139,7 @@ def main():
         conn.connect(ccache=installer._ccache)
         remote_api.Command['hostgroup_add_member'](
             u'ipaservers',
-            host=[unicode(api.env.host)],
+            host=[unicode(api.env.host)],  # pylint: disable=W0012,E0606
         )
     finally:
         if conn.isconnected():

@@ -293,7 +293,7 @@ def result_get_value_lowercase(res_find, key, default=None):
     if existing is not None:
         if isinstance(existing, (list, tuple)):
             existing = [to_text(item).lower() for item in existing]
-        if isinstance(existing, (str, unicode)):
+        if isinstance(existing, (str, unicode)):  # pylint: disable=W0012,E0606
             existing = existing.lower()
     else:
         existing = default
