@@ -190,7 +190,7 @@ Variable | Description | Required
 `ipaservers` | This group with the IPA master full qualified hostnames. (list of strings) | mostly
 `ipareplicas` | Group of IPA replica hostnames. (list of strings) | yes
 `ipaadmin_password` | The password for the IPA admin user (string) | mostly
-`ipareplica_ip_addresses` | The list of master server IP addresses. (list of strings) | no
+`ipareplica_ip_addresses` | The list of IPA replica IP addresses. (list of strings) | no
 `ipareplica_domain` | The primary DNS domain of an existing IPA deployment. (string) | no
 `ipaserver_realm` | The Kerberos realm of an existing IPA deployment. (string) | no
 `ipaserver_hostname` | Fully qualified name of the server. (string) | no
