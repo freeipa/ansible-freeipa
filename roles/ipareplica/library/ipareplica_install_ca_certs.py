@@ -333,9 +333,7 @@ def main():
 
     # done #
 
-    ansible_module.exit_json(changed=True,
-                             config_master_host_name=config.master_host_name,
-                             config_ca_host_name=config.ca_host_name)
+    ansible_module.exit_json(changed=True)
 
 
 if __name__ == '__main__':
