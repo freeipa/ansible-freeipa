@@ -74,7 +74,7 @@ RETURN = '''
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_server import (
     check_imports, AnsibleModuleLog, setup_logging, options,
-    api_Backend_ldap2, redirect_stdout, api, custodiainstance, kra
+    api_Backend_ldap2, redirect_stdout, api, custodiainstance, kra, ca
 )
 
 
@@ -106,6 +106,12 @@ def main():
     options.pki_config_override = ansible_module.params.get(
         'pki_config_override')
     options.promote = False  # first master, no promotion
+    # hsm
+    if hasattr(ca, "hsm_version"):
+        options.token_name = None
+        options.token_library_path = None
+        options.token_password = None
+        options.token_password_file = None
 
     # init ##########################################################
 
