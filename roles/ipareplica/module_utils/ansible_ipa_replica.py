@@ -144,7 +144,7 @@ try:
         from ipaserver.install.replication import (
             ReplicationManager, replica_conn_check)
         from ipaserver.install.server.replicainstall import (
-            make_pkcs12_info, install_replica_ds, install_krb, install_ca_cert,
+            make_pkcs12_info, install_replica_ds, install_krb,
             install_http, install_dns_records, create_ipa_conf, check_dirsrv,
             check_dns_resolution, configure_certmonger,
             remove_replica_info_dir,
@@ -157,6 +157,11 @@ try:
             # ensure_enrolled,
             promotion_check_ipa_domain
         )
+        try:
+            from ipaserver.install.server.replicainstall import \
+                install_ca_cert
+        except ImportError:
+            install_ca_cert = None
         import SSSDConfig
         from subprocess import CalledProcessError
 

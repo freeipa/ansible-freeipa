@@ -209,6 +209,7 @@
       server: "{{ result_ipareplica_test.server }}"
       skip_conncheck: "{{ ipareplica_skip_conncheck }}"
       sid_generation_always: "{{ result_ipareplica_test.sid_generation_always }}"
+      ipa_client_installed: "{{ result_ipareplica_test.client_enrolled }}"
     register: result_ipareplica_prepare
 
   - name: Install - Add to ipaservers
@@ -276,6 +277,7 @@
       config_ca_host_name: "{{ result_ipareplica_prepare.config_ca_host_name }}"
       config_ips: "{{ result_ipareplica_prepare.config_ips }}"
     register: result_ipareplica_install_ca_certs
+    when: result_ipareplica_test.install_ca_certs
 
   - name: Install - Setup DS
     ipareplica_setup_ds:
