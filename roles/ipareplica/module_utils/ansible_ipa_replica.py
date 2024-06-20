@@ -49,7 +49,7 @@ __all__ = ["contextlib", "dnsexception", "dnsresolver", "dnsreversename",
            "dnsname", "kernel_keyring", "krbinstance", "getargspec",
            "adtrustinstance", "paths", "api", "dsinstance", "ipaldap", "Env",
            "ipautil", "installutils", "IPA_PYTHON_VERSION", "NUM_VERSION",
-           "ReplicaConfig", "create_api"]
+           "ReplicaConfig", "create_api", "clean_up_hsm_nicknames"]
 
 import sys
 import logging
@@ -162,6 +162,11 @@ try:
                 install_ca_cert
         except ImportError:
             install_ca_cert = None
+        try:
+            from ipaserver.install.server.replicainstall import \
+                clean_up_hsm_nicknames
+        except ImportError:
+            clean_up_hsm_nicknames = None
         import SSSDConfig
         from subprocess import CalledProcessError
 
