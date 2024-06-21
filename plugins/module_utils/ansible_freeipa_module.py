@@ -1485,7 +1485,6 @@ class IPAAnsibleModule(AnsibleModule):
                                 filter(lambda x: x[0] in keeponly,
                                        _res.items())
                             )
-                        self.tm_warn("res: %s" % repr(res))
 
                         if "error" not in res or res["error"] is None:
                             if result_handler is not None:
@@ -1498,10 +1497,9 @@ class IPAAnsibleModule(AnsibleModule):
                             changed = True
                         else:
                             _errors.append(
-                                "%s %s %s: %s" %
+                                "%s: %s: %s" %
                                 (batch_args[ri]["method"],
-                                 repr(batch_args[ri]["params"][0][0]),
-                                 repr(batch_args[ri]["params"][1]),
+                                 str(batch_args[ri]["params"][0][0]),
                                  res["error"]))
                 # clear batch command list (python2 compatible)
                 del batch_args[:]
