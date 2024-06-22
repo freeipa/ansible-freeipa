@@ -13,9 +13,10 @@ platforms:
     command: /usr/sbin/init
     privileged: true
     systemd: always
-    tmpfs:
-      - /run
-      - /tmp
+    cgroupns_mode: host
+    # tmpfs:
+    #   - /run
+    #   - /tmp
 provisioner:
   name: ansible
   playbooks:
