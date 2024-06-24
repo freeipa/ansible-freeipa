@@ -282,6 +282,65 @@ Example playbook to allow users, groups, hosts or hostgroups to retrieve a keyta
 ```
 
 
+Example playbook to ensure presence of serveral services in a single task:
+
+```yaml
+---
+- name: Playbook to manage IPA service.
+  hosts: ipaserver
+
+  tasks:
+  - name: Ensure services are present
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services:
+      - name: HTTP/www.example.com
+        principal:
+        - host/host1.example.com
+      - name: mysvc/www.example.com
+        pac_type: NONE
+        ok_as_delegate: yes
+        ok_to_auth_as_delegate: yes
+      - name: HTTP/www.example.com
+        allow_create_keytab_user:
+        - user01
+        - user02
+        allow_create_keytab_group:
+        - group01
+        - group02
+        allow_create_keytab_host:
+        - host1.example.com
+        - host2.example.com
+        allow_create_keytab_hostgroup:
+        - hostgroup01
+        - hostgroup02
+      - name: mysvc/host2.example.com
+        auth_ind: otp,radius
+```
+
+
+Example playbook to ensure presence of serveral services in a single task with `member` `action`:
+
+```yaml
+---
+- name: Playbook to manage IPA service.
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Ensure service host members are present
+      ipaservice:
+        ipaadmin_password: SomeADMINpassword
+        services:
+        - name: HTTP/www1.example.com
+          host: host1.example.com
+        - name: HTTP/www2.example.com
+          host: host2.example.com
+        action: member
+```
+
+
 Variables
 ---------
 
@@ -291,7 +350,15 @@ Variable | Description | Required
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
-`name` \| `service` | The list of service name strings. | yes
+`name` \| `service` | The list of service name strings. `name` with *service variables* or `services` containing *service variables* need to be used. | no
+`action` | Work on service or member level. It can be on of `member` or `service` and defaults to `service`. | no
+`state` | The state to ensure. It can be one of `present`, `absent`, or `disabled`, default: `present`. | no
+
+
+**Service Variables:**
+
+Variable | Description | Required
+-------- | ----------- | --------
 `certificate` \| `usercertificate` | Base-64 encoded service certificate. | no
 `pac_type` \| `ipakrbauthzdata` | Supported PAC type. It can be one of `MS-PAC`, `PAD`, or `NONE`. Use empty string to reset pac_type to the initial value. | no
 `auth_ind` \| `krbprincipalauthind` | Defines an allow list for Authentication Indicators. It can be any of `otp`, `radius`, `pkinit`, `hardened`, `idp` or `""`.  An additional check ensures that only types can be used that are supported by the IPA version. Use empty string to reset auth_ind to the initial value. | no
@@ -310,11 +377,9 @@ Variable | Description | Required
 `allow_retrieve_keytab_group` \| `ipaallowedtoperform_read_keys_group` | Groups allowed to retrieve a keytab of this host. | no
 `allow_retrieve_keytab_host` \| `ipaallowedtoperform_read_keys_host` | Hosts allowed to retrieve a keytab from of host. | no
 `allow_retrieve_keytab_hostgroup` \| `ipaallowedtoperform_read_keys_hostgroup` | Host groups allowed to retrieve a keytab of this host. | no
-`continue` | Continuous mode: don't stop on errors. Valid only if `state` is `absent`. Default: `no` (bool) | no
 `smb` | Service is an SMB service. If set, `cifs/` will be prefixed to the service name if needed. | no
 `netbiosname` | NETBIOS name for the SMB service. Only with `smb: yes`. | no
-`action` | Work on service or member level. It can be on of `member` or `service` and defaults to `service`. | no
-`state` | The state to ensure. It can be one of `present`, `absent`, or `disabled`, default: `present`. | no
+`continue` \| `delete_continue` | Continuous mode: don't stop on errors. Valid only if `state` is `absent`. Default: `no` (bool) | no
 
 
 Authors
