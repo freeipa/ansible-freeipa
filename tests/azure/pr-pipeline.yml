@@ -3,7 +3,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-20.04'
+  vmImage: 'ubuntu-22.04'
 
 stages:
 
@@ -50,6 +50,7 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: c8s
       ansible_version: "-core >=2.14,<2.15"
+      target_python: "/usr/bin/python3"
 
 # CentOS 7
 
@@ -61,6 +62,7 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: centos-7
       ansible_version: "-core >=2.14,<2.15"
+      target_python: "/usr/bin/python2"
 
 # Rawhide
 

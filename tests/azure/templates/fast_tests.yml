@@ -8,6 +8,9 @@ parameters:
   - name: ansible_version
     type: string
     default: ""
+  - name: target_python
+    type: string
+    default: "/usr/bin/python3"
 
 jobs:
 - template: playbook_fast.yml
@@ -18,6 +21,7 @@ jobs:
     scenario: ${{ parameters.scenario }}
     ansible_version: ${{ parameters.ansible_version }}
     python_version: '< 3.12'
+    target_python: ${{ parameters.target_python }}
 
 # - template: pytest_tests.yml
 #   parameters:
