@@ -1,0 +1,57 @@
+#!/bin/bash -eu
+# This file is meant to be source'd by shell scripts
+
+# shellcheck disable=SC2034
+RST="\033[0m"
+# shellcheck disable=SC2034
+RED="\033[31m"
+# shellcheck disable=SC2034
+BRIGHTRED="\033[31;1m"
+# shellcheck disable=SC2034
+GREEN="\033[32m"
+# shellcheck disable=SC2034
+BRIGHTGREEN="\033[32;1m"
+# shellcheck disable=SC2034
+BROWN="\033[33m"
+# shellcheck disable=SC2034
+YELLOW="\033[33;1m"
+# shellcheck disable=SC2034
+NAVY="\033[34m"
+# shellcheck disable=SC2034
+BLUE="\033[34;1m"
+# shellcheck disable=SC2034
+MAGENTA="\033[35m"
+# shellcheck disable=SC2034
+BRIGHTMAGENTA="\033[35;1m"
+# shellcheck disable=SC2034
+DARKCYAN="\033[36m"
+# shellcheck disable=SC2034
+CYAN="\033[36;1m"
+# shellcheck disable=SC2034
+BLACK="\033[30m"
+# shellcheck disable=SC2034
+DARKGRAY="\033[30;1m"
+# shellcheck disable=SC2034
+GRAY="\033[37m"
+# shellcheck disable=SC2034
+WHITE="\033[37;1m"
+
+log() {
+    local level="${1^^}" message="${*:2}"
+    case "${level}" in
+        ERROR) COLOR="${RED}" ;;
+        WARN)  COLOR="${YELLOW}" ;;
+        DEBUG) COLOR="${BLUE}" ;;
+        INFO) COLOR="${WHITE}" ;;
+        SUCCESS) COLOR="${BRIGHTGREEN}" ;;
+        *) COLOR="${RST}" ;;
+    esac
+    echo -en "${COLOR}"
+    [ "${level}" == "ERROR" ] && echo -en "${level}:"
+    echo -e "${message}${RST}"
+}
+
+quiet() {
+     "$@" >/dev/null 2>&1
+}
+
