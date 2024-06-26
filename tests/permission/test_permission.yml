@@ -247,6 +247,104 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure permission perm-test-1 is present with subtree
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: perm-test-1
+      right: write
+      subtree: "cn=computers,cn=accounts,dc={{ ipaserver_domain | replace('.', ',dc=') }}"
+      attrs: locality
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 is present with subtree again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: perm-test-1
+      right: write
+      subtree: "cn=computers,cn=accounts,dc={{ ipaserver_domain | replace('.', ',dc=') }}"
+      attrs: locality
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 with target is present
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: perm-test-1
+      right: write
+      target: "cn=computers,cn=accounts,dc={{ ipaserver_domain | replace('.', ',dc=') }}"
+      attrs: locality
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 with target is present, again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: perm-test-1
+      right: write
+      target: "cn=computers,cn=accounts,dc={{ ipaserver_domain | replace('.', ',dc=') }}"
+      attrs: locality
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 with targetto is present
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: perm-test-1
+      right: write
+      targetto: "cn=computers,cn=accounts,dc={{ ipaserver_domain | replace('.', ',dc=') }}"
+      attrs: locality
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 with targetto is present, again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: perm-test-1
+      right: write
+      targetto: "cn=computers,cn=accounts,dc={{ ipaserver_domain | replace('.', ',dc=') }}"
+      attrs: locality
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 with targetfrom is present
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: perm-test-1
+      right: write
+      targetfrom: "cn=computers,cn=accounts,dc={{ ipaserver_domain | replace('.', ',dc=') }}"
+      attrs: locality
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 with targetfrom is present, again
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: perm-test-1
+      right: write
+      targetfrom: "cn=computers,cn=accounts,dc={{ ipaserver_domain | replace('.', ',dc=') }}"
+      attrs: locality
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure permission perm-test-1 with object_type and right is present
+    ipapermission:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: perm-test-1
+      object_type: host
+      right: all
+    register: result
+    failed_when: not result.changed or result.failed
+
   - name: Ensure attributes carlicense and displayname are present in permission "System{{ ':' }} Update DNS Entries"
     ipapermission:
       ipaadmin_password: SomeADMINpassword
