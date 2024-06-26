@@ -16,7 +16,8 @@
 ---
 variables:
   # empty: true
-  # ipa_enabled_modules: >-
+  ipa_enabled_modules: >-
+    user, host, service, config
   # ipa_enabled_tests: >-
   ipa_disabled_modules: >-
     config
