@@ -154,7 +154,7 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa
+    IPAAnsibleModule, compare_args_ipa, DN
 
 
 def find_permission(module, name):
@@ -279,6 +279,8 @@ def main():
     attrs = ansible_module.params_get("attrs")
     bindtype = ansible_module.params_get("bindtype")
     subtree = ansible_module.params_get("subtree")
+    if subtree is not None:
+        subtree = DN(subtree)
     extra_target_filter = ansible_module.params_get("extra_target_filter")
     rawfilter = ansible_module.params_get("rawfilter")
     target = ansible_module.params_get("target")
