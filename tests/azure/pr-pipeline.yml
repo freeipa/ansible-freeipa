@@ -3,7 +3,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-20.04'
+  vmImage: 'ubuntu-22.04'
 
 stages:
 
@@ -15,8 +15,8 @@ stages:
   - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
-      ansible_version: "-core >=2.14,<2.15"
+      distro: fedora-latest
+      ansible_version: "-core >=2.15,<2.16"
 
 # Galaxy on Fedora
 
@@ -26,8 +26,8 @@ stages:
   - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
-      ansible_version: "-core >=2.14,<2.15"
+      distro: fedora-latest
+      ansible_version: "-core >=2.15,<2.16"
 
 # CentOS 9 Stream
 
@@ -37,8 +37,8 @@ stages:
   - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c9s
-      ansible_version: "-core >=2.14,<2.15"
+      distro: c9s
+      ansible_version: "-core >=2.15,<2.16"
 
 # CentOS 8 Stream
 
@@ -48,19 +48,23 @@ stages:
   - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c8s
-      ansible_version: "-core >=2.14,<2.15"
+      distro: c8s
+      ansible_version: "-core >=2.15,<2.16"
+      target_python: "/usr/libexec/platform-python"
 
+# CentOS 7 cannot be used with current systemd
+#
 # CentOS 7
-
-- stage: CentOS_7
-  dependsOn: []
-  jobs:
-  - template: templates/fast_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: "-core >=2.14,<2.15"
+#
+# - stage: CentOS_7
+#   dependsOn: []
+#   jobs:
+#   - template: templates/fast_tests.yml
+#     parameters:
+#       build_number: $(Build.BuildNumber)
+#       distro: centos-7
+#       ansible_version: "-core >=2.15,<2.16"
+#       target_python: "/usr/bin/python2"
 
 # Rawhide
 
@@ -70,5 +74,5 @@ stages:
   - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-rawhide
-      ansible_version: "-core >=2.14,<2.15"
+      distro: fedora-rawhide
+      ansible_version: "-core >=2.15,<2.16"
