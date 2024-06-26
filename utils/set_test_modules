@@ -14,6 +14,8 @@ die() {
 
 TOPDIR="$(dirname "${BASH_SOURCE[0]}")/.."
 
+[ -n "$(command -v python3)" ] && python="$(command -v python3)" || python="$(command -v python2)"
+
 pushd "${TOPDIR}" >/dev/null 2>&1 || die "Failed to change directory."
 
 files_list=$(mktemp)
@@ -25,7 +27,7 @@ git diff "${remote}/master" --name-only > "${files_list}"
 git remote remove ${remote}
 
 # Get all modules that should have tests executed
-enabled_modules="$(python utils/get_test_modules.py $(cat "${files_list}"))"
+enabled_modules="$(${python} utils/get_test_modules.py $(cat "${files_list}"))"
 [ -z "${enabled_modules}" ] && enabled_modules="None"
 
 # Get individual tests that should be executed
