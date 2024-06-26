@@ -1,6 +1,6 @@
 ---
 parameters:
-  - name: scenario
+  - name: distro
     type: string
     default: fedora-latest
   - name: build_number
@@ -8,6 +8,9 @@ parameters:
   - name: ansible_version
     type: string
     default: ""
+  - name: target_python
+    type: string
+    default: "/usr/bin/python3"
 
 jobs:
 - template: playbook_fast.yml
@@ -15,13 +18,14 @@ jobs:
     group_number: 1
     number_of_groups: 1
     build_number: ${{ parameters.build_number }}
-    scenario: ${{ parameters.scenario }}
+    distro: ${{ parameters.distro }}
     ansible_version: ${{ parameters.ansible_version }}
     python_version: '< 3.12'
+    target_python: ${{ parameters.target_python }}
 
 # - template: pytest_tests.yml
 #   parameters:
 #     build_number: ${{ parameters.build_number }}
-#     scenario: ${{ parameters.scenario }}
+#     distro: ${{ parameters.distro }}
 #     ansible_version: ${{ parameters.ansible_version }}
 #     python_version: '< 3.12'
