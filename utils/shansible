@@ -1,0 +1,88 @@
+#!/bin/bash -eu
+# This file is meant to be source'd by other scripts
+
+SCRIPTDIR="$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+# shellcheck source=utils/shfun
+. "${SCRIPTDIR}/shfun"
+
+install_ansible() {
+    ANSIBLE_VERSION="${1:-${ANSIBLE_VERSION:-"ansible-core"}}"
+    [ $# -gt 0 ] && shift
+    log info "Installing Ansible: ${ANSIBLE_VERSION}"
+    pip install --quiet "${ANSIBLE_VERSION}"
+    log debug "Ansible version: $(ansible --version | sed -n "1p")${RST}"
+
+    if [ -n "${ANSIBLE_COLLECTIONS}" ]
+    then
+        log warn "Installed collections will not be removed after execution."
+        log none "Installing: Ansible Collection ${ANSIBLE_COLLECTIONS}"
+        # shellcheck disable=SC2086
+        quiet ansible-galaxy collection install ${ANSIBLE_COLLECTIONS} || die "Failed to install Ansible collections."
+    fi
+    export ANSIBLE_VERSION
+}
+
+run_inline_playbook() {
+    local playbookdir playbook err
+    playbookdir=${1:-"playbooks"}
+    quiet mkdir -p "${playbookdir}"
+    playbook=$(mktemp "${playbookdir}/ansible-freeipa-test-playbook_ipa.XXXXXXXX" 2>/dev/null)
+    # In some configurations, it may not be possible to use another
+    # directory, so we store the playbook in the current one.
+    # [ -z "${playbook}" ] && playbook=$(mktemp "ansible-freeipa-test-playbook_ipa.XXXXXXXX")
+
+    inventory="${inventory:-${test_env:-"."}/inventory}"
+    quiet mkdir -p "${playbookdir}"
+    cat - >"${playbook}"
+    # shellcheck disable=SC2086
+    run_if_exists ansible-playbook ${ansible_options:-} -i "${inventory}" "${playbook}"
+    err=$?
+    rm -f "${playbook}"
+    return ${err}
+}
+
+make_inventory() {
+    local scenario pod_engine ansible_interpreter
+    scenario=$1
+    pod_engine="${engine:-${2:-podman}}"
+    ansible_interpreter="${3:-${ansible_interpreter:-"/usr/bin/python3"}}"
+    export inventory="${test_env:-"."}/inventory"
+    log info "Inventory file: ${inventory}"
+    cat << EOF > "${inventory}"
+[ipaserver]
+${scenario} ansible_connection=${pod_engine} ansible_python_interpreter=${ansible_interpreter}
+[ipaserver:vars]
+ipaserver_domain = test.local
+ipaserver_realm = TEST.LOCAL
+EOF
+}
+
+query_container_installed_software() {
+    # check image software versions.
+    run_inline_playbook "${test_env:-"/tmp"}/playbooks" <<EOF || die "Failed to verify software installation."
+---
+- name: Software environment.
+  hosts: ipaserver
+  become: yes
+  gather_facts: no
+  tasks:
+  - name: Retrieve versions.
+    ansible.builtin.shell: |
+      cat /etc/redhat-release
+      ${python:-"python3"} --version
+      rpm -q freeipa-server freeipa-client ipa-server ipa-client 389-ds-base pki-ca krb5-server
+      uname -a
+    register: result
+  - name: Testing environment.
+    ansible.builtin.debug:
+      var: result.stdout_lines
+EOF
+}
+
+ansible_ping() {
+    # shellcheck disable=SC2086
+    ansible ${ansible_options:-} -m ping -i "${1:-${inventory}}" all || die "Could not connect to container."
+}
+
+export ANSIBLE_VERSION=${ANSIBLE_VERSION:-'ansible-core'}
