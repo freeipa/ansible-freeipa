@@ -326,6 +326,12 @@ def main():
     # ssl certificate
     # options.dirsrv_cert_files = ansible_module.params.get(
     #     'dirsrv_cert_files')
+    # hsm
+    if hasattr(ca, "hsm_version"):
+        options.token_name = None
+        options.token_library_path = None
+        options.token_password = None
+        options.token_password_file = None
     # client
     # options.no_ntp = ansible_module.params.get('no_ntp')
     # certificate system
