@@ -370,6 +370,43 @@ EXAMPLES = """
         host:
         - host1.example.com
       - name: HTTP/www.service.com
+
+  # Ensure multiple services are present
+  - ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services:
+      - name: HTTP/www.example.com
+        principal:
+        - host/host1.example.com
+      - name: mysvc/www.example.com
+        pac_type: NONE
+        ok_as_delegate: yes
+        ok_to_auth_as_delegate: yes
+      - name: HTTP/www.example.com
+        allow_create_keytab_user:
+        - user01
+        - user02
+        allow_create_keytab_group:
+        - group01
+        - group02
+        allow_create_keytab_host:
+        - host1.example.com
+        - host2.example.com
+        allow_create_keytab_hostgroup:
+        - hostgroup01
+        - hostgroup02
+      - name: mysvc/host2.example.com
+        auth_ind: otp,radius
+
+  # Ensure service host members are present
+  - ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services:
+      - name: HTTP/www1.example.com
+        host: host1.example.com
+      - name: HTTP/www2.example.com
+        host: host2.example.com
+      action: member
 """
 
 RETURN = """
