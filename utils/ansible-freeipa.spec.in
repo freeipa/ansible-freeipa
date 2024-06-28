@@ -90,7 +90,7 @@ Supported Distributions
 Requirements
 
   Controller
-  - Ansible version: 2.13+
+  - Ansible version: 2.15+
   - /usr/bin/kinit is required on the controller if a one time password (OTP)
     is used
 
