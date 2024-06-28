@@ -315,7 +315,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, encode_certificate
+    gen_intersection_list, encode_certificate, convert_input_certificates
 from ansible.module_utils import six
 
 if six.PY3:
@@ -479,8 +479,8 @@ def main():
 
     ansible_module.params_fail_used_invalid(invalid, state, action)
 
-    if certificate is not None:
-        certificate = [cert.strip() for cert in certificate]
+    certificate = convert_input_certificates(ansible_module, certificate,
+                                             state)
 
     # Init
 

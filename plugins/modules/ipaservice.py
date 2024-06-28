@@ -378,7 +378,7 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, encode_certificate, \
     gen_add_del_lists, gen_add_list, gen_intersection_list, ipalib_errors, \
-    api_get_realm, to_text
+    api_get_realm, to_text, convert_input_certificates
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -601,12 +601,6 @@ def main():
     # service attributes
     principal = ansible_module.params_get("principal")
     certificate = ansible_module.params_get("certificate")
-    # Any leading or trailing whitespace is removed while adding the
-    # certificate with serive_add_cert. To be able to compare the results
-    # from service_show with the given certificates we have to remove the
-    # white space also.
-    if certificate is not None:
-        certificate = [cert.strip() for cert in certificate]
     pac_type = ansible_module.params_get(
         "pac_type", allow_empty_list_item=True)
     auth_ind = ansible_module.params_get(
@@ -636,6 +630,8 @@ def main():
         ansible_module.fail_json(msg="At least one name or services is "
                                      "required")
     check_parameters(ansible_module, state, action, names)
+    certificate = convert_input_certificates(ansible_module, certificate,
+                                             state)
 
     # Use services if names is None
     if services is not None:
@@ -669,12 +665,8 @@ def main():
                 service_set.add(name)
                 principal = service.get("principal")
                 certificate = service.get("certificate")
-                # Any leading or trailing whitespace is removed while adding
-                # the certificate with serive_add_cert. To be able to compare
-                # the results from service_show with the given certificates
-                # we have to remove the white space also.
-                if certificate is not None:
-                    certificate = [cert.strip() for cert in certificate]
+                certificate = convert_input_certificates(ansible_module,
+                                                         certificate, state)
                 pac_type = service.get("pac_type")
                 auth_ind = service.get("auth_ind")
                 check_authind(ansible_module, auth_ind)
