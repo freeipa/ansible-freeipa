@@ -1104,7 +1104,7 @@ def main():
         nomembers=dict(type='bool', default=None),
         idp=dict(type="str", default=None, aliases=['ipaidpconfiglink']),
         idp_user_id=dict(type="str", default=None,
-                         aliases=['ipaidpconfiglink']),
+                         aliases=['ipaidpsub']),
         rename=dict(type="str", required=False, default=None,
                     aliases=["new_name"]),
     )
