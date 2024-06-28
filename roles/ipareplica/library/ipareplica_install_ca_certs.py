@@ -47,7 +47,7 @@ options:
     type: str
     required: no
   ip_addresses:
-    description: List of Master Server IP Addresses
+    description: List of IPA replica IP addresses
     type: list
     elements: str
     required: no
