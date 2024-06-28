@@ -13,6 +13,7 @@ python -m venv "$VENV"
 source "$VENV"/bin/activate
 
 python -m pip install --upgrade pip
+pip install setuptools
 pip install galaxy_importer
 
 rm -f "$ANSIBLE_COLLECTION"-*.tar.gz
