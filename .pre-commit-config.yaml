@@ -54,4 +54,5 @@ repos:
     name: ShellCheck
     language: system
     entry: shellcheck
+    args: ['-x']
     files: \.sh$
