@@ -44,6 +44,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
 author:
     - Thomas Woerner (@t-woerner)
 '''

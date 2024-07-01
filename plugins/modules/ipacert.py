@@ -34,7 +34,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ipacert
-short description: Manage FreeIPA certificates
+short_description: Manage FreeIPA certificates
 description: Manage FreeIPA certificates
 extends_documentation_fragment:
   - ipamodule_base_docs
@@ -66,6 +66,10 @@ options:
   ca:
     description: Name of the issuing certificate authority.
     type: str
+    required: false
+  chain:
+    description: Include certificate chain in output.
+    type: bool
     required: false
   serial_number:
     description: |
@@ -102,7 +106,6 @@ options:
     required: true
     type: str
 author:
-authors:
   - Sam Morris (@yrro)
   - Rafael Guterres Jeffman (@rjeffman)
 """

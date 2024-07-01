@@ -32,8 +32,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 name: freeipa
-plugin_type: inventory
-version_added: "1.13"
+version_added: "1.13.0"
 short_description: Compiles a dynamic inventory from IPA domain
 description: |
   Compiles a dynamic inventory from IPA domain, filters servers by role(s).

@@ -51,6 +51,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   domain:
     description: Primary DNS domain of the IPA deployment
     type: str
@@ -70,6 +71,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   no_host_dns:
     description: Do not use DNS for hostname lookup during installation
     type: bool
@@ -97,6 +99,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   force_join:
     description: Force client enrollment even if already enrolled
     type: bool

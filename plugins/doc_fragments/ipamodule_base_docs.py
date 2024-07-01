@@ -56,5 +56,5 @@ options:
       Continuous mode. Don't stop on errors. Valid only if `state` is `absent`.
     aliases: ["continue"]
     type: bool
-    default: True
+    default: true
 """

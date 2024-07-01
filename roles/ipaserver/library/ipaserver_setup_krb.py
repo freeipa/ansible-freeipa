@@ -66,11 +66,13 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   reverse_zones:
     description: The reverse DNS zones to use
     type: list
     elements: str
     required: no
+    default: []
   setup_adtrust:
     description: Configure AD trust capability
     type: bool
@@ -113,6 +115,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   subject_base:
     description:
       The certificate subject base (default O=<realm-name>).

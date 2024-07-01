@@ -66,17 +66,20 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   reverse_zones:
     description: The reverse DNS zones to use
     type: list
     elements: str
     required: no
+    default: []
   http_cert_files:
     description:
       File containing the Apache Server SSL certificate and private key
     type: list
     elements: str
     required: no
+    default: []
   setup_adtrust:
     description: Configure AD trust capability
     type: bool
@@ -124,6 +127,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   subject_base:
     description:
       The certificate subject base (default O=<realm-name>).
@@ -166,6 +170,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   no_reverse:
     description: Do not create new reverse DNS zone
     type: bool

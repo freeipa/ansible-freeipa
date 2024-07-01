@@ -87,7 +87,7 @@ options:
   sshpubkey:
     description: List of SSH public keys
     type: list
-    element: str
+    elements: str
     required: False
     aliases: ["ipasshpubkey"]
   certificate:
@@ -113,7 +113,7 @@ options:
     description: |
       Suppress processing of membership attributes.
       Valid only if `state` is `absent`.
-    type: str
+    type: bool
     required: False
     aliases: ["no_members"]
   action:

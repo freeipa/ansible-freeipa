@@ -82,7 +82,6 @@ options:
     description: OAuth 2.0 client secret
     required: false
     type: str
-    no_log: true
     aliases: ["ipaidpclientsecret"]
   scope:
     description: OAuth 2.0 scope. Multiple scopes separated by space
@@ -362,11 +361,11 @@ def main():
             dev_auth_uri=dict(required=False, type="str", default=None,
                               aliases=["ipaidpdevauthendpoint"]),
             token_uri=dict(required=False, type="str", default=None,
-                           aliases=["ipaidptokenendpoint"]),
+                           aliases=["ipaidptokenendpoint"], no_log=False),
             userinfo_uri=dict(required=False, type="str", default=None,
                               aliases=["ipaidpuserinfoendpoint"]),
             keys_uri=dict(required=False, type="str", default=None,
-                          aliases=["ipaidpkeysendpoint"]),
+                          aliases=["ipaidpkeysendpoint"], no_log=False),
             issuer_url=dict(required=False, type="str", default=None,
                             aliases=["ipaidpissuerurl"]),
             client_id=dict(required=False, type="str", default=None,
