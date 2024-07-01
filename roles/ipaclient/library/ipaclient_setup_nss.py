@@ -156,6 +156,7 @@ options:
     description: True if selinux status check passed
     required: false
     type: bool
+    default: false
   krb_name:
     description: The krb5 config file name
     type: str
