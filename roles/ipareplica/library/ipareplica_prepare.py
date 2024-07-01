@@ -250,7 +250,7 @@ options:
     type: bool
     default: no
     required: no
-  client_configured:
+  ipa_client_installed:
     description: Was client configured already
     type: bool
     required: yes
