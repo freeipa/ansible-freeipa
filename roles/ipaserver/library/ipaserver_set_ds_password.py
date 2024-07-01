@@ -96,6 +96,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   subject_base:
     description:
       The certificate subject base (default O=<realm-name>).
@@ -113,6 +114,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   domainlevel:
     description: The domain level
     type: int

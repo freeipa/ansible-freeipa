@@ -53,6 +53,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   domain:
     description: Primary DNS domain of the IPA deployment
     type: str
@@ -77,6 +78,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   no_host_dns:
     description: Do not use DNS for hostname lookup during installation
     type: bool
@@ -104,6 +106,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   dirsrv_cert_name:
     description: Name of the Directory Server SSL certificate to install
     type: str
@@ -118,6 +121,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   http_cert_name:
     description: Name of the Apache Server SSL certificate to install
     type: str
@@ -132,6 +136,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   pkinit_cert_name:
     description: Name of the Kerberos KDC SSL certificate to install
     type: str
@@ -182,6 +187,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   no_reverse:
     description: Do not create new reverse DNS zone
     type: bool
@@ -197,6 +203,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   no_forwarders:
     description: Do not add any DNS forwarders, use root servers instead
     type: bool

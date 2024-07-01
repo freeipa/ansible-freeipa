@@ -61,6 +61,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   forward_policy:
     description: DNS forwarding policy for global forwarders
     type: str

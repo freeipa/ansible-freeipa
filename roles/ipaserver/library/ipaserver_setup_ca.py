@@ -54,6 +54,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   domain:
     description: Primary DNS domain of the IPA deployment
     type: str
@@ -182,6 +183,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   no_reverse:
     description: Do not create new reverse DNS zone
     type: bool

@@ -73,6 +73,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   no_host_dns:
     description: Do not use DNS for hostname lookup during installation
     type: bool
@@ -223,6 +224,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   no_reverse:
     description: Do not create new reverse DNS zone
     type: bool
@@ -242,6 +244,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   no_forwarders:
     description: Do not add any DNS forwarders, use root servers instead
     type: bool

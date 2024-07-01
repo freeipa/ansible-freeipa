@@ -42,6 +42,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   domain:
     description: Primary DNS domain of the IPA deployment
     type: str

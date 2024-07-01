@@ -87,6 +87,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   _dirsrv_pkcs12_info:
     description: The installer _dirsrv_pkcs12_info setting
     type: list
@@ -99,6 +100,7 @@ options:
     type: list
     elements: str
     required: no
+    default: []
   subject_base:
     description:
       The certificate subject base (default O=<realm-name>).
