@@ -306,14 +306,14 @@ class AnsibleFreeIPATestCase(TestCase):
         if res.rc != 0:
             for output in expected_output:
                 assert self.__is_text_on_data(output, res.stderr), (
-                    f"\n{'='*40}\nExpected: {output}\n{'='*40}\n"
-                    + f"Output:\n{res.stderr}{'='*40}\n"
+                    f"\n{'=' * 40}\nExpected: {output}\n{'=' * 40}\n"
+                    + f"Output:\n{res.stderr}{'=' * 40}\n"
                 )
         else:
             for output in expected_output:
                 assert self.__is_text_on_data(output, res.stdout), (
-                    f"\n{'='*40}\nExpected: {output}\n{'='*40}\n"
-                    + f"Output:\n{res.stdout}{'='*40}\n"
+                    f"\n{'=' * 40}\nExpected: {output}\n{'=' * 40}\n"
+                    + f"Output:\n{res.stdout}{'=' * 40}\n"
                 )
         kdestroy(self.master)
 
@@ -325,8 +325,8 @@ class AnsibleFreeIPATestCase(TestCase):
         res = self.master.run(cmd)
         for member in members:
             assert not self.__is_text_on_data(member, res.stdout), (
-                f"\n{'='*40}\nExpected: {member}\n{'='*40}\n"
-                + f"Output:\n{res.stdout}{'='*40}\n"
+                f"\n{'=' * 40}\nExpected: {member}\n{'=' * 40}\n"
+                + f"Output:\n{res.stdout}{'=' * 40}\n"
             )
         kdestroy(self.master)
 
