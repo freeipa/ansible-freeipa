@@ -44,7 +44,7 @@ options:
     description: The service to manage
     type: list
     elements: str
-    required: true
+    required: false
     aliases: ["service"]
   services:
     description: The list of service dicts.
@@ -167,6 +167,13 @@ options:
         type: list
         elements: str
         aliases: ["ipaallowedtoperform_read_keys_hostgroup"]
+      delete_continue:
+        description:
+          Continuous mode. Don't stop on errors.
+          Valid only if `state` is `absent`.
+        required: false
+        type: bool
+        aliases: ["continue"]
   certificate:
     description: Base-64 encoded service certificate.
     required: false
