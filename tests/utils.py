@@ -43,6 +43,10 @@ def get_ssh_password():
     return os.getenv("IPA_SSH_PASSWORD")
 
 
+def get_python_interpreter():
+    return os.getenv("IPA_PYTHON_PATH")
+
+
 def get_server_host():
     return os.getenv("IPA_SERVER_HOST")
 
@@ -96,6 +100,12 @@ def get_inventory_content():
     sshpass = get_ssh_password()
     if sshpass:
         ipa_server_host += " ansible_ssh_pass=%s" % sshpass
+
+    python_interpreter = get_python_interpreter()
+    if python_interpreter:
+        ipa_server_host += (
+            " ansible_python_interpreter=%s" % python_interpreter
+        )
 
     lines = [
         "[ipaserver]",
