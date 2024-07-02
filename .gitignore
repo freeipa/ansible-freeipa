@@ -12,3 +12,4 @@ importer_result.json
 /.venv/
 
 tests/logs/
+TEST*.xml

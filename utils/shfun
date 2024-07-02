@@ -1,0 +1,163 @@
+#!/bin/bash -eu
+# This file is meant to be source'd by shell scripts
+
+# shellcheck disable=SC2034
+RST="\033[0m"
+# shellcheck disable=SC2034
+RED="\033[31m"
+# shellcheck disable=SC2034
+BRIGHTRED="\033[31;1m"
+# shellcheck disable=SC2034
+GREEN="\033[32m"
+# shellcheck disable=SC2034
+BRIGHTGREEN="\033[32;1m"
+# shellcheck disable=SC2034
+BROWN="\033[33m"
+# shellcheck disable=SC2034
+YELLOW="\033[33;1m"
+# shellcheck disable=SC2034
+NAVY="\033[34m"
+# shellcheck disable=SC2034
+BLUE="\033[34;1m"
+# shellcheck disable=SC2034
+MAGENTA="\033[35m"
+# shellcheck disable=SC2034
+BRIGHTMAGENTA="\033[35;1m"
+# shellcheck disable=SC2034
+DARKCYAN="\033[36m"
+# shellcheck disable=SC2034
+CYAN="\033[36;1m"
+# shellcheck disable=SC2034
+BLACK="\033[30m"
+# shellcheck disable=SC2034
+DARKGRAY="\033[30;1m"
+# shellcheck disable=SC2034
+GRAY="\033[37m"
+# shellcheck disable=SC2034
+WHITE="\033[37;1m"
+
+[ -n "$(command -v python)" ] && python="$(command -v python3)" || python="$(command -v python)"
+export python
+
+trap interrupt_exception SIGINT
+
+interrupt_exception() {
+    trap - SIGINT
+    log warn "User interrupted test execution."
+    cleanup
+    exit 1
+}
+
+run_if_exists() {
+    cmd="${1}"
+    shift
+    [ -n "$(command -v "${cmd}")" ] && "${cmd}" "${@}"
+}
+
+cleanup() {
+    if [ -n "$(command -v stop_container)"  ] && [ $# -gt 0 ]
+    then
+        if [ "${STOP_CONTAINER:-"Y"}" != "N" ]
+        then
+            stop_container "${1}" "${2}"
+            [ -f "${inventory:-}" ] && rm "${inventory}"
+        else
+            log info "Keeping container: $(${engine:-"podman"} ps --format "{{.Names}} - {{.ID}}" --filter "name=${1}")"
+        fi
+    fi
+    if [ "${STOP_VIRTUALENV:-"N"}" == "Y" ]
+    then
+        echo "Deactivating virtual environment"
+        run_if_exists deactivate
+    fi
+}
+
+start_virtual_environment() {
+    # options -f
+    local FORCE_ENV VENV envdirectory
+    FORCE_ENV="N"
+    while getopts ":f" option
+    do
+        case "$option" in
+            f) FORCE_ENV="Y" ;;
+            *) die "prepare_virtual_environment: Invalid option: ${option}" ;;
+        esac
+    done
+    envdirectory="${test_env:-/tmp/ansible-freeipa-tests}"
+
+    # Prepare virtual environment
+    VENV=$(in_python_virtualenv && echo Y || echo N)
+
+    if [ "${FORCE_ENV}" == "Y" ]
+    then
+        run_if_exists deactivate
+        VENV="N"
+        rm -rf "$test_env"
+        log info "Virtual environment will be (re)created."
+    fi
+
+    if [ "$VENV" == "N" ]
+    then
+        log info "Preparing virtual environment: ${envdirectory}"
+        if [ ! -d "${envdirectory}" ] || [ ! -f "${envdirectory}/bin/activate" ]
+        then
+            log info "Creating virtual environment: ${envdirectory}..."
+	    log warn "RUN: ${python} -m venv ${envdirectory}"
+	    ${python} -m venv "${envdirectory}" || die "Cannot create virtual environment."
+	fi
+	log info "Starting virtual environment: ${envdirectory}"
+	[ -f "${envdirectory}/bin/activate" ] || die "Failed to create virtual environment."
+	# shellcheck disable=SC1090
+	. "${envdirectory}/bin/activate" || die "Cannot activate virtual environment."
+	export STOP_VIRTUALENV="Y"
+        log info "Installing required tools."
+        log none "Upgrading: pip setuptools wheel"
+        pip install --quiet --upgrade pip setuptools wheel
+    else
+       log info "Using current virtual environment."
+    fi
+}
+
+log() {
+    local level="${1^^}" message="${*:2}"
+    case "${level}" in
+        ERROR) COLOR="${RED}" ;;
+        WARN)  COLOR="${YELLOW}" ;;
+        DEBUG) COLOR="${BLUE}" ;;
+        INFO) COLOR="${WHITE}" ;;
+        SUCCESS) COLOR="${BRIGHTGREEN}" ;;
+        *) COLOR="${RST}" ;;
+    esac
+    echo -en "${COLOR}"
+    [ "${level}" == "ERROR" ] && echo -en "${level}:"
+    echo -e "${message}${RST}"
+}
+
+quiet() {
+     "$@" >/dev/null 2>&1
+}
+
+die() {
+    usg="N"
+    if [ "${1}" == "-u" ]
+    then
+       usg="Y"
+       shift 1
+    fi
+    log error "${*}"
+    STOP_CONTAINER="N"
+    run_if_exists cleanup
+    [ "${usg}" == "Y" ] && run_if_exists usage
+    exit 1
+}
+
+in_python_virtualenv() {
+    local script
+    read -r -d "" script <<EOS
+import sys;
+base = getattr(sys, "base_prefix", ) or getattr(sys, "real_prefix", ) or sys.prefix
+print('yes' if sys.prefix != base else 'no')
+EOS
+    test "$(${python} -c "${script}")" == "yes"
+}
+
