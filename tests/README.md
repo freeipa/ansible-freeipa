@@ -36,6 +36,12 @@ environment variable. For example:
 IPA_SSH_PASSWORD=<ipaserver_ssh_password> IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest
 ```
 
+If you want, or ned to to set the Python interpreter to use, you must set `IPA_PYTHON_PATH`
+environment variable. For example:
+
+```
+IPA_PYTHON_PATH=/usr/bin/python3.14 IPA_SERVER_HOST=<ipaserver_host_or_ip> pytest
+```
 
 To run a single test use the full path with the following format:
 
