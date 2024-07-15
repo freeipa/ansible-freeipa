@@ -365,7 +365,8 @@ def date_format(value):
 
     for _date_format in accepted_date_formats:
         try:
-            return datetime.strptime(value, _date_format)
+            val = datetime.strptime(value, _date_format)
+            return val.strftime(LDAP_GENERALIZED_TIME_FORMAT)
         except ValueError:
             pass
     raise ValueError("Invalid date '%s'" % value)
