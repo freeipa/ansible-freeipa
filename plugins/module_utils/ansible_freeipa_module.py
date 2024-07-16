@@ -353,7 +353,15 @@ def api_check_ipa_version(oper, requested_version):
                      tasks.parse_ipa_version(requested_version))
 
 
-def date_format(value):
+def date_string(value):
+    # Convert datetime to gernalized time format string
+    if not isinstance(value, datetime):
+        raise ValueError("Invalid datetime type '%s'" % repr(value))
+
+    return value.strftime(LDAP_GENERALIZED_TIME_FORMAT)
+
+
+def convert_date(value):
     accepted_date_formats = [
         LDAP_GENERALIZED_TIME_FORMAT,  # generalized time
         '%Y-%m-%dT%H:%M:%SZ',  # ISO 8601, second precision
@@ -365,7 +373,7 @@ def date_format(value):
 
     for _date_format in accepted_date_formats:
         try:
-            return datetime.strptime(value, _date_format)
+            return date_string(datetime.strptime(value, _date_format))
         except ValueError:
             pass
     raise ValueError("Invalid date '%s'" % value)

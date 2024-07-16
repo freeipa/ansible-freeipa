@@ -739,10 +739,10 @@ user:
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, date_format, \
+    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, convert_date, \
     encode_certificate, load_cert_from_str, DN_x500_text, to_text, \
     ipalib_errors, gen_add_list, gen_intersection_list, \
-    convert_input_certificates
+    convert_input_certificates, date_string
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -758,6 +758,10 @@ def find_user(module, name):
     except ipalib_errors.NotFound:
         return None
 
+    # Convert datetime to proper string representation
+    for _expkey in ["krbpasswordexpiration", "krbprincipalexpiration"]:
+        if _expkey in _result:
+            _result[_expkey] = [date_string(x) for x in _result[_expkey]]
     # Transform each principal to a string
     _result["krbprincipalname"] = [
         to_text(x) for x in (_result.get("krbprincipalname") or [])
@@ -1172,12 +1176,12 @@ def main():
     if principalexpiration is not None:
         if principalexpiration[:-1] != "Z":
             principalexpiration = principalexpiration + "Z"
-        principalexpiration = date_format(principalexpiration)
+        principalexpiration = convert_date(principalexpiration)
     passwordexpiration = ansible_module.params_get("passwordexpiration")
     if passwordexpiration is not None:
         if passwordexpiration[:-1] != "Z":
             passwordexpiration = passwordexpiration + "Z"
-        passwordexpiration = date_format(passwordexpiration)
+        passwordexpiration = convert_date(passwordexpiration)
     password = ansible_module.params_get("password")
     random = ansible_module.params_get("random")
     uid = ansible_module.params_get("uid")
@@ -1310,12 +1314,12 @@ def main():
                 if principalexpiration is not None:
                     if principalexpiration[:-1] != "Z":
                         principalexpiration = principalexpiration + "Z"
-                    principalexpiration = date_format(principalexpiration)
+                    principalexpiration = convert_date(principalexpiration)
                 passwordexpiration = user.get("passwordexpiration")
                 if passwordexpiration is not None:
                     if passwordexpiration[:-1] != "Z":
                         passwordexpiration = passwordexpiration + "Z"
-                    passwordexpiration = date_format(passwordexpiration)
+                    passwordexpiration = convert_date(passwordexpiration)
                 password = user.get("password")
                 random = user.get("random")
                 uid = user.get("uid")
