@@ -8,6 +8,18 @@
   - name: Include generate_test_data.yml
     ansible.builtin.include_tasks: generate_test_data.yml
 
+  - name: Cleanup Services len:{{ service_list | length }}
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      services: "{{ service_absent_list }}"
+      state: absent
+
+  - name: Cleanup Hosts len:{{ host_list | length }}
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      hosts: "{{ host_absent_list }}"
+      state: absent
+
   - name: Hosts present len:{{ host_list | length }}
     ipahost:
       ipaadmin_password: SomeADMINpassword
