@@ -1,5 +1,5 @@
 [ipaserver]
-ansible-test ansible_connection=podman ansible_python_interpreter=/usr/bin/python3
+ansible-freeipa-image-builder ansible_connection=podman ansible_python_interpreter=/usr/bin/python3
 
 [ipaserver:vars]
 ipaadmin_password=SomeADMINpassword
