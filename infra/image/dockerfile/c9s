@@ -1,0 +1,26 @@
+FROM quay.io/centos/centos:stream9
+ENV container=podman
+
+RUN rm -fv /var/cache/dnf/metadata_lock.pid; \
+dnf makecache; \
+dnf --assumeyes install \
+    /usr/bin/python3 \
+    /usr/bin/dnf-3 \
+    sudo \
+    bash \
+    systemd \
+    procps-ng \
+    iproute; \
+rm -rf /var/cache/dnf/;
+
+COPY system-service/fixnet.sh /root/
+COPY system-service/fixipaip.sh /root/
+COPY system-service/fixnet.service /etc/systemd/system/
+COPY system-service/fixipaip.service /etc/systemd/system/
+RUN chmod +x /root/fixnet.sh /root/fixipaip.sh
+
+STOPSIGNAL RTMIN+3
+
+VOLUME ["/sys/fs/cgroup"]
+
+CMD ["/usr/sbin/init"]
