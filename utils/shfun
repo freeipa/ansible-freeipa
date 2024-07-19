@@ -1,0 +1,118 @@
+#!/bin/bash -eu
+# This file is meant to be source'd by shell scripts
+
+SCRIPTDIR="$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+. "${SCRIPTDIR}/shlog"
+
+[ -n "$(command -v python3)" ] && python="$(command -v python3)" || python="$(command -v python2)"
+export python
+
+trap interrupt_exception SIGINT
+
+interrupt_exception() {
+    trap - SIGINT
+    log warn "User interrupted test execution."
+    # shellcheck disable=SC2119
+    cleanup "${scenario:+${scenario}}"
+    exit 1
+}
+
+run_if_exists() {
+    cmd="${1}"
+    shift
+    [ -n "$(command -v "${cmd}")" ] && "${cmd}" "${@}"
+}
+
+# shellcheck disable=SC2120
+cleanup() {
+    local container container_engine
+    container="${1:-${scenario:+${scenario}}}"
+    container_engine="${2:-${engine:-"podman"}}"
+    if [ "${STOP_CONTAINER:-"Y"}" == "Y" ] && [ -n "${container}" ]
+    then
+	    run_if_exists stop_container "${container}" "${container_engine}"
+        [ -f "${inventory:-}" ] && rm "${inventory}"
+    else
+        if [ -n "${container}" ]
+        then
+            log info "Keeping container: $(${container_engine} ps --format "{{.Names}} - {{.ID}}" --filter "name=${container}")"
+        fi
+    fi
+    if [ "${STOP_VIRTUALENV:-"N"}" == "Y" ]
+    then
+        echo "Deactivating virtual environment"
+        run_if_exists deactivate
+    fi
+}
+
+start_virtual_environment() {
+    # options -f
+    local FORCE_ENV VENV envdirectory
+    FORCE_ENV="N"
+    while getopts ":f" option
+    do
+        case "$option" in
+            f) FORCE_ENV="Y" ;;
+            *) die "prepare_virtual_environment: Invalid option: ${option}" ;;
+        esac
+    done
+    envdirectory="${test_env:-/tmp/ansible-freeipa-tests}"
+
+    # Prepare virtual environment
+    VENV=$(in_python_virtualenv && echo Y || echo N)
+
+    if [ "${FORCE_ENV}" == "Y" ]
+    then
+        run_if_exists deactivate
+        VENV="N"
+        rm -rf "$test_env"
+        log info "Virtual environment will be (re)created."
+    fi
+
+    if [ "$VENV" == "N" ]
+    then
+        log info "Preparing virtual environment: ${envdirectory}"
+        if [ ! -d "${envdirectory}" ] || [ ! -f "${envdirectory}/bin/activate" ]
+        then
+            log info "Creating virtual environment: ${envdirectory}..."
+	    log warn "RUN: ${python} -m venv ${envdirectory}"
+	    ${python} -m venv "${envdirectory}" || die "Cannot create virtual environment."
+	fi
+	log info "Starting virtual environment: ${envdirectory}"
+	[ -f "${envdirectory}/bin/activate" ] || die "Failed to create virtual environment."
+	# shellcheck disable=SC1091
+	. "${envdirectory}/bin/activate" || die "Cannot activate virtual environment."
+	export STOP_VIRTUALENV="Y"
+        log info "Installing required tools."
+        log none "Upgrading: pip setuptools wheel"
+        pip install --quiet --upgrade pip setuptools wheel
+    else
+       log info "Using current virtual environment."
+    fi
+}
+
+die() {
+    usg="N"
+    if [ "${1}" == "-u" ]
+    then
+       usg="Y"
+       shift 1
+    fi
+    log error "${*}"
+    STOP_CONTAINER="N"
+    cleanup "${scenario:+${scenario}}"
+    [ "${usg}" == "Y" ] && run_if_exists usage
+    exit 1
+}
+
+in_python_virtualenv() {
+    local script
+    read -r -d "" script <<EOS
+import sys;
+base = getattr(sys, "base_prefix", ) or getattr(sys, "real_prefix", ) or sys.prefix
+print('yes' if sys.prefix != base else 'no')
+EOS
+    test "$(${python} -c "${script}")" == "yes"
+}
+
