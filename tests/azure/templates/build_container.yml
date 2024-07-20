@@ -22,21 +22,17 @@ jobs:
     retryCountOnTaskFailure: 5
     displayName: Install tools
 
-  - script: pip install molecule-plugins[docker] "requests<2.29"
+  - script: ansible-galaxy collection install containers.podman
     retryCountOnTaskFailure: 5
-    displayName: Install molecule
+    displayName: Install Ansible collections
 
-  - script: molecule create -s ${{ parameters.build_scenario_name }}
+  - script: infra/image/build.sh ${{ parameters.build_scenario_name }}
     retryCountOnTaskFailure: 5
     displayName: Create test container
-    env:
-      ANSIBLE_LIBRARY: ./molecule
 
   - script: |
-      docker stop ${{ parameters.build_scenario_name }}
-      docker commit ${{ parameters.build_scenario_name }} quay.io/ansible-freeipa/upstream-tests:${{ parameters.container_name }}
-      docker login -u="$QUAY_ROBOT_USERNAME" -p="$QUAY_ROBOT_TOKEN" quay.io
-      docker push quay.io/ansible-freeipa/upstream-tests:${{ parameters.container_name }}
+      podman login -u="$QUAY_ROBOT_USERNAME" -p="$QUAY_ROBOT_TOKEN" quay.io
+      podman push quay.io/ansible-freeipa/upstream-tests:${{ parameters.container_name }}
     displayName: Save image and upload
     env:
       # Secrets needs to be mapped as env vars to work properly
