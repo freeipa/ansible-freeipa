@@ -162,6 +162,22 @@ def _run_playbook(playbook):
     return process
 
 
+def _truncate(lines, charcount, minlines=0):
+    output = ""
+    line_count = 1
+    for i in range(len(lines) - 1, -1, -1):
+        if len(output) + len(lines[i]) + 1 <= charcount or \
+           line_count < minlines:
+            output = lines[i] + "\n" + output
+            line_count += 1
+        else:
+            remaining = charcount - len(output) - 1 - 4
+            if remaining > 60:
+                output = "... " + lines[i][-(remaining):] + "\n" + output
+            break
+    return output
+
+
 def run_playbook(playbook, allow_failures=False):
     """
     Run an Ansible playbook and assert the return code.
@@ -183,13 +199,26 @@ def run_playbook(playbook, allow_failures=False):
     status_code_msg = "ansible-playbook return code: {0}".format(
         result.returncode
     )
+    _stdout = result.stdout.decode("utf8")
+    _stderr = result.stderr.decode("utf8")
+    # Truncate stdout and stderr in the way that it hopefully
+    # shows all important information. At least 15 lines of stdout
+    # (Ansible tasks) and remaining from stderr to fill up to
+    # maxlen size.
+    maxlen = 2000
+    factor = maxlen / (len(_stdout) + len(_stderr))
+    stdout = _truncate(_stdout.splitlines(),
+                       int(factor * len(_stdout)),
+                       minlines=15)
+    stderr = _truncate(_stderr.splitlines(), maxlen - len(stdout))
+
     assert_msg = "\n".join(
         [
             "",
             "-" * 30 + " Captured stdout " + "-" * 30,
-            result.stdout.decode("utf8"),
+            stdout,
             "-" * 30 + " Captured stderr " + "-" * 30,
-            result.stderr.decode("utf8"),
+            stderr,
             "-" * 30 + " Playbook Return Code " + "-" * 30,
             status_code_msg,
         ]
