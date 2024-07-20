@@ -11,18 +11,19 @@ schedules:
 trigger: none
 
 pool:
-  vmImage: 'ubuntu-20.04'
+  vmImage: 'ubuntu-22.04'
 
 stages:
 
-- stage: CentOS_7
-  dependsOn: []
-  jobs:
-  - template: templates/build_container.yml
-    parameters:
-      job_name_suffix: Centos7
-      container_name: centos-7
-      build_scenario_name: centos-7-build
+# Currently, it's not possible to use CentOS container
+#
+# - stage: CentOS_7
+#   dependsOn: []
+#   jobs:
+#   - template: templates/build_container.yml
+#     parameters:
+#       job_name_suffix: Centos7
+#       distro: centos-7
 
 - stage: CentOS_8_Stream
   dependsOn: []
@@ -30,8 +31,9 @@ stages:
   - template: templates/build_container.yml
     parameters:
       job_name_suffix: C8S
-      container_name: c8s
-      build_scenario_name: c8s-build
+      distro: c8s
+      # ansible-core 2.17+ cannot be used to deploy on CentOS 8 Stream.
+      ansible_core_version: "<2.17"
 
 - stage: CentOS_9_Stream
   dependsOn: []
@@ -39,8 +41,7 @@ stages:
   - template: templates/build_container.yml
     parameters:
       job_name_suffix: C9S
-      container_name: c9s
-      build_scenario_name: c9s-build
+      distro: c9s
 
 - stage: Fedora_Latest
   dependsOn: []
@@ -48,8 +49,7 @@ stages:
   - template: templates/build_container.yml
     parameters:
       job_name_suffix: FedoraLatest
-      container_name: fedora-latest
-      build_scenario_name: fedora-latest-build
+      distro: fedora-latest
 
 - stage: Fedora_Rawhide
   dependsOn: []
@@ -57,5 +57,4 @@ stages:
   - template: templates/build_container.yml
     parameters:
       job_name_suffix: FedoraRawhide
-      container_name: fedora-rawhide
-      build_scenario_name: fedora-rawhide-build
+      distro: fedora-rawhide

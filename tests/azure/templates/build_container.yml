@@ -2,38 +2,49 @@
 parameters:
   - name: job_name_suffix
     type: string
-  - name: container_name
-    type: string
-  - name: build_scenario_name
+  - name: distro
     type: string
   - name: python_version
     type: string
     default: 3.x
+  - name: ansible_core_version
+    default: ""
 
 jobs:
 - job: BuildTestImage${{ parameters.job_name_suffix }}
-  displayName: Build ${{ parameters.container_name }} test container
+  displayName: Build ${{ parameters.distro }} test container
   steps:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '${{ parameters.python_version }}'
 
-  - script: python -m pip install --upgrade pip setuptools wheel ansible
+  - script: python -m pip install --upgrade pip "ansible-core${{ parameters.ansible_core_version }}"
     retryCountOnTaskFailure: 5
     displayName: Install tools
 
-  - script: ansible-galaxy collection install containers.podman
-    retryCountOnTaskFailure: 5
-    displayName: Install Ansible collections
-
-  - script: infra/image/build.sh ${{ parameters.build_scenario_name }}
-    retryCountOnTaskFailure: 5
-    displayName: Create test container
-
   - script: |
-      podman login -u="$QUAY_ROBOT_USERNAME" -p="$QUAY_ROBOT_TOKEN" quay.io
-      podman push quay.io/ansible-freeipa/upstream-tests:${{ parameters.container_name }}
-    displayName: Save image and upload
+      rm -rf ~/.ansible
+      mkdir -p ~/.ansible
+      ln -snf $(readlink -f roles) ~/.ansible/roles
+      ln -snf $(readlink -f plugins) ~/.ansible/plugins
+    displayName: Setup ansible-freeipa using Git repository
+
+  - script: ansible-galaxy collection install containers.podman
+    displayName: Install Ansible Galaxy collections
+
+  - script: infra/image/build.sh -s ${{ parameters.distro }}
+    displayName: Build ${{ parameters.distro }} base image
+
+  - script: podman login -u="$QUAY_ROBOT_USERNAME" -p="$QUAY_ROBOT_TOKEN" quay.io
+    displayName: Registry login
     env:
       # Secrets needs to be mapped as env vars to work properly
       QUAY_ROBOT_TOKEN: $(QUAY_ROBOT_TOKEN)
+
+  - script: |
+      podman push ${{parameters.distro}}-base quay.io/ansible-freeipa/upstream-tests:${{ parameters.distro }}-base
+    displayName: Push base image
+
+  - script: |
+      podman push ${{ parameters.distro }}-server quay.io/ansible-freeipa/upstream-tests:${{ parameters.distro }}-server
+    displayName: Push server image
