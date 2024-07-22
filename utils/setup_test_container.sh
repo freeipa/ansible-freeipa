@@ -79,15 +79,6 @@ shift
 prepare_container "${scenario}" "${IMAGE_TAG}"
 start_container "${scenario}"
 
-# configure container /etc/hosts file
-log info "Configuring /etc/hosts with server entry."
-# shellcheck disable=SC2016
-"${engine}" exec "${scenario}" /bin/sh -c 'echo -e "\n$(hostname -I | cut -d " " -f 1) '"${IPA_HOSTNAME}"'" >> /etc/hosts' || die "Failed to configure hosts file."
-
-# configure ipaserver dns resolver to point to itself
-log info "Setting container DNS nameserver to localhost."
-"${engine}" exec "${scenario}" /bin/sh -c 'echo "nameserver 127.0.0.1" > /etc/resolv.conf' || die "Failed to set DNS nameserver to localhost."
-
 # wait for FreeIPA services to be available (usually ~45 seconds)
 log info "Wait for container to be initialized."
 wait=15
@@ -103,7 +94,7 @@ done
 # ensure we can get a TGT for admin
 log info "Testing kinit with admin."
 # shellcheck disable=SC2016
-"${engine}" exec "${scenario}" /bin/sh -c 'for i in $(seq 5); do echo "SomeADMINpassword" | kinit -c ansible_freeipa_cache admin && kdestroy -c ansible_freeipa_cache -A && break; sleep 10; done' || die "Failed to grant admin TGT."
+"${engine}" exec "${scenario}" /bin/sh -c 'for i in $(seq 5); do echo "SomeADMINpassword" | kinit -c ansible_freeipa_cache admin && kdestroy -c ansible_freeipa_cache -A && break; echo "Failed to get TGT. Retrying in 10s..."; sleep 10; done' || die "Failed to grant admin TGT."
 
 # shellcheck disable=SC2154
 log info "Creating inventory."
