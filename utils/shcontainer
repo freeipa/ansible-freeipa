@@ -35,6 +35,8 @@ prepare_container() {
         log info "Creating container..."
         CONFIG="--systemd true --hostname ${hostname} --memory ${MEMORY}g --memory-swap -1 --no-hosts"
         [ -n "${scenario}" ] && CONFIG="${CONFIG} --name ${scenario}"
+        # Disable log due to huge object handling in ansible-freeipa
+        CONFIG="$CONFIG --log-driver=none"
         # shellcheck disable=SC2086
         container_id=$(${engine} create ${CONFIG} "${img_id}" || die "Cannot create container")
         log none "CONTAINER: ${container_id}"
