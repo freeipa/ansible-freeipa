@@ -1,0 +1,48 @@
+---
+- name: Include create_users_json.yml
+  ansible.builtin.import_playbook: create_users_json.yml
+
+- name: Test users present and absent with slice
+  hosts: ipaserver
+  become: true
+  gather_facts: false
+
+  vars:
+    slice_size: 100
+  tasks:
+  - name: Include users.json
+    ansible.builtin.include_vars:
+      file: users.json  # noqa missing-import
+
+  - name: Create dict with user names
+    ansible.builtin.set_fact:
+      user_names: "{{ user_names | default([]) + [{'name': item.name}] }}"
+    loop: "{{ users }}"
+
+  - name: Size of users slice.
+    ansible.builtin.debug:
+      msg: "{{ users | length }}"
+
+  - name: Cleanup test users
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users: "{{ user_names[item : item + slice_size] }}"
+      state: absent
+    loop: "{{ range(0, user_names | length, slice_size) | list }}"
+
+  - name: Users present
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users: "{{ users[item : item + slice_size] }}"
+    loop: "{{ range(0, users | length, slice_size) | list }}"
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Users absent
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      users: "{{ user_names[item : item + slice_size] }}"
+      state: absent
+    loop: "{{ range(0, user_names | length, slice_size) | list }}"
+    register: result
+    failed_when: not result.changed or result.failed
