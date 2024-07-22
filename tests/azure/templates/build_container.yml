@@ -42,9 +42,9 @@ jobs:
       QUAY_ROBOT_TOKEN: $(QUAY_ROBOT_TOKEN)
 
   - script: |
-      podman push ${{parameters.distro}}-base quay.io/ansible-freeipa/upstream-tests:${{ parameters.distro }}-base
+      podman push quay.io/ansible-freeipa/upstream-tests:${{parameters.distro}}-base quay.io/ansible-freeipa/upstream-tests:${{ parameters.distro }}-base
     displayName: Push base image
 
   - script: |
-      podman push ${{ parameters.distro }}-server quay.io/ansible-freeipa/upstream-tests:${{ parameters.distro }}-server
+      podman push quay.io/ansible-freeipa/upstream-tests:${{ parameters.distro }}-server quay.io/ansible-freeipa/upstream-tests:${{ parameters.distro }}-server
     displayName: Push server image
