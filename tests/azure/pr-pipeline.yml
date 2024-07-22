@@ -16,7 +16,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
-      ansible_version: "-core >=2.15,<2.16"
+      ansible_version: "-core <2.15"
 
 # Galaxy on Fedora
 
@@ -27,7 +27,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
-      ansible_version: "-core >=2.15,<2.16"
+      ansible_version: "-core <2.14"
 
 # CentOS 9 Stream
 
@@ -49,7 +49,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       distro: c8s
-      ansible_version: "-core >=2.15,<2.16"
+      ansible_version: "-core <2.13"
       target_python: "/usr/libexec/platform-python"
 
 # CentOS 7 cannot be used with current systemd
