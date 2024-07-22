@@ -176,6 +176,8 @@ def _truncate(lines, charcount, minlines=0):
     output = ""
     line_count = 1
     for i in range(len(lines) - 1, -1, -1):
+        if len(lines[i]) > 490:
+            lines[i] = lines[i][:240]+"(...)"+lines[i][-240:]
         if len(output) + len(lines[i]) + 1 <= charcount or \
            line_count < minlines:
             output = lines[i] + "\n" + output
@@ -215,11 +217,11 @@ def run_playbook(playbook, allow_failures=False):
     # shows all important information. At least 15 lines of stdout
     # (Ansible tasks) and remaining from stderr to fill up to
     # maxlen size.
-    maxlen = 2000
+    maxlen = 5000
     factor = maxlen / (len(_stdout) + len(_stderr))
     stdout = _truncate(_stdout.splitlines(),
                        int(factor * len(_stdout)),
-                       minlines=15)
+                       minlines=25)
     stderr = _truncate(_stderr.splitlines(), maxlen - len(stdout))
 
     assert_msg = "\n".join(
