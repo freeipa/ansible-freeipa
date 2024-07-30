@@ -341,7 +341,7 @@ Variable | Description | Required
 `password` \| `user_password` \| `userpassword` | Password used in bulk enrollment for absent or not enrolled hosts. | no
 `random` \| `random_password` |  Initiate the generation of a random password to be used in bulk enrollment for absent or not enrolled hosts. | no
 `certificate` \| `usercertificate` | List of base-64 encoded host certificates | no
-`managedby` \| `principalname` \| `krbprincipalname` | List of hosts that can manage this host | no
+`managedby_host` | List of hosts that can manage this host | no
 `principal` \| `principalname` \| `krbprincipalname` | List of principal aliases for this host | no
 `allow_create_keytab_user` \| `ipaallowedtoperform_write_keys_user` | Users allowed to create a keytab of this host. | no
 `allow_create_keytab_group` \| `ipaallowedtoperform_write_keys_group` | Groups allowed to create a keytab of this host. | no
