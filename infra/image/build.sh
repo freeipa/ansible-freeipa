@@ -56,6 +56,8 @@ distro=${1:-}
 [ -f "${BASEDIR}/dockerfile/${distro}" ] \
   || die "${distro} is not a valid distro target.\nUse one of: $(valid_distro)"
 
+[ -n "$(command -v "podman")" ] || die "podman is required."
+
 if [ "${deploy_server}" == "Y" ]
 then
     [ -n "$(command -v "ansible-playbook")" ] || die "ansible-playbook is required to install FreeIPA."
@@ -109,22 +111,31 @@ echo
 
 if [ "${deploy_server}" == "Y" ]
 then
+    deployed=false
+
     log info "= Starting ${name} ="
     [ "${container_state}" == "running" ] || podman start "${name}"
     echo
 
     log info "= Deploying IPA ="
-    ansible-playbook -i "${inventory_file}" "${deploy_playbook}"
+    if ansible-playbook -i "${inventory_file}" "${deploy_playbook}"
+    then
+        deployed=true
+    fi
     echo
 
-    log info "= Enabling additional services ="
-    podman exec "${name}" systemctl enable fixnet
-    podman exec "${name}" systemctl enable fixipaip
-    echo
+    if $deployed; then
+        log info "= Enabling additional services ="
+        podman exec "${name}" systemctl enable fixnet
+        podman exec "${name}" systemctl enable fixipaip
+        echo
+    fi
     
     log info "= Stopping container ${name} ="
     podman stop "${name}"
     echo
+
+    $deployed || die "Deployment failed"
 
     log info "= Committing \"${quayname}:${server_tag}\" ="
     podman commit "${name}" "${quayname}:${server_tag}"
