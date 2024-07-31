@@ -1,0 +1,32 @@
+FROM quay.io/centos/centos:stream8
+ENV container=podman
+
+RUN rm -fv /var/cache/dnf/metadata_lock.pid; \
+sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo; \
+sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/*.repo; \
+sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/*.repo; \
+dnf makecache; \
+dnf --assumeyes install \
+    /usr/bin/python3 \
+    /usr/bin/python3-config \
+    /usr/bin/dnf-3 \
+    sudo \
+    bash \
+    systemd \
+    procps-ng \
+    iproute; \
+dnf clean all; \
+rm -rf /var/cache/dnf/;
+
+COPY system-service/fixnet.sh /root/
+COPY system-service/fixipaip.sh /root/
+COPY system-service/fixnet.service /etc/systemd/system/
+COPY system-service/fixipaip.service /etc/systemd/system/
+RUN chmod +x /root/fixnet.sh /root/fixipaip.sh
+
+STOPSIGNAL RTMIN+3
+
+VOLUME ["/sys/fs/cgroup"]
+
+CMD ["/usr/sbin/init"]
+

@@ -1,0 +1,12 @@
+[Unit]
+Description=Fix server IP in IPA Server
+Wants=network.target
+After=network.target
+Before=ipa.service
+
+[Service]
+Type=oneshot
+ExecStart=/root/fixnet.sh
+
+[Install]
+WantedBy=ipa.service

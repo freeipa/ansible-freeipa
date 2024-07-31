@@ -1,0 +1,10 @@
+[Unit]
+Description=Fix IPA server IP in IPA Server
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/fixipaip.sh
+
+[Install]
+WantedBy=default.target
