@@ -1,0 +1,48 @@
+# Generate lists for users
+---
+- name: Create present services.json data
+  ansible.builtin.shell: |
+    date=$(date --date='+2 years' "+%Y-%m-%d %H:%M:%S")
+    echo "["
+    for i in $(seq -w 1 "{{ NUM }}"); do
+        echo "  {"
+        echo "    \"name\": \"testuser_${i}\","
+        echo "    \"first\": \"First ${i}\","
+        echo "    \"last\": \"Last ${i}\","
+        echo "    \"password\": \"user${i}PW\","
+        echo "    \"passwordexpiration\": \"${date}\""
+        if [ "$i" -lt "{{ NUM }}" ]; then
+           echo "  },"
+        else
+           echo "  }"
+        fi
+    done
+    echo "]"
+  vars:
+    NUM: 500
+  register: command
+
+- name: Set user_list
+  ansible.builtin.set_fact:
+    user_list: "{{ command.stdout | from_json }}"
+
+- name: Create absent user.json data
+  ansible.builtin.shell: |
+    echo "["
+    for i in $(seq -w 1 "{{ NUM }}"); do
+        echo "  {"
+        echo "    \"name\": \"testuser_${i}\""
+        if [ "$i" -lt "{{ NUM }}" ]; then
+           echo "  },"
+        else
+           echo "  }"
+        fi
+    done
+    echo "]"
+  vars:
+    NUM: 500
+  register: command
+
+- name: Set user_absent_list
+  ansible.builtin.set_fact:
+    user_absent_list: "{{ command.stdout | from_json }}"
