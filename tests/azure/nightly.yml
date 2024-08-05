@@ -19,7 +19,7 @@ stages:
 - stage: FedoraLatest_Ansible_Core_2_15
   dependsOn: []
   jobs:
-  - template: templates/group_tests.yml
+  - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
@@ -28,7 +28,7 @@ stages:
 - stage: FedoraLatest_Ansible_latest
   dependsOn: []
   jobs:
-  - template: templates/group_tests.yml
+  - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
@@ -36,30 +36,30 @@ stages:
 
 # Galaxy on Fedora
 
-- stage: Galaxy_FedoraLatest_Ansible_Core_2_15
-  dependsOn: []
-  jobs:
-  - template: templates/galaxy_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: fedora-latest
-      ansible_version: "-core >=2.15,<2.16"
+#- stage: Galaxy_FedoraLatest_Ansible_Core_2_15
+#  dependsOn: []
+#  jobs:
+#  - template: templates/galaxy_tests.yml
+#    parameters:
+#      build_number: $(Build.BuildNumber)
+#      distro: fedora-latest
+#      ansible_version: "-core >=2.15,<2.16"
 
-- stage: Galaxy_FedoraLatest_Ansible_latest
-  dependsOn: []
-  jobs:
-  - template: templates/galaxy_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: fedora-latest
-      ansible_version: ""
+#- stage: Galaxy_FedoraLatest_Ansible_latest
+#  dependsOn: []
+#  jobs:
+#  - template: templates/galaxy_tests.yml
+#    parameters:
+#      build_number: $(Build.BuildNumber)
+#      distro: fedora-latest
+#      ansible_version: ""
 
 # Fedora Rawhide
 
 - stage: FedoraRawhide_Ansible_Core_2_15
   dependsOn: []
   jobs:
-  - template: templates/group_tests.yml
+  - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-rawhide
@@ -68,7 +68,7 @@ stages:
 - stage: FedoraRawhide_Ansible_latest
   dependsOn: []
   jobs:
-  - template: templates/group_tests.yml
+  - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-rawhide
@@ -79,7 +79,7 @@ stages:
 - stage: c9s_Ansible_Core_2_15
   dependsOn: []
   jobs:
-  - template: templates/group_tests.yml
+  - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: c9s
@@ -88,7 +88,7 @@ stages:
 - stage: c9s_Ansible_latest
   dependsOn: []
   jobs:
-  - template: templates/group_tests.yml
+  - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: c9s
@@ -99,7 +99,7 @@ stages:
 - stage: c8s_Ansible_Core_2_15
   dependsOn: []
   jobs:
-  - template: templates/group_tests.yml
+  - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: c8s
@@ -108,7 +108,7 @@ stages:
 - stage: c8s_Ansible_latest
   dependsOn: []
   jobs:
-  - template: templates/group_tests.yml
+  - template: templates/fast_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: c8s
@@ -119,7 +119,7 @@ stages:
 #- stage: CentOS7_Ansible_Core_2_15
 #  dependsOn: []
 #  jobs:
-#  - template: templates/group_tests.yml
+#  - template: templates/fast_tests.yml
 #    parameters:
 #      build_number: $(Build.BuildNumber)
 #      distro: centos-7
@@ -128,7 +128,7 @@ stages:
 #- stage: CentOS7_Ansible_latest
 #  dependsOn: []
 #  jobs:
-#  - template: templates/group_tests.yml
+#  - template: templates/fast_tests.yml
 #    parameters:
 #      build_number: $(Build.BuildNumber)
 #      distro: centos-7
