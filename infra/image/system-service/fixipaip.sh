@@ -44,13 +44,18 @@ if [ -z "${PTR}" ] || [ -n "${PTR//[0-9]}" ]; then
     echo "ERROR: Failed to get PTR from IPv4 address: '${PTR}'"
     exit 1
 fi
+FORWARDER=$(grep -s -m 1 ^nameserver /etc/resolv.conf.fixnet | cut -d" " -f 2)
+if [ -z "${FORWARDER}" ] || [ "${FORWARDER}" == "127.0.0.1" ]; then
+    FORWARDER="8.8.8.8"
+fi
 
-echo "Fix IPA IP:"
+echo "Fix IPA:"
 echo "  HOSTNAME: '${HOSTNAME}'"
 echo "  IP: '${IP}'"
 echo "  PTR: '${PTR}'"
+echo "  FORWARDER: '${FORWARDER}'"
 
-if ! echo "SomeADMINpassword" | kinit -c "${KRB5CCNAME}"
+if ! echo "SomeADMINpassword" | kinit -c "${KRB5CCNAME}" admin >/dev/null
 then
     echo "ERROR: Failed to obtain Kerberos ticket"
     exit 1
@@ -76,6 +81,8 @@ for zone in ${ZONES}; do
         ipa dnsrecord-mod test.local ipa-ca --a-rec="$IP"
     fi
 done
+
+ipa dnsserver-mod "${HOSTNAME}" --forwarder="${FORWARDER}"
 
 kdestroy -c "${KRB5CCNAME}" -A
 
