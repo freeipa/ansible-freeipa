@@ -1,0 +1,4 @@
+ipaadmin_password=password1
+ipadm_password=password1
+ipaserver_domain=test.local
+ipaclient_realm="{{ ipa_domain | upper }}"

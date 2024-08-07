@@ -1,0 +1,8 @@
+ipaadmin_password=ADMPassword1
+ipadm_password=DMPassword1
+ipaserver_domain=test.local
+ipaserver_realm="{{ ipaserver_domain | upper }}"
+ipaserver_setup_dns=yes
+ipaserver_auto_forwarders=yes
+ipaserver_install_packages=no
+ipaserver_setup_firewalld=no
