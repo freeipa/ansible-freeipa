@@ -55,7 +55,7 @@ echo "  IP: '${IP}'"
 echo "  PTR: '${PTR}'"
 echo "  FORWARDER: '${FORWARDER}'"
 
-if ! echo "SomeADMINpassword" | kinit -c "${KRB5CCNAME}"
+if ! echo "SomeADMINpassword" | kinit -c "${KRB5CCNAME}" admin >/dev/null
 then
     echo "ERROR: Failed to obtain Kerberos ticket"
     exit 1
