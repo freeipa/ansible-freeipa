@@ -7,6 +7,8 @@ Before=ipa.service
 [Service]
 Type=oneshot
 ExecStart=/root/fixnet.sh
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=ipa.service

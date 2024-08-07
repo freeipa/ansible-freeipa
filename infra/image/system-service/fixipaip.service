@@ -5,6 +5,8 @@ After=multi-user.target
 [Service]
 Type=oneshot
 ExecStart=/root/fixipaip.sh
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=default.target
