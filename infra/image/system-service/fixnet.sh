@@ -51,7 +51,11 @@ else
     echo -e "$IP\t${HOSTNAME} ${HOSTNAME%%.*}" >> /etc/hosts
 fi
 
-echo "nameserver 127.0.0.1" > /etc/resolv.conf
+cp -a /etc/resolv.conf /etc/resolv.conf.fixnet
+cat > /etc/resolv.conf <<EOF
+search ${HOSTNAME#*.}
+nameserver 127.0.0.1
+EOF
 
 echo "/etc/hosts:"
 cat "/etc/hosts"
