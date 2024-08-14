@@ -6,7 +6,7 @@ parameters:
   - name: number_of_groups
     type: number
     default: 1
-  - name: scenario
+  - name: distro
     type: string
     default: fedora-latest
   - name: ansible_version
@@ -17,28 +17,28 @@ parameters:
     default: 3.x
   - name: build_number
     type: string
+  - name: target_python
+    type: string
+    default: "/usr/bin/python3"
 
 jobs:
 - job: Test_Group${{ parameters.group_number }}
-  displayName: Run playbook tests ${{ parameters.scenario }} (${{ parameters.group_number }}/${{ parameters.number_of_groups }})
+  displayName: Run playbook tests ${{ parameters.distro }} (${{ parameters.group_number }}/${{ parameters.number_of_groups }})
   timeoutInMinutes: 240
   variables:
   - template: variables.yaml
-  - template: variables_${{ parameters.scenario }}.yaml
+  - template: variables_${{ parameters.distro }}.yaml
   steps:
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '${{ parameters.python_version }}'
 
   - script: |
-      pip install \
-        "molecule-plugins[docker]" \
-        "requests<2.29" \
-        "ansible${{ parameters.ansible_version }}"
+      pip install "ansible${{ parameters.ansible_version }}"
     retryCountOnTaskFailure: 5
-    displayName: Install molecule and Ansible
+    displayName: Install Ansible
 
-  - script: ansible-galaxy collection install community.docker ansible.posix
+  - script: ansible-galaxy collection install containers.podman
     retryCountOnTaskFailure: 5
     displayName: Install Ansible collections
 
@@ -47,39 +47,37 @@ jobs:
     displayName: Install dependencies
 
   - script: |
-      rm -rf ~/ansible
-      mkdir -p ~/.ansible/roles ~/.ansible/library ~/.ansible/module_utils
-      cp -a roles/* ~/.ansible/roles
-      cp -a plugins/modules/* ~/.ansible/library
-      cp -a plugins/module_utils/* ~/.ansible/module_utils
-      molecule create -s ${{ parameters.scenario }}
-    retryCountOnTaskFailure: 5
-    displayName: Setup test container
-    env:
-      ANSIBLE_LIBRARY: ./molecule
+      . utils/set_test_modules
+      python3 utils/check_test_configuration.py ${{ parameters.distro }}
+    displayName: Check test configuration
 
   - script: |
-      python utils/check_test_configuration.py ${{ parameters.scenario }}
-    displayName: Check scenario test configuration
+      utils/setup_test_container.sh \
+        -e podman \
+        -a \
+        -m 4 \
+        -n "ipaserver.test.local" \
+        -p ${{ parameters.target_python }} \
+        -i ${{ parameters.distro }}-server \
+        ${{ parameters.distro }}-test
+    displayName: Setup target container
 
   - script: |
-      pytest \
-        -m "playbook" \
-        --verbose \
-        --color=yes \
-        --splits=${{ parameters.number_of_groups }} \
-        --group=${{ parameters.group_number }} \
-        --randomly-seed=$(date "+%Y%m%d") \
-        --junit-xml=TEST-results-group-${{ parameters.group_number }}.xml
+      . utils/set_test_modules
+      pytest -m "playbook" --verbose --color=yes --suppress-no-test-exit-code --junit-xml=TEST-results-pr-check.xml
     displayName: Run playbook tests
     env:
-      IPA_SERVER_HOST: ${{ parameters.scenario }}
-      RUN_TESTS_IN_DOCKER: true
+      ANSIBLE_ROLES_PATH: "${PWD}/roles"
+      ANSIBLE_LIBRARY: "${PWD}/plugins"
+      ANSIBLE_MODULE_UTILS: "${PWD}/plugins/module_utils"
+      IPA_SERVER_HOST: ${{ parameters.distro }}-test
+      RUN_TESTS_IN_DOCKER: podman
       IPA_DISABLED_MODULES: ${{ variables.ipa_disabled_modules }}
       IPA_DISABLED_TESTS: ${{ variables.ipa_disabled_tests }}
       IPA_ENABLED_MODULES: ${{ variables.ipa_enabled_modules }}
       IPA_ENABLED_TESTS: ${{ variables.ipa_enabled_tests }}
       IPA_VERBOSITY: "-vvv"
+      IPA_PYTHON_PATH: ${{ parameters.target_python }}
 
   - task: PublishTestResults@2
     inputs:
