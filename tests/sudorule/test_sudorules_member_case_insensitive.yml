@@ -1,0 +1,311 @@
+---
+- name: Test sudorules members should be case insensitive.
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+
+  module_defaults:
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipasudocmdgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipasudocmd:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  vars:
+    groups_present:
+      - eleMENT1
+      - Element2
+      - eLeMenT3
+      - ElemENT4
+
+  tasks:
+  - name: Test sudorule member case insensitive
+    block:
+    # SETUP
+    - name: Ensure domain name
+      ansible.builtin.set_fact:
+        ipa_domain: ipa.test
+      when: ipa_domain is not defined
+
+    - name: Ensure test groups are absent.
+      ipagroup:
+        name: "{{ groups_present }}"
+        state: absent
+
+    - name: Ensure test hostgroups are absent.
+      ipahostgroup:
+        name: "{{ groups_present }}"
+        state: absent
+
+    - name: Ensure test users are absent.
+      ipauser:
+        name: "{{ groups_present }}"
+        state: absent
+
+    - name: Ensure test groups exist.
+      ipagroup:
+        name: "{{ item }}"
+      loop: "{{ groups_present }}"
+
+    - name: Ensure test hostgroups exist.
+      ipahostgroup:
+        name: "{{ item }}"
+      loop: "{{ groups_present }}"
+
+    - name: Ensure test hosts exist.
+      ipahost:
+        name: "{{ item }}.{{ ipa_domain }}"
+        force: yes
+      loop: "{{ groups_present }}"
+
+    - name: Ensure test users exist.
+      ipauser:
+        name: "user{{ item }}"
+        first: "{{ item }}"
+        last: "{{ item }}"
+      loop: "{{ groups_present }}"
+
+    - name: Ensure sudorule do not exist
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+        state: absent
+      loop: "{{ groups_present }}"
+
+    # TESTS
+    - name: Ensure sudorule exist with runasusers members
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          cmdcategory: all
+          runasuser: "user{{ item }}"
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure sudorule exist with lowercase runasusers members
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          cmdcategory: all
+          runasuser: "user{{ item | lower }}"
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule exist with uppercase runasusers members
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          cmdcategory: all
+          runasuser: "user{{ item | upper }}"
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule exist with runasgroup members
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          cmdcategory: all
+          runasgroup: "{{ item }}"
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure sudorule exist with lowercase runasgroup members
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          cmdcategory: all
+          runasgroup: "{{ item | lower }}"
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule exist with uppercase runasgroup members
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          cmdcategory: all
+          runasgroup: "{{ item | upper }}"
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule do not exist
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+        state: absent
+      loop: "{{ groups_present }}"
+
+    #####
+
+    - name: Ensure sudorule exist with members
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          cmdcategory: all
+          hostgroup: "{{ item }}"
+          host: "{{ item }}.{{ ipa_domain }}"
+          group: "{{ item }}"
+          user: "user{{ item }}"
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure sudorule exist with members, lowercase
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          cmdcategory: all
+          hostgroup: "{{ item | lower }}"
+          host: "{{ item | lower }}.{{ ipa_domain }}"
+          group: "{{ item | lower }}"
+          user: "user{{ item | lower }}"
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule exist with members, uppercase
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          cmdcategory: all
+          hostgroup: "{{ item | upper }}"
+          host: "{{ item | upper }}.{{ ipa_domain }}"
+          group: "{{ item | upper }}"
+          user: "user{{ item | upper }}"
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule member is absent
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          hostgroup: "{{ item }}"
+          host: "{{ item }}.{{ ipa_domain }}"
+          group: "{{ item }}"
+          user: "user{{ item }}"
+        action: member
+        state: absent
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure sudorule member is absent, lowercase
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          hostgroup: "{{ item | lower }}"
+          host: "{{ item | lower }}.{{ ipa_domain }}"
+          group: "{{ item | lower }}"
+          user: "user{{ item | lower }}"
+        action: member
+        state: absent
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule member is absent, upercase
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          hostgroup: "{{ item | upper }}"
+          host: "{{ item | upper }}.{{ ipa_domain }}"
+          group: "{{ item | upper }}"
+          user: "user{{ item | upper }}"
+        action: member
+        state: absent
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule member is present, upercase
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          hostgroup: "{{ item | upper }}"
+          host: "{{ item | upper }}.{{ ipa_domain }}"
+          group: "{{ item | upper }}"
+          user: "user{{ item | upper }}"
+        action: member
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure sudorule member is present, lowercase
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          hostgroup: "{{ item | lower }}"
+          host: "{{ item | lower }}.{{ ipa_domain }}"
+          group: "{{ item | lower }}"
+          user: "user{{ item | lower }}"
+        action: member
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure sudorule member is present, mixed case
+      ipasudorule:
+        sudorules:
+        - name: "{{ item }}"
+          hostgroup: "{{ item }}"
+          host: "{{ item }}.{{ ipa_domain }}"
+          group: "{{ item }}"
+          user: "user{{ item }}"
+        action: member
+      loop: "{{ groups_present }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    # cleanup
+    always:
+    - name: Ensure sudorule do not exist
+      ipasudorule:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ groups_present }}"
+
+    - name: Ensure test groups do not exist.
+      ipagroup:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ groups_present }}"
+
+    - name: Ensure test hostgroups do not exist.
+      ipahostgroup:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ groups_present }}"
+
+    - name: Ensure test hosts do not exist.
+      ipahost:
+        name: "{{ item }}.{{ ipa_domain }}"
+        state: absent
+      loop: "{{ groups_present }}"
+
+    - name: Ensure test users do not exist.
+      ipauser:
+        name: "user{{ item }}"
+        state: absent
+      loop: "{{ groups_present }}"
