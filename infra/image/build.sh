@@ -68,7 +68,7 @@ then
     deploy_playbook="${TOPDIR}/playbooks/install-server.yml"
     [ -f "${deploy_playbook}" ] || die "Can't find playbook '${deploy_playbook}'"
 
-    inventory_file="${BASEDIR}/inventory"
+    inventory_file="${BASEDIR}/build-inventory"
     [ -f "${inventory_file}" ] || die "Can't find inventory '${inventory_file}'"
 fi
 
