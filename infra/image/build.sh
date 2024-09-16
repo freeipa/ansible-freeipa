@@ -3,6 +3,9 @@
 BASEDIR="$(readlink -f "$(dirname "$0")")"
 TOPDIR="$(readlink -f "${BASEDIR}/../..")"
 
+# shellcheck disable=SC1091
+. "${BASEDIR}/shcontainer"
+# shellcheck disable=SC1091
 . "${TOPDIR}/utils/shfun"
 
 valid_distro() {
@@ -56,7 +59,7 @@ distro=${1:-}
 [ -f "${BASEDIR}/dockerfile/${distro}" ] \
   || die "${distro} is not a valid distro target.\nUse one of: $(valid_distro)"
 
-[ -n "$(command -v "podman")" ] || die "podman is required."
+container_check
 
 if [ "${deploy_server}" == "Y" ]
 then
@@ -69,77 +72,46 @@ then
     [ -f "${inventory_file}" ] || die "Can't find inventory '${inventory_file}'"
 fi
 
-container_state="$(podman ps -q --all --format "{{.State}}" --filter "name=${name}")"
+container_state=$(container_get_state "${name}")
 
 tag="${distro}-base"
 server_tag="${distro}-server"
 
-# in older (as in Ubuntu 22.04) podman versions,
-# 'podman image rm --force' fails if the image
-# does not exist.
-remove_image_if_exists()
-{
-    local tag_to_remove
-    tag_to_remove="${1}"
-    if podman image exists "${tag_to_remove}"
-    then
-        log info "= Cleanup ${tag_to_remove} ="
-        podman image rm "${tag_to_remove}" --force
-        echo
-    fi
-}
+container_remove_image_if_exists "${tag}"
+[ "${deploy_server}" == "Y" ] && \
+    container_remove_image_if_exists "${server_tag}"
 
-remove_image_if_exists "${tag}"
-[ "${deploy_server}" == "Y" ] && remove_image_if_exists "${server_tag}"
-
-
-log info "= Building ${tag} ="
-podman build -t "${tag}" -f "${BASEDIR}/dockerfile/${distro}" \
-       "${BASEDIR}"
-echo
-
-log info "= Creating ${name} ="
-podman create --privileged --name "${name}" --hostname "${hostname}" \
-    --network bridge:interface_name=eth0 --systemd true \
-    --memory "${memory}" --memory-swap -1 --no-hosts \
-    --replace "${tag}"
-echo
-
-log info "= Committing \"${quayname}:${tag}\" ="
-podman commit "${name}" "${quayname}:${tag}"
-echo
+container_build "${tag}" "${BASEDIR}/dockerfile/${distro}" "${BASEDIR}"
+container_create "${name}" "${tag}" "${hostname}" "${memory}"
+container_commit "${name}" "${quayname}:${tag}"
 
 if [ "${deploy_server}" == "Y" ]
 then
     deployed=false
 
-    log info "= Starting ${name} ="
-    [ "${container_state}" == "running" ] || podman start "${name}"
-    echo
+    [ "${container_state}" != "running" ] && container_start "${name}"
+
+    container_wait_for_journald "${name}"
 
     log info "= Deploying IPA ="
-    if ansible-playbook -i "${inventory_file}" "${deploy_playbook}"
+    if ansible-playbook -u root -i "${inventory_file}" "${deploy_playbook}"
     then
         deployed=true
     fi
     echo
 
     if $deployed; then
-        log info "= Enabling additional services ="
-        podman exec "${name}" systemctl enable fixnet
-        podman exec "${name}" systemctl enable fixipaip
+        log info "= Enabling services ="
+        container_exec "${name}" systemctl enable fixnet
+        container_exec "${name}" systemctl enable fixipaip
         echo
     fi
     
-    log info "= Stopping container ${name} ="
-    podman stop "${name}"
-    echo
+    container_stop "${name}"
 
     $deployed || die "Deployment failed"
 
-    log info "= Committing \"${quayname}:${server_tag}\" ="
-    podman commit "${name}" "${quayname}:${server_tag}"
-    echo
+    container_commit "${name}" "${quayname}:${server_tag}"
 fi
 
 log info "= DONE: Image created. ="
