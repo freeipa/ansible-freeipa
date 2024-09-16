@@ -103,6 +103,7 @@ Variable | Description | Required
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
+`delete_continue` \| `continue` | Continuous mode: don't stop on errors. Valid only if `state` is `absent`. Default: `yes` (bool) | no
 `name` \| `cn` \| `location` | List of one or more automountlocation names. | yes
 `state` | The state to ensure. It can be one of `present`, or `absent`, default: `present`. | no
 
