@@ -15,7 +15,7 @@ valid_distro() {
 usage() {
     local prog="${0##*/}"
     cat << EOF
-usage: ${prog} [-h] [i] distro
+usage: ${prog} [-h] [-s] distro
     ${prog} build a container image to test ansible-freeipa.
 EOF
 }
@@ -38,7 +38,7 @@ name="ansible-freeipa-image-builder"
 hostname="ipaserver.test.local"
 # Number of cpus is not available in usptream CI (Ubuntu 22.04).
 # cpus="2"
-memory="4g"
+memory="3g"
 quayname="quay.io/ansible-freeipa/upstream-tests"
 deploy_server="N"
 
@@ -115,9 +115,3 @@ then
 fi
 
 log info "= DONE: Image created. ="
-
-# For tests:
-# podman start "${name}"
-# while [ -n "$(podman exec ansible-test systemctl list-jobs | grep -vi "no jobs running")" ]; do echo "waiting.."; sleep 5; done
-# # Run tests
-# podman stop "${name}"
