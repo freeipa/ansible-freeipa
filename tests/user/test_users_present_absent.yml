@@ -1,39 +1,38 @@
 ---
-- name: Include create_users_json.yml
-  ansible.builtin.import_playbook: create_users_json.yml
-
 - name: Test users present and absent
   hosts: ipaserver
   become: true
   gather_facts: false
 
   tasks:
-  - name: Include users.json
-    ansible.builtin.include_vars:
-      file: users.json  # noqa missing-import
+  - name: Include generate_test_data.yml
+    ansible.builtin.include_tasks: generate_test_data.yml
 
-  - name: Create dict with user names
-    ansible.builtin.set_fact:
-      user_names: "{{ user_names | default([]) + [{'name': item.name}] }}"
-    loop: "{{ users }}"
+  - name: Size of user_list
+    ansible.builtin.debug:
+      msg: "{{ user_list | length }}"
 
-  - name: Cleanup test users len:{{ users | length }}
+  - name: Size of user_absent_list
+    ansible.builtin.debug:
+      msg: "{{ user_absent_list | length }}"
+
+  - name: Cleanup test users
     ipauser:
       ipaadmin_password: SomeADMINpassword
-      users: "{{ user_names }}"
+      users: "{{ user_absent_list }}"
       state: absent
 
-  - name: Users present len:{{ users | length }}
+  - name: Users present
     ipauser:
       ipaadmin_password: SomeADMINpassword
-      users: "{{ users }}"
+      users: "{{ user_list }}"
     register: result
     failed_when: not result.changed or result.failed
 
-  - name: Users absent len:{{ users | length }}
+  - name: Users absent
     ipauser:
       ipaadmin_password: SomeADMINpassword
-      users: "{{ user_names }}"
+      users: "{{ user_absent_list }}"
       state: absent
     register: result
     failed_when: not result.changed or result.failed
