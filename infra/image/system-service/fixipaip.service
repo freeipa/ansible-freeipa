@@ -1,6 +1,6 @@
 [Unit]
 Description=Fix IPA server IP in IPA Server
-After=multi-user.target
+After=ipa.service
 
 [Service]
 Type=oneshot
