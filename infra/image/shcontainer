@@ -1,0 +1,166 @@
+#!/bin/bash -eu
+# This file is meant to be source'd by other scripts
+
+SCRIPTDIR="$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")"
+TOPDIR="$(readlink -f "${SCRIPTDIR}/../..")"
+
+. "${TOPDIR}/utils/shfun"
+
+container_create() {
+    local name=${1}
+    local image=${2}
+    local hostname=${3}
+    local memory=${4:-"3g"}
+    local cpus=${5:-"2"}
+
+    [ -n "${hostname}" ] || die "No hostname given"
+
+    log info "= Creating ${name} ="
+    podman create \
+           --security-opt label=disable \
+           --name "${name}" \
+           --hostname "${hostname}" \
+           --network bridge:interface_name=eth0 \
+           --systemd true \
+           --cpus "${cpus}" \
+           --memory "${memory}" \
+           --memory-swap -1 \
+           --no-hosts \
+           --replace \
+           "${image}"
+    echo
+}
+
+container_start() {
+    local name="${1}"
+
+    log info "= Starting ${name} ="
+    podman start "${name}"
+    echo
+}
+
+container_stop() {
+    local name="${1}"
+
+    log info "= Stopping ${name} ="
+    podman stop "${name}"
+    echo
+}
+
+container_wait_for_journald() {
+    local name=${1}
+
+    log info "= Waiting till systemd-journald is running ="
+    max=20
+    wait=2
+    count=0
+    while ! podman exec "${name}" ps -x | grep -q "systemd-journald"
+    do
+        if [ $count -ge $max ]; then
+            die "Timeout: systemd-journald is not starting up"
+        fi
+        count=$((count+1))
+        log info "Waiting ${wait} seconds .."
+        sleep ${wait}
+    done
+    log info "done"
+    echo
+}
+
+container_wait_up() {
+    local name="${1}"
+
+    log info "= Waiting till all services are started ="
+    max=20
+    wait=15
+    count=0
+    while podman exec "${name}" systemctl list-jobs | \
+        grep -qvi "no jobs running"
+    do
+        if [ $count -ge $max ]; then
+            die "Timeout: Services are not starting up"
+        fi
+        count=$((count+1))
+        log info "Waiting ${wait} seconds .."
+        sleep ${wait}
+    done
+    log info "done"
+    echo
+}
+
+container_build() {
+    local tag="${1}"
+    local file="${2}"
+    local dir="${3}"
+
+    log info "= Building ${tag} ="
+    podman build -t "${tag}" -f "${file}" "${dir}"
+    echo
+}
+
+container_commit() {
+    local name="${1}"
+    local image="${2}"
+
+    log info "= Committing \"${image}\" ="
+    podman commit "${name}" "${image}"
+    echo
+}
+
+container_exec() {
+    local name="${1}"
+    shift 1
+
+    # "@Q" is only needed for the log output, the exec command is properly
+    # working without also for args containing spaces.
+    log info "= Executing \"${*@Q}\" ="
+    podman exec -t "${name}" "${@}"
+    echo
+}
+
+container_remove_image_if_exists()
+{
+    # In older (as in Ubuntu 22.04) podman versions,
+    # 'podman image rm --force' fails if the image
+    # does not exist.
+    local tag_to_remove="${1}"
+
+    if podman image exists "${tag_to_remove}"
+    then
+        log info "= Cleanup ${tag_to_remove} ="
+        podman image rm "${tag_to_remove}" --force
+        echo
+    fi
+}
+
+container_get_state()
+{
+    local name="${1}"
+
+    state=$(podman ps -q --all --format "{{.State}}" --filter "name=${name}")
+    echo "${state}"
+}
+
+container_pull() {
+    local source="${1}"
+
+    image=$(podman pull "${source}")
+    echo "${image}"
+}
+
+container_image_list() {
+    local source="${1}"
+
+    # Append "$" for an exact match if the source does not end with ":" to
+    # search for the repo only.
+    if [[ ${source} != *: ]]; then
+        source="${source}$"
+    fi
+    image=$(podman image list --format "{{ .Repository }}:{{ .Tag }}" | \
+                grep "^${source}")
+    echo "${image}"
+}
+
+container_check() {
+    [ -n "$(command -v "podman")" ] || die "podman is required."
+}
