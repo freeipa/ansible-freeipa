@@ -239,7 +239,8 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, api_get_domain, ensure_fqdn, netaddr, to_text
+    gen_intersection_list, concat_attr_list, api_get_domain, ensure_fqdn, \
+    netaddr, to_text
 
 
 def find_sudorule(module, name):
@@ -521,9 +522,14 @@ def main():
                         # Set res_find to empty dict for next step
                         res_find = {}
 
-                    # Generate addition and removal lists
+                    # Generate addition and removal lists.
+                    # `externalhost` adds an entity to the "External host"
+                    # list for `ipasudorule`. Hosts enrolled to IPA are in
+                    # "Hosts" list.
                     host_add, host_del = gen_add_del_lists(
-                        host, res_find.get('memberhost_host', []))
+                        host, concat_attr_list(res_find,
+                                               "memberhost_host",
+                                               "externalhost"))
 
                     hostgroup_add, hostgroup_del = gen_add_del_lists(
                         hostgroup, res_find.get('memberhost_hostgroup', []))
@@ -531,8 +537,13 @@ def main():
                     hostmask_add, hostmask_del = gen_add_del_lists(
                         hostmask, res_find.get('hostmask', []))
 
+                    # `externaluser` adds an entity to the "External user"
+                    # (non-IPA users) list for `ipasudorule`. Users enrolled to
+                    # IPA are in "Users" list.
                     user_add, user_del = gen_add_del_lists(
-                        user, res_find.get('memberuser_user', []))
+                        user, concat_attr_list(res_find,
+                                               "memberuser_user",
+                                               "externaluser"))
 
                     group_add, group_del = gen_add_del_lists(
                         group, res_find.get('memberuser_group', []))
@@ -563,10 +574,9 @@ def main():
                     # users list.
                     runasuser_add, runasuser_del = gen_add_del_lists(
                         runasuser,
-                        (
-                            res_find.get('ipasudorunas_user', [])
-                            + res_find.get('ipasudorunasextuser', [])
-                        )
+                        concat_attr_list(res_find,
+                                         'ipasudorunas_user',
+                                         'ipasudorunasextuser')
                     )
                     runasuser_group_add, runasuser_group_del = (
                         gen_add_del_lists(
@@ -582,10 +592,9 @@ def main():
                     # groups list.
                     runasgroup_add, runasgroup_del = gen_add_del_lists(
                         runasgroup,
-                        (
-                            res_find.get('ipasudorunasgroup_group', [])
-                            + res_find.get('ipasudorunasextgroup', [])
-                        )
+                        concat_attr_list(res_find,
+                                         'ipasudorunasgroup_group',
+                                         'ipasudorunasextgroup')
                     )
 
                 elif action == "member":
@@ -599,7 +608,9 @@ def main():
                     # the sudorule already
                     if host is not None:
                         host_add = gen_add_list(
-                            host, res_find.get("memberhost_host"))
+                            host, concat_attr_list(res_find,
+                                                   "memberhost_host",
+                                                   "externalhost"))
                     if hostgroup is not None:
                         hostgroup_add = gen_add_list(
                             hostgroup, res_find.get("memberhost_hostgroup"))
@@ -608,7 +619,9 @@ def main():
                             hostmask, res_find.get("hostmask"))
                     if user is not None:
                         user_add = gen_add_list(
-                            user, res_find.get("memberuser_user"))
+                            user, concat_attr_list(res_find,
+                                                   "memberuser_user",
+                                                   "externaluser"))
                     if group is not None:
                         group_add = gen_add_list(
                             group, res_find.get("memberuser_group"))
@@ -642,8 +655,9 @@ def main():
                     if runasuser is not None:
                         runasuser_add = gen_add_list(
                             runasuser,
-                            (list(res_find.get('ipasudorunas_user', []))
-                             + list(res_find.get('ipasudorunasextuser', [])))
+                            concat_attr_list(res_find,
+                                             'ipasudorunas_user',
+                                             'ipasudorunasextuser')
                         )
                     if runasuser_group is not None:
                         runasuser_group_add = gen_add_list(
@@ -657,8 +671,9 @@ def main():
                     if runasgroup is not None:
                         runasgroup_add = gen_add_list(
                             runasgroup,
-                            (list(res_find.get("ipasudorunasgroup_group", []))
-                             + list(res_find.get("ipasudorunasextgroup", [])))
+                            concat_attr_list(res_find,
+                                             'ipasudorunasgroup_group',
+                                             'ipasudorunasextgroup')
                         )
 
             elif state == "absent":
@@ -677,7 +692,9 @@ def main():
                     # in sudorule
                     if host is not None:
                         host_del = gen_intersection_list(
-                            host, res_find.get("memberhost_host"))
+                            host, concat_attr_list(res_find,
+                                                   "memberhost_host",
+                                                   "externalhost"))
 
                     if hostgroup is not None:
                         hostgroup_del = gen_intersection_list(
@@ -689,7 +706,9 @@ def main():
 
                     if user is not None:
                         user_del = gen_intersection_list(
-                            user, res_find.get("memberuser_user"))
+                            user, concat_attr_list(res_find,
+                                                   "memberuser_user",
+                                                   "externaluser"))
 
                     if group is not None:
                         group_del = gen_intersection_list(
@@ -725,10 +744,10 @@ def main():
                     if runasuser is not None:
                         runasuser_del = gen_intersection_list(
                             runasuser,
-                            (
-                                list(res_find.get('ipasudorunas_user', []))
-                                + list(res_find.get('ipasudorunasextuser', []))
-                            )
+                            concat_attr_list(res_find,
+                                             'ipasudorunas_user',
+                                             'ipasudorunasextuser')
+
                         )
                     if runasuser_group is not None:
                         runasuser_group_del = gen_intersection_list(
@@ -742,12 +761,9 @@ def main():
                     if runasgroup is not None:
                         runasgroup_del = gen_intersection_list(
                             runasgroup,
-                            (
-                                list(res_find.get(
-                                    "ipasudorunasgroup_group", []))
-                                + list(res_find.get(
-                                    "ipasudorunasextgroup", []))
-                            )
+                            concat_attr_list(res_find,
+                                             'ipasudorunasgroup_group',
+                                             'ipasudorunasextgroup')
                         )
 
             elif state == "enabled":

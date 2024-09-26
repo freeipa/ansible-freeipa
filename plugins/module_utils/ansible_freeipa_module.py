@@ -640,6 +640,24 @@ def gen_intersection_list(user_list, res_list):
     return list(set(res_list or []).intersection(set(user_list or [])))
 
 
+def concat_attr_list(res, *args):
+    """
+    Get the lists of members to pass on `gen_*` methods as a res_list argument.
+
+    This function should be used to get members (usually users,
+    external users, hosts, external hosts, etc.) with any action and any state.
+
+    It is returning the concatenation of all attributes provided by user.
+    """
+    res_list = []
+    for attribute in args:
+        arg = res.get(attribute, [])
+        if not isinstance(arg, (list, tuple)):
+            arg = [arg]
+        res_list += arg
+    return list(set(res_list))
+
+
 def encode_certificate(cert):
     """
     Encode a certificate using base64.
