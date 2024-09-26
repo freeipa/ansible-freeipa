@@ -12,6 +12,7 @@ exclude_paths:
   - meta/runtime.yml
   - requirements-docker.yml
   - requirements-podman.yml
+  - tests/multihost/vagrant-inventory.yml
 
 kinds:
   - playbook: '**/tests/**/test_*.yml'

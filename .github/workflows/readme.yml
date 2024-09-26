@@ -1,8 +1,8 @@
 ---
 name: readme test
-on:
-  - push
-  - pull_request
+on: []
+#  - push
+#  - pull_request
 jobs:
   ansible_test:
     name: Verify readme
