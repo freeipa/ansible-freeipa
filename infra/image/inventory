@@ -1,0 +1,6 @@
+[ipaserver]
+ansible-freeipa-tests ansible_connection=podman
+
+[ipaserver:vars]
+ipaadmin_password=SomeADMINpassword
+ipadm_password=SomeDMpassword
