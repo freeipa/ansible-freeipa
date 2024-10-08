@@ -1,0 +1,15 @@
+[ipaserver]
+ansible-freeipa-image-builder ansible_connection=podman
+
+[ipaserver:vars]
+ipaadmin_password=SomeADMINpassword
+ipadm_password=SomeDMpassword
+ipaserver_domain=test.local
+ipaserver_realm=TEST.LOCAL
+ipaserver_setup_dns=true
+ipaserver_auto_forwarders=true
+ipaserver_no_dnssec_validation=true
+ipaserver_auto_reverse=true
+ipaserver_setup_kra=true
+ipaserver_setup_firewalld=false
+ipaclient_no_ntp=true

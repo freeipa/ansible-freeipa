@@ -73,16 +73,16 @@ for zone in ${ZONES}; do
             echo "ERROR: Failed to get old PTR from '${zone}': '${OLD_PTR}'"
         else
             ipa dnsrecord-mod "${zone}" "${OLD_PTR}" --ptr-rec="${HOSTNAME}." \
-                --rename="${PTR}"
+                --rename="${PTR}" || true
         fi
     else
         echo "Fixing forward zone ${zone}:"
-        ipa dnsrecord-mod test.local "${HOSTNAME%%.*}" --a-rec="$IP"
-        ipa dnsrecord-mod test.local ipa-ca --a-rec="$IP"
+        ipa dnsrecord-mod test.local "${HOSTNAME%%.*}" --a-rec="$IP" || true
+        ipa dnsrecord-mod test.local ipa-ca --a-rec="$IP" || true
     fi
 done
 
-ipa dnsserver-mod "${HOSTNAME}" --forwarder="${FORWARDER}"
+ipa dnsserver-mod "${HOSTNAME}" --forwarder="${FORWARDER}" || true
 
 kdestroy -c "${KRB5CCNAME}" -A
 

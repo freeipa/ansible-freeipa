@@ -4,7 +4,6 @@ ENV container=podman
 RUN rm -fv /var/cache/dnf/metadata_lock.pid; \
 dnf makecache; \
 dnf --assumeyes install \
-    /usr/bin/python3 \
     /usr/bin/dnf-3 \
     sudo \
     bash \
@@ -12,6 +11,19 @@ dnf --assumeyes install \
     procps-ng \
     iproute; \
 rm -rf /var/cache/dnf/;
+
+RUN (cd /lib/systemd/system/; \
+    if [ -e dbus-broker.service ] && [ ! -e dbus.service ]; then \
+       ln -s dbus-broker.service dbus.service; \
+    fi \
+)
+COPY system-service/container-ipa.target /lib/systemd/system/
+RUN systemctl set-default container-ipa.target
+RUN (cd /etc/systemd/system/; \
+    rm -rf multi-user.target.wants \
+	&& mkdir container-ipa.target.wants \
+	&& ln -s container-ipa.target.wants multi-user.target.wants \
+)
 
 COPY system-service/fixnet.sh /root/
 COPY system-service/fixipaip.sh /root/
