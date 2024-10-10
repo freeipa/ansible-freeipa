@@ -77,7 +77,7 @@ jobs:
       - name: Run pylint
         run: |
             pip install 'pylint>=3.0'
-            pylint plugins roles --disable=import-error
+            pylint plugins roles --disable=import-error --disable=too-many-positional-arguments
 
   shellcheck:
     name: Shellcheck
