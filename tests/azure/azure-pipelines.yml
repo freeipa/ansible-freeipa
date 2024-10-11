@@ -20,66 +20,55 @@ stages:
 
 # Fedora
 
-- stage: Fedora_Ansible_min_supported
+- stage: Fedora_Latest_Ansible_2_15
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: fedora-latest
-      ansible_version: "-core <2.14"
-
-# Fedora
-
-- stage: Fedora_Latest
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
-      ansible_version: "-core >=2.14,<2.15"
+      ansible_version: "-core >=2.15,<2.16"
 
 # Galaxy on Fedora
 
-- stage: Galaxy_Fedora_Latest
+- stage: Galaxy_Fedora_Latest_Ansible_2_15
   dependsOn: []
   jobs:
   - template: templates/galaxy_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: fedora-latest
-      ansible_version: "-core >=2.14,<2.15"
+      ansible_version: "-core >=2.15,<2.16"
 
 # CentOS 9 Stream
 
-- stage: CentOS_9_Stream
+- stage: CentOS_9_Stream_Ansible_2_15
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: c9s
-      ansible_version: "-core >=2.14,<2.15"
+      ansible_version: "-core >=2.15,<2.16"
 
 # CentOS 8 Stream
 
-- stage: CentOS_8_Stream
+- stage: CentOS_8_Stream_Ansible_2_15
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: c8s
-      ansible_version: "-core >=2.14,<2.15"
+      ansible_version: "-core >=2.15,<2.16"
 
 # CentOS 7
 
-- stage: CentOS_7
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: "-core >=2.14,<2.15"
+#- stage: CentOS_7_Ansible_2_15
+#  dependsOn: []
+#  jobs:
+#  - template: templates/group_tests.yml
+#    parameters:
+#      build_number: $(Build.BuildNumber)
+#      scenario: centos-7
+#      ansible_version: "-core >=2.15,<2.16"
