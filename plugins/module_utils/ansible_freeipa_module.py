@@ -526,6 +526,10 @@ def module_params_get(module, name, allow_empty_list_item=False):
 
 def module_params_get_lowercase(module, name, allow_empty_list_item=False):
     value = module_params_get(module, name, allow_empty_list_item)
+    return convert_param_value_to_lowercase(value)
+
+
+def convert_param_value_to_lowercase(value):
     if isinstance(value, list):
         value = [v.lower() for v in value]
     if isinstance(value, (str, unicode)):

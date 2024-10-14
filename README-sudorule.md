@@ -129,6 +129,24 @@ Example playbook to make sure Sudo Rule is absent:
       state: absent
 ```
 
+Example playbook to ensure multiple Sudo Rule are present using batch mode:
+
+```yaml
+---
+- name: Playbook to handle sudorules
+  hosts: ipaserver
+  become: true
+
+- name: Ensure multiple Sudo Rules are present using batch mode.
+  ipasudorule:
+    ipaadmin_password: SomeADMINpassword
+    sudorules:
+      - name: testrule1
+        hostmask:
+          - 192.168.122.1/24
+      - name: testrule2
+        hostcategory: all
+```
 
 Variables
 =========
