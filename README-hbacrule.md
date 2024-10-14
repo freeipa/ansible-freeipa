@@ -44,7 +44,7 @@ Example playbook to make sure HBAC Rule login exists:
 ```yaml
 ---
 - name: Playbook to handle hbacrules
-  hbacsvcs: ipaserver
+  hosts: ipaserver
   become: true
 
   tasks:
@@ -60,7 +60,7 @@ Example playbook to make sure HBAC Rule login exists with the only HBAC Service 
 ```yaml
 ---
 - name: Playbook to handle hbacrules
-  hbacsvcs: ipaserver
+  hosts: ipaserver
   become: true
 
   tasks:
@@ -77,7 +77,7 @@ Example playbook to make sure HBAC Service sshd is present in HBAC Rule login:
 ```yaml
 ---
 - name: Playbook to handle hbacrules
-  hbacsvcs: ipaserver
+  hosts: ipaserver
   become: true
 
   tasks:
@@ -95,7 +95,7 @@ Example playbook to make sure HBAC Service sshd is absent in HBAC Rule login:
 ```yaml
 ---
 - name: Playbook to handle hbacrules
-  hbacsvcs: ipaserver
+  hosts: ipaserver
   become: true
 
   tasks:
@@ -114,7 +114,7 @@ Example playbook to make sure HBAC Rule login is absent:
 ```yaml
 ---
 - name: Playbook to handle hbacrules
-  hbacsvcs: ipaserver
+  hosts: ipaserver
   become: true
 
   tasks:
