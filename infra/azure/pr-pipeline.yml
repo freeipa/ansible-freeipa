@@ -12,53 +12,59 @@ stages:
 - stage: Fedora_Latest
   dependsOn: []
   jobs:
-  - template: templates/fast_tests.yml
+  - template: templates/run_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
       ansible_version: "-core >=2.15,<2.16"
+      filter_tests: true
 
 # Galaxy on Fedora
 
 - stage: Galaxy_Fedora_Latest
   dependsOn: []
   jobs:
-  - template: templates/fast_tests.yml
+  - template: templates/run_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
       ansible_version: "-core >=2.15,<2.16"
+      filter_tests: true
+      test_galaxy: true
 
 # CentOS 9 Stream
 
 - stage: CentOS_9_Stream
   dependsOn: []
   jobs:
-  - template: templates/fast_tests.yml
+  - template: templates/run_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: c9s
       ansible_version: "-core >=2.15,<2.16"
+      filter_tests: true
 
 # CentOS 8 Stream
 
 - stage: CentOS_8_Stream
   dependsOn: []
   jobs:
-  - template: templates/fast_tests.yml
+  - template: templates/run_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: c8s
       ansible_version: "-core >=2.15,<2.16"
       target_python: "/usr/libexec/platform-python"
+      filter_tests: true
 
 # Rawhide
 
 - stage: Fedora_Rawhide
   dependsOn: []
   jobs:
-  - template: templates/fast_tests.yml
+  - template: templates/run_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-rawhide
       ansible_version: "-core >=2.15,<2.16"
+      filter_tests: true

@@ -3,7 +3,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-20.04'
+  vmImage: 'ubuntu-22.04'
 
 stages:
 
@@ -15,8 +15,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: "-core"
+      filter_tests: false
 
 # Fedora
 
@@ -26,8 +27,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: "-core <2.14"
+      filter_tests: false
 
 # Fedora
 
@@ -37,19 +39,22 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: "-core >=2.14,<2.15"
+      filter_tests: false
 
 # Galaxy on Fedora
 
 - stage: Galaxy_Fedora_Latest
   dependsOn: []
   jobs:
-  - template: templates/galaxy_tests.yml
+  - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: "-core >=2.14,<2.15"
+      filter_tests: false
+      test_galaxy: true
 
 # CentOS 9 Stream
 
@@ -59,8 +64,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c9s
+      distro: c9s
       ansible_version: "-core >=2.14,<2.15"
+      filter_tests: false
 
 # CentOS 8 Stream
 
@@ -70,5 +76,7 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c8s
+      distro: c8s
       ansible_version: "-core >=2.14,<2.15"
+      target_python: "/usr/libexec/platform-python"
+      filter_tests: false
