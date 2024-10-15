@@ -1,6 +1,6 @@
 ---
 parameters:
-  - name: scenario
+  - name: distro
     type: string
     default: fedora-latest
   - name: build_number
@@ -8,39 +8,23 @@ parameters:
   - name: ansible_version
     type: string
     default: ""
+  - name: skip_git_test
+    type: boolean
+    default: false
+  - name: test_galaxy
+    type: boolean
+    default: false
 
 jobs:
-- template: playbook_tests.yml
-  parameters:
-    group_number: 1
-    number_of_groups: 3
-    build_number: ${{ parameters.build_number }}
-    scenario: ${{ parameters.scenario }}
-    ansible_version: ${{ parameters.ansible_version }}
-    python_version: '< 3.12'
 
-- template: playbook_tests.yml
-  parameters:
-    group_number: 2
-    number_of_groups: 3
-    build_number: ${{ parameters.build_number }}
-    scenario: ${{ parameters.scenario }}
-    ansible_version: ${{ parameters.ansible_version }}
-    python_version: '< 3.12'
-
-- template: playbook_tests.yml
-  parameters:
-    group_number: 3
-    number_of_groups: 3
-    build_number: ${{ parameters.build_number }}
-    scenario: ${{ parameters.scenario }}
-    ansible_version: ${{ parameters.ansible_version }}
-    python_version: '< 3.12'
-
-# Temporarily disabled due to ansible docker plugin issue.
-#- template: pytest_tests.yml
-#  parameters:
-#    build_number: ${{ parameters.build_number }}
-#    scenario: ${{ parameters.scenario }}
-#    ansible_version: ${{ parameters.ansible_version }}
-#    python_version: '< 3.12'
+- ${{ each group in split('1,2,3', ',') }}:
+  - template: run_tests.yml
+    parameters:
+      group_number: ${{ group }}
+      number_of_groups: 3
+      build_number: ${{ parameters.build_number }}
+      distro: ${{ parameters.distro }}
+      ansible_version: ${{ parameters.ansible_version }}
+      python_version: '< 3.12'
+      skip_git_test: ${{ parameters.skip_git_test }}
+      test_galaxy: ${{ parameters.test_galaxy }}

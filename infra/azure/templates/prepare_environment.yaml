@@ -1,0 +1,30 @@
+---
+parameters:
+  - name: distro
+    type: string
+    default: fedora-latest
+  - name: ansible_version
+    type: string
+    default: ""
+  - name: python_version
+    type: string
+    default: 3.x
+  - name: build_number
+    type: string
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '${{ parameters.python_version }}'
+
+  - script: |
+      pip install "ansible${{ parameters.ansible_version }}" -r requirements-tests.txt
+    retryCountOnTaskFailure: 5
+    displayName: Install test dependencies
+
+  - script: ansible-galaxy collection install -r requirements-podman.yml
+    retryCountOnTaskFailure: 5
+    displayName: Install Ansible collections
+
+  - script: infra/image/start.sh ${{ parameters.distro }}-server
+    displayName: Setup target container for ${{ parameters.distro }}

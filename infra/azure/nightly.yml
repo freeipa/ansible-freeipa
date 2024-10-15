@@ -22,8 +22,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: "-core >=2.13,<2.14"
+      skip_git_test: false
 
 - stage: FedoraLatest_Ansible_Core_2_14
   dependsOn: []
@@ -31,8 +32,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: "-core >=2.14,<2.15"
+      skip_git_test: false
 
 - stage: FedoraLatest_Ansible_Core_2_15
   dependsOn: []
@@ -40,8 +42,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: "-core >=2.15,<2.16"
+      skip_git_test: true
 
 - stage: FedoraLatest_Ansible_latest
   dependsOn: []
@@ -49,46 +52,44 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: ""
+      skip_git_test: true
 
 # Galaxy on Fedora
 
 - stage: Galaxy_FedoraLatest_Ansible_Core_2_13
   dependsOn: []
   jobs:
-  - template: templates/galaxy_tests.yml
+  - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: "-core >=2.13,<2.14"
+      skip_git_test: false
+      test_galaxy: true
 
 - stage: Galaxy_FedoraLatest_Ansible_Core_2_14
   dependsOn: []
   jobs:
-  - template: templates/galaxy_tests.yml
+  - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: "-core >=2.14,<2.15"
+      skip_git_test: false
+      test_galaxy: true
 
 - stage: Galaxy_FedoraLatest_Ansible_Core_2_15
   dependsOn: []
   jobs:
-  - template: templates/galaxy_tests.yml
+  - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
+      distro: fedora-latest
       ansible_version: "-core >=2.15,<2.16"
-
-- stage: Galaxy_FedoraLatest_Ansible_latest
-  dependsOn: []
-  jobs:
-  - template: templates/galaxy_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: fedora-latest
-      ansible_version: ""
+      skip_git_test: true
+      test_galaxy: true
 
 # Fedora Rawhide
 
@@ -98,8 +99,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-rawhide
+      distro: fedora-rawhide
       ansible_version: "-core >=2.13,<2.14"
+      skip_git_test: false
 
 - stage: FedoraRawhide_Ansible_Core_2_14
   dependsOn: []
@@ -107,8 +109,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-rawhide
+      distro: fedora-rawhide
       ansible_version: "-core >=2.14,<2.15"
+      skip_git_test: false
 
 - stage: FedoraRawhide_Ansible_Core_2_15
   dependsOn: []
@@ -116,8 +119,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-rawhide
+      distro: fedora-rawhide
       ansible_version: "-core >=2.15,<2.16"
+      skip_git_test: true
 
 - stage: FedoraRawhide_Ansible_latest
   dependsOn: []
@@ -125,8 +129,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: fedora-rawhide
+      distro: fedora-rawhide
       ansible_version: ""
+      skip_git_test: true
 
 # CentoOS 9 Stream
 
@@ -136,8 +141,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c9s
+      distro: c9s
       ansible_version: "-core >=2.13,<2.14"
+      skip_git_test: false
 
 - stage: c9s_Ansible_Core_2_14
   dependsOn: []
@@ -145,8 +151,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c9s
+      distro: c9s
       ansible_version: "-core >=2.14,<2.15"
+      skip_git_test: false
 
 - stage: c9s_Ansible_Core_2_15
   dependsOn: []
@@ -154,8 +161,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c9s
+      distro: c9s
       ansible_version: "-core >=2.15,<2.16"
+      skip_git_test: true
 
 - stage: c9s_Ansible_latest
   dependsOn: []
@@ -163,8 +171,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c9s
+      distro: c9s
       ansible_version: ""
+      skip_git_test: true
 
 # CentOS 8 Stream
 
@@ -174,8 +183,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c8s
+      distro: c8s
       ansible_version: "-core >=2.13,<2.14"
+      skip_git_test: true
 
 - stage: c8s_Ansible_Core_2_14
   dependsOn: []
@@ -183,8 +193,9 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c8s
+      distro: c8s
       ansible_version: "-core >=2.14,<2.15"
+      skip_git_test: false
 
 - stage: c8s_Ansible_Core_2_15
   dependsOn: []
@@ -192,52 +203,6 @@ stages:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
-      scenario: c8s
+      distro: c8s
       ansible_version: "-core >=2.15,<2.16"
-
-- stage: c8s_Ansible_latest
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: c8s
-      ansible_version: ""
-
-# CentOS 7
-
-- stage: CentOS7_Ansible_Core_2_13
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: "-core >=2.13,<2.14"
-
-- stage: CentOS7_Ansible_Core_2_14
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: "-core >=2.14,<2.15"
-
-- stage: CentOS7_Ansible_Core_2_15
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: "-core >=2.15,<2.16"
-
-- stage: CentOS7_Ansible_latest
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: ""
+      skip_git_test: true

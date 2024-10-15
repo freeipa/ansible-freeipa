@@ -22,18 +22,15 @@ jobs:
     retryCountOnTaskFailure: 5
     displayName: Install tools
 
-  - script: |
-      rm -rf ~/.ansible
-      mkdir -p ~/.ansible
-      ln -snf $(readlink -f roles) ~/.ansible/roles
-      ln -snf $(readlink -f plugins) ~/.ansible/plugins
-    displayName: Setup ansible-freeipa using Git repository
-
   - script: ansible-galaxy collection install containers.podman
     displayName: Install Ansible Galaxy collections
 
   - script: infra/image/build.sh -s ${{ parameters.distro }}
     displayName: Build ${{ parameters.distro }} base image
+    env:
+      ANSIBLE_ROLES_PATH: "${PWD}/roles"
+      ANSIBLE_LIBRARY: "${PWD}/plugins/modules"
+      ANSIBLE_MODULE_UTILS: "${PWD}/plugins/module_utils"
 
   - script: podman login -u="$QUAY_ROBOT_USERNAME" -p="$QUAY_ROBOT_TOKEN" quay.io
     displayName: Registry login

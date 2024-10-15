@@ -37,8 +37,7 @@ EOF
 
 name="ansible-freeipa-image-builder"
 hostname="ipaserver.test.local"
-# Number of cpus is not available in usptream CI (Ubuntu 22.04).
-# cpus="2"
+cpus="2"
 memory="3g"
 quayname="quay.io/ansible-freeipa/upstream-tests"
 deploy_server="N"
