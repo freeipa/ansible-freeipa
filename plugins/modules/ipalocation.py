@@ -21,6 +21,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+# TEMP: Modification just to force module test run.
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
