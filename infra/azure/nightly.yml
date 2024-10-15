@@ -10,7 +10,7 @@ schedules:
 trigger: none
 
 pool:
-  vmImage: 'ubuntu-20.04'
+  vmImage: 'ubuntu-22.04'
 
 stages:
 
@@ -202,42 +202,4 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       scenario: c8s
-      ansible_version: ""
-
-# CentOS 7
-
-- stage: CentOS7_Ansible_Core_2_13
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: "-core >=2.13,<2.14"
-
-- stage: CentOS7_Ansible_Core_2_14
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: "-core >=2.14,<2.15"
-
-- stage: CentOS7_Ansible_Core_2_15
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: "-core >=2.15,<2.16"
-
-- stage: CentOS7_Ansible_latest
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
       ansible_version: ""

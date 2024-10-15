@@ -15,16 +15,6 @@ pool:
 
 stages:
 
-# Currently, it's not possible to use CentOS container
-#
-# - stage: CentOS_7
-#   dependsOn: []
-#   jobs:
-#   - template: templates/build_container.yml
-#     parameters:
-#       job_name_suffix: Centos7
-#       distro: centos-7
-
 - stage: CentOS_8_Stream
   dependsOn: []
   jobs:

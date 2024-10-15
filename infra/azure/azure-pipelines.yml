@@ -72,14 +72,3 @@ stages:
       build_number: $(Build.BuildNumber)
       scenario: c8s
       ansible_version: "-core >=2.14,<2.15"
-
-# CentOS 7
-
-- stage: CentOS_7
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      scenario: centos-7
-      ansible_version: "-core >=2.14,<2.15"
