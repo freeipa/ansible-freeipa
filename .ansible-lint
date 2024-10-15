@@ -7,7 +7,6 @@ exclude_paths:
   - .tox/
   - .venv/
   - .yamllint
-  - molecule/
   - tests/azure/
   - meta/runtime.yml
   - requirements-docker.yml
