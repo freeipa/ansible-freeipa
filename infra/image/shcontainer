@@ -22,12 +22,14 @@ container_create() {
            --hostname "${hostname}" \
            --network bridge:interface_name=eth0 \
            --systemd true \
-           --cpus "${cpus}" \
            --memory "${memory}" \
            --memory-swap -1 \
            --no-hosts \
            --replace \
            "${image}"
+
+           # Ubuntu 22.04 does not provide 'cpu' in cgroups in Github/Azure
+           # --cpus "${cpus}" \
     echo
 }
 

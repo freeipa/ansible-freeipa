@@ -1,0 +1,70 @@
+---
+parameters:
+  - name: distro
+    type: string
+    default: fedora-latest
+  - name: build_number
+    type: string
+  - name: ansible_version
+    type: string
+    default: ""
+  - name: target_python
+    type: string
+    default: "/usr/bin/python3"
+  - name: filter_tests
+    type: boolean
+    default: true
+  - name: test_galaxy
+    type: boolean
+    default: false
+
+jobs:
+- template: run_tests.yml
+  parameters:
+    group_number: 1
+    number_of_groups: 3
+    build_number: ${{ parameters.build_number }}
+    distro: ${{ parameters.distro }}
+    ansible_version: ${{ parameters.ansible_version }}
+    python_version: '< 3.12'
+    target_python: ${{ parameters.target_python }}
+    filter_tests: ${{ parameters.filter_tests }}
+    test_galaxy: ${{ parameters.test_galaxy }}
+
+- template: run_tests.yml
+  parameters:
+    group_number: 2
+    number_of_groups: 3
+    build_number: ${{ parameters.build_number }}
+    distro: ${{ parameters.distro }}
+    ansible_version: ${{ parameters.ansible_version }}
+    python_version: '< 3.12'
+    target_python: ${{ parameters.target_python }}
+    filter_tests: ${{ parameters.filter_tests }}
+    test_galaxy: ${{ parameters.test_galaxy }}
+
+- template: run_tests.yml
+  parameters:
+    group_number: 3
+    number_of_groups: 3
+    build_number: ${{ parameters.build_number }}
+    distro: ${{ parameters.distro }}
+    ansible_version: ${{ parameters.ansible_version }}
+    python_version: '< 3.12'
+    target_python: ${{ parameters.target_python }}
+    filter_tests: ${{ parameters.filter_tests }}
+    test_galaxy: ${{ parameters.test_galaxy }}
+
+# Temporarily disabled due to ansible docker plugin issue.
+# - template: run_tests.yml
+#   parameters:
+#     group_number: 3
+#     number_of_groups: 3
+#     build_number: ${{ parameters.build_number }}
+#     distro: ${{ parameters.distro }}
+#     ansible_version: ${{ parameters.ansible_version }}
+#     python_version: '< 3.12'
+#     target_python: ${{ parameters.target_python }}
+#     filter_tests: ${{ parameters.filter_tests }}
+#     test_type: "not playbook"
+#     test_galaxy: ${{ parameters.test_galaxy }}

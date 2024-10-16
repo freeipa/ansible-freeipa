@@ -11,19 +11,9 @@ schedules:
 trigger: none
 
 pool:
-  vmImage: 'ubuntu-22.04'
+  vmImage: 'ubuntu-24.04'
 
 stages:
-
-# Currently, it's not possible to use CentOS container
-#
-# - stage: CentOS_7
-#   dependsOn: []
-#   jobs:
-#   - template: templates/build_container.yml
-#     parameters:
-#       job_name_suffix: Centos7
-#       distro: centos-7
 
 - stage: CentOS_8_Stream
   dependsOn: []
@@ -42,6 +32,14 @@ stages:
     parameters:
       job_name_suffix: C9S
       distro: c9s
+
+- stage: CentOS_10_Stream
+  dependsOn: []
+  jobs:
+  - template: templates/build_container.yml
+    parameters:
+      job_name_suffix: C10S
+      distro: c10s
 
 - stage: Fedora_Latest
   dependsOn: []
