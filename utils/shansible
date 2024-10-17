@@ -64,7 +64,7 @@ query_container_installed_software() {
 ---
 - name: Software environment.
   hosts: ipaserver
-  become: yes
+  become: false
   gather_facts: no
   tasks:
   - name: Retrieve versions.
