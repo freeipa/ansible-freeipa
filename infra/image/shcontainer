@@ -11,18 +11,19 @@ container_create() {
     local image=${2}
     local hostname=${3}
     local memory=${4:-"3g"}
-    local cpus=${5:-"2"}
+    local privileged=""
 
+    [ "${5}" == "privileged" ] && privileged="--privileged"
     [ -n "${hostname}" ] || die "No hostname given"
 
     log info "= Creating ${name} ="
     podman create \
+           ${privileged} \
            --security-opt label=disable \
            --name "${name}" \
            --hostname "${hostname}" \
            --network bridge:interface_name=eth0 \
            --systemd true \
-           --cpus "${cpus}" \
            --memory "${memory}" \
            --memory-swap -1 \
            --no-hosts \

@@ -15,7 +15,7 @@ valid_distro() {
 usage() {
     local prog="${0##*/}"
     cat << EOF
-usage: ${prog} [-h] [-s] distro
+usage: ${prog} [-h] [-p] [-s] distro
     ${prog} build a container image to test ansible-freeipa.
 EOF
 }
@@ -29,6 +29,7 @@ positional arguments:
 
 optional arguments:
 
+    -p  Give extended privileges to the container
     -s  Deploy IPA server
 
 EOF
@@ -40,12 +41,14 @@ hostname="ipaserver.test.local"
 # cpus="2"
 memory="3g"
 quayname="quay.io/ansible-freeipa/upstream-tests"
+privileged=""
 deploy_server="N"
 
-while getopts ":hs" option
+while getopts ":hps" option
 do
     case "${option}" in
         h) help && exit 0 ;;
+        p) privileged="privileged" ;;
         s) deploy_server="Y" ;;
         *) die -u "Invalid option: ${option}" ;;
     esac
@@ -82,7 +85,7 @@ container_remove_image_if_exists "${tag}"
     container_remove_image_if_exists "${server_tag}"
 
 container_build "${tag}" "${BASEDIR}/dockerfile/${distro}" "${BASEDIR}"
-container_create "${name}" "${tag}" "${hostname}" "${memory}"
+container_create "${name}" "${tag}" "${hostname}" "${memory}" "${privileged}"
 container_commit "${name}" "${quayname}:${tag}"
 
 if [ "${deploy_server}" == "Y" ]
