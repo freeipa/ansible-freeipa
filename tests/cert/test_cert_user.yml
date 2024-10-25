@@ -36,7 +36,7 @@
   - name: Crete CSR
     ansible.builtin.shell:
       cmd:
-        'openssl req -newkey rsa:1024 -keyout /dev/null -nodes -subj /CN=certuser -reqexts IECUserRoles
+        'openssl req -newkey rsa:2048 -keyout /dev/null -nodes -subj /CN=certuser -reqexts IECUserRoles
           -config <(cat /etc/pki/tls/openssl.cnf; printf "[IECUserRoles]\n1.2.840.10070.8.1=ASN1:UTF8String:hello world")'
       executable: /bin/bash
     register: user_req
