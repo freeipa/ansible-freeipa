@@ -9,24 +9,35 @@ TOPDIR="$(readlink -f "${SCRIPTDIR}/../..")"
 container_create() {
     local name=${1}
     local image=${2}
-    local hostname=${3}
-    local memory=${4:-"3g"}
-    local cpus=${5:-"2"}
+    shift 2
+    declare -a extra_opts=()
+    for opt in "$@"
+    do
+        [ -z "${opt}" ] && continue
+        case "${opt}" in
+            hostname=*) extra_opts+=("--${opt}") ;;
+            cpus=*) extra_opts+=("--${opt}") ;;
+            memory=*) extra_opts+=("--${opt}") ;;
+            privileged) extra_opts+=("--${opt}") ;;
+            *) log error "container_create: Invalid option: ${opt}" ;;
+        esac
+    done
 
-    [ -n "${hostname}" ] || die "No hostname given"
+    # ensure default values are set
+    [[ " ${extra_opts[*]} " =~ " --cpus=" ]] || extra_opts+=("--cpus=2")
+    [[ " ${extra_opts[*]} " =~ " --hostname=" ]] \
+        || extra_opts+=("--hostname=ipaserver.test.local")
 
     log info "= Creating ${name} ="
     podman create \
            --security-opt label=disable \
-           --name "${name}" \
-           --hostname "${hostname}" \
            --network bridge:interface_name=eth0 \
            --systemd true \
-           --cpus "${cpus}" \
-           --memory "${memory}" \
+           --name "${name}" \
            --memory-swap -1 \
            --no-hosts \
            --replace \
+           "${extra_opts[@]}" \
            "${image}"
     echo
 }
