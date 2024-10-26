@@ -28,7 +28,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
-      ansible_version: "-core <2.14"
+      ansible_version: "-core <2.16"
       skip_git_test: true
 
 # Fedora
@@ -40,8 +40,8 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
-      ansible_version: "-core >=2.14,<2.15"
       skip_git_test: true
+      ansible_version: "-core >=2.16,<2.17"
 
 # Galaxy on Fedora
 
@@ -52,7 +52,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
-      ansible_version: "-core >=2.14,<2.15"
+      ansible_version: "-core >=2.16,<2.17"
       skip_git_test: true
       test_galaxy: true
 
@@ -65,7 +65,7 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       distro: c9s
-      ansible_version: "-core >=2.14,<2.15"
+      ansible_version: "-core >=2.16,<2.17"
       skip_git_test: true
 
 # CentOS 8 Stream
@@ -77,5 +77,5 @@ stages:
     parameters:
       build_number: $(Build.BuildNumber)
       distro: c8s
-      ansible_version: "-core >=2.14,<2.15"
+      ansible_version: "-core <2.17"
       skip_git_test: true
