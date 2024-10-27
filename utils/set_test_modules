@@ -1,8 +1,7 @@
 #!/bin/bash -eu
 # This file shoud be source'd (. set_test_modules) rather than executed.
-
 #
-# Set "BASE_BRANCH" to a different branch to compare. 
+# Set SKIP_GIT_TEST="True" or use -a to prevent git modification comparison.
 #
 
 RED="\033[31;1m"
@@ -18,27 +17,45 @@ TOPDIR="$(dirname "${BASH_SOURCE[0]}")/.."
 
 pushd "${TOPDIR}" >/dev/null 2>&1 || die "Failed to change directory."
 
+SKIP_GIT_TEST=${SKIP_GIT_TEST:-"False"}
+
+while getopts ":a" opt
+do
+    case "${opt}" in
+        a) SKIP_GIT_TEST="True" ;;
+        *) ;; # ignore other options
+    esac
+done
+
 files_list=$(mktemp)
 
-remote="$(basename $(mktemp -u remote_XXXXXX))"
-git remote add ${remote} https://github.com/freeipa/ansible-freeipa
-git fetch --prune --no-tags --quiet ${remote}
-git diff "${remote}/master" --name-only > "${files_list}"
-git remote remove ${remote}
+enabled_modules="None"
+enabled_tests="None"
+
+if [ "${SKIP_GIT_TEST}" != "True" ]
+then
+    remote="$(basename "$(mktemp -u remote_XXXXXX)")"
+    git remote add "${remote}" https://github.com/freeipa/ansible-freeipa
+    git fetch --prune --no-tags --quiet "${remote}"
+    git diff "${remote}/master" --name-only > "${files_list}"
+    git remote remove "${remote}"
+
+    # shellcheck disable=SC2046
+    enabled_modules="$(${python} utils/get_test_modules.py $(cat "${files_list}"))"
+    [ -z "${enabled_modules}" ] && enabled_modules="None"
+
+    # Get individual tests that should be executed
+    mapfile -t tests < <(sed -n 's#.*/\(test_[^/]*\).yml#\1#p' "${files_list}" | tr -d " ")
+    [ ${#tests[@]} -gt 0 ] && enabled_tests=$(IFS=, ; echo "${tests[*]}")
+    [ -z "${enabled_tests}" ] && enabled_tests="None"
+
+    [ -n "${enabled_tests}" ] && IPA_ENABLED_TESTS="${enabled_tests},${IPA_ENABLED_TESTS}"
+    [ -n "${enabled_modules}" ] && IPA_ENABLED_MODULES="${enabled_modules},${IPA_ENABLED_MODULES}"
+
+    rm -f "${files_list}"
+fi
 
 # Get all modules that should have tests executed
-enabled_modules="$(${python} utils/get_test_modules.py $(cat "${files_list}"))"
-[ -z "${enabled_modules}" ] && enabled_modules="None"
-
-# Get individual tests that should be executed
-mapfile -t tests < <(sed -n "s#.*/\(test_[^/]*\).yml#\1#p" "${files_list}" | tr -d " ")
-[ ${#tests[@]} -gt 0 ] && enabled_tests=$(IFS=, ; echo "${tests[*]}")
-[ -z "${enabled_tests}" ] && enabled_tests="None"
-
-[ -n "${enabled_tests}" ] && IPA_ENABLED_TESTS="${enabled_tests},${IPA_ENABLED_TESTS}"
-[ -n "${enabled_modules}" ] && IPA_ENABLED_MODULES="${enabled_modules},${IPA_ENABLED_MODULES}"
-
-rm -f "${files_list}"
 
 export IPA_ENABLED_MODULES
 export IPA_ENABLED_TESTS
