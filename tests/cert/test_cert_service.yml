@@ -51,7 +51,7 @@
 
   - name: Create signing request for certificate
     ansible.builtin.shell:
-      cmd: "openssl req -newkey rsa:1024 -keyout /dev/null -nodes -subj /CN=certservice.{{ ipa_domain }}"
+      cmd: "openssl req -newkey rsa:2048 -keyout /dev/null -nodes -subj /CN=certservice.{{ ipa_domain }}"
     register: service_req
 
   - name: Create CSR file

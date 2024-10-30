@@ -40,7 +40,7 @@
 
   - name: Create CSR
     ansible.builtin.shell:
-      cmd: "openssl req -newkey rsa:1024 -keyout /dev/null -nodes -subj /CN=certhost.{{ ipa_domain }}"
+      cmd: "openssl req -newkey rsa:2048 -keyout /dev/null -nodes -subj /CN=certhost.{{ ipa_domain }}"
     register: host_req
 
   - name: Create CSR file
