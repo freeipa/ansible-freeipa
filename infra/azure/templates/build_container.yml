@@ -1,7 +1,5 @@
 ---
 parameters:
-  - name: job_name_suffix
-    type: string
   - name: distro
     type: string
   - name: python_version
@@ -11,7 +9,7 @@ parameters:
     default: ""
 
 jobs:
-- job: BuildTestImage${{ parameters.job_name_suffix }}
+- job: BuildTestImage_${{ join('_', split(parameters.distro, '-')) }}
   displayName: Build ${{ parameters.distro }} test container
   steps:
   - task: UsePythonVersion@0
