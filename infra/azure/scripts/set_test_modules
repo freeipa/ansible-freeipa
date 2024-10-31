@@ -11,7 +11,8 @@ die() {
     echo -e "${RED}${*}${RST}" >&2
 }
 
-TOPDIR="$(dirname "${BASH_SOURCE[0]}")/.."
+BASEDIR="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"
+TOPDIR="$(readlink -f "${BASEDIR}/../../..")"
 
 [ -n "$(command -v python3)" ] && python="$(command -v python3)" || python="$(command -v python2)"
 
@@ -41,7 +42,7 @@ then
     git remote remove "${remote}"
 
     # shellcheck disable=SC2046
-    enabled_modules="$(${python} utils/get_test_modules.py $(cat "${files_list}"))"
+    enabled_modules="$(${python} "${BASEDIR}/get_test_modules.py" $(cat "${files_list}"))"
     [ -z "${enabled_modules}" ] && enabled_modules="None"
 
     # Get individual tests that should be executed
