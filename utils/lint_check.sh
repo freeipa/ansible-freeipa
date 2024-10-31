@@ -35,7 +35,6 @@ echo -e "${INFO}Running 'yamllint'...${RST}"
 yaml_dirs=(
     "tests"
     "playbooks"
-    "molecule"
     "roles"
 )
 yamllint -f colored "${yaml_dirs[@]}"

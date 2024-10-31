@@ -11,7 +11,7 @@ TOPDIR="$(readlink -f "${BASEDIR}/../..")"
 usage() {
     local prog="${0##*/}"
     cat << EOF
-usage: ${prog} [-h] [-l] image
+usage: ${prog} [-h] [-l] [-n HOSTNAME ] image
     ${prog} start a prebuilt ansible-freeipa test container image.
 EOF
 }
@@ -24,7 +24,14 @@ positional arguments:
 
 optional arguments:
 
-    -l    Try to use local image first, if not found download.
+    -h            Show this message
+    -l            Try to use local image first, if not found download.
+    -n HOSTNAME   Set container hostname
+
+NOTE:
+    - The hostname must be the same as the hostname of the container
+      when FreeIPA was deployed. Use only if you built the image and
+      defined its hostname.
 
 EOF
 }
@@ -45,11 +52,12 @@ name="ansible-freeipa-tests"
 hostname="ipaserver.test.local"
 try_local_first="N"
 
-while getopts ":hl" option
+while getopts ":hln:" option
 do
     case "${option}" in
         h) help && exit 0 ;;
         l) try_local_first="Y" ;;
+        n) hostname="${OPTARG}" ;;
         *) die -u "Invalid option: ${option}" ;;
     esac
 done
@@ -79,7 +87,7 @@ fi
 
 [ -z "${local_image}" ] && die "Image '${image}' is not valid"
 
-container_create "${name}" "${local_image}" "${hostname}"
+container_create "${name}" "${local_image}" "hostname=${hostname}"
 container_start "${name}"
 container_wait_for_journald "${name}"
 container_wait_up "${name}"

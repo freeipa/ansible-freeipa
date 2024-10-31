@@ -15,7 +15,7 @@ valid_distro() {
 usage() {
     local prog="${0##*/}"
     cat << EOF
-usage: ${prog} [-h] [-s] distro
+usage: ${prog} [-h] [-p] [-c HOSTNAME] [-s] distro
     ${prog} build a container image to test ansible-freeipa.
 EOF
 }
@@ -29,23 +29,26 @@ positional arguments:
 
 optional arguments:
 
-    -s  Deploy IPA server
-
+    -c HOSTNAME   Container hostname
+    -p            Give extended privileges to the container
+    -s            Deploy IPA server
 EOF
 }
 
 name="ansible-freeipa-image-builder"
 hostname="ipaserver.test.local"
-# Number of cpus is not available in usptream CI (Ubuntu 22.04).
-# cpus="2"
+cpus="2"
 memory="3g"
 quayname="quay.io/ansible-freeipa/upstream-tests"
 deploy_server="N"
+privileged=""
 
-while getopts ":hs" option
+while getopts ":hc:ps" option
 do
     case "${option}" in
         h) help && exit 0 ;;
+        c) hostname="${OPTARG}" ;;
+        p) privileged="privileged" ;;
         s) deploy_server="Y" ;;
         *) die -u "Invalid option: ${option}" ;;
     esac
@@ -82,12 +85,27 @@ container_remove_image_if_exists "${tag}"
     container_remove_image_if_exists "${server_tag}"
 
 container_build "${tag}" "${BASEDIR}/dockerfile/${distro}" "${BASEDIR}"
-container_create "${name}" "${tag}" "${hostname}" "${memory}"
+container_create "${name}" "${tag}" \
+    "hostname=${hostname}" \
+    "memory=${memory}" \
+    "cpus=${cpus}" \
+    "${privileged}"
 container_commit "${name}" "${quayname}:${tag}"
 
 if [ "${deploy_server}" == "Y" ]
 then
     deployed=false
+
+    # Set path to ansible-freeipa roles
+    [ -z "${ANSIBLE_ROLES_PATH:-""}" ] && export ANSIBLE_ROLES_PATH="${TOPDIR}/roles"
+
+    # Install collection containers.podman if not available
+    if [ -z "$(ansible-galaxy collection list containers.podman)" ]
+    then
+        tmpdir="$(mktemp -d)"
+        export ANSIBLE_COLLECTIONS_PATH="${tmpdir}"
+        ansible-galaxy collection install -p "${tmpdir}" containers.podman
+    fi
 
     [ "${container_state}" != "running" ] && container_start "${name}"
 

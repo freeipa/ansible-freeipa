@@ -102,47 +102,15 @@ The pytests are tests that will execute small playbooks and then will verify the
 To select only these tests on a test execution use the option `-m "not playbook"`.
 
 
-## Running tests in a docker container
+## Running tests in a container
 
-It's also possible to run the tests in a container.
-
-### Creating a container to run the tests
-
-Before setting up a container you will need to install molecule framework:
-
-```
-pip install molecule-plugins[docker]
-```
-
-Now you can start a test container using the following command:
-```
-molecule create -s c8s
-```
-
-Note: Currently the containers available for running the tests are:
- * fedora-latest
- * centos-7
- * c8s
- * c9s
-
-### Running the tests inside the container
+It's also possible to run the tests in a container. Use the script `infra/image/start.sh` to start a container.
 
 To run the tests you will use pytest (works the same as for VMs).
 
 ```
-RUN_TESTS_IN_DOCKER=1 IPA_SERVER_HOST=c8s pytest
+RUN_TESTS_IN_DOCKER=podman IPA_SERVER_HOST=ansbile-freeipa-tests pytest -m "playbook"
 ```
-
-### Cleaning up after tests
-
-After running the tests you should probably destroy the test container using:
-
-```
-molecule destroy -s c8s
-```
-
-See [Running the tests](#running-the-tests) section for more information on available options.
-
 
 ## Running local tests with upstream CI images
 
@@ -172,8 +140,6 @@ By default the tests are executed against the latest version of the Fedora image
 utils/run-tests.sh -i c9s tests/host/test_host.yml
 ```
 
-
 ## Upcoming/desired improvements:
 
-* A script to pre-config the complete test environment using virsh.
-* A test matrix to run tests against different distros in parallel (probably using tox).
+* A test matrix to run tests against different distros in parallel.

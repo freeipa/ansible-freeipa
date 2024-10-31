@@ -1,0 +1,30 @@
+---
+parameters:
+  - name: distro
+    type: string
+    default: fedora-latest
+  - name: build_number
+    type: string
+  - name: ansible_version
+    type: string
+    default: ""
+  - name: skip_git_test
+    type: boolean
+    default: false
+  - name: test_galaxy
+    type: boolean
+    default: false
+
+jobs:
+
+- ${{ each group in split('1,2,3', ',') }}:
+  - template: run_tests.yml
+    parameters:
+      group_number: ${{ group }}
+      number_of_groups: 3
+      build_number: ${{ parameters.build_number }}
+      distro: ${{ parameters.distro }}
+      ansible_version: ${{ parameters.ansible_version }}
+      python_version: '< 3.12'
+      skip_git_test: ${{ parameters.skip_git_test }}
+      test_galaxy: ${{ parameters.test_galaxy }}
