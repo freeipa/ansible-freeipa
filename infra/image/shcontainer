@@ -2,9 +2,20 @@
 # This file is meant to be source'd by other scripts
 
 SCRIPTDIR="$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")"
-TOPDIR="$(readlink -f "${SCRIPTDIR}/../..")"
 
-. "${TOPDIR}/utils/shfun"
+# shellcheck source=infra/image/shfun
+. "${SCRIPTDIR}/shfun"
+
+list_images() {
+    local quay_api="https://quay.io/api/v1/repository/ansible-freeipa/upstream-tests/tag"
+    log info "Available images on quay:"
+    curl --silent -L "${quay_api}" | jq '.tags[]|.name' | tr -d '"'| sort | uniq | sed "s/.*/    &/"
+    echo
+    log info "Local images (use -l):"
+    local_image=$(container_image_list "${repo:-"quay.io/ansible-freeipa/upstream-tests"}:")
+    echo "${local_image}" | sed -e "s/.*://" | sed "s/.*/    &/"
+    echo
+}
 
 container_create() {
     local name=${1}

@@ -3,50 +3,32 @@
 
 SCRIPTDIR="$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")"
 
+# shellcheck source=infra/image/shlog
 . "${SCRIPTDIR}/shlog"
 
-[ -n "$(command -v python3)" ] && python="$(command -v python3)" || python="$(command -v python2)"
-export python
-
-trap interrupt_exception SIGINT
-
-interrupt_exception() {
-    trap - SIGINT
-    log warn "User interrupted test execution."
-    # shellcheck disable=SC2119
-    cleanup "${scenario:+${scenario}}"
-    exit 1
-}
-
 run_if_exists() {
+    trap - ERR
     cmd="${1}"
     shift
     [ -n "$(command -v "${cmd}")" ] && "${cmd}" "${@}"
 }
 
-# shellcheck disable=SC2120
-cleanup() {
-    local container container_engine
-    container="${1:-${scenario:+${scenario}}}"
-    container_engine="${2:-${engine:-"podman"}}"
-    if [ "${STOP_CONTAINER:-"Y"}" == "Y" ] && [ -n "${container}" ]
-    then
-	    run_if_exists stop_container "${container}" "${container_engine}"
-        [ -f "${inventory:-}" ] && rm "${inventory}"
-    else
-        if [ -n "${container}" ]
+get_python_executable() {
+    trap - ERR
+    for py in "/usr/libexec/platform-python" "python3" "python2" "python"
+    do
+        python_cmd="$(command -v "${py}")"
+        if [ -n "${python_cmd}" ]
         then
-            log info "Keeping container: $(${container_engine} ps --format "{{.Names}} - {{.ID}}" --filter "name=${container}")"
+            echo "${python_cmd}"
+            return 0
         fi
-    fi
-    if [ "${STOP_VIRTUALENV:-"N"}" == "Y" ]
-    then
-        echo "Deactivating virtual environment"
-        run_if_exists deactivate
-    fi
+    done
+    die "Could not find python executable."
 }
 
 start_virtual_environment() {
+    trap - ERR
     # options -f
     local FORCE_ENV VENV envdirectory
     FORCE_ENV="N"
@@ -58,6 +40,8 @@ start_virtual_environment() {
         esac
     done
     envdirectory="${test_env:-/tmp/ansible-freeipa-tests}"
+
+    python="$(get_python_executable)"
 
     # Prepare virtual environment
     VENV=$(in_python_virtualenv && echo Y || echo N)
@@ -77,7 +61,7 @@ start_virtual_environment() {
         then
             log info "Creating virtual environment: ${envdirectory}..."
 	    log warn "RUN: ${python} -m venv ${envdirectory}"
-	    ${python} -m venv "${envdirectory}" || die "Cannot create virtual environment."
+	    "${python}" -m venv "${envdirectory}" || die "Cannot create virtual environment."
 	fi
 	log info "Starting virtual environment: ${envdirectory}"
 	[ -f "${envdirectory}/bin/activate" ] || die "Failed to create virtual environment."
@@ -100,8 +84,7 @@ die() {
        shift 1
     fi
     log error "${*}"
-    STOP_CONTAINER="N"
-    cleanup "${scenario:+${scenario}}"
+    export STOP_CONTAINER="N"
     [ "${usg}" == "Y" ] && run_if_exists usage
     exit 1
 }
