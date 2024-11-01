@@ -25,7 +25,7 @@ jobs:
   - script: ansible-galaxy collection install containers.podman
     displayName: Install Ansible Galaxy collections
 
-  - script: infra/image/build.sh -s ${{ parameters.distro }}
+  - script: infra/image/build.sh -p -s ${{ parameters.distro }}
     displayName: Build ${{ parameters.distro }} base image
     env:
       ANSIBLE_ROLES_PATH: "${PWD}/roles"
