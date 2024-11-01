@@ -6,7 +6,7 @@ dnf makecache; \
 dnf --assumeyes install \
     /usr/bin/python3 \
     /usr/bin/python3-config \
-    /usr/bin/dnf-3 \
+    python3-libdnf5 \
     sudo \
     bash \
     systemd \
