@@ -526,6 +526,10 @@ def module_params_get(module, name, allow_empty_list_item=False):
 
 def module_params_get_lowercase(module, name, allow_empty_list_item=False):
     value = module_params_get(module, name, allow_empty_list_item)
+    return convert_param_value_to_lowercase(value)
+
+
+def convert_param_value_to_lowercase(value):
     if isinstance(value, list):
         value = [v.lower() for v in value]
     if isinstance(value, (str, unicode)):
@@ -1584,3 +1588,232 @@ class IPAAnsibleModule(AnsibleModule):
         ts = time.time()
         # pylint: disable=super-with-arguments
         super(IPAAnsibleModule, self).warn("%f %s" % (ts, warning))
+
+
+class EntryFactory:
+    """
+    Implement an Entry Factory to extract objects from modules.
+
+    When defining an ansible-freeipa module which allows the setting of
+    multiple objects in a single task, the object parameters can be set
+    as a set of parameters, or as a list of dictionaries with multiple
+    objects.
+
+    The EntryFactory abstracts the extraction of the entry values so
+    that the entries set in a module can be treated as a list of objects
+    independent of the way the objects have been defined (as single object
+    defined by its parameters or as a list).
+
+    Parameters
+    ----------
+        ansible_module: The ansible module to be processed.
+        invalid_params: The list of invalid parameters for the current
+            state/action combination.
+        multiname: The name of the list of objects parameters.
+        params: a dict of the entry parameters with its configuration as a
+            dict. The 'convert' configuration is a list of functions to be
+            applied, in order, to the provided value for the paarameter. Any
+            other configuration field is ignored in the current implementation.
+        validate_entry: an optional function to validate the entry values.
+            This function is called after the parameters for the current
+            state/action are checked, and can be used to perform further
+            validation or modification to the entry values. If the entry is
+            not valid, 'fail_json' should be called. The function must return
+            the entry, modified or not. The funcion signature is
+            'def fn(module:IPAAnsibleModule, entry: Entry) -> Entry:'
+        **user_vars: any other keyword argument is passed to the
+            validate_entry callback as user data.
+
+    Example
+    -------
+        def validate_entry(module, entry, mydata):
+            if (something_is_wrong(entry)):
+                module.fail_json(msg=f"Something wrong with {entry.name}")
+            entry.some_field = mydata
+            return entry
+
+        def main():
+            # ...
+            # Create param mapping, all moudle parameters must be
+            # present as keys of this dictionary
+            params = {
+                "name": {},
+                "description": {}
+                "user": {
+                    "convert": [convert_param_value_to_lowercase]
+                },
+                "group": {"convert": [convert_param_value_to_lowercase]}
+            }
+            entries = EntryFactory(
+                module, invalid_params, "entries", params,
+                validate_entry=validate_entry,
+                mydata=1234
+            )
+            #...
+            with module.ipa_connect(context=context):
+                # ...
+                for entry in entries:
+                    # process entry and create commands
+            # ...
+
+    """
+
+    def __init__(
+        self,
+        ansible_module,
+        invalid_params,
+        multiname,
+        params,
+        validate_entry=None,
+        **user_vars
+    ):
+        """Initialize the Entry Factory."""
+        self.ansible_module = ansible_module
+        self.invalid_params = set(invalid_params)
+        self.multiname = multiname
+        self.params = params
+        self.convert = {
+            param: (config or {}).get("convert", [])
+            for param, config in params.items()
+        }
+        self.validate_entry = validate_entry
+        self.user_vars = user_vars
+        self.__entries = self._get_entries()
+
+    def __iter__(self):
+        """Initialize factory iterator."""
+        return iter(self.__entries)
+
+    def __next__(self):
+        """Retrieve next entry."""
+        return next(self.__entries)
+
+    def check_invalid_parameter_usage(self, entry_dict, fail_on_check=True):
+        """
+        Check if entry_dict parameters are valid for the current state/action.
+
+        Parameters
+        ----------
+            entry_dict: A dictionary representing the module parameters.
+            fail_on_check: If set to True wil make the module execution fail
+                if invalid parameters are used.
+
+        Return
+        ------
+            If fail_on_check is not True, returns True if the entry parameters
+            are valid and execution should proceed, False otherwise.
+
+        """
+        state = self.ansible_module.params_get("state")
+        action = self.ansible_module.params_get("action")
+
+        if action is None:
+            msg = "Arguments '{0}' can not be used with state '{1}'"
+        else:
+            msg = "Arguments '{0}' can not be used with action " \
+                  "'{2}' and state '{1}'"
+
+        entry_params = set(k for k, v in entry_dict.items() if v is not None)
+        match_invalid = self.invalid_params & entry_params
+        if match_invalid:
+            if fail_on_check:
+                self.ansible_module.fail_json(
+                    msg=msg.format(", ".join(match_invalid), state, action))
+            return False
+
+        if not entry_dict.get("name"):
+            if fail_on_check:
+                self.ansible_module.fail_json(msg="Entry 'name' is not set.")
+            return False
+
+        return True
+
+    class Entry:
+        """Provide an abstraction to handle module entries."""
+
+        def __init__(self, values):
+            """Initialize entry to be used as dict or object."""
+            self.values = values
+            for key, value in values.items():
+                setattr(self, key, value)
+
+        def copy(self):
+            """Make a copy of the entry."""
+            return EntryFactory.Entry(self.values.copy())
+
+        def __setitem__(self, item, value):
+            """Allow entries to be treated as dictionaries."""
+            self.values[item] = value
+            setattr(self, item, value)
+
+        def __getitem__(self, item):
+            """Allow entries to be treated as dictionaries."""
+            return self.values[item]
+
+        def __setattr__(self, attrname, value):
+            if attrname != "values" and attrname in self.values:
+                self.values[attrname] = value
+            super().__setattr__(attrname, value)
+
+        def __repr__(self):
+            """Provide a string representation of the stored values."""
+            return repr(self.values)
+
+    def _get_entries(self):
+        """Retrieve all entries from the module."""
+        def copy_entry_and_set_name(entry, name):
+            _result = entry.copy()
+            _result.name = name
+            return _result
+
+        names = self.ansible_module.params_get("name")
+        if names is not None:
+            if not isinstance(names, list):
+                names = [names]
+            # Get entrie(s) defined by the 'name' parameter.
+            # For most states and modules, 'name' will represent a single
+            # entry, but for some states, like 'absent', it could be a
+            # list of names.
+            _entry = self._extract_entry(
+                self.ansible_module,
+                IPAAnsibleModule.params_get
+            )
+            # copy attribute values if 'name' returns a list
+            _entries = [
+                copy_entry_and_set_name(_entry, _name)
+                for _name in names
+            ]
+        else:
+            _entries = [
+                self._extract_entry(data, dict.get)
+                for data in self.ansible_module.params_get(self.multiname)
+            ]
+
+        return _entries
+
+    def _extract_entry(self, data, param_get):
+        """Extract an entry from the given data, using the given method."""
+        def get_entry_param_value(parameter, conversions):
+            _value = param_get(data, parameter)
+            if _value and conversions:
+                for fn in conversions:
+                    _value = fn(_value)
+            return _value
+
+        # Build 'parameter: value' mapping for all module parameters
+        _entry = {
+            parameter: get_entry_param_value(parameter, conversions)
+            for parameter, conversions in self.convert.items()
+        }
+
+        # Check if any invalid parameter is used.
+        self.check_invalid_parameter_usage(_entry)
+
+        # Create Entry object
+        _result = EntryFactory.Entry(_entry)
+        # Call entry validation callback, if provided.
+        if self.validate_entry:
+            _result = self.validate_entry(
+                self.ansible_module, _result, **self.user_vars)
+
+        return _result
