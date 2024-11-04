@@ -55,35 +55,31 @@ echo "  IP: '${IP}'"
 echo "  PTR: '${PTR}'"
 echo "  FORWARDER: '${FORWARDER}'"
 
-if ! echo "SomeADMINpassword" | kinit -c "${KRB5CCNAME}" admin >/dev/null
-then
-    echo "ERROR: Failed to obtain Kerberos ticket"
-    exit 1
-fi
-
-ZONES=$(ipa dnszone-find --name-from-ip="${HOSTNAME}." --raw --pkey-only \
-    | grep "idnsname:" | awk -F": " '{print $2}')
+ZONES=$(ipa -e in_server=true dnszone-find --name-from-ip="${HOSTNAME}." \
+            --raw --pkey-only | grep "idnsname:" | awk -F": " '{print $2}')
 for zone in ${ZONES}; do
     echo
     if [[ "${zone}" == *".in-addr.arpa."* ]]; then
         echo "Fixing reverse zone ${zone}:"
-        OLD_PTR=$(ipa dnsrecord-find "${zone}" --ptr-rec="${HOSTNAME}." \
-                      --raw | grep "idnsname:" | awk -F": " '{print $2}')
+        OLD_PTR=$(ipa -e in_server=true dnsrecord-find "${zone}" \
+                      --ptr-rec="${HOSTNAME}." --raw | grep "idnsname:" | \
+                      awk -F": " '{print $2}')
         if [ -z "${OLD_PTR}" ] || [ -n "${OLD_PTR//[0-9]}" ]; then
             echo "ERROR: Failed to get old PTR from '${zone}': '${OLD_PTR}'"
         else
-            ipa dnsrecord-mod "${zone}" "${OLD_PTR}" --ptr-rec="${HOSTNAME}." \
-                --rename="${PTR}" || true
+            ipa -e in_server=true dnsrecord-mod "${zone}" "${OLD_PTR}" \
+                --ptr-rec="${HOSTNAME}." --rename="${PTR}" || true
         fi
     else
         echo "Fixing forward zone ${zone}:"
-        ipa dnsrecord-mod test.local "${HOSTNAME%%.*}" --a-rec="$IP" || true
-        ipa dnsrecord-mod test.local ipa-ca --a-rec="$IP" || true
+        ipa -e in_server=true dnsrecord-mod test.local "${HOSTNAME%%.*}" \
+            --a-rec="$IP" || true
+        ipa -e in_server=true dnsrecord-mod test.local ipa-ca \
+            --a-rec="$IP" || true
     fi
 done
 
-ipa dnsserver-mod "${HOSTNAME}" --forwarder="${FORWARDER}" || true
-
-kdestroy -c "${KRB5CCNAME}" -A
+ipa -e in_server=true dnsserver-mod "${HOSTNAME}" \
+    --forwarder="${FORWARDER}" || true
 
 exit 0
