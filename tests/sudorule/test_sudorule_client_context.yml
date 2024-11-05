@@ -1,8 +1,8 @@
 ---
 - name: Test sudorule
   hosts: ipaclients, ipaserver
-  become: no
-  gather_facts: no
+  become: false
+  gather_facts: false
 
   tasks:
   - name: Include FreeIPA facts.

@@ -3,11 +3,15 @@
 - name: Test sudorule
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: true
-  gather_facts: true
+  gather_facts: false
 
   tasks:
 
   # setup
+  - name: Ensure DNS Ansible facts are available
+    ansible.builtin.setup:
+      gather_subset: dns
+
   - name: Ensure test user is present
     ipauser:
       ipaadmin_password: SomeADMINpassword
@@ -1157,7 +1161,7 @@
       hostmask: 192.168.120.0/24
       action: member
     register: result
-    check_mode: yes
+    check_mode: true
     failed_when: not result.changed or result.failed
 
   - name: Ensure sudorule hostmask member is present

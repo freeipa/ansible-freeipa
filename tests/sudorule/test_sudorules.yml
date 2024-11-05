@@ -2,7 +2,7 @@
 - name: Test sudorule
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: false
-  gather_facts: true  # required for ansible_facts['fqdn']
+  gather_facts: false
 
   module_defaults:
     ipauser:

@@ -1,8 +1,8 @@
 ---
 - name: Test sudorule members should be case insensitive.
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
-  become: no
-  gather_facts: no
+  become: false
+  gather_facts: false
 
   vars:
     groups_present:
@@ -37,7 +37,7 @@
       ipahost:
         ipaadmin_password: SomeADMINpassword
         name: "{{ item }}.{{ ipa_domain }}"
-        force: yes
+        force: true
       loop: "{{ groups_present }}"
 
     - name: Ensure test users exist.
