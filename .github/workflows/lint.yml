@@ -34,21 +34,6 @@ jobs:
       - name: Run yaml-lint
         uses: ibiqlik/action-yamllint@v3.1.1
 
-  pydocstyle:
-    name: Verify pydocstyle
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4.1.1
-        with:
-          fetch-depth: 1
-      - uses: actions/setup-python@v5.1.0
-        with:
-          python-version: "3.x"
-      - name: Run pydocstyle
-        run: |
-            pip install pydocstyle
-            pydocstyle
-
   flake8:
     name: Verify flake8
     runs-on: ubuntu-latest

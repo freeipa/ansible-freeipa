@@ -5,6 +5,5 @@ flake8==7.0.0
 flake8-bugbear
 pylint>=3.2
 wrapt==1.14.1
-pydocstyle==6.3.0
 yamllint==1.35.1
 ansible-lint>=24.5.0
