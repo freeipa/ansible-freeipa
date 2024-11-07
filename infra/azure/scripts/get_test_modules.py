@@ -159,7 +159,7 @@ def map_test_module_sources(base):
     """Create a map of 'test-modules' to 'plugin-sources', from 'base'."""
     # Find root directory of playbook tests.
     script_dir = os.path.dirname(__file__)
-    test_root = os.path.realpath(os.path.join(script_dir, f"../{base}"))
+    test_root = os.path.realpath(os.path.join(script_dir, f"../../../{base}"))
     # create modules:source_files map
     _result = {}
     for test_module in [d for d in os.scandir(test_root) if d.is_dir()]:
@@ -170,7 +170,7 @@ def map_test_module_sources(base):
 
 
 def usage(err=0):
-    print("filter_plugins.py [-h|--help] [-p|--pytest] PY_SRC...")
+    print("get_test_modules.py [-h|--help] [-p|--pytest] PY_SRC...")
     print(
         """
 Print a comma-separated list of modules that should be tested if

@@ -46,7 +46,7 @@ jobs:
     displayName: Set repo rootdir
 
   - script: |
-      . "${TOPDIR}/utils/set_test_modules"
+      . "${TOPDIR}/infra/azure/scripts/set_test_modules"
       python3 utils/check_test_configuration.py ${{ parameters.distro }}
     displayName: Check test configuration
     env:
@@ -65,7 +65,7 @@ jobs:
       echo "ROLES: ${ANSIBLE_ROLES_PATH}"
       echo "LIBRARY: ${ANSIBLE_LIBRARY}"
       echo "MODULE_UTILS: ${ANSIBLE_MODULE_UTILS}"
-      . "${TOPDIR}/utils/set_test_modules"
+      . "${TOPDIR}/infra/azure/scripts/set_test_modules"
       [ "${{ parameters.test_galaxy }}" == "True"  ] && cd ~/.ansible/collections/ansible_collections/freeipa/ansible_freeipa
       pytest \
           -m "${{ parameters.test_type }}" \
