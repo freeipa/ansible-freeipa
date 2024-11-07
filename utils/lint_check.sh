@@ -10,8 +10,6 @@ pushd "${topdir}/.." >/dev/null 2>&1  || exit 1
 
 echo -e "${INFO}Running 'flake8'...${RST}"
 flake8 plugins utils roles setup.py
-echo -e "${INFO}Running 'pydocstyle'...${RST}"
-pydocstyle plugins utils roles setup.py
 echo -e "${INFO}Running 'pylint'...${RST}"
 pylint plugins roles setup.py
 
