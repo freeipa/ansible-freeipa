@@ -15,7 +15,7 @@ valid_distro() {
 usage() {
     local prog="${0##*/}"
     cat << EOF
-usage: ${prog} [-h] [-p] [-c HOSTNAME] [-s] distro
+usage: ${prog} [-h] [-p] [-n HOSTNAME] [-s] distro
     ${prog} build a container image to test ansible-freeipa.
 EOF
 }
@@ -29,7 +29,7 @@ positional arguments:
 
 optional arguments:
 
-    -c HOSTNAME   Container hostname
+    -n HOSTNAME   Container hostname
     -p            Give extended privileges to the container
     -s            Deploy IPA server
 EOF
@@ -43,11 +43,11 @@ quayname="quay.io/ansible-freeipa/upstream-tests"
 deploy_server="N"
 privileged=""
 
-while getopts ":hc:ps" option
+while getopts ":hn:ps" option
 do
     case "${option}" in
         h) help && exit 0 ;;
-        c) hostname="${OPTARG}" ;;
+        n) hostname="${OPTARG}" ;;
         p) privileged="privileged" ;;
         s) deploy_server="Y" ;;
         *) die -u "Invalid option: ${option}" ;;
