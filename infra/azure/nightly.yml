@@ -12,115 +12,68 @@ trigger: none
 pool:
   vmImage: 'ubuntu-20.04'
 
+variables:
+  # We need to have two sets, as c8s is not supported by all ansible versions
+  recent_distros: "fedora-latest,fedora-rawhide,c9s"
+  distros: "fedora-latest,fedora-rawhide,c9s,c8s"
+  ansible_latest: "-core"
+  ansible_minimum: "-core <2.16"
+  ansible_version: "-core >=2.16,<2.17"
+
 stages:
 
-# Fedora
+# Minimum ansible
 
-- stage: fedora_latest_Ansible_Core_2_15
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: fedora-latest
-      ansible_version: "-core >=2.15,<2.16"
-      skip_git_test: true
+- ${{ each distro in split(variables.distros, ',') }}:
+  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_15
+    dependsOn: []
+    jobs:
+    - template: templates/group_tests.yml
+      parameters:
+        build_number: $(Build.BuildNumber)
+        distro: fedora-latest
+        ansible_version: ${{ variables.ansible_minimum }}
+        skip_git_test: true
+        test_galaxy: false
 
-- stage: fedora_latest_Ansible_Core_2_16
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: fedora-latest
-      ansible_version: ""
-      skip_git_test: true
+# Latest ansible
 
-- stage: fedora_latest_Ansible_Core_2_17
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: fedora-latest
-      ansible_version: "-core >=2.17"
-      skip_git_test: true
+- ${{ each distro in split(variables.recent_distros, ',') }}:
+  - stage: ${{ replace(distro, '-', '_') }}_ansible_latest
+    dependsOn: []
+    jobs:
+    - template: templates/group_tests.yml
+      parameters:
+        build_number: $(Build.BuildNumber)
+        distro: ${{ distro }}
+        ansible_version: ${{ variables.ansible_latest }}
+        skip_git_test: true
+        test_galaxy: false
 
-# Galaxy on Fedora
+# Selected ansible-core version
 
-- stage: Galaxy_fedora_latest_Ansible_Core_2_17
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: fedora-latest
-      ansible_version: "-core >=2.17,<2.18"
-      skip_git_test: true
-      test_galaxy: true
+- ${{ each distro in split(variables.distros, ',') }}:
+  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_16
+    dependsOn: []
+    jobs:
+    - template: templates/group_tests.yml
+      parameters:
+        build_number: $(Build.BuildNumber)
+        distro: ${{ distro }}
+        ansible_version: ${{ variables.ansible_version }}
+        skip_git_test: true
+        test_galaxy: false
 
-# Fedora Rawhide
+# Galaxy collection with selected ansible-core version
 
-- stage: fedora_rawhide_Ansible_Core_2_17
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: fedora-rawhide
-      ansible_version: "-core >=2.17,<2.18"
-      skip_git_test: true
-
-# CentoOS 9 Stream
-
-- stage: c9s_Ansible_Core_2_15
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: c9s
-      ansible_version: "-core >=2.15,<2.16"
-      skip_git_test: true
-
-- stage: c9s_Ansible_Core_2_16
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: c9s
-      ansible_version: "-core >=2.16,<2.17"
-      skip_git_test: true
-
-- stage: c9s_Ansible_Core_2_17
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: c9s
-      ansible_version: "-core >=2.17,<2.18"
-      skip_git_test: true
-
-# CentOS 8 Stream only works up to ansible-core 2.16.z
-
-- stage: c8s_Ansible_Core_2_15
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: c8s
-      ansible_version: "-core >=2.15,<2.16"
-      skip_git_test: true
-
-- stage: c8s_Ansible_Core_2_16
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: c8s
-      ansible_version: "-core >=2.16,<2.17"
-      skip_git_test: true
+- ${{ each distro in split(variables.distros, ',') }}:
+  - stage: galaxy_${{ replace(distro, '-', '_') }}_asible_2_16
+    dependsOn: []
+    jobs:
+    - template: templates/group_tests.yml
+      parameters:
+        build_number: $(Build.BuildNumber)
+        distro: ${{ distro }}
+        ansible_version: ${{ variables.ansible_version }}
+        skip_git_test: true
+        test_galaxy: true

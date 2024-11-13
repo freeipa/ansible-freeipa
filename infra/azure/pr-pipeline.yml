@@ -5,65 +5,35 @@ trigger:
 pool:
   vmImage: 'ubuntu-20.04'
 
+variables:
+  distros: "fedora-latest,c9s,c8s,fedora-rawhide"
+  ansible_version: "-core >=2.15,<2.16"
+
 stages:
 
-# Fedora
+# Test with repository in all distros
 
-- stage: Fedora_Latest
-  dependsOn: []
-  jobs:
-  - template: templates/run_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: fedora-latest
-      ansible_version: "-core >=2.15,<2.16"
-      skip_git_test: false
+- ${{ each distro in split(variables.distros, ',') }}:
+  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_16
+    dependsOn: []
+    jobs:
+    - template: templates/run_tests.yml
+      parameters:
+        build_number: $(Build.BuildNumber)
+        distro: ${{ distro }}
+        ansible_version: ${{ variables.ansible_version }}
+        skip_git_test: false
+        test_galaxy: false
 
 # Galaxy on Fedora
 
-- stage: Galaxy_Fedora_Latest
+- stage: galaxy_fedora_latest_ansible_2_16
   dependsOn: []
   jobs:
   - template: templates/run_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
-      ansible_version: "-core >=2.15,<2.16"
+      ansible_version: ${{ variables.ansible_version }}
       skip_git_test: false
       test_galaxy: true
-
-# CentOS 9 Stream
-
-- stage: CentOS_9_Stream
-  dependsOn: []
-  jobs:
-  - template: templates/run_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: c9s
-      ansible_version: "-core >=2.15,<2.16"
-      skip_git_test: false
-
-# CentOS 8 Stream
-
-- stage: CentOS_8_Stream
-  dependsOn: []
-  jobs:
-  - template: templates/run_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: c8s
-      ansible_version: "-core >=2.15,<2.16"
-      skip_git_test: false
-
-# Rawhide
-
-- stage: Fedora_Rawhide
-  dependsOn: []
-  jobs:
-  - template: templates/run_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: fedora-rawhide
-      ansible_version: "-core >=2.15,<2.16"
-      skip_git_test: false

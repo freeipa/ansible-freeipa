@@ -5,72 +5,64 @@ trigger:
 pool:
   vmImage: 'ubuntu-20.04'
 
+variables:
+  ansible_version: "-core >=2.16,<2.17"
+  ansible_latest: "-core"
+  ansible_minimum: "-core <2.16"
+  distros: "fedora-latest,c9s,fedora-rawhide"
+
 stages:
 
-# Fedora
-
-- stage: Fedora_Ansible_Latest
+- stage: fedora_latest_ansible_latest
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
-      ansible_version: "-core"
+      ansible_version: ${{ variables.ansible_latest }}
       skip_git_test: true
 
-# Fedora
-
-- stage: Fedora_Ansible_min_supported
+- stage: fedora_latest_ansible_2_15
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
-      ansible_version: "-core <2.16"
+      ansible_version: ${{ variables.ansbile_minimum }}
       skip_git_test: true
 
-# Fedora
+# Supported distros
 
-- stage: Fedora_Latest
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: fedora-latest
-      skip_git_test: true
-      ansible_version: "-core >=2.16,<2.17"
+- ${{ each distro in split(variables.distros, ',') }}:
+  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_16
+    dependsOn: []
+    jobs:
+    - template: templates/group_tests.yml
+      parameters:
+        build_number: $(Build.BuildNumber)
+        distro: ${{ distro }}
+        ansible_version: ${{ variables.ansible_version }}
+        skip_git_test: true
+        test_galaxy: false
 
 # Galaxy on Fedora
 
-- stage: Galaxy_Fedora_Latest
+- stage: galaxy_fedora_latest_ansible_2_16
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
     parameters:
       build_number: $(Build.BuildNumber)
       distro: fedora-latest
-      ansible_version: "-core >=2.16,<2.17"
+      ansible_version: ${{ variables.ansible_version }}
       skip_git_test: true
       test_galaxy: true
 
-# CentOS 9 Stream
+# CentOS 8 Stream, latest supported Ansible version.
 
-- stage: CentOS_9_Stream
-  dependsOn: []
-  jobs:
-  - template: templates/group_tests.yml
-    parameters:
-      build_number: $(Build.BuildNumber)
-      distro: c9s
-      ansible_version: "-core >=2.16,<2.17"
-      skip_git_test: true
-
-# CentOS 8 Stream
-
-- stage: CentOS_8_Stream
+- stage: c8s_ansible_2_16
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
