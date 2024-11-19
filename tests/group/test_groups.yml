@@ -1,10 +1,12 @@
 ---
 - name: Test groups
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
-  gather_facts: true
+  gather_facts: false
 
   tasks:
   # setup
+
+  # env_freeipa_facts will gather DNS facts
   - name: Include tasks ../env_freeipa_facts.yml
     ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
@@ -45,7 +47,6 @@
         last: Last
 
   # TESTS
-
   - name: Groups group1..10 present
     ipagroup:
       ipaadmin_password: SomeADMINpassword
