@@ -9,8 +9,15 @@ dnf --assumeyes install \
     bash \
     systemd \
     procps-ng \
-    iproute; \
+    iproute \
+    hostname; \
 rm -rf /var/cache/dnf/;
+
+# Prepare for basic ipa-server-install in container
+# Address failing nis-domainname.service in the ipa-client-install step
+RUN mv /usr/bin/nisdomainname /usr/bin/nisdomainname.orig
+ADD utils/hostnamectl-wrapper /usr/bin/nisdomainname
+RUN chmod a+rx /usr/bin/nisdomainname
 
 RUN (cd /lib/systemd/system/; \
     if [ -e dbus-broker.service ] && [ ! -e dbus.service ]; then \
