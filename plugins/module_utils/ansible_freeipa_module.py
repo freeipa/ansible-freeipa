@@ -1628,7 +1628,8 @@ class EntryFactory:
     -------
         def validate_entry(module, entry, mydata):
             if (something_is_wrong(entry)):
-                module.fail_json(msg=f"Something wrong with {entry.name}")
+                module.fail_json(
+                    msg="Something wrong with {0}".format(entry.name)
             entry.some_field = mydata
             return entry
 
@@ -1660,35 +1661,100 @@ class EntryFactory:
 
     def __init__(
         self,
-        ansible_module,
-        invalid_params,
-        multiname,
-        params,
-        validate_entry=None,
-        **user_vars
+        entry_name,
+        entry_description,
+        valid_states=("present", "absent"),
+        has_member_action=True,
+        has_multientry_support=True,
+        validate_entry_function=None,
     ):
         """Initialize the Entry Factory."""
-        self.ansible_module = ansible_module
-        self.invalid_params = set(invalid_params)
-        self.multiname = multiname
-        self.params = params
+        self.entry_name = entry_name
+        self.params = entry_description
         self.convert = {
             param: (config or {}).get("convert", [])
-            for param, config in params.items()
+            for param, config in entry_description.items()
         }
-        self.validate_entry = validate_entry
-        self.user_vars = user_vars
-        self.__entries = self._get_entries()
+        self.validate_entry = validate_entry_function
+        self.ansible_module = self._init_ansible_module(
+            valid_states, has_member_action, has_multientry_support
+        )
 
-    def __iter__(self):
-        """Initialize factory iterator."""
-        return iter(self.__entries)
+    def _init_ansible_module(
+        self, valid_states, has_member_action, has_multientry_support,
+    ):
+        mutually_exclusive = []
+        required_one_of = []
+        argument_spec = {
+            "state": {
+                "type": "str", "default": valid_states[0],
+                "choices": valid_states,
+            }
+        }
+        if has_member_action:
+            argument_spec.update({
+                "action": {
+                    "type": "str",
+                    "default": self.entry_name,
+                    "choices": ["member", self.entry_name],
+                }
+            })
+        multientry_param = "{0}s".format(self.entry_name)
+        if has_multientry_support:
+            mutually_exclusive = ["name", multientry_param]
+            required_one_of = ["name", multientry_param]
+        # On Python 2.7 we can use just a singlre '**dict' to
+        # generate the keyword parameters.
+        argument_spec.update(self._get_entry_spec())
+        ansible_module = IPAAnsibleModule(
+            argument_spec=argument_spec,
+            mutually_exclusive=[mutually_exclusive],
+            required_one_of=[required_one_of],
+            supports_check_mode=True,
+        )
+        # pylint: disable=attribute-defined-outside-init
+        ansible_module._ansible_debug = True
+        return ansible_module
 
-    def __next__(self):
-        """Retrieve next entry."""
-        return next(self.__entries)
+    def _get_entry_spec(self):
+        """
+        Return the entry parameters for AnsibleModule.
 
-    def check_invalid_parameter_usage(self, entry_dict, fail_on_check=True):
+        The method assumes that the 'name' parameter exists and a list of
+        elements of its type is accepted is the single entry use case.
+        """
+        name = self.params['name']
+        name_type = name['type']
+        if not isinstance(name_type, str):
+            name_type = name_type.__name__
+        name_aliases = name.get("aliases", None)
+        name_param = name.copy()
+        name_param.update({
+            "type": 'list',
+            "elements": name_type,
+            "required": False,
+            "default": None,
+        })
+        if name_aliases:
+            name_param["aliases"] = name_aliases
+        multientry_param = "{0}s".format(self.entry_name)
+        single_entry = {k: v for k, v in self.params.items() if k != 'name'}
+        _result = {
+            "name": name_param,
+            multientry_param: {
+                "type": 'list',
+                "elements": "dict",
+                "required": False,
+                "default": None,
+                "options": self.params,
+            }
+        }
+        _result.update(single_entry)
+        return _result
+
+    def check_invalid_parameter_usage(
+        self, entry_dict, invalid_params, fail_on_check=True
+    ):
         """
         Check if entry_dict parameters are valid for the current state/action.
 
@@ -1714,7 +1780,7 @@ class EntryFactory:
                   "'{2}' and state '{1}'"
 
         entry_params = set(k for k, v in entry_dict.items() if v is not None)
-        match_invalid = self.invalid_params & entry_params
+        match_invalid = invalid_params & entry_params
         if match_invalid:
             if fail_on_check:
                 self.ansible_module.fail_json(
@@ -1759,7 +1825,7 @@ class EntryFactory:
             """Provide a string representation of the stored values."""
             return repr(self.values)
 
-    def _get_entries(self):
+    def get_entries(self, invalid_params):
         """Retrieve all entries from the module."""
         def copy_entry_and_set_name(entry, name):
             _result = entry.copy()
@@ -1776,7 +1842,8 @@ class EntryFactory:
             # list of names.
             _entry = self._extract_entry(
                 self.ansible_module,
-                IPAAnsibleModule.params_get
+                IPAAnsibleModule.params_get,
+                set(invalid_params),
             )
             # copy attribute values if 'name' returns a list
             _entries = [
@@ -1785,13 +1852,15 @@ class EntryFactory:
             ]
         else:
             _entries = [
-                self._extract_entry(data, dict.get)
-                for data in self.ansible_module.params_get(self.multiname)
+                self._extract_entry(data, dict.get, set(invalid_params))
+                for data in self.ansible_module.params_get(
+                    "{0}s".format(self.entry_name)
+                )
             ]
 
         return _entries
 
-    def _extract_entry(self, data, param_get):
+    def _extract_entry(self, data, param_get, invalid_params):
         """Extract an entry from the given data, using the given method."""
         def get_entry_param_value(parameter, conversions):
             _value = param_get(data, parameter)
@@ -1807,13 +1876,12 @@ class EntryFactory:
         }
 
         # Check if any invalid parameter is used.
-        self.check_invalid_parameter_usage(_entry)
+        self.check_invalid_parameter_usage(_entry, invalid_params)
 
         # Create Entry object
         _result = EntryFactory.Entry(_entry)
         # Call entry validation callback, if provided.
         if self.validate_entry:
-            _result = self.validate_entry(
-                self.ansible_module, _result, **self.user_vars)
+            _result = self.validate_entry(self.ansible_module, _result)
 
         return _result
