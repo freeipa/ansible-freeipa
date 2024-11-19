@@ -368,7 +368,7 @@ RETURN = """
 """
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
+    compare_args_ipa, gen_add_del_lists, gen_add_list, \
     gen_intersection_list, api_get_domain, ensure_fqdn, netaddr, to_text, \
     ipalib_errors, convert_param_value_to_lowercase, EntryFactory
 
@@ -409,86 +409,186 @@ def gen_args(entry):
     return _args
 
 
-def init_ansible_module():
-    """Initialize IPAAnsibleModule object for sudorule."""
-    sudorule_spec = dict(
-        description=dict(required=False, type="str", default=None),
-        usercategory=dict(required=False, type="str", default=None,
-                          choices=["all", ""], aliases=['usercat']),
-        hostcategory=dict(required=False, type="str", default=None,
-                          choices=["all", ""], aliases=['hostcat']),
-        nomembers=dict(required=False, type='bool', default=None),
-        host=dict(required=False, type='list', elements="str",
-                  default=None),
-        hostgroup=dict(required=False, type='list', elements="str",
-                       default=None),
-        hostmask=dict(required=False, type='list', elements="str",
-                      default=None),
-        user=dict(required=False, type='list', elements="str",
-                  default=None),
-        group=dict(required=False, type='list', elements="str",
-                   default=None),
-        allow_sudocmd=dict(required=False, type="list", elements="str",
-                           default=None),
-        deny_sudocmd=dict(required=False, type="list", elements="str",
-                          default=None),
-        allow_sudocmdgroup=dict(required=False, type="list",
-                                elements="str", default=None),
-        deny_sudocmdgroup=dict(required=False, type="list", elements="str",
-                               default=None),
-        cmdcategory=dict(required=False, type="str", default=None,
-                         choices=["all", ""], aliases=['cmdcat']),
-        runasusercategory=dict(required=False, type="str", default=None,
-                               choices=["all", ""],
-                               aliases=['runasusercat']),
-        runasgroupcategory=dict(required=False, type="str", default=None,
-                                choices=["all", ""],
-                                aliases=['runasgroupcat']),
-        runasuser=dict(required=False, type="list", elements="str",
-                       default=None),
-        runasgroup=dict(required=False, type="list", elements="str",
-                        default=None),
-        runasuser_group=dict(required=False, type="list", elements="str",
-                             default=None),
-        order=dict(type="int", required=False, aliases=['sudoorder']),
-        sudooption=dict(required=False, type='list', elements="str",
-                        default=None, aliases=["options"]),
+def validate_entry(module, entry):
+    """Ensure entry object is valid."""
+    state = module.params_get("state")
+    action = module.params_get("action")
+    if state == "present" and action == "sudorule":
+        # Ensure the entry is valid for state:present, action:sudorule.
+        if entry.hostcategory == 'all' and any([entry.host, entry.hostgroup]):
+            module.fail_json(
+                msg="Hosts cannot be added when host category='all'"
+            )
+        if entry.usercategory == 'all' and any([entry.user, entry.group]):
+            module.fail_json(
+                msg="Users cannot be added when user category='all'"
+            )
+        if entry.cmdcategory == 'all' \
+           and any([entry.allow_sudocmd, entry.allow_sudocmdgroup]):
+            module.fail_json(
+                msg="Commands cannot be added when command category='all'"
+            )
+    return entry
+
+
+def configure_entries():
+    # Factory parameters
+    module_params = {
+        "name": {
+            "required": False,
+            "type": 'str',
+            "default": None,
+            "aliases": ["cn"],
+        },
+        "description": {
+            "required": False,
+            "type": 'str',
+            "default": None,
+        },
+        "cmdcategory": {
+            "required": False,
+            "type": 'str',
+            "default": None,
+            "choices": ["all", ""],
+            "aliases": ['cmdcat'],
+        },
+        "usercategory": {
+            "required": False,
+            "type": 'str',
+            "default": None,
+            "choices": ["all", ""],
+            "aliases": ['usercat'],
+        },
+        "hostcategory": {
+            "required": False,
+            "type": 'str',
+            "default": None,
+            "choices": ["all", ""],
+            "aliases": ["hostcat"],
+        },
+        "runasusercategory": {
+            "required": False,
+            "type": 'str',
+            "default": None,
+            "choices": ["all", ""],
+            "aliases": ['runasusercat'],
+        },
+        "runasgroupcategory": {
+            "required": False,
+            "type": 'str',
+            "default": None,
+            "choices": ["all", ""],
+            "aliases": ['runasgroupcat'],
+        },
+        "host": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "convert": [convert_list_of_hostnames],
+        },
+        "hostgroup": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "convert": [convert_param_value_to_lowercase],
+        },
+        "hostmask": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "convert": [convert_list_of_hostmask],
+        },
+        "user": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "convert": [convert_param_value_to_lowercase],
+        },
+        "group": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "convert": [convert_param_value_to_lowercase],
+        },
+        "allow_sudocmd": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+        },
+        "allow_sudocmdgroup": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "convert": [convert_param_value_to_lowercase],
+        },
+        "deny_sudocmd": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+        },
+        "deny_sudocmdgroup": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "convert": [convert_param_value_to_lowercase],
+        },
+        "sudooption": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "aliases": ["options"],
+        },
+        "order": {
+            "required": False,
+            "type": 'int',
+            "default": None,
+            "aliases": ["sudoorder"],
+        },
+        "runasuser": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "convert": [convert_param_value_to_lowercase],
+        },
+        "runasuser_group": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "convert": [convert_param_value_to_lowercase],
+        },
+        "runasgroup": {
+            "required": False,
+            "type": 'list',
+            "elements": "str",
+            "default": None,
+            "convert": [convert_param_value_to_lowercase],
+        },
+        "nomembers": {
+            "required": False,
+            "type": 'bool',
+            "default": None,
+        },
+    }
+    entry_factory = EntryFactory(
+        "sudorule",
+        module_params,
+        valid_states=["present", "absent", "enabled", "disabled"],
+        validate_entry_function=validate_entry,
     )
 
-    ansible_module = IPAAnsibleModule(
-        argument_spec=dict(
-            # general
-            name=dict(type="list", elements="str", aliases=["cn"],
-                      required=False),
-            sudorules=dict(
-                type="list",
-                defalut=None,
-                options=dict(
-                    # name of the sudorule
-                    name=dict(type="str", required=True, aliases=["cn"]),
-                    # sudorule specific parameters
-                    **sudorule_spec
-                ),
-                elements='dict',
-                required=False,
-            ),
-            # action
-            action=dict(type="str", default="sudorule",
-                        choices=["member", "sudorule"]),
-            # state
-            state=dict(type="str", default="present",
-                       choices=["present", "absent",
-                                "enabled", "disabled"]),
-            # Specific parameters for simple use case
-            **sudorule_spec
-        ),
-        mutually_exclusive=[["name", "sudorules"]],
-        required_one_of=[["name", "sudorules"]],
-        supports_check_mode=True,
-    )
-
-    ansible_module._ansible_debug = True
-    return ansible_module
+    return entry_factory
 
 
 def convert_list_of_hostmask(hostmasks):
@@ -515,43 +615,12 @@ def convert_list_of_hostnames(hostnames):
     )
 
 
-def validate_entry(module, entry, state, action):
-    """Ensure entry object is valid."""
-    if state == "present" and action == "sudorule":
-        # Ensure the entry is valid for state:present, action:sudorule.
-        if entry.hostcategory == 'all' and any([entry.host, entry.hostgroup]):
-            module.fail_json(
-                msg="Hosts cannot be added when host category='all'"
-            )
-        if entry.usercategory == 'all' and any([entry.user, entry.group]):
-            module.fail_json(
-                msg="Users cannot be added when user category='all'"
-            )
-        if entry.cmdcategory == 'all' \
-           and any([entry.allow_sudocmd, entry.allow_sudocmdgroup]):
-            module.fail_json(
-                msg="Commands cannot be added when command category='all'"
-            )
-    return entry
-
-
-def main():
-    ansible_module = init_ansible_module()
-    # Get parameters
-    # general
-    names = ansible_module.params_get("name")
-    # sudorules = ansible_module.params_get("sudorules")
-    # action
-    action = ansible_module.params_get("action")
-    # state
-    state = ansible_module.params_get("state")
-
-    # Check parameters
+def check_module_parameters(module, state, action):
+    names = module.params_get("name")
     invalid = []
-
     if state == "present":
         if names is not None and len(names) != 1:
-            ansible_module.fail_json(
+            module.fail_json(
                 msg="Only one sudorule can be added at a time using 'name'.")
         if action == "member":
             invalid = ["description", "usercategory", "hostcategory",
@@ -571,7 +640,7 @@ def main():
 
     elif state in ["enabled", "disabled"]:
         if action == "member":
-            ansible_module.fail_json(
+            module.fail_json(
                 msg="Action member can not be used with states enabled and "
                 "disabled")
         invalid = ["description", "usercategory", "hostcategory",
@@ -580,56 +649,31 @@ def main():
                    "user", "group", "allow_sudocmd", "allow_sudocmdgroup",
                    "deny_sudocmd", "deny_sudocmdgroup", "runasuser",
                    "runasgroup", "order", "sudooption", "runasuser_group"]
-    else:
-        ansible_module.fail_json(msg="Invalid state '%s'" % state)
+
+    return invalid
+
+
+def main():
+    entry_factory = configure_entries()
+    ansible_module = entry_factory.ansible_module
+
+    # action
+    action = ansible_module.params_get("action")
+    # state
+    state = ansible_module.params_get("state")
+
+    # Check parameters
+    invalid_params = check_module_parameters(ansible_module, state, action)
 
     # Init
     changed = False
     exit_args = {}
 
-    # Factory parameters
-    params = {
-        "name": {},
-        "description": {},
-        "cmdcategory": {},
-        "usercategory": {},
-        "hostcategory": {},
-        "runasusercategory": {},
-        "runasgroupcategory": {},
-        "host": {"convert": [convert_list_of_hostnames]},
-        "hostgroup": {"convert": [convert_param_value_to_lowercase]},
-        "hostmask": {"convert": [convert_list_of_hostmask]},
-        "user": {"convert": [convert_param_value_to_lowercase]},
-        "group": {"convert": [convert_param_value_to_lowercase]},
-        "allow_sudocmd": {},
-        "allow_sudocmdgroup": {"convert": [convert_param_value_to_lowercase]},
-        "deny_sudocmd": {},
-        "deny_sudocmdgroup": {"convert": [convert_param_value_to_lowercase]},
-        "sudooption": {},
-        "order": {},
-        "runasuser": {"convert": [convert_param_value_to_lowercase]},
-        "runasuser_group": {"convert": [convert_param_value_to_lowercase]},
-        "runasgroup": {"convert": [convert_param_value_to_lowercase]},
-        "nomembers": {},
-    }
-
     # Connect to IPA API
     with ansible_module.ipa_connect():
         commands = []
 
-        # Creating factory after connect as host conversion
-        # requires 'api_get_domain()' to be available
-        entry_factory = EntryFactory(
-            ansible_module,
-            invalid,
-            "sudorules",
-            params,
-            validate_entry=validate_entry,
-            state=state,
-            action=action,
-        )
-
-        for entry in entry_factory:
+        for entry in entry_factory.get_entries(invalid_params):
             host_add, host_del = [], []
             user_add, user_del = [], []
             group_add, group_del = [], []
