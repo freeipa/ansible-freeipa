@@ -175,3 +175,23 @@ container_image_list() {
 container_check() {
     [ -n "$(command -v "podman")" ] || die "podman is required."
 }
+
+container_copy() {
+    local name="${1}"
+    local source="${2}"
+    local destination="${3}"
+
+    log info "= Copying ${source} to ${name}:${destination} ="
+    podman cp "${source}" "${name}:${destination}"
+    echo
+}
+
+container_fetch() {
+    local name="${1}"
+    local source="${2}"
+    local destination="${3}"
+
+    log info "= Copying ${name}:${source} to ${destination} ="
+    podman cp "${name}:${source}" "${destination}"
+    echo
+}
