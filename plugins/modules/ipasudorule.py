@@ -42,8 +42,128 @@ options:
     description: The sudorule name
     type: list
     elements: str
-    required: true
+    required: false
     aliases: ["cn"]
+  sudorules:
+    description: The list of sudorule dicts.
+    type: list
+    elements: dict
+    suboptions:
+      name:
+        description: The sudorule name
+        type: list
+        elements: str
+        required: true
+        aliases: ["cn"]
+      description:
+        description: The sudorule description
+        type: str
+        required: false
+      user:
+        description: List of users assigned to the sudo rule.
+        type: list
+        elements: str
+        required: false
+      usercategory:
+        description: User category the sudo rule applies to
+        type: str
+        required: false
+        choices: ["all", ""]
+        aliases: ["usercat"]
+      group:
+        description: List of user groups assigned to the sudo rule.
+        type: list
+        elements: str
+        required: false
+      runasgroupcategory:
+        description: RunAs Group category applied to the sudo rule.
+        type: str
+        required: false
+        choices: ["all", ""]
+        aliases: ["runasgroupcat"]
+      runasusercategory:
+        description: RunAs User category applied to the sudorule.
+        type: str
+        required: false
+        choices: ["all", ""]
+        aliases: ["runasusercat"]
+      nomembers:
+        description: Suppress processing of membership attributes
+        required: false
+        type: bool
+      host:
+        description: List of host names assigned to this sudorule.
+        required: false
+        type: list
+        elements: str
+      hostgroup:
+        description: List of host groups assigned to this sudorule.
+        required: false
+        type: list
+        elements: str
+      hostcategory:
+        description: Host category the sudo rule applies to.
+        type: str
+        required: false
+        choices: ["all", ""]
+        aliases: ["hostcat"]
+      allow_sudocmd:
+        description: List of allowed sudocmds assigned to this sudorule.
+        required: false
+        type: list
+        elements: str
+      allow_sudocmdgroup:
+        description: List of allowed sudocmd groups assigned to this sudorule.
+        required: false
+        type: list
+        elements: str
+      deny_sudocmd:
+        description: List of denied sudocmds assigned to this sudorule.
+        required: false
+        type: list
+        elements: str
+      deny_sudocmdgroup:
+        description: List of denied sudocmd groups assigned to this sudorule.
+        required: false
+        type: list
+        elements: str
+      cmdcategory:
+        description: Command category the sudo rule applies to
+        type: str
+        required: false
+        choices: ["all", ""]
+        aliases: ["cmdcat"]
+      order:
+        description: Order to apply this rule.
+        required: false
+        type: int
+        aliases: ["sudoorder"]
+      sudooption:
+        description: List of sudo options.
+        required: false
+        type: list
+        elements: str
+        aliases: ["options"]
+      runasuser:
+        description: List of users for Sudo to execute as.
+        required: false
+        type: list
+        elements: str
+      runasuser_group:
+        description: List of groups for Sudo to execute as.
+        required: false
+        type: list
+        elements: str
+      runasgroup:
+        description: List of groups for Sudo to execute as.
+        required: false
+        type: list
+        elements: str
+      hostmask:
+        description: Host masks of allowed hosts.
+        required: false
+        type: list
+        elements: str
   description:
     description: The sudorule description
     type: str
@@ -232,6 +352,16 @@ EXAMPLES = """
     ipaadmin_password: SomeADMINpassword
     name: testrule1
     state: absent
+
+# Ensure multiple Sudo Rules are present using batch mode.
+- ipasudorule:
+    ipaadmin_password: SomeADMINpassword
+    sudorules:
+      - name: testrule1
+        hostmask:
+          - 192.168.122.1/24
+      - name: testrule2
+        hostcategory: all
 """
 
 RETURN = """
@@ -239,180 +369,196 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, api_get_domain, ensure_fqdn, netaddr, to_text
+    gen_intersection_list, api_get_domain, ensure_fqdn, netaddr, to_text, \
+    ipalib_errors, convert_param_value_to_lowercase, EntryFactory
 
 
 def find_sudorule(module, name):
     _args = {
         "all": True,
-        "cn": name,
     }
 
-    _result = module.ipa_command("sudorule_find", name, _args)
-
-    if len(_result["result"]) > 1:
-        module.fail_json(
-            msg="There is more than one sudorule '%s'" % (name))
-    elif len(_result["result"]) == 1:
-        return _result["result"][0]
-
-    return None
+    try:
+        _result = module.ipa_command("sudorule_show", name, _args)
+    except ipalib_errors.NotFound:
+        return None
+    return _result["result"]
 
 
-def gen_args(description, usercat, hostcat, cmdcat, runasusercat,
-             runasgroupcat, order, nomembers):
+def gen_args(entry):
+    """Generate args for sudorule."""
     _args = {}
 
-    if description is not None:
-        _args['description'] = description
-    if usercat is not None:
-        _args['usercategory'] = usercat
-    if hostcat is not None:
-        _args['hostcategory'] = hostcat
-    if cmdcat is not None:
-        _args['cmdcategory'] = cmdcat
-    if runasusercat is not None:
-        _args['ipasudorunasusercategory'] = runasusercat
-    if runasgroupcat is not None:
-        _args['ipasudorunasgroupcategory'] = runasgroupcat
-    if order is not None:
-        _args['sudoorder'] = order
-    if nomembers is not None:
-        _args['nomembers'] = nomembers
+    if entry.description is not None:
+        _args['description'] = entry.description
+    if entry.usercategory is not None:
+        _args['usercategory'] = entry.usercategory
+    if entry.hostcategory is not None:
+        _args['hostcategory'] = entry.hostcategory
+    if entry.cmdcategory is not None:
+        _args['cmdcategory'] = entry.cmdcategory
+    if entry.runasusercategory is not None:
+        _args['ipasudorunasusercategory'] = entry.runasusercategory
+    if entry.runasgroupcategory is not None:
+        _args['ipasudorunasgroupcategory'] = entry.runasgroupcategory
+    if entry.order is not None:
+        _args['sudoorder'] = entry.order
+    if entry.nomembers is not None:
+        _args['nomembers'] = entry.nomembers
 
     return _args
 
 
-def main():
+def init_ansible_module():
+    """Initialize IPAAnsibleModule object for sudorule."""
+    sudorule_spec = dict(
+        description=dict(required=False, type="str", default=None),
+        usercategory=dict(required=False, type="str", default=None,
+                          choices=["all", ""], aliases=['usercat']),
+        hostcategory=dict(required=False, type="str", default=None,
+                          choices=["all", ""], aliases=['hostcat']),
+        nomembers=dict(required=False, type='bool', default=None),
+        host=dict(required=False, type='list', elements="str",
+                  default=None),
+        hostgroup=dict(required=False, type='list', elements="str",
+                       default=None),
+        hostmask=dict(required=False, type='list', elements="str",
+                      default=None),
+        user=dict(required=False, type='list', elements="str",
+                  default=None),
+        group=dict(required=False, type='list', elements="str",
+                   default=None),
+        allow_sudocmd=dict(required=False, type="list", elements="str",
+                           default=None),
+        deny_sudocmd=dict(required=False, type="list", elements="str",
+                          default=None),
+        allow_sudocmdgroup=dict(required=False, type="list",
+                                elements="str", default=None),
+        deny_sudocmdgroup=dict(required=False, type="list", elements="str",
+                               default=None),
+        cmdcategory=dict(required=False, type="str", default=None,
+                         choices=["all", ""], aliases=['cmdcat']),
+        runasusercategory=dict(required=False, type="str", default=None,
+                               choices=["all", ""],
+                               aliases=['runasusercat']),
+        runasgroupcategory=dict(required=False, type="str", default=None,
+                                choices=["all", ""],
+                                aliases=['runasgroupcat']),
+        runasuser=dict(required=False, type="list", elements="str",
+                       default=None),
+        runasgroup=dict(required=False, type="list", elements="str",
+                        default=None),
+        runasuser_group=dict(required=False, type="list", elements="str",
+                             default=None),
+        order=dict(type="int", required=False, aliases=['sudoorder']),
+        sudooption=dict(required=False, type='list', elements="str",
+                        default=None, aliases=["options"]),
+    )
+
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
             name=dict(type="list", elements="str", aliases=["cn"],
-                      required=True),
-            # present
-            description=dict(required=False, type="str", default=None),
-            usercategory=dict(required=False, type="str", default=None,
-                              choices=["all", ""], aliases=['usercat']),
-            hostcategory=dict(required=False, type="str", default=None,
-                              choices=["all", ""], aliases=['hostcat']),
-            nomembers=dict(required=False, type='bool', default=None),
-            host=dict(required=False, type='list', elements="str",
-                      default=None),
-            hostgroup=dict(required=False, type='list', elements="str",
-                           default=None),
-            hostmask=dict(required=False, type='list', elements="str",
-                          default=None),
-            user=dict(required=False, type='list', elements="str",
-                      default=None),
-            group=dict(required=False, type='list', elements="str",
-                       default=None),
-            allow_sudocmd=dict(required=False, type="list", elements="str",
-                               default=None),
-            deny_sudocmd=dict(required=False, type="list", elements="str",
-                              default=None),
-            allow_sudocmdgroup=dict(required=False, type="list",
-                                    elements="str", default=None),
-            deny_sudocmdgroup=dict(required=False, type="list", elements="str",
-                                   default=None),
-            cmdcategory=dict(required=False, type="str", default=None,
-                             choices=["all", ""], aliases=['cmdcat']),
-            runasusercategory=dict(required=False, type="str", default=None,
-                                   choices=["all", ""],
-                                   aliases=['runasusercat']),
-            runasgroupcategory=dict(required=False, type="str", default=None,
-                                    choices=["all", ""],
-                                    aliases=['runasgroupcat']),
-            runasuser=dict(required=False, type="list", elements="str",
-                           default=None),
-            runasgroup=dict(required=False, type="list", elements="str",
-                            default=None),
-            runasuser_group=dict(required=False, type="list", elements="str",
-                                 default=None),
-            order=dict(type="int", required=False, aliases=['sudoorder']),
-            sudooption=dict(required=False, type='list', elements="str",
-                            default=None, aliases=["options"]),
+                      required=False),
+            sudorules=dict(
+                type="list",
+                defalut=None,
+                options=dict(
+                    # name of the sudorule
+                    name=dict(type="str", required=True, aliases=["cn"]),
+                    # sudorule specific parameters
+                    **sudorule_spec
+                ),
+                elements='dict',
+                required=False,
+            ),
+            # action
             action=dict(type="str", default="sudorule",
                         choices=["member", "sudorule"]),
             # state
             state=dict(type="str", default="present",
                        choices=["present", "absent",
                                 "enabled", "disabled"]),
+            # Specific parameters for simple use case
+            **sudorule_spec
         ),
+        mutually_exclusive=[["name", "sudorules"]],
+        required_one_of=[["name", "sudorules"]],
         supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
+    return ansible_module
 
+
+def convert_list_of_hostmask(hostmasks):
+    """Ensure all hostmasks is hostmask_list is a CIDR value."""
+    return [
+        to_text(netaddr.IPNetwork(mask).cidr)
+        for mask in (
+            hostmasks if isinstance(hostmasks, (list, tuple))
+            else [hostmasks]
+        )
+    ]
+
+
+def convert_list_of_hostnames(hostnames):
+    """Ensure all hostnames in hostnames are lowercase FQDN."""
+    return list(
+        set(
+            ensure_fqdn(value.lower(), api_get_domain())
+            for value in (
+                hostnames if isinstance(hostnames, (list, tuple))
+                else [hostnames]
+            )
+        )
+    )
+
+
+def validate_entry(module, entry, state, action):
+    """Ensure entry object is valid."""
+    if state == "present" and action == "sudorule":
+        # Ensure the entry is valid for state:present, action:sudorule.
+        if entry.hostcategory == 'all' and any([entry.host, entry.hostgroup]):
+            module.fail_json(
+                msg="Hosts cannot be added when host category='all'"
+            )
+        if entry.usercategory == 'all' and any([entry.user, entry.group]):
+            module.fail_json(
+                msg="Users cannot be added when user category='all'"
+            )
+        if entry.cmdcategory == 'all' \
+           and any([entry.allow_sudocmd, entry.allow_sudocmdgroup]):
+            module.fail_json(
+                msg="Commands cannot be added when command category='all'"
+            )
+    return entry
+
+
+def main():
+    ansible_module = init_ansible_module()
     # Get parameters
-
     # general
     names = ansible_module.params_get("name")
-
-    # present
-    # The 'noqa' variables are not used here, but required for vars().
-    # The use of 'noqa' ensures flake8 does not complain about them.
-    description = ansible_module.params_get("description")  # noqa
-    cmdcategory = ansible_module.params_get('cmdcategory')  # noqa
-    usercategory = ansible_module.params_get("usercategory")  # noqa
-    hostcategory = ansible_module.params_get("hostcategory")  # noqa
-    runasusercategory = ansible_module.params_get(          # noqa
-                                          "runasusercategory")
-    runasgroupcategory = ansible_module.params_get(         # noqa
-                                           "runasgroupcategory")
-    hostcategory = ansible_module.params_get("hostcategory")  # noqa
-    nomembers = ansible_module.params_get("nomembers")  # noqa
-    host = ansible_module.params_get("host")
-    hostgroup = ansible_module.params_get_lowercase("hostgroup")
-    hostmask = ansible_module.params_get("hostmask")
-    user = ansible_module.params_get_lowercase("user")
-    group = ansible_module.params_get_lowercase("group")
-    allow_sudocmd = ansible_module.params_get('allow_sudocmd')
-    allow_sudocmdgroup = \
-        ansible_module.params_get_lowercase('allow_sudocmdgroup')
-    deny_sudocmd = ansible_module.params_get('deny_sudocmd')
-    deny_sudocmdgroup = \
-        ansible_module.params_get_lowercase('deny_sudocmdgroup')
-    sudooption = ansible_module.params_get("sudooption")
-    order = ansible_module.params_get("order")
-    runasuser = ansible_module.params_get_lowercase("runasuser")
-    runasuser_group = ansible_module.params_get_lowercase("runasuser_group")
-    runasgroup = ansible_module.params_get_lowercase("runasgroup")
+    # sudorules = ansible_module.params_get("sudorules")
+    # action
     action = ansible_module.params_get("action")
-
     # state
     state = ansible_module.params_get("state")
-
-    # ensure hostmasks are network cidr
-    if hostmask is not None:
-        hostmask = [to_text(netaddr.IPNetwork(x).cidr) for x in hostmask]
 
     # Check parameters
     invalid = []
 
     if state == "present":
-        if len(names) != 1:
+        if names is not None and len(names) != 1:
             ansible_module.fail_json(
-                msg="Only one sudorule can be added at a time.")
+                msg="Only one sudorule can be added at a time using 'name'.")
         if action == "member":
             invalid = ["description", "usercategory", "hostcategory",
                        "cmdcategory", "runasusercategory",
                        "runasgroupcategory", "order", "nomembers"]
 
-        else:
-            if hostcategory == 'all' and any([host, hostgroup]):
-                ansible_module.fail_json(
-                    msg="Hosts cannot be added when host category='all'")
-            if usercategory == 'all' and any([user, group]):
-                ansible_module.fail_json(
-                    msg="Users cannot be added when user category='all'")
-            if cmdcategory == 'all' \
-               and any([allow_sudocmd, allow_sudocmdgroup]):
-                ansible_module.fail_json(
-                    msg="Commands cannot be added when command category='all'")
-
     elif state == "absent":
-        if len(names) < 1:
-            ansible_module.fail_json(msg="No name given.")
         invalid = ["description", "usercategory", "hostcategory",
                    "cmdcategory", "runasusercategory",
                    "runasgroupcategory", "nomembers", "order"]
@@ -424,8 +570,6 @@ def main():
                             "runasuser_group"])
 
     elif state in ["enabled", "disabled"]:
-        if len(names) < 1:
-            ansible_module.fail_json(msg="No name given.")
         if action == "member":
             ansible_module.fail_json(
                 msg="Action member can not be used with states enabled and "
@@ -439,48 +583,81 @@ def main():
     else:
         ansible_module.fail_json(msg="Invalid state '%s'" % state)
 
-    ansible_module.params_fail_used_invalid(invalid, state, action)
-
     # Init
-
     changed = False
     exit_args = {}
 
+    # Factory parameters
+    params = {
+        "name": {},
+        "description": {},
+        "cmdcategory": {},
+        "usercategory": {},
+        "hostcategory": {},
+        "runasusercategory": {},
+        "runasgroupcategory": {},
+        "host": {"convert": [convert_list_of_hostnames]},
+        "hostgroup": {"convert": [convert_param_value_to_lowercase]},
+        "hostmask": {"convert": [convert_list_of_hostmask]},
+        "user": {"convert": [convert_param_value_to_lowercase]},
+        "group": {"convert": [convert_param_value_to_lowercase]},
+        "allow_sudocmd": {},
+        "allow_sudocmdgroup": {"convert": [convert_param_value_to_lowercase]},
+        "deny_sudocmd": {},
+        "deny_sudocmdgroup": {"convert": [convert_param_value_to_lowercase]},
+        "sudooption": {},
+        "order": {},
+        "runasuser": {"convert": [convert_param_value_to_lowercase]},
+        "runasuser_group": {"convert": [convert_param_value_to_lowercase]},
+        "runasgroup": {"convert": [convert_param_value_to_lowercase]},
+        "nomembers": {},
+    }
+
     # Connect to IPA API
     with ansible_module.ipa_connect():
-        default_domain = api_get_domain()
-
-        # Ensure host is not short hostname.
-        if host:
-            host = list(
-                {ensure_fqdn(value.lower(), default_domain) for value in host}
-            )
-
         commands = []
-        host_add, host_del = [], []
-        user_add, user_del = [], []
-        group_add, group_del = [], []
-        hostgroup_add, hostgroup_del = [], []
-        hostmask_add, hostmask_del = [], []
-        allow_cmd_add, allow_cmd_del = [], []
-        allow_cmdgroup_add, allow_cmdgroup_del = [], []
-        deny_cmd_add, deny_cmd_del = [], []
-        deny_cmdgroup_add, deny_cmdgroup_del = [], []
-        sudooption_add, sudooption_del = [], []
-        runasuser_add, runasuser_del = [], []
-        runasuser_group_add, runasuser_group_del = [], []
-        runasgroup_add, runasgroup_del = [], []
 
-        for name in names:
-            # Make sure sudorule exists
-            res_find = find_sudorule(ansible_module, name)
+        # Creating factory after connect as host conversion
+        # requires 'api_get_domain()' to be available
+        entry_factory = EntryFactory(
+            ansible_module,
+            invalid,
+            "sudorules",
+            params,
+            validate_entry=validate_entry,
+            state=state,
+            action=action,
+        )
+
+        for entry in entry_factory:
+            host_add, host_del = [], []
+            user_add, user_del = [], []
+            group_add, group_del = [], []
+            hostgroup_add, hostgroup_del = [], []
+            hostmask_add, hostmask_del = [], []
+            allow_cmd_add, allow_cmd_del = [], []
+            allow_cmdgroup_add, allow_cmdgroup_del = [], []
+            deny_cmd_add, deny_cmd_del = [], []
+            deny_cmdgroup_add, deny_cmdgroup_del = [], []
+            sudooption_add, sudooption_del = [], []
+            runasuser_add, runasuser_del = [], []
+            runasuser_group_add, runasuser_group_del = [], []
+            runasgroup_add, runasgroup_del = [], []
+
+            # Try to retrieve sudorule
+            res_find = find_sudorule(ansible_module, entry.name)
+
+            # Fail if sudorule must exist but is not found
+            if (
+                (state in ["enabled", "disabled"] or action == "member")
+                and res_find is None
+            ):
+                ansible_module.fail_json(msg="No sudorule '%s'" % entry.name)
 
             # Create command
             if state == "present":
                 # Generate args
-                args = gen_args(description, usercategory, hostcategory,
-                                cmdcategory, runasusercategory,
-                                runasgroupcategory, order, nomembers)
+                args = gen_args(entry)
                 if action == "sudorule":
                     # Found the sudorule
                     if res_find is not None:
@@ -489,25 +666,35 @@ def main():
                         # from args if "" and if the category is not in the
                         # sudorule. The empty string is used to reset the
                         # category.
-                        if "usercategory" in args \
-                           and args["usercategory"] == "" \
-                           and "usercategory" not in res_find:
+                        if (
+                            "usercategory" in args
+                            and args["usercategory"] == ""
+                            and "usercategory" not in res_find
+                        ):
                             del args["usercategory"]
-                        if "hostcategory" in args \
-                           and args["hostcategory"] == "" \
-                           and "hostcategory" not in res_find:
+                        if (
+                            "hostcategory" in args
+                            and args["hostcategory"] == ""
+                            and "hostcategory" not in res_find
+                        ):
                             del args["hostcategory"]
-                        if "cmdcategory" in args \
-                           and args["cmdcategory"] == "" \
-                           and "cmdcategory" not in res_find:
+                        if (
+                            "cmdcategory" in args
+                            and args["cmdcategory"] == ""
+                            and "cmdcategory" not in res_find
+                        ):
                             del args["cmdcategory"]
-                        if "ipasudorunasusercategory" in args \
-                           and args["ipasudorunasusercategory"] == "" \
-                           and "ipasudorunasusercategory" not in res_find:
+                        if (
+                            "ipasudorunasusercategory" in args
+                            and args["ipasudorunasusercategory"] == ""
+                            and "ipasudorunasusercategory" not in res_find
+                        ):
                             del args["ipasudorunasusercategory"]
-                        if "ipasudorunasgroupcategory" in args \
-                           and args["ipasudorunasgroupcategory"] == "" \
-                           and "ipasudorunasgroupcategory" not in res_find:
+                        if (
+                            "ipasudorunasgroupcategory" in args
+                            and args["ipasudorunasgroupcategory"] == ""
+                            and "ipasudorunasgroupcategory" not in res_find
+                        ):
                             del args["ipasudorunasgroupcategory"]
 
                         # For all settings is args, check if there are
@@ -515,46 +702,48 @@ def main():
                         # If yes: modify
                         if not compare_args_ipa(ansible_module, args,
                                                 res_find):
-                            commands.append([name, "sudorule_mod", args])
+                            commands.append([entry.name, "sudorule_mod", args])
                     else:
-                        commands.append([name, "sudorule_add", args])
+                        commands.append([entry.name, "sudorule_add", args])
                         # Set res_find to empty dict for next step
                         res_find = {}
 
                     # Generate addition and removal lists
                     host_add, host_del = gen_add_del_lists(
-                        host, res_find.get('memberhost_host', []))
+                        entry.host, res_find.get('memberhost_host', []))
 
                     hostgroup_add, hostgroup_del = gen_add_del_lists(
-                        hostgroup, res_find.get('memberhost_hostgroup', []))
+                        entry.hostgroup,
+                        res_find.get('memberhost_hostgroup', [])
+                    )
 
                     hostmask_add, hostmask_del = gen_add_del_lists(
-                        hostmask, res_find.get('hostmask', []))
+                        entry.hostmask, res_find.get('hostmask', []))
 
                     user_add, user_del = gen_add_del_lists(
-                        user, res_find.get('memberuser_user', []))
+                        entry.user, res_find.get('memberuser_user', []))
 
                     group_add, group_del = gen_add_del_lists(
-                        group, res_find.get('memberuser_group', []))
+                        entry.group, res_find.get('memberuser_group', []))
 
                     allow_cmd_add, allow_cmd_del = gen_add_del_lists(
-                        allow_sudocmd,
+                        entry.allow_sudocmd,
                         res_find.get('memberallowcmd_sudocmd', []))
 
                     allow_cmdgroup_add, allow_cmdgroup_del = gen_add_del_lists(
-                        allow_sudocmdgroup,
+                        entry.allow_sudocmdgroup,
                         res_find.get('memberallowcmd_sudocmdgroup', []))
 
                     deny_cmd_add, deny_cmd_del = gen_add_del_lists(
-                        deny_sudocmd,
+                        entry.deny_sudocmd,
                         res_find.get('memberdenycmd_sudocmd', []))
 
                     deny_cmdgroup_add, deny_cmdgroup_del = gen_add_del_lists(
-                        deny_sudocmdgroup,
+                        entry.deny_sudocmdgroup,
                         res_find.get('memberdenycmd_sudocmdgroup', []))
 
                     sudooption_add, sudooption_del = gen_add_del_lists(
-                        sudooption, res_find.get('ipasudoopt', []))
+                        entry.sudooption, res_find.get('ipasudoopt', []))
 
                     # runasuser attribute can be used with both IPA and
                     # non-IPA (external) users. IPA will handle the correct
@@ -562,15 +751,15 @@ def main():
                     # the provided list against both users and external
                     # users list.
                     runasuser_add, runasuser_del = gen_add_del_lists(
-                        runasuser,
+                        entry.runasuser,
                         (
-                            res_find.get('ipasudorunas_user', [])
-                            + res_find.get('ipasudorunasextuser', [])
+                            list(res_find.get('ipasudorunas_user', []))
+                            + list(res_find.get('ipasudorunasextuser', []))
                         )
                     )
                     runasuser_group_add, runasuser_group_del = (
                         gen_add_del_lists(
-                            runasuser_group,
+                            entry.runasuser_group,
                             res_find.get('ipasudorunas_group', [])
                         )
                     )
@@ -581,82 +770,81 @@ def main():
                     # the provided list against both groups and external
                     # groups list.
                     runasgroup_add, runasgroup_del = gen_add_del_lists(
-                        runasgroup,
+                        entry.runasgroup,
                         (
-                            res_find.get('ipasudorunasgroup_group', [])
-                            + res_find.get('ipasudorunasextgroup', [])
+                            list(res_find.get('ipasudorunasgroup_group', []))
+                            + list(res_find.get('ipasudorunasextgroup', []))
                         )
                     )
 
                 elif action == "member":
-                    if res_find is None:
-                        ansible_module.fail_json(msg="No sudorule '%s'" % name)
-
                     # Generate add lists for host, hostgroup, user, group,
                     # allow_sudocmd, allow_sudocmdgroup, deny_sudocmd,
                     # deny_sudocmdgroup, sudooption, runasuser, runasgroup
                     # and res_find to only try to add the items that not in
                     # the sudorule already
-                    if host is not None:
+                    if entry.host is not None:
                         host_add = gen_add_list(
-                            host, res_find.get("memberhost_host"))
-                    if hostgroup is not None:
+                            entry.host, res_find.get("memberhost_host"))
+                    if entry.hostgroup is not None:
                         hostgroup_add = gen_add_list(
-                            hostgroup, res_find.get("memberhost_hostgroup"))
-                    if hostmask is not None:
+                            entry.hostgroup,
+                            res_find.get("memberhost_hostgroup")
+                        )
+                    if entry.hostmask is not None:
                         hostmask_add = gen_add_list(
-                            hostmask, res_find.get("hostmask"))
-                    if user is not None:
+                            entry.hostmask, res_find.get("hostmask"))
+                    if entry.user is not None:
                         user_add = gen_add_list(
-                            user, res_find.get("memberuser_user"))
-                    if group is not None:
+                            entry.user, res_find.get("memberuser_user"))
+                    if entry.group is not None:
                         group_add = gen_add_list(
-                            group, res_find.get("memberuser_group"))
-                    if allow_sudocmd is not None:
+                            entry.group, res_find.get("memberuser_group"))
+                    if entry.allow_sudocmd is not None:
                         allow_cmd_add = gen_add_list(
-                            allow_sudocmd,
+                            entry.allow_sudocmd,
                             res_find.get("memberallowcmd_sudocmd")
                         )
-                    if allow_sudocmdgroup is not None:
+                    if entry.allow_sudocmdgroup is not None:
                         allow_cmdgroup_add = gen_add_list(
-                            allow_sudocmdgroup,
+                            entry.allow_sudocmdgroup,
                             res_find.get("memberallowcmd_sudocmdgroup")
                         )
-                    if deny_sudocmd is not None:
+                    if entry.deny_sudocmd is not None:
                         deny_cmd_add = gen_add_list(
-                            deny_sudocmd,
+                            entry.deny_sudocmd,
                             res_find.get("memberdenycmd_sudocmd")
                         )
-                    if deny_sudocmdgroup is not None:
+                    if entry.deny_sudocmdgroup is not None:
                         deny_cmdgroup_add = gen_add_list(
-                            deny_sudocmdgroup,
+                            entry.deny_sudocmdgroup,
                             res_find.get("memberdenycmd_sudocmdgroup")
                         )
-                    if sudooption is not None:
+                    if entry.sudooption is not None:
                         sudooption_add = gen_add_list(
-                            sudooption, res_find.get("ipasudoopt"))
+                            entry.sudooption, res_find.get("ipasudoopt"))
                     # runasuser attribute can be used with both IPA and
                     # non-IPA (external) users, so we need to compare
                     # the provided list against both users and external
                     # users list.
-                    if runasuser is not None:
+                    if entry.runasuser is not None:
                         runasuser_add = gen_add_list(
-                            runasuser,
+                            entry.runasuser,
                             (list(res_find.get('ipasudorunas_user', []))
                              + list(res_find.get('ipasudorunasextuser', [])))
                         )
-                    if runasuser_group is not None:
+                    if entry.runasuser_group is not None:
                         runasuser_group_add = gen_add_list(
-                            runasuser_group,
+                            entry.runasuser_group,
                             res_find.get('ipasudorunas_group', [])
                         )
                     # runasgroup attribute can be used with both IPA and
                     # non-IPA (external) groups, so we need to compare
                     # the provided list against both users and external
                     # groups list.
-                    if runasgroup is not None:
+                    if entry.runasgroup is not None:
                         runasgroup_add = gen_add_list(
-                            runasgroup,
+                            entry.runasgroup,
                             (list(res_find.get("ipasudorunasgroup_group", []))
                              + list(res_find.get("ipasudorunasextgroup", [])))
                         )
@@ -664,84 +852,83 @@ def main():
             elif state == "absent":
                 if action == "sudorule":
                     if res_find is not None:
-                        commands.append([name, "sudorule_del", {}])
+                        commands.append([entry.name, "sudorule_del", {}])
 
                 elif action == "member":
-                    if res_find is None:
-                        ansible_module.fail_json(msg="No sudorule '%s'" % name)
-
                     # Generate intersection lists for host, hostgroup, user,
                     # group, allow_sudocmd, allow_sudocmdgroup, deny_sudocmd
                     # deny_sudocmdgroup, sudooption, runasuser, runasgroup
                     # and res_find to only try to remove the items that are
                     # in sudorule
-                    if host is not None:
+                    if entry.host is not None:
                         host_del = gen_intersection_list(
-                            host, res_find.get("memberhost_host"))
+                            entry.host, res_find.get("memberhost_host"))
 
-                    if hostgroup is not None:
+                    if entry.hostgroup is not None:
                         hostgroup_del = gen_intersection_list(
-                            hostgroup, res_find.get("memberhost_hostgroup"))
+                            entry.hostgroup,
+                            res_find.get("memberhost_hostgroup")
+                        )
 
-                    if hostmask is not None:
+                    if entry.hostmask is not None:
                         hostmask_del = gen_intersection_list(
-                            hostmask, res_find.get("hostmask"))
+                            entry.hostmask, res_find.get("hostmask"))
 
-                    if user is not None:
+                    if entry.user is not None:
                         user_del = gen_intersection_list(
-                            user, res_find.get("memberuser_user"))
+                            entry.user, res_find.get("memberuser_user"))
 
-                    if group is not None:
+                    if entry.group is not None:
                         group_del = gen_intersection_list(
-                            group, res_find.get("memberuser_group"))
+                            entry.group, res_find.get("memberuser_group"))
 
-                    if allow_sudocmd is not None:
+                    if entry.allow_sudocmd is not None:
                         allow_cmd_del = gen_intersection_list(
-                            allow_sudocmd,
+                            entry.allow_sudocmd,
                             res_find.get("memberallowcmd_sudocmd")
                         )
-                    if allow_sudocmdgroup is not None:
+                    if entry.allow_sudocmdgroup is not None:
                         allow_cmdgroup_del = gen_intersection_list(
-                            allow_sudocmdgroup,
+                            entry.allow_sudocmdgroup,
                             res_find.get("memberallowcmd_sudocmdgroup")
                         )
-                    if deny_sudocmd is not None:
+                    if entry.deny_sudocmd is not None:
                         deny_cmd_del = gen_intersection_list(
-                            deny_sudocmd,
+                            entry.deny_sudocmd,
                             res_find.get("memberdenycmd_sudocmd")
                         )
-                    if deny_sudocmdgroup is not None:
+                    if entry.deny_sudocmdgroup is not None:
                         deny_cmdgroup_del = gen_intersection_list(
-                            deny_sudocmdgroup,
+                            entry.deny_sudocmdgroup,
                             res_find.get("memberdenycmd_sudocmdgroup")
                         )
-                    if sudooption is not None:
+                    if entry.sudooption is not None:
                         sudooption_del = gen_intersection_list(
-                            sudooption, res_find.get("ipasudoopt"))
+                            entry.sudooption, res_find.get("ipasudoopt"))
                     # runasuser attribute can be used with both IPA and
                     # non-IPA (external) users, so we need to compare
                     # the provided list against both users and external
                     # users list.
-                    if runasuser is not None:
+                    if entry.runasuser is not None:
                         runasuser_del = gen_intersection_list(
-                            runasuser,
+                            entry.runasuser,
                             (
                                 list(res_find.get('ipasudorunas_user', []))
                                 + list(res_find.get('ipasudorunasextuser', []))
                             )
                         )
-                    if runasuser_group is not None:
+                    if entry.runasuser_group is not None:
                         runasuser_group_del = gen_intersection_list(
-                            runasuser_group,
+                            entry.runasuser_group,
                             res_find.get('ipasudorunas_group', [])
                         )
                     # runasgroup attribute can be used with both IPA and
                     # non-IPA (external) groups, so we need to compare
                     # the provided list against both groups and external
                     # groups list.
-                    if runasgroup is not None:
+                    if entry.runasgroup is not None:
                         runasgroup_del = gen_intersection_list(
-                            runasgroup,
+                            entry.runasgroup,
                             (
                                 list(res_find.get(
                                     "ipasudorunasgroup_group", []))
@@ -751,8 +938,6 @@ def main():
                         )
 
             elif state == "enabled":
-                if res_find is None:
-                    ansible_module.fail_json(msg="No sudorule '%s'" % name)
                 # sudorule_enable is not failing on an enabled sudorule
                 # Therefore it is needed to have a look at the ipaenabledflag
                 # in res_find.
@@ -762,11 +947,9 @@ def main():
                 # See: https://github.com/freeipa/freeipa/pull/6294
                 enabled_flag = str(res_find.get("ipaenabledflag", [False])[0])
                 if enabled_flag.upper() != "TRUE":
-                    commands.append([name, "sudorule_enable", {}])
+                    commands.append([entry.name, "sudorule_enable", {}])
 
             elif state == "disabled":
-                if res_find is None:
-                    ansible_module.fail_json(msg="No sudorule '%s'" % name)
                 # sudorule_disable is not failing on an disabled sudorule
                 # Therefore it is needed to have a look at the ipaenabledflag
                 # in res_find.
@@ -776,7 +959,7 @@ def main():
                 # See: https://github.com/freeipa/freeipa/pull/6294
                 enabled_flag = str(res_find.get("ipaenabledflag", [False])[0])
                 if enabled_flag.upper() != "FALSE":
-                    commands.append([name, "sudorule_disable", {}])
+                    commands.append([entry.name, "sudorule_disable", {}])
 
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
@@ -788,31 +971,31 @@ def main():
                 # An empty Hostmask cannot be used, or IPA API will fail.
                 if hostmask_add:
                     params["hostmask"] = hostmask_add
-                commands.append([name, "sudorule_add_host", params])
+                commands.append([entry.name, "sudorule_add_host", params])
 
             if any([host_del, hostgroup_del, hostmask_del]):
                 params = {"host": host_del, "hostgroup": hostgroup_del}
                 # An empty Hostmask cannot be used, or IPA API will fail.
                 if hostmask_del:
                     params["hostmask"] = hostmask_del
-                commands.append([name, "sudorule_remove_host", params])
+                commands.append([entry.name, "sudorule_remove_host", params])
 
             # Manage users and groups
             if user_add or group_add:
                 commands.append([
-                    name, "sudorule_add_user",
+                    entry.name, "sudorule_add_user",
                     {"user": user_add, "group": group_add}
                 ])
             if user_del or group_del:
                 commands.append([
-                    name, "sudorule_remove_user",
+                    entry.name, "sudorule_remove_user",
                     {"user": user_del, "group": group_del}
                 ])
 
             # Manage commands allowed
             if allow_cmd_add or allow_cmdgroup_add:
                 commands.append([
-                    name, "sudorule_add_allow_command",
+                    entry.name, "sudorule_add_allow_command",
                     {
                         "sudocmd": allow_cmd_add,
                         "sudocmdgroup": allow_cmdgroup_add,
@@ -820,7 +1003,7 @@ def main():
                 ])
             if allow_cmd_del or allow_cmdgroup_del:
                 commands.append([
-                    name, "sudorule_remove_allow_command",
+                    entry.name, "sudorule_remove_allow_command",
                     {
                         "sudocmd": allow_cmd_del,
                         "sudocmdgroup": allow_cmdgroup_del
@@ -829,7 +1012,7 @@ def main():
             # Manage commands denied
             if deny_cmd_add or deny_cmdgroup_add:
                 commands.append([
-                    name, "sudorule_add_deny_command",
+                    entry.name, "sudorule_add_deny_command",
                     {
                         "sudocmd": deny_cmd_add,
                         "sudocmdgroup": deny_cmdgroup_add,
@@ -837,7 +1020,7 @@ def main():
                 ])
             if deny_cmd_del or deny_cmdgroup_del:
                 commands.append([
-                    name, "sudorule_remove_deny_command",
+                    entry.name, "sudorule_remove_deny_command",
                     {
                         "sudocmd": deny_cmd_del,
                         "sudocmdgroup": deny_cmdgroup_del
@@ -851,10 +1034,10 @@ def main():
                     _args["user"] = runasuser_add
                 if runasuser_group_add:
                     _args["group"] = runasuser_group_add
-                commands.append([name, "sudorule_add_runasuser", _args])
+                commands.append([entry.name, "sudorule_add_runasuser", _args])
             if runasuser_del or runasuser_group_del:
                 commands.append([
-                    name,
+                    entry.name,
                     "sudorule_remove_runasuser",
                     {"user": runasuser_del, "group": runasuser_group_del}
                 ])
@@ -862,29 +1045,32 @@ def main():
             # Manage RunAS Groups
             if runasgroup_add:
                 commands.append([
-                    name, "sudorule_add_runasgroup", {"group": runasgroup_add}
+                    entry.name, "sudorule_add_runasgroup",
+                    {"group": runasgroup_add}
                 ])
             if runasgroup_del:
                 commands.append([
-                    name, "sudorule_remove_runasgroup",
+                    entry.name, "sudorule_remove_runasgroup",
                     {"group": runasgroup_del}
                 ])
             # Manage sudo options
             if sudooption_add:
                 for option in sudooption_add:
                     commands.append([
-                        name, "sudorule_add_option", {"ipasudoopt": option}
+                        entry.name, "sudorule_add_option",
+                        {"ipasudoopt": option}
                     ])
             if sudooption_del:
                 for option in sudooption_del:
                     commands.append([
-                        name, "sudorule_remove_option", {"ipasudoopt": option}
+                        entry.name, "sudorule_remove_option",
+                        {"ipasudoopt": option}
                     ])
 
         # Execute commands
 
         changed = ansible_module.execute_ipa_commands(
-            commands, fail_on_member_errors=True)
+            commands, batch=True, fail_on_member_errors=True)
 
     # Done
 

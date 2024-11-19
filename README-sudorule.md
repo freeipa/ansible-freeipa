@@ -129,6 +129,49 @@ Example playbook to make sure Sudo Rule is absent:
       state: absent
 ```
 
+Example playbook to ensure multiple Sudo Rule are present using batch mode:
+
+```yaml
+---
+- name: Playbook to handle sudorules
+  hosts: ipaserver
+  become: true
+
+- name: Ensure multiple Sudo Rules are present using batch mode.
+  ipasudorule:
+    ipaadmin_password: SomeADMINpassword
+    sudorules:
+      - name: testrule1
+        hostmask:
+          - 192.168.122.1/24
+      - name: testrule2
+        hostcategory: all
+```
+
+Example playbook to ensure multiple Sudo Rule members are present using batch mode:
+
+```yaml
+---
+- name: Playbook to handle sudorules
+  hosts: ipaserver
+  become: true
+
+- name: Ensure multiple Sudo Rules are present using batch mode.
+  ipasudorule:
+    ipaadmin_password: SomeADMINpassword
+    action: member
+    sudorules:
+      - name: testrule1
+        user:
+          - user01
+          - user02
+        group:
+          - group01
+      - name: testrule2
+        hostgroup:
+          - hostgroup01
+          - hostgroup02
+```
 
 Variables
 =========
@@ -139,7 +182,9 @@ Variable | Description | Required
 `ipaadmin_password` | The admin password is a string and is required if there is no admin ticket available on the node | no
 `ipaapi_context` | The context in which the module will execute. Executing in a server context is preferred. If not provided context will be determined by the execution environment. Valid values are `server` and `client`. | no
 `ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
-`name` \| `cn` | The list of sudorule name strings. | yes
+`name` \| `cn` | The list of sudorule name strings. | no
+`sudorules` | The list of sudorule dicts. Each `sudorule` dict entry can contain sudorule variables.<br>There is one required option in the `sudorule` dict:| no
+&nbsp; | `name` - The sudorule name string of the entry. | yes
 `description` | The sudorule description string. | no
 `usercategory` \| `usercat` | User category the rule applies to. Choices: ["all", ""] | no
 `hostcategory` \| `hostcat` | Host category the rule applies to. Choices: ["all", ""] | no

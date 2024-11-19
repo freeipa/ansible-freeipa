@@ -1,17 +1,22 @@
 ---
 - name: Test sudorule with single hostnames.
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
-  become: no
-  gather_facts: no
+  become: false
+  gather_facts: false
 
   tasks:
   - name: Test sudorule single hostnames
     block:
     # setup test environment
-    - name: Get Domain from the server name
-      ansible.builtin.set_fact:
-        ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
+    - name: Ensure ipaserver_domain is set
       when: ipaserver_domain is not defined
+      block:
+      - name: Retrieve host information
+        ansible.builtin.setup:
+          gather_subset: dns
+      - name: Get Domain from the server name
+        ansible.builtin.set_fact:
+          ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
 
     - name: Ensure test sudo rule is absent
       ipasudorule:
@@ -24,9 +29,9 @@
         ipaadmin_password: SomeADMINpassword
         hosts:
           - name: "host01.{{ ipaserver_domain }}"
-            force: yes
+            force: true
           - name: "host02.{{ ipaserver_domain }}"
-            force: yes
+            force: true
 
     # start tests
     - name: Ensure sudorule exist with host member using FQDN.

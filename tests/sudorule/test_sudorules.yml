@@ -1,0 +1,382 @@
+---
+- name: Test sudorule
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+
+  module_defaults:
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipasudocmdgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipasudocmd:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  # setup
+  - name: Ensure ansible facts for DNS are available
+    ansible.builtin.setup:
+      gather_subset: dns
+
+  - name: Ensure test users are absent
+    ipauser:
+      name:
+        - user01
+        - user02
+      state: absent
+
+  - name: Ensure test groups are absent
+    ipagroup:
+      name:
+        - group01
+        - group02
+      state: absent
+
+  - name: Ensure test hostgroup is absent
+    ipahostgroup:
+      name: cluster
+      state: absent
+
+  - name: Ensure test users are present
+    ipauser:
+      users:
+      - name: user01
+        first: user
+        last: zeroone
+      - name: user02
+        first: user
+        last: zerotwo
+
+  - name: Ensure groups are present
+    ipagroup:
+      groups:
+        - name: group01
+          user: user01
+        - name: group02
+
+  - name: Ensure sudocmdgroup is absent
+    ipasudocmdgroup:
+      name: test_sudorule_cmdgroup
+      state: absent
+
+  - name: Ensure hostgroup is present, with a host.
+    ipahostgroup:
+      name: cluster
+      host: "{{ ansible_facts['fqdn'] }}"
+
+  - name: Ensure some sudocmds are available
+    ipasudocmd:
+      name:
+          - /sbin/ifconfig
+          - /usr/bin/vim
+          - /usr/bin/emacs
+      state: present
+
+  - name: Ensure sudocmdgroup is available
+    ipasudocmdgroup:
+      name: test_sudorule_cmdgroup
+      sudocmd: /usr/bin/vim
+      state: present
+
+  - name: Ensure another sudocmdgroup is available
+    ipasudocmdgroup:
+      name: test_sudorule_cmdgroup_2
+      sudocmd: /usr/bin/emacs
+      state: present
+
+  - name: Ensure sudorules are absent
+    ipasudorule:
+      name:
+      - testrule1
+      - testrule2
+      - allusers
+      - allhosts
+      - allcommands
+      state: absent
+
+  # tests
+  - name: Run sudorules tests.
+    block:
+    - name: Ensure sudorules are present
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+          - name: testrule2
+          - name: allhosts
+          - name: allcommands
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorules are present, again
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+          - name: testrule2
+          - name: allhosts
+          - name: allcommands
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure testrule1 and testrule2 are absent
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+          - name: testrule2
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure testrule1 and testrule2 are absent, again
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+          - name: testrule2
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure allhosts and allcommands sudorules are still present
+      ipasudorule:
+        sudorules:
+          - name: allhosts
+          - name: allcomands
+        state: absent
+      check_mode: true
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorules with parameters are present
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser:
+              - user01
+          - name: testrule2
+            runasuser_group:
+              - group01
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorules with parameters are present, again
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser:
+              - user01
+          - name: testrule2
+            runasuser_group:
+              - group01
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorules with parameters are modified
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser:
+              - user02
+          - name: testrule2
+            runasuser_group:
+              - group02
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorules with parameters are modified again
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser:
+              - user02
+          - name: testrule2
+            runasuser_group:
+              - group02
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorules members can be modified
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser:
+              - user01
+          - name: testrule2
+            runasuser_group:
+              - group01
+        action: member
+        state: present
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorules members can modified, again
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser:
+              - user01
+              - user02
+          - name: testrule2
+            runasuser_group:
+              - group01
+              - group02
+        action: member
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sudorules members are absent
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser:
+              - user01
+          - name: testrule2
+            runasuser_group:
+              - group02
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sudorules members are absent, again
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser:
+              - user01
+          - name: testrule2
+            runasuser_group:
+              - group02
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure testrule1 and testrule2 are present, with proper attributes
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser:
+              - user02
+          - name: testrule2
+            runasuser_group:
+              - group01
+        state: present
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure testrule1 and testrule2 are disabled
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+          - name: testrule2
+        state: disabled
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure testrule1 and testrule2 are disabled, again
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+          - name: testrule2
+        state: disabled
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure testrule1 and testrule2 are enabled
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+          - name: testrule2
+        state: enabled
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure testrule1 and testrule2 are enabled, again
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+          - name: testrule2
+        state: enabled
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure multiple sudorules cannot be enabled with invalid parameters
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser: user01
+          - name: testrule2
+            runasuser: user01
+        state: enabled
+      register: result
+      failed_when: not result.failed and "Argument 'runasuser' can not be used with action 'sudorule' and state 'enabled'" not in result.msg
+
+    - name: Ensure multiple sudorules cannot be disabled with invalid parameters
+      ipasudorule:
+        sudorules:
+          - name: testrule1
+            runasuser: user01
+          - name: testrule2
+            runasuser: user01
+        state: disabled
+      register: result
+      failed_when: not result.failed and "Argument 'runasuser' can not be used with action 'sudorule' and state 'disabled'" not in result.msg
+
+    # cleanup
+    always:
+    - name: Cleanup sudorules
+      ipasudorule:
+        name:
+          - testrule1
+          - testrule2
+          - allusers
+          - allhosts
+          - allcommands
+        state: absent
+
+    - name: Ensure sudocmdgroup is absent
+      ipasudocmdgroup:
+        name:
+        - test_sudorule_cmdgroup
+        - test_sudorule_cmdgroup_2
+        state: absent
+
+    - name: Ensure sudocmds are absent
+      ipasudocmd:
+        name:
+        - /sbin/ifconfig
+        - /usr/bin/vim
+        - /usr/bin/emacs
+        state: absent
+
+    - name: Ensure hostgroup is absent.
+      ipahostgroup:
+        name: cluster
+        state: absent
+
+    - name: Ensure groups are absent
+      ipagroup:
+        name: group01,group02
+        state: absent
+
+    - name: Ensure user is absent
+      ipauser:
+        name: user01,user02
+        state: absent
