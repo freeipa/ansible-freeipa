@@ -25,7 +25,7 @@ Requirements
 ------------
 
 **Controller**
-* Ansible version: 2.15+
+* Ansible version: 2.14+
 * Some tool to generate a certificate signing request (CSR) might be needed, like `openssl`.
 
 **Node**

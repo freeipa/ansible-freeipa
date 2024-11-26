@@ -25,7 +25,7 @@ Requirements
 ------------
 
 **Controller**
-* Ansible version: 2.15+
+* Ansible version: 2.14+
 
 **Node**
 * Supported FReeIPA version (see above)

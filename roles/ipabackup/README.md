@@ -42,7 +42,7 @@ Requirements
 ------------
 
 **Controller**
-* Ansible version: 2.15+
+* Ansible version: 2.14+
 
 **Node**
 * Supported FreeIPA version (see above)

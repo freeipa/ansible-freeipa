@@ -21,7 +21,7 @@ FreeIPA versions 4.4.0 and up are supported by the ipaautomountlocation module.
 Requirements
 ------------
 **Controller**
-* Ansible version: 2.15+
+* Ansible version: 2.14+
 
 **Node**
 * Supported FreeIPA version (see above)
