@@ -18,7 +18,7 @@ container_create() {
             hostname=*) extra_opts+=("--${opt}") ;;
             cpus=*) extra_opts+=("--${opt}") ;;
             memory=*) extra_opts+=("--${opt}") ;;
-            privileged) extra_opts+=("--${opt}") ;;
+            capabilities=*) extra_opts+=("--cap-add=${opt##*=}") ;;
             *) log error "container_create: Invalid option: ${opt}" ;;
         esac
     done

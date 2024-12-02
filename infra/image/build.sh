@@ -15,7 +15,7 @@ valid_distro() {
 usage() {
     local prog="${0##*/}"
     cat << EOF
-usage: ${prog} [-h] [-p] [-n HOSTNAME] [-s] distro
+usage: ${prog} [-h] [-n HOSTNAME] [-s] distro
     ${prog} build a container image to test ansible-freeipa.
 EOF
 }
@@ -41,14 +41,14 @@ cpus="2"
 memory="3g"
 quayname="quay.io/ansible-freeipa/upstream-tests"
 deploy_server="N"
-privileged=""
+deploy_capabilities="SYS_ADMIN,SYSLOG"
+capabilities=""
 
-while getopts ":hn:ps" option
+while getopts ":hn:s" option
 do
     case "${option}" in
         h) help && exit 0 ;;
         n) hostname="${OPTARG}" ;;
-        p) privileged="privileged" ;;
         s) deploy_server="Y" ;;
         *) die -u "Invalid option: ${option}" ;;
     esac
@@ -66,6 +66,8 @@ container_check
 
 if [ "${deploy_server}" == "Y" ]
 then
+    capabilities="${deploy_capabilities}"
+
     [ -n "$(command -v "ansible-playbook")" ] || die "ansible-playbook is required to install FreeIPA."
 
     deploy_playbook="${TOPDIR}/playbooks/install-server.yml"
@@ -89,7 +91,7 @@ container_create "${name}" "${tag}" \
     "hostname=${hostname}" \
     "memory=${memory}" \
     "cpus=${cpus}" \
-    "${privileged}"
+    "${capabilities:+capabilities=$capabilities}"
 container_commit "${name}" "${quayname}:${tag}"
 
 if [ "${deploy_server}" == "Y" ]
