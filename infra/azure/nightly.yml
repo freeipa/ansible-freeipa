@@ -14,8 +14,8 @@ pool:
 
 variables:
   # We need to have two sets, as c8s is not supported by all ansible versions
-  recent_distros: "fedora-latest,fedora-rawhide,c9s"
-  distros: "fedora-latest,fedora-rawhide,c9s,c8s"
+  recent_distros: "fedora-latest,fedora-rawhide,c10s,c9s"
+  distros: "fedora-latest,fedora-rawhide,c10s,c9s,c8s"
   ansible_latest: "-core"
   ansible_minimum: "-core <2.16"
   ansible_version: "-core >=2.16,<2.17"

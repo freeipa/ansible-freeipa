@@ -12,7 +12,7 @@ trigger: none
 pool:
   vmImage: 'ubuntu-24.04'
 
-variables: { distros: "fedora-latest,fedora-rawhide,c9s" }
+variables: { distros: "fedora-latest,fedora-rawhide,c9s,c10s" }
 
 stages:
 
