@@ -1,0 +1,21 @@
+#
+# Variables must be defined as comma separated lists.
+# For easier management of items to enable/disable,
+# use one test/module on each line, followed by a comma.
+#
+# Example:
+#
+# ipa_disabled_modules: >-
+#   dnsconfig,
+#   group,
+#   hostgroup
+#
+# If no variables are set, set "empty: true" as at least
+# one item is needed in the set.
+---
+variables:
+  empty: true
+#   ipa_enabled_modules: >-
+#   ipa_enabled_tests: >-
+#   ipa_disabled_modules: >-
+#   ipa_disabled_tests: >-
