@@ -1,10 +1,14 @@
 ---
 - name: Test group
   hosts: ipaclients, ipaserver
-  become: no
-  gather_facts: no
+  become: false
+  gather_facts: false
 
   tasks:
+  - name: Ensure DNS facts are set
+    ansible.builtin.setup:
+      gather_subset: dns
+
   - name: Include FreeIPA facts.
     ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 

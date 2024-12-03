@@ -310,40 +310,31 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         groups:
-        - name: firstgroup
-          nonposix: true
-          posix: false
         - name: fail_group
           nonposix: true
-          posix: true
+          posix: false
       register: result
-      failed_when: not result.failed or "parameters are mutually exclusive for group `fail_group`" not in result.msg
+      failed_when: not result.failed or "parameters are mutually exclusive for group" not in result.msg
 
     - name: Fail to ensure group as nonposix and external
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         groups:
-        - name: firstgroup
-          nonposix: true
-          posix: false
         - name: fail_group
           nonposix: true
           external: true
       register: result
-      failed_when: not result.failed or "parameters are mutually exclusive for group `fail_group`" not in result.msg
+      failed_when: not result.failed or "parameters are mutually exclusive for group" not in result.msg
 
     - name: Fail to ensure group as posix and external
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         groups:
-        - name: firstgroup
-          nonposix: true
-          posix: false
         - name: fail_group
           posix: true
           external: true
       register: result
-      failed_when: not result.failed or "parameters are mutually exclusive for group `fail_group`" not in result.msg
+      failed_when: not result.failed or "parameters are mutually exclusive for group" not in result.msg
 
     # GROUPS WITH MIXED TYPES
 

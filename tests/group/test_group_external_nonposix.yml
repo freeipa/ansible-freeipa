@@ -1,10 +1,12 @@
 ---
 - name: Test group
   hosts: ipaserver
-  become: yes
-  gather_facts: yes
+  become: true
+  gather_facts: true
 
   tasks:
+    # setup
+
     - name: Remove testing groups.
       ipagroup:
         ipaadmin_password: SomeADMINpassword
@@ -36,118 +38,111 @@
       register: result
       failed_when: not result.changed or result.failed
 
-    - name: Add nonposix group.
+    # start tests
+
+    - name: Ensure group extgroup exists and is external
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: extgroup
-        nonposix: yes
+        external: true
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Add nonposix group, again.
+    - name: Ensure group extgroup exists and is external, again
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: extgroup
-        nonposix: yes
+        external: true
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Set group to be external
+    - name: Ensure group extgroup exists and is nonposix
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: extgroup
-        external: yes
-      register: result
-      failed_when: result.failed or not result.changed
-
-    - name: Set group to be external, again.
-      ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        name: extgroup
-        external: yes
+        nonposix: true
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Set external group to be non-external.
+    - name: Ensure group extgroup exists and is not external
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: extgroup
-        external: no
+        external: false
       register: result
       failed_when: not result.failed or "group can not be non-external" not in result.msg
 
-    - name: Set external group to be posix.
+    - name: Ensure group extgroup exists and is posix
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: extgroup
-        posix: yes
+        posix: true
       register: result
       failed_when: not result.failed or "Cannot change `external` group" not in result.msg
 
-    - name: Add nonposix group.
+    - name: Ensure group posixgroup exists and is nonposix
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        nonposix: yes
+        nonposix: true
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Set group to be posix
+    - name: Ensure group posixgroup exists and is posix
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        posix: yes
+        posix: true
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Set group to be posix, again.
+    - name: Ensure group posixgroup exists and is posix, again
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        posix: yes
+        posix: true
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Set posix group to be external.
+    - name: Ensure group posixgroup exists and is external
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        external: yes
+        external: true
       register: result
       failed_when: not result.failed or "Cannot change `posix` group" not in result.msg
 
-    - name: Set posix group to be non-posix.
+    - name: Ensure group posixgroup exists and is not posix
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        posix: no
+        posix: false
       register: result
       failed_when: not result.failed or "Cannot change `posix` group" not in result.msg
 
-    - name: Set posix group to be non-posix.
+    - name: Ensure group posixgroup exists and is nonposix
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        nonposix: yes
+        nonposix: true
       register: result
       failed_when: not result.failed or "Cannot change `posix` group" not in result.msg
 
-    - name: Add nonposix group.
+    - name: Ensure group nonposixgroup exists and is nonposix
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: nonposixgroup
-        posix: no
+        nonposix: true
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Add nonposix group, again.
+    - name: Ensure group nonposixgroup exists and is not posix
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: nonposixgroup
-        nonposix: yes
+        posix: false
       register: result
       failed_when: result.failed or result.changed
-
 
     # NONPOSIX MEMBER TEST
 
@@ -155,7 +150,7 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: nonposixgroup
-        nonposix: yes
+        nonposix: true
         user:
         - testuser1
         - testuser2
@@ -167,7 +162,7 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: nonposixgroup
-        nonposix: yes
+        nonposix: true
         user:
         - testuser1
         - testuser2
@@ -182,7 +177,7 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        posix: yes
+        posix: true
         user:
         - testuser1
         - testuser2
@@ -194,7 +189,7 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        posix: yes
+        posix: true
         user:
         - testuser1
         - testuser2
@@ -212,7 +207,7 @@
         ipagroup:
           ipaadmin_password: SomeADMINpassword
           name: externalgroup
-          external: yes
+          external: true
           user:
           - testuser1
           - testuser2
@@ -224,7 +219,7 @@
         ipagroup:
           ipaadmin_password: SomeADMINpassword
           name: externalgroup
-          external: yes
+          external: true
           user:
           - testuser1
           - testuser2
@@ -238,7 +233,7 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: nonposixgroup
-        posix: yes
+        posix: true
       register: result
       failed_when: not result.changed or result.failed
 
@@ -246,7 +241,7 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: nonposixgroup
-        posix: yes
+        posix: true
       register: result
       failed_when: result.changed or result.failed
 
@@ -254,7 +249,7 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: nonposixgroup
-        posix: yes
+        posix: true
         user:
         - testuser1
         - testuser2
@@ -268,8 +263,8 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        nonposix: yes
-        posix: yes
+        nonposix: true
+        posix: true
       register: result
       failed_when: not result.failed or "parameters are mutually exclusive" not in result.msg
 
@@ -277,8 +272,8 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        nonposix: yes
-        external: yes
+        nonposix: true
+        external: true
       register: result
       failed_when: not result.failed or "parameters are mutually exclusive" not in result.msg
 
@@ -286,8 +281,8 @@
       ipagroup:
         ipaadmin_password: SomeADMINpassword
         name: posixgroup
-        posix: yes
-        external: yes
+        posix: true
+        external: true
       register: result
       failed_when: not result.failed or "parameters are mutually exclusive" not in result.msg
 
