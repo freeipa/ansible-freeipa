@@ -1,0 +1,105 @@
+name: Multihost Testing
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  multihost-testing:
+    name: "Multihost tests"
+    # Only macos provides Vagrant.
+    runs-on: macos-12
+    defaults:
+      run:
+        working-directory: tests/multihost
+
+    steps:
+      - uses: actions/checkout@v3.1.0
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v4.3.0
+        with:
+          python-version: "3.x"
+
+      - name: Install Ansible
+        run: pip install ansible-core
+
+      - name: Ansible version
+        run: ansible --version
+
+      - name: Prepare ansible-freeipa environment
+        working-directory: .
+        run: |
+          rm -rf ~/.ansible
+          mkdir ~/.ansible
+          ln -s $(pwd)/roles ~/.ansible/
+          ln -s $(pwd)/plugins ~/.ansible/
+          ls -l ~/.ansible/*
+
+      - name: Show Vagrant version
+        run: |
+          vagrant --version
+
+      - name: Run vagrant up
+        run: vagrant up
+
+      - name: Get vagrant ssh config
+        run: |
+          vagrant ssh-config | tee "vagrant-ssh"
+
+      - name: Get nodes IP addresses
+        run: |
+          ./get_ip.sh server replica client | tee "inventory/group_vars/all.yml"
+
+      - name: Test host connection
+        run: |
+          ansible -i inventory --ssh-extra-args "-F vagrant-ssh" -m ping all
+
+      - name: Log scenario configuration
+        run: ansible -i inventory --ssh-extra-args "-F vagrant-ssh" -m debug -a var=hostvars localhost | tee 'scenario.log'
+
+      # Here is where you add tests...
+      - name: Test IPA server deploy
+        run: ansible-playbook -i inventory --ssh-extra-args "-F vagrant-ssh" playbooks/install-server.yml
+
+      - name: Test IPA client deploy
+        run: ansible-playbook -i inventory --ssh-extra-args "-F vagrant-ssh" playbooks/install-client.yml
+
+      #- name: Ensure server PTR records are available
+      #  run: ansible-playbook -i inventory --ssh-extra-args "-F vagrant-ssh" ensure-reverse-dns.yaml
+
+      - name: Test IPA replica deploy
+        run: ansible-playbook -i inventory --ssh-extra-args "-F vagrant-ssh" playbooks/install-replica.yml
+
+      - name: Retrieve logs in case of ANY deploy failure
+        if: failure()
+        working-directory: .
+        run: |
+          ssh -F tests/multihost/vagrant-ssh server  "sudo chmod a+r /var/log/*.log"
+          mkdir -p logs/server-logs
+          scp -F tests/multihost/vagrant-ssh vagrant@server:/var/log/{ipaserver,ipaclient}-install.log logs/server-logs || true
+          ssh -F tests/multihost/vagrant-ssh replica "sudo chmod a+r /var/log/*.log"
+          mkdir -p logs/replica-logs
+          scp -F tests/multihost/vagrant-ssh vagrant@replica:/var/log/{ipareplica,ipaclient}-install.log logs/replica-logs || true
+          ssh -F tests/multihost/vagrant-ssh clente.ipa.test "sudo chmod a+r /var/log/*.log"
+          mkdir -p logs/client-logs
+          scp -F tests/multihost/vagrant-ssh vagrant@client:/var/log/ipaclient-install.log logs/client-logs || true
+          # tar czvf multihost-logs.tar.gz logs
+
+      - name: Save artifacts
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          # path: multihost-logs.tar.gz
+          path: |
+            logs/
+            tests/multihost/inventory/
+            tests/multihost/vagrant-ssh
+            tests/multihost/scenario.log
+          if-no-files-found: "ignore"
+
+      # Cleanup
+      - name: Stop vagrant
+        run: vagrant destroy -f
