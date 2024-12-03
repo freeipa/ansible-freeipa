@@ -1,0 +1,94 @@
+---
+- name: Test correct handling of users and hosts lists on ipasudorule
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+    ipasudorule:
+      ipaadmin_password: SomeADMINpassword
+  tasks:
+  - name: Ensure test state is valid
+    block:
+      - name: Ensure users are present
+        ipauser:
+          users:
+          - name: user_s1
+            first: user
+            last: s1
+          - name: user_s2
+            first: user
+            last: s2
+      - name: Ensure hosts are present
+        ipahost:
+          hosts:
+            - name: mytesthost1.ipadomain.test
+              force: true
+            - name: mytesthost1a.ipadomain.test
+              force: true
+      - name: Ensure sudorule_5a is absent
+        ipasudorule:
+          name: sudorule_5a
+          state: absent
+      - name: Ensule sudorule_5a is present with host masks and external hosts
+        ipasudorule:
+          name: sudorule_5a
+          hostmask: [192.168.221.0/24, 192.168.110.0/24]
+          host: [mytesthost1.ipa.test, mytesthost2.ipa.test]
+          user: [user_s1, user_s2]
+
+  - name: Ensure that sudorule remain present after remove their members(using action member).
+    block:
+      - name: Ensure sudorules members are absent
+        ipasudorule:
+          name: sudorule_5a
+          hostmask: 192.168.221.0/24
+          user: "user_s1"
+          host: "mytesthost1.ipa.test"
+          action: member
+          state: absent
+        register: result
+        failed_when: not result.changed or result.failed
+
+      - name: Ensure sudorules members are absent, again
+        ipasudorule:
+          name: sudorule_5a
+          hostmask: 192.168.221.0/24
+          user: "user_s1"
+          host: "mytesthost1.ipa.test"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.changed or result.failed
+
+      - name: Check if other sudorule members are still present.
+        ipasudorule:
+          name: sudorule_5a
+          hostmask: 192.168.110.0/24
+          user: "user_s2"
+          host: "mytesthost2.ipa.test"
+          action: member
+        check_mode: true
+        register: result
+        failed_when: result.changed or result.failed
+
+  # cleanup
+
+  - name: Ensure test sudorule is absent
+    ipasudorule:
+      name: sudorule_5a
+      state: absent
+
+  - name: Ensure test hosts are absent
+    ipahost:
+      name: [mytesthost1.ipa.test, mytesthost1a.ipa.test]
+      state: absent
+
+  - name: Ensure test users are absent
+    ipauser:
+      name: [user_s1, user_s2]
+      state: absent
+...
