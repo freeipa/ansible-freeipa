@@ -184,7 +184,8 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, template_str, urlparse
+    IPAAnsibleModule, compare_args_ipa, template_str, urlparse, \
+    ipalib_errors
 from ansible.module_utils import six
 from copy import deepcopy
 import string
@@ -269,7 +270,7 @@ def find_idp(module, name):
     """Find if a idp with the given name already exist."""
     try:
         _result = module.ipa_command("idp_show", name, {"all": True})
-    except Exception:  # pylint: disable=broad-except
+    except ipalib_errors.NotFound:
         # An exception is raised if idp name is not found.
         return None
 

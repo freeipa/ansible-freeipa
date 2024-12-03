@@ -106,7 +106,7 @@ RETURN = '''
 '''
 
 from ansible.module_utils.ansible_freeipa_module import (
-    IPAAnsibleModule, compare_args_ipa
+    IPAAnsibleModule, compare_args_ipa, ipalib_errors
 )
 
 
@@ -124,7 +124,7 @@ class AutomountMap(IPAAnsibleModule):
                 location,
                 {"automountmapname": name, "all": True}
             )
-        except Exception:  # pylint: disable=broad-except
+        except ipalib_errors.NotFound:
             return None
         return response["result"]
 
@@ -132,7 +132,7 @@ class AutomountMap(IPAAnsibleModule):
         """Check if 'name' is an indirect map for 'parentmap'."""
         try:
             maps = self.ipa_command("automountmap_find", location, {})
-        except Exception:  # pylint: disable=broad-except
+        except ipalib_errors.NotFound:
             return []
 
         result = []

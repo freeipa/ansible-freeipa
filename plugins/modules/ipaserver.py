@@ -192,14 +192,14 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, DNSName
+    IPAAnsibleModule, compare_args_ipa, DNSName, ipalib_errors
 
 
 def find_server(module, name):
     """Find if a server with the given name already exist."""
     try:
         _result = module.ipa_command("server_show", name, {"all": True})
-    except Exception:  # pylint: disable=broad-except
+    except ipalib_errors.NotFound:
         # An exception is raised if server name is not found.
         return None
     return _result["result"]
@@ -214,7 +214,7 @@ def server_role_status(module, name):
                                               "include_master": True,
                                               "raw": True,
                                               "all": True})
-    except Exception:  # pylint: disable=broad-except
+    except ipalib_errors.NotFound:
         # An exception is raised if server name is not found.
         return None
     return _result["result"][0]

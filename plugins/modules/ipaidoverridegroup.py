@@ -155,7 +155,7 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa
+    IPAAnsibleModule, compare_args_ipa, ipalib_errors
 from ansible.module_utils import six
 
 if six.PY3:
@@ -168,7 +168,7 @@ def find_idoverridegroup(module, idview, anchor):
         _result = module.ipa_command("idoverridegroup_show", idview,
                                      {"ipaanchoruuid": anchor,
                                       "all": True})
-    except Exception:  # pylint: disable=broad-except
+    except ipalib_errors.NotFound:
         # An exception is raised if idoverridegroup anchor is not found.
         return None
     return _result["result"]
