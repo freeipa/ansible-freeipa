@@ -125,6 +125,7 @@
       ipaclient_realm: "{{ result_ipareplica_test.realm | default(omit) }}"
       ipaclient_servers: "{{ ipareplica_servers | default(omit) }}"
       ipaclient_hostname: "{{ result_ipareplica_test.hostname }}"
+      ipaclient_ip_addresses: "{{ ipareplica_ip_addresses | default(omit) }}"
       ipaclient_install_packages: "{{ ipareplica_install_packages }}"
     when: not result_ipareplica_test.client_enrolled
 
