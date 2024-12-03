@@ -106,7 +106,7 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, gen_add_del_lists, gen_add_list, gen_intersection_list, \
-    servicedelegation_normalize_principals
+    servicedelegation_normalize_principals, ipalib_errors
 from ansible.module_utils import six
 
 if six.PY3:
@@ -118,7 +118,7 @@ def find_servicedelegationtarget(module, name):
     try:
         _result = module.ipa_command("servicedelegationtarget_show", name,
                                      {"all": True})
-    except Exception:  # pylint: disable=broad-except
+    except ipalib_errors.NotFound:
         # An exception is raised if servicedelegationtarget name is not found.
         return None
     return _result["result"]

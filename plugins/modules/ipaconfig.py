@@ -356,7 +356,7 @@ def config_show(module):
 def get_netbios_name(module):
     try:
         _result = module.ipa_command_no_name("trustconfig_show", {"all": True})
-    except Exception:  # pylint: disable=broad-except
+    except ipalib_errors.NotFound:
         return None
     return _result["result"]["ipantflatname"][0]
 

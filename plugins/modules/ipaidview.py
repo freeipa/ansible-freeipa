@@ -138,7 +138,7 @@ def find_idview(module, name):
     """Find if a idview with the given name already exist."""
     try:
         _result = module.ipa_command("idview_show", name, {"all": True})
-    except Exception:  # pylint: disable=broad-except
+    except ipalib_errors.NotFound:
         # An exception is raised if idview name is not found.
         return None
     return _result["result"]

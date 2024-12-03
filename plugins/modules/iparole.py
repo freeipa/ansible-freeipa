@@ -129,7 +129,7 @@ EXAMPLES = """
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, gen_add_del_lists, compare_args_ipa, \
-    gen_intersection_list, ensure_fqdn
+    gen_intersection_list, ensure_fqdn, ipalib_errors
 from ansible.module_utils import six
 
 if six.PY3:
@@ -140,7 +140,7 @@ def find_role(module, name):
     """Find if a role with the given name already exist."""
     try:
         _result = module.ipa_command("role_show", name, {"all": True})
-    except Exception:  # pylint: disable=broad-except
+    except ipalib_errors.NotFound:
         # An exception is raised if role name is not found.
         return None
     return _result["result"]

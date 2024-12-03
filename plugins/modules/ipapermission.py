@@ -154,14 +154,14 @@ RETURN = """
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, to_text
+    IPAAnsibleModule, compare_args_ipa, to_text, ipalib_errors
 
 
 def find_permission(module, name):
     """Find if a permission with the given name already exist."""
     try:
         _result = module.ipa_command("permission_show", name, {"all": True})
-    except Exception:  # pylint: disable=broad-except
+    except ipalib_errors.NotFound:
         # An exception is raised if permission name is not found.
         return None
     _res = _result["result"]

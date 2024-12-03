@@ -315,7 +315,8 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, encode_certificate, convert_input_certificates
+    gen_intersection_list, encode_certificate, convert_input_certificates, \
+    ipalib_errors
 from ansible.module_utils import six
 
 if six.PY3:
@@ -328,7 +329,7 @@ def find_idoverrideuser(module, idview, anchor):
         _result = module.ipa_command("idoverrideuser_show", idview,
                                      {"ipaanchoruuid": anchor,
                                       "all": True})
-    except Exception:  # pylint: disable=broad-except
+    except ipalib_errors.NotFound:
         # An exception is raised if idoverrideuser anchor is not found.
         return None
 
