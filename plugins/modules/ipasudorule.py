@@ -710,7 +710,11 @@ def main():
 
                     # Generate addition and removal lists
                     host_add, host_del = gen_add_del_lists(
-                        entry.host, res_find.get('memberhost_host', []))
+                        entry.host, (
+                            list(res_find.get('memberhost_host', []))
+                            + list(res_find.get('externalhost', []))
+                        )
+                    )
 
                     hostgroup_add, hostgroup_del = gen_add_del_lists(
                         entry.hostgroup,
@@ -721,7 +725,11 @@ def main():
                         entry.hostmask, res_find.get('hostmask', []))
 
                     user_add, user_del = gen_add_del_lists(
-                        entry.user, res_find.get('memberuser_user', []))
+                        entry.user, (
+                            list(res_find.get('memberuser_user', []))
+                            + list(res_find.get('externaluser', []))
+                        )
+                    )
 
                     group_add, group_del = gen_add_del_lists(
                         entry.group, res_find.get('memberuser_group', []))
@@ -751,8 +759,7 @@ def main():
                     # the provided list against both users and external
                     # users list.
                     runasuser_add, runasuser_del = gen_add_del_lists(
-                        entry.runasuser,
-                        (
+                        entry.runasuser, (
                             list(res_find.get('ipasudorunas_user', []))
                             + list(res_find.get('ipasudorunasextuser', []))
                         )
@@ -785,7 +792,11 @@ def main():
                     # the sudorule already
                     if entry.host is not None:
                         host_add = gen_add_list(
-                            entry.host, res_find.get("memberhost_host"))
+                            entry.host, (
+                                list(res_find.get("memberhost_host", []))
+                                + list(res_find.get("externalhost", []))
+                            )
+                        )
                     if entry.hostgroup is not None:
                         hostgroup_add = gen_add_list(
                             entry.hostgroup,
@@ -796,7 +807,11 @@ def main():
                             entry.hostmask, res_find.get("hostmask"))
                     if entry.user is not None:
                         user_add = gen_add_list(
-                            entry.user, res_find.get("memberuser_user"))
+                            entry.user, (
+                                list(res_find.get('memberuser_user', []))
+                                + list(res_find.get('externaluser', []))
+                            )
+                        )
                     if entry.group is not None:
                         group_add = gen_add_list(
                             entry.group, res_find.get("memberuser_group"))
@@ -862,7 +877,11 @@ def main():
                     # in sudorule
                     if entry.host is not None:
                         host_del = gen_intersection_list(
-                            entry.host, res_find.get("memberhost_host"))
+                            entry.host, (
+                                list(res_find.get("memberhost_host", []))
+                                + list(res_find.get("externalhost", []))
+                            )
+                        )
 
                     if entry.hostgroup is not None:
                         hostgroup_del = gen_intersection_list(
@@ -876,7 +895,11 @@ def main():
 
                     if entry.user is not None:
                         user_del = gen_intersection_list(
-                            entry.user, res_find.get("memberuser_user"))
+                            entry.user, (
+                                list(res_find.get('memberuser_user', []))
+                                + list(res_find.get('externaluser', []))
+                            )
+                        )
 
                     if entry.group is not None:
                         group_del = gen_intersection_list(
@@ -911,8 +934,7 @@ def main():
                     # users list.
                     if entry.runasuser is not None:
                         runasuser_del = gen_intersection_list(
-                            entry.runasuser,
-                            (
+                            entry.runasuser, (
                                 list(res_find.get('ipasudorunas_user', []))
                                 + list(res_find.get('ipasudorunasextuser', []))
                             )
