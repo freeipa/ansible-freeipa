@@ -1,13 +1,24 @@
 ---
 - name: Find trust
   hosts: ipaserver
-  become: true
+  become: false
   gather_facts: false
+  module_defaults:
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
 
   tasks:
 
   - name: Include tasks ../env_freeipa_facts.yml
     ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  - name: Ensure tests groups are absent
+    ipagroup:
+      name:
+        - extgroup
+        - extgroup_members
+      state: absent
 
   - name: Execute group tests if trust test environment is supported
     when: trust_test_is_supported | default(false)
@@ -15,23 +26,20 @@
 
     - name: Add nonposix group.
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
-        nonposix: yes
+        nonposix: true
       register: result
       failed_when: result.failed or not result.changed
 
     - name: Set group to be external
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
-        external: yes
+        external: true
       register: result
       failed_when: result.failed or not result.changed
 
     - name: Add AD users to group
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
         external_member: "AD\\Domain Users"
       register: result
@@ -39,7 +47,6 @@
 
     - name: Add AD users to group, again
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
         external_member: "AD\\Domain Users"
       register: result
@@ -47,7 +54,6 @@
 
     - name: Remove external group
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
         state: absent
       register: result
@@ -55,27 +61,24 @@
 
     - name: Add nonposix, external group, with AD users.
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
-        nonposix: yes
-        external: yes
+        nonposix: true
+        external: true
         external_member: "AD\\Domain Users"
       register: result
       failed_when: result.failed or not result.changed
 
     - name: Add nonposix, external group, with AD users, again.
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
-        nonposix: yes
-        external: yes
+        nonposix: true
+        external: true
         external_member: "AD\\Domain Users"
       register: result
       failed_when: result.failed or result.changed
 
     - name: Remove group
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
         state: absent
       register: result
@@ -83,32 +86,71 @@
 
     - name: Add nonposix group.
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
-        nonposix: yes
+        nonposix: true
       register: result
       failed_when: result.failed or not result.changed
 
     - name: Set group to be external, and add users.
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
-        external: yes
+        external: true
         external_member: "AD\\Domain Users"
       register: result
       failed_when: result.failed or not result.changed
 
     - name: Set group to be external, and add users, again.
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
         name: extgroup
-        external: yes
+        external: true
         external_member: "AD\\Domain Users"
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Cleanup environment.
+    - name: Ensure external group for external member exist
       ipagroup:
-        ipaadmin_password: SomeADMINpassword
-        name: extgroup
+        name: extgroup_members
+        external: true
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure external group members are present
+      ipagroup:
+        name: extgroup_members
+        external_member: "AD\\Domain Users"
+        action: member
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure external group members are present, again
+      ipagroup:
+        name: extgroup_members
+        external_member: "AD\\Domain Users"
+        action: member
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure external group members are absent
+      ipagroup:
+        name: extgroup_members
+        external_member: "AD\\Domain Users"
+        action: member
         state: absent
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure external group members are absent, again
+      ipagroup:
+        name: extgroup_members
+        external_member: "AD\\Domain Users"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.failed or result.changed
+
+  - name: Ensure tests groups are absent
+    ipagroup:
+      name:
+        - extgroup
+        - extgroup_members
+      state: absent

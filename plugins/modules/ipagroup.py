@@ -746,7 +746,11 @@ def main():
 
                         (externalmember_add,
                          externalmember_del) = gen_add_del_lists(
-                            externalmember, res_find.get("member_external"))
+                            externalmember, (
+                                list(res_find.get("member_external", []))
+                                + list(res_find.get("ipaexternalmember", []))
+                            )
+                        )
 
                         (idoverrides_add,
                          idoverrides_del) = gen_add_del_lists(
@@ -780,7 +784,11 @@ def main():
                     service_add = gen_add_list(
                         service, res_find.get("member_service"))
                     externalmember_add = gen_add_list(
-                        externalmember, res_find.get("member_external"))
+                        externalmember, (
+                            list(res_find.get("member_external", []))
+                            + list(res_find.get("ipaexternalmember", []))
+                        )
+                    )
                     idoverrides_add = gen_add_list(
                         idoverrideuser, res_find.get("member_idoverrideuser"))
 
@@ -815,7 +823,11 @@ def main():
                     service_del = gen_intersection_list(
                         service, res_find.get("member_service"))
                     externalmember_del = gen_intersection_list(
-                        externalmember, res_find.get("member_external"))
+                        externalmember, (
+                            list(res_find.get("member_external", []))
+                            + list(res_find.get("ipaexternalmember", []))
+                        )
+                    )
                     idoverrides_del = gen_intersection_list(
                         idoverrideuser, res_find.get("member_idoverrideuser"))
 
