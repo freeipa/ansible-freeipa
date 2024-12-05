@@ -487,6 +487,8 @@ def main():
 
     # revoked
     reason = ansible_module.params_get("revocation_reason")
+    if reason is not None:
+        reason = get_revocation_reason(ansible_module, reason)
 
     # general
     serial_number = ansible_module.params.get("serial_number")
@@ -521,6 +523,9 @@ def main():
             invalid.append("revocation_reason")
         if state == "revoked":
             invalid.extend(["certificate_out", "chain"])
+            # Reason 8 (revomeFromCRL) is the same as release hold
+            if reason == 8:
+                state = "released"
         elif state == "held":
             reason = 6  # certificateHold
 

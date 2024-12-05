@@ -1,0 +1,65 @@
+---
+- name: Test remove certificate hold by removing it from CRL.
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+    ipacert:
+      ipaadmin_password: SomeADMINpassword
+
+  tasks:
+  - name: Ensure test users are present
+    ipauser:
+      name: testuser
+      first: test
+      last: user
+
+  - name: Create user certificae CSR
+    ansible.builtin.shell:
+      cmd: |-
+        openssl req -newkey rsa:2048 -keyout /dev/null -nodes \
+        -subj /CN=testuser -reqexts IECUserRoles -config \
+            <(cat /etc/pki/tls/openssl.cnf; \
+              printf "[IECUserRoles]\n1.2.3.10.9.8=ASN1:UTF8String:Testing Cert")
+    args:
+      executable: /bin/bash
+    register: user_csr
+
+  - name: Request certificate with ipacert
+    ipacert:
+      csr: '{{ user_csr.stdout }}'
+      principal: testuser
+      state: requested
+    register: user_csr
+    failed_when: not user_csr.changed or user_csr.failed
+
+  - name: Revoke certifice with reason 6 (certificateHold)
+    ipacert:
+      serial_number: "{{ user_csr.certificate.serial_number }}"
+      revocation_reason: certificateHold
+      state: revoked
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Revoke certificate with reason 8 (removeFromCRL)
+    ipacert:
+      serial_number: "{{ user_csr.certificate.serial_number }}"
+      revocation_reason: removeFromCRL
+      state: revoked
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Revoke certificate with reason 8 (removeFromCRL), again
+    ipacert:
+      serial_number: "{{ user_csr.certificate.serial_number }}"
+      revocation_reason: removeFromCRL
+      state: revoked
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Ensure test users are absent
+    ipauser:
+      name: testuser
+      state: absent
