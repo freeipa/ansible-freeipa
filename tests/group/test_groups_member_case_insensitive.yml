@@ -1,0 +1,115 @@
+---
+- name: Test groups members should be case insensitive.
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+
+  module_defaults:
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  vars:
+    test_values:
+      - eleMENT1
+      - Element2
+      - eLeMenT3
+      - ElemENT4
+
+  tasks:
+  - name: Create user group
+    ansible.builtin.set_fact:
+      user_list: "{{ user_list | default([]) + [{ 'name': 'user' ~ item, 'first': item, 'last': item }] }}"
+    loop: "{{ test_values }}"
+
+  - name: Create groups with mixed case members list
+    ansible.builtin.set_fact:
+      groups_with_user_mixed: "{{ groups_with_user_mixed | default([]) + [{ 'name': item, 'user': ('user' ~ item) }] }}"
+    loop: "{{ test_values }}"
+
+  - name: Create groups with lowercase members list
+    ansible.builtin.set_fact:
+      groups_with_user_lower: "{{ groups_with_user_lower | default([]) + [{ 'name': item, 'user': ('user' ~ item) | lower }] }}"
+    loop: "{{ test_values }}"
+
+  - name: Create groups with uppercase members list
+    ansible.builtin.set_fact:
+      groups_with_user_upper: "{{ groups_with_user_upper | default([]) + [{ 'name': item, 'user': ('user' ~ item) | upper }] }}"
+    loop: "{{ test_values }}"
+    loop_control:
+      label: ""
+
+  - name: Test group member case insensitive
+    block:
+    # SETUP
+    - name: Ensure test users are absent.
+      ipauser:
+        name: "{{ user_list | map(attribute='name') | list }}"
+        state: absent
+
+    - name: Ensure test groups do not exist
+      ipagroup:
+        name: "{{ test_values }}"
+        state: absent
+
+    - name: Ensure test users exist.
+      ipauser:
+        users: "{{ user_list }}"
+
+    # TESTS
+    - name: Ensure group exist with users members
+      ipagroup:
+        groups: "{{ groups_with_user_mixed }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure group exist with lowercase users members
+      ipagroup:
+        groups: "{{ groups_with_user_lower }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure group exist with uppercase users members
+      ipagroup:
+        groups: "{{ groups_with_user_upper }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure lowercase user members are absent from groups
+      ipagroup:
+        groups: "{{ groups_with_user_lower }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure uppercase user members are absent from groups
+      ipagroup:
+        groups: "{{ groups_with_user_upper }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure mixed case user members are absent from groups
+      ipagroup:
+        groups: "{{ groups_with_user_mixed }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.failed or result.changed
+
+    # cleanup
+    always:
+    - name: Ensure test groups do not exist
+      ipagroup:
+        name: "{{ test_values }}"
+        state: absent
+
+    - name: Ensure test users do not exist.
+      ipauser:
+        name: "{{ user_list | map(attribute='name') | list }}"
+        state: absent

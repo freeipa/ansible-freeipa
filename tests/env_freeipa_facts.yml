@@ -7,6 +7,10 @@
 # ipa_api_version: The installed FreeIPA API version.
 #
 ---
+- name: Set Ansible DNS facts
+  ansible.builtin.setup:
+    gather_subset: dns
+
 - name: Retrieving FreeIPA version.
   ansible.builtin.shell:
     cmd: 'ipa --version | sed -n "s/VERSION: \([^,]*\).*API_VERSION: \([^,]*\).*/\1\\n\2/p"'
@@ -42,3 +46,8 @@
     ansible.builtin.set_fact:
       ipaserver_domain: "ipa.test"
     when: "'fqdn' not in ansible_facts"
+
+- name: Ensure ipaserver_realm is set
+  ansible.builtin.set_fact:
+    ipaserver_realm: "{{ ipaserver_domain | upper }}"
+  when: ipaserver_realm is not defined
