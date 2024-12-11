@@ -140,21 +140,18 @@ sed -i -e "s/ansible.module_utils.ansible_freeipa_module/ansible_collections.${c
 
 python utils/create_action_group.py "meta/runtime.yml" "$collection_prefix"
 
-(cd plugins/module_utils && {
-    ln -sf ../../roles/*/module_utils/*.py .
-})
+mv roles/*/module_utils/*.py plugins/module_utils/
+rmdir roles/*/module_utils
 
-(cd plugins/modules && {
-    sed -i -e "s/ansible.module_utils.ansible_ipa_/ansible_collections.${collection_prefix}.plugins.module_utils.ansible_ipa_/" ../../roles/*/library/*.py
-    ln -sf ../../roles/*/library/*.py .
-})
+sed -i -e "s/ansible.module_utils.ansible_ipa_/ansible_collections.${collection_prefix}.plugins.module_utils.ansible_ipa_/" roles/*/library/*.py
+mv roles/*/library/*.py plugins/modules/
+rmdir roles/*/library
 
 # There are no action plugins anymore in the roles, therefore this section
 # is commneted out.
 #[ ! -x plugins/action ] && mkdir plugins/action
-#(cd plugins/action && {
-#    ln -sf ../../roles/*/action_plugins/*.py .
-#})
+#mv roles/*/action_plugins/*.py plugins/action/
+#rmdir roles/*/action_plugins
 
 # Adapt inventory plugin and inventory plugin README
 echo "Fixing inventory plugin and doc..."
@@ -181,19 +178,11 @@ find plugins/modules -name "*.py" -print0 |
     done
 echo -e "\033[AFixing examples in plugins/modules... \033[32;1mDONE\033[0m"
 
-echo "Fixing examples in roles/*/library..."
-find roles/*/library -name "*.py" -print0 |
-    while IFS= read -d '' -r line; do
-        python utils/galaxyfy-module-EXAMPLES.py "$line" \
-               "ipa" "$collection_prefix"
-    done
-echo -e "\033[AFixing examples in roles/*/library... \033[32;1mDONE\033[0m"
-
 echo "Fixing playbooks in roles/*/tasks..."
 for line in roles/*/tasks/*.yml; do
     python utils/galaxyfy-playbook.py "$line" "ipa" "$collection_prefix"
 done
-echo -e "\033[AFixing playbooks in roles/*tasks... \033[32;1mDONE\033[0m"
+echo -e "\033[AFixing playbooks in roles/*/tasks... \033[32;1mDONE\033[0m"
 
 echo "Fixing playbooks in playbooks..."
 find playbooks -name "*.yml" -print0 |

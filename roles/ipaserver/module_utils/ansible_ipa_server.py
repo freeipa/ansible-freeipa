@@ -23,7 +23,9 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-__metaclass__ = type  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
+__metaclass__ = type
+# pylint: enable=invalid-name
 
 __all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
            "ipa_generate_password", "run", "ScriptError", "services",
