@@ -38,7 +38,7 @@ short_description: IPA replica deployment tests
 description: IPA replica deployment tests
 options:
   ip_addresses:
-    description: List of Master Server IP Addresses
+    description: List of IPA replica IP addresses
     type: list
     elements: str
     required: no
