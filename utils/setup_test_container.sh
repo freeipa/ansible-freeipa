@@ -79,6 +79,20 @@ shift
 prepare_container "${scenario}" "${IMAGE_TAG}"
 start_container "${scenario}"
 
+log info "Wait till systemd-journald is running"
+max=20
+wait=2
+count=0
+while ! podman exec "${scenario}" ps -x | grep -q "systemd-journald"
+do
+    if [ $count -ge $max ]; then
+        die "Timeout: systemd-journald is not starting up"
+    fi
+    count=$((count+1))
+    log none "Waiting ${wait} seconds .."
+    sleep ${wait}
+done
+
 # wait for FreeIPA services to be available (usually ~45 seconds)
 log info "Wait for container to be initialized."
 wait=15
