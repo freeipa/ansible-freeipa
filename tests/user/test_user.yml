@@ -1,7 +1,7 @@
 ---
 - name: Test user
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
-  become: true
+  become: false
   gather_facts: false
 
   tasks:
