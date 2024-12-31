@@ -1,7 +1,7 @@
 ---
 - name: Test group
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
-  become: true
+  become: false
   gather_facts: true
   module_defaults:
     ipauser:
