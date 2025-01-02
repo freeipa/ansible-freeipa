@@ -42,3 +42,8 @@
     ansible.builtin.set_fact:
       ipaserver_domain: "ipa.test"
     when: "'fqdn' not in ansible_facts"
+
+- name: Set ipaserver_realm based on ipaserver_domain, if not set
+  ansible.builtin.set_fact:
+    ipaserver_realm: "{{ ipaserver_domain | upper }}"
+  when: "ipaserver_realm is not defined"
