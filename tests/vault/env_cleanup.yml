@@ -8,6 +8,7 @@
       - symvault
       - asymvault
       username: "{{ username }}"
+      continue: yes
       state: absent
     loop:
       - admin
@@ -21,6 +22,7 @@
       name:
       - sharedvault
       - svcvault
+      continue: yes
       state: absent
 
   - name: Ensure test users do not exist.
