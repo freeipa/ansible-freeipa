@@ -54,8 +54,3 @@
   # 1 means that uninstall failed because IPA server was not configured
   failed_when: uninstall.rc != 0 and uninstall.rc != 1
   changed_when: uninstall.rc == 0
-
-#- name: Remove IPA server packages
-#  ansible.builtin.package:
-#    name: "{{ ipaserver_packages }}"
-#    state: absent

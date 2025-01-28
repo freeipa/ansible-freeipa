@@ -201,7 +201,7 @@
       ansible.builtin.file:
         path: /etc/sssd/pki
         state: directory
-        mode: 0711
+        mode: "0711"
 
     - name: Ensure /etc/sssd/pki/sssd_auth_ca_db.pem is absent
       ansible.builtin.file:

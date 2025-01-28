@@ -2,4 +2,4 @@
 # vars/RedHat-7.3.yml
 ---
 ipaclient_packages: [ "ipa-client", "ipa-admintools", "libselinux-python" ]
-#ansible_python_interpreter: '/usr/bin/python2'
+# ansible_python_interpreter: '/usr/bin/python2'

@@ -16,7 +16,7 @@
       dest: "{{ ansible_facts['env'].HOME }}/public.pem"
       owner: "{{ ansible_user }}"
       group: "{{ ansible_user }}"
-      mode: 0600
+      mode: "0600"
   - name: Ensure asymmetric vault exists with public key from file.
     ipavault:
       ipaadmin_password: SomeADMINpassword

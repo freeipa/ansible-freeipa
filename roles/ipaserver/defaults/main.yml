@@ -16,10 +16,10 @@ ipaserver_random_serial_numbers: false
 ### client ###
 ipaclient_mkhomedir: no
 ipaclient_no_ntp: no
-#ipaclient_ssh_trust_dns: no
-#ipaclient_no_ssh: no
-#ipaclient_no_sshd: no
-#ipaclient_no_dns_sshfp: no
+# ipaclient_ssh_trust_dns: no
+# ipaclient_no_ssh: no
+# ipaclient_no_sshd: no
+# ipaclient_no_dns_sshfp: no
 ### certificate system ###
 ipaserver_external_ca: no
 ### dns ###

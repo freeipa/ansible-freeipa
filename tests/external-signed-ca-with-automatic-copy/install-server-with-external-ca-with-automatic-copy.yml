@@ -28,7 +28,7 @@
   become: true
   vars:
     ipaserver_external_cert_files_from_controller: "{{ groups.ipaserver[0] + '-chain.crt' }}"
-    #ipaserver_external_ca_file: "{{ groups.ipaserver[0] + '-cacert.asc' }}"
+    # ipaserver_external_ca_file: "{{ groups.ipaserver[0] + '-cacert.asc' }}"
 
   roles:
   - role: ipaserver

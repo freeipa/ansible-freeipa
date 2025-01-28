@@ -190,7 +190,7 @@
       first: pinky
       last: Acme
       initials: pa
-      #password: foo2
+      # password: foo2
       principal: pa
       random: yes
       street: PinkyStreet
@@ -207,8 +207,8 @@
       # sshpubkey
       userauthtype: password,radius,otp
       userclass: PinkyUserClass
-      #radius: "http://some.link/"
-      #radiususer: PinkyRadiusUser
+      # radius: "http://some.link/"
+      # radiususer: PinkyRadiusUser
       departmentnumber: "1234"
       employeenumber: "0815"
       employeetype: "PinkyExmployeeType"
@@ -216,8 +216,8 @@
       # certificate
       noprivate: yes
       nomembers: false
-      #issuer: PinkyIssuer
-      #subject: PinkySubject
+      # issuer: PinkyIssuer
+      # subject: PinkySubject
     register: result
     failed_when: not result.changed or result.failed
 
@@ -234,7 +234,7 @@
       first: pinky
       last: Acme
       initials: pa
-      #password: foo2
+      # password: foo2
       principal: pa
       random: yes
       street: PinkyStreet
@@ -251,8 +251,8 @@
       # sshpubkey
       userauthtype: password,radius,otp
       userclass: PinkyUserClass
-      #radius: "http://some.link/"
-      #radiususer: PinkyRadiusUser
+      # radius: "http://some.link/"
+      # radiususer: PinkyRadiusUser
       departmentnumber: "1234"
       employeenumber: "0815"
       employeetype: "PinkyExmployeeType"
@@ -260,8 +260,8 @@
       # certificate
       noprivate: yes
       nomembers: false
-      #issuer: PinkyIssuer
-      #subject: PinkySubject
+      # issuer: PinkyIssuer
+      # subject: PinkySubject
     register: result
     failed_when: result.changed or result.failed
 

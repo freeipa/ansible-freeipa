@@ -298,11 +298,11 @@
     register: result
     failed_when: result.changed or result.failed
 
-  #- ipagroup:
-  #    name: group1
-  #    user:
-  #    - user7
-  #    action: member
+  # - ipagroup:
+  #     name: group1
+  #     user:
+  #     - user7
+  #     action: member
 
   - name: Ensure user user7 is absent in group group1
     ipagroup:

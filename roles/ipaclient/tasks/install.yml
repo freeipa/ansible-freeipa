@@ -152,7 +152,7 @@
       ansible.builtin.copy:
         src: "{{ ipaadmin_keytab }}"
         dest: "{{ keytab_temp.path }}"
-        mode: 0600
+        mode: "0600"
       delegate_to: "{{ result_ipaclient_test.servers[0] }}"
       when: ipaadmin_keytab is defined
 

@@ -48,7 +48,7 @@
       ansible.builtin.file:
         path: "/root/ca-less-test"
         state: directory
-        mode: 0775
+        mode: "0775"
 
     - name: Copy CA certificate
       ansible.builtin.copy:
