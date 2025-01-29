@@ -16,7 +16,8 @@
     ipaidoverrideuser:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: server
-      name: ThisShouldNotWork
+      idview: ThisShouldNotWork
+      anchor: ThisShouldNotWork
     register: result
     failed_when: not (result.failed and result.msg is regex("No module named '*ipaserver'*"))
     when: ipa_host_is_client
