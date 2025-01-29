@@ -8,8 +8,12 @@ The group module allows to ensure presence and absence of groups and members of 
 
 The group module is as compatible as possible to the Ansible upstream `ipa_group` module, but additionally offers to add users to a group and also to remove users from a group.
 
-## Note
-Ensuring presence (adding) of several groups with mixed types (`external`, `nonposix` and `posix`) requires a fix in FreeIPA. The module implements a workaround to automatically use `client` context if the fix is not present in the target node FreeIPA and if more than one group is provided to the task using the `groups` parameter. If `ipaapi_context` is forced to be `server`, the module will fail in this case.
+
+Notes
+-----
+
+* Ensuring presence (adding) of several groups with mixed types (`external`, `nonposix` and `posix`) requires a fix in FreeIPA. The module implements a workaround to automatically use `client` context if the fix is not present in the target node FreeIPA and if more than one group is provided to the task using the `groups` parameter. If `ipaapi_context` is forced to be `server`, the module will fail in this case.
+* Using `externalmember` or `idoverrideuser` is only supported with `ipaapi_context: server`. With 'client' context, module execution will fail.
 
 
 Features
@@ -213,7 +217,7 @@ Example playbook to add members from a trusted realm to an external group:
 ---
 - name: Playbook to handle groups.
   hosts: ipaserver
-  
+
   tasks:
   - name: Create an external group and add members from a trust to it.
     ipagroup:
@@ -276,6 +280,7 @@ Example playbook to ensure groups are absent:
       state: absent
 ```
 
+
 Variables
 =========
 
@@ -299,8 +304,8 @@ Variable | Description | Required
 `service` | List of service name strings assigned to this group. Only usable with IPA versions 4.7 and up. | no
 `membermanager_user` | List of member manager users assigned to this group. Only usable with IPA versions 4.8.4 and up. | no
 `membermanager_group` | List of member manager groups assigned to this group. Only usable with IPA versions 4.8.4 and up. | no
-`externalmember` \| `ipaexternalmember`  \| `external_member`| List of members of a trusted domain in DOM\\name or name@domain form. | no
-`idoverrideuser` | List of user ID overrides to manage. Only usable with IPA versions 4.8.7 and up.| no
+`externalmember` \| `ipaexternalmember`  \| `external_member`| List of members of a trusted domain in DOM\\name or name@domain form. Requires "server" context. | no
+`idoverrideuser` | List of user ID overrides to manage. Only usable with IPA versions 4.8.7 and up. Requires "server" context. | no
 `rename` \| `new_name` | Rename the user object to the new name string. Only usable with `state: renamed`. | no
 `action` | Work on group or member level. It can be on of `member` or `group` and defaults to `group`. | no
 `state` | The state to ensure. It can be one of `present`, `absent` or `renamed`, default: `present`. | yes

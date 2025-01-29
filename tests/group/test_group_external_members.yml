@@ -1,12 +1,16 @@
 ---
-- name: Find trust
-  hosts: ipaserver
+- name: Test groups with external members
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
   become: false
   gather_facts: false
   module_defaults:
     ipagroup:
       ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      ipaapi_context: server  # external_member requires 'server' context
+
+  vars:
+    ad_user: "{{ test_ad_user | default('AD\\aduser') }}"
+    alt_user: "{{ test_alt_user | default('aduser@ad.ipa.test') }}"
 
   tasks:
 
@@ -24,86 +28,121 @@
     when: trust_test_is_supported | default(false)
     block:
 
-    - name: Add nonposix group.
+    - name: Ensure nonposix group is present
       ipagroup:
         name: extgroup
         nonposix: true
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Set group to be external
+    - name: Ensure nonposix group is present, again
+      ipagroup:
+        name: extgroup
+        nonposix: true
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure nonposix group is external
       ipagroup:
         name: extgroup
         external: true
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Add AD users to group
+    - name: Ensure nonposix group has AD users
       ipagroup:
         name: extgroup
-        external_member: "AD\\Domain Users"
+        external_member: "{{ ad_user }}"
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Add AD users to group, again
+    - name: Ensure nonposix group has AD users, again
       ipagroup:
         name: extgroup
-        external_member: "AD\\Domain Users"
+        external_member: "{{ ad_user }}"
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Remove external group
+    - name: Ensure nonposix group is absent.
       ipagroup:
         name: extgroup
         state: absent
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Add nonposix, external group, with AD users.
+    - name: Ensure nonposix group is absent, again.
       ipagroup:
         name: extgroup
-        nonposix: true
-        external: true
-        external_member: "AD\\Domain Users"
-      register: result
-      failed_when: result.failed or not result.changed
-
-    - name: Add nonposix, external group, with AD users, again.
-      ipagroup:
-        name: extgroup
-        nonposix: true
-        external: true
-        external_member: "AD\\Domain Users"
+        state: absent
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Remove group
+    - name: Ensure external group is present, with AD users.
+      ipagroup:
+        name: extgroup
+        external: true
+        external_member: "{{ ad_user }}"
+      register: result
+      failed_when: result.failed or not result.changed
+
+    - name: Ensure external group is present, with AD alternate users.
+      ipagroup:
+        name: extgroup
+        external: true
+        external_member: "{{ alt_user }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure external group is present, with AD users, again.
+      ipagroup:
+        name: extgroup
+        external: true
+        external_member: "{{ ad_user }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure external group is absent
       ipagroup:
         name: extgroup
         state: absent
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Add nonposix group.
+    - name: Ensure external group is absent, again
+      ipagroup:
+        name: extgroup
+        state: absent
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure nonposix group is present.
       ipagroup:
         name: extgroup
         nonposix: true
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Set group to be external, and add users.
+    - name: Ensure group is external, and has AD users.
       ipagroup:
         name: extgroup
         external: true
-        external_member: "AD\\Domain Users"
+        external_member: "{{ ad_user }}"
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Set group to be external, and add users, again.
+    - name: Ensure group is external, and has AD alternate users.
       ipagroup:
         name: extgroup
         external: true
-        external_member: "AD\\Domain Users"
+        external_member: "{{ alt_user }}"
+      register: result
+      failed_when: result.failed or result.changed
+
+    - name: Ensure group is external, and has AD users, again.
+      ipagroup:
+        name: extgroup
+        external: true
+        external_member: "{{ ad_user }}"
       register: result
       failed_when: result.failed or result.changed
 
@@ -117,7 +156,7 @@
     - name: Ensure external group members are present
       ipagroup:
         name: extgroup_members
-        external_member: "AD\\Domain Users"
+        external_member: "{{ ad_user }}"
         action: member
       register: result
       failed_when: result.failed or not result.changed
@@ -125,7 +164,7 @@
     - name: Ensure external group members are present, again
       ipagroup:
         name: extgroup_members
-        external_member: "AD\\Domain Users"
+        external_member: "{{ ad_user }}"
         action: member
       register: result
       failed_when: result.failed or result.changed
@@ -133,16 +172,25 @@
     - name: Ensure external group members are absent
       ipagroup:
         name: extgroup_members
-        external_member: "AD\\Domain Users"
+        external_member: "{{ ad_user }}"
         action: member
         state: absent
       register: result
       failed_when: result.failed or not result.changed
 
+    - name: Ensure external group alternate members are absent
+      ipagroup:
+        name: extgroup_members
+        external_member: "{{ alt_user }}"
+        action: member
+        state: absent
+      register: result
+      failed_when: result.failed or result.changed
+
     - name: Ensure external group members are absent, again
       ipagroup:
         name: extgroup_members
-        external_member: "AD\\Domain Users"
+        external_member: "{{ ad_user }}"
         action: member
         state: absent
       register: result

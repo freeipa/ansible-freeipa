@@ -1,13 +1,16 @@
 ---
 - name: Test group
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
-  become: true
-  gather_facts: true
+  become: false
+  gather_facts: false
   module_defaults:
     ipauser:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
     ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipaservice:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
 
@@ -50,6 +53,16 @@
         last: Last
     register: result
     failed_when: not result.changed or result.failed
+
+  - name: Ensure test service HTTP is present
+    ipaservice:
+      name: "{{ 'HTTP/' + fqdn_at_domain }}"
+    notify: Cleanup http service
+
+  - name: Ensure test service LDAP is present
+    ipaservice:
+      name: "{{ 'ldap/' + fqdn_at_domain }}"
+    notify: Cleanup ldap service
 
   # TESTS
 
@@ -437,3 +450,16 @@
       state: absent
     register: result
     failed_when: not result.changed or result.failed
+
+  # ansible-lint is complaining on the use of 'when' and requiring
+  # the use of handlers.
+  handlers:
+  - name: Cleanup http service
+    ipaservice:
+      name: "{{ 'HTTP/' + fqdn_at_domain }}"
+      state: absent
+
+  - name: Cleanup ldap service
+    ipaservice:
+      name: "{{ 'ldap/' + fqdn_at_domain }}"
+      state: absent

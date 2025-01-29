@@ -4,6 +4,9 @@
   become: no
   gather_facts: no
 
+  vars:
+    ad_user: "{{ test_ad_user | default('AD\\aduser') }}"
+
   tasks:
   - name: Include FreeIPA facts.
     ansible.builtin.include_tasks: ../env_freeipa_facts.yml
@@ -17,6 +20,16 @@
     register: result
     failed_when: not (result.failed and result.msg is regex("No module named '*ipaserver'*"))
     when: ipa_host_is_client
+
+  - name: Ensuref fail if externalmember is used in client context.
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: client
+      name: ThisShouldNotWork
+      external_member: "{{ ad_user }}"
+      external: true
+    register: result
+    failed_when: not (result.failed and result.msg == "Cannot use externalmember in client context.")
 
 # Import basic module tests, and execute with ipa_context set to 'client'.
 # If ipaclients is set, it will be executed using the client, if not,
