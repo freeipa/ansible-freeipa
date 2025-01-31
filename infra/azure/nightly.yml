@@ -10,7 +10,7 @@ schedules:
 trigger: none
 
 pool:
-  vmImage: 'ubuntu-20.04'
+  vmImage: 'ubuntu-24.04'
 
 variables:
   # We need to have two sets, as c8s is not supported by all ansible versions
