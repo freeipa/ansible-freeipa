@@ -15,8 +15,3 @@
   ipaclient_configure_dns_resolver:
     state: absent
   when: ipaclient_cleanup_dns_resolver | bool
-
-#- name: Remove IPA client package
-#  ansible.builtin.package:
-#    name: "{{ ipaclient_packages }}"
-#    state: absent

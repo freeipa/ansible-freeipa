@@ -20,7 +20,7 @@
     ansible.builtin.copy:
       src: "{{ playbook_dir }}/{{ item }}"
       dest: "{{ ansible_facts['env'].HOME }}/{{ item }}"
-      mode: 0644
+      mode: "0644"
     with_items:
     - A_private.pem
     - A_public.pem

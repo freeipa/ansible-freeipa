@@ -20,4 +20,9 @@ rules:
     max: 160
   # Disabled rules
   indentation: disable
-  comments: disable
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: disable
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true

@@ -17,10 +17,10 @@ ipareplica_no_ui_redirect: no
 ipaclient_mkhomedir: no
 ipaclient_force_join: no
 ipaclient_no_ntp: no
-#ipaclient_ssh_trust_dns: no
-#ipaclient_no_ssh: no
-#ipaclient_no_sshd: no
-#ipaclient_no_dns_sshfp: no
+# ipaclient_ssh_trust_dns: no
+# ipaclient_no_ssh: no
+# ipaclient_no_sshd: no
+# ipaclient_no_dns_sshfp: no
 ipaclient_ssh_trust_dns: no
 ### certificate system ###
 ipareplica_skip_schema_check: no

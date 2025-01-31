@@ -21,7 +21,7 @@
         - ip_address: 8.8.8.8
         - ip_address: 8.8.4.4
           port: 52
-      #serial: 1234
+      # serial: 1234
       refresh: 3600
       retry: 900
       expire: 1209600

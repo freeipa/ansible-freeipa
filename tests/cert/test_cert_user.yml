@@ -45,7 +45,7 @@
     ansible.builtin.copy:
       dest: "/root/user.csr"
       content: "{{ user_req.stdout }}"
-      mode: 0644
+      mode: "0644"
 
   # TESTS
 
