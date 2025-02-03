@@ -1,0 +1,73 @@
+---
+- name: Test group AD external members idempotence
+  hosts: ipaserver
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: server  # external_member requires 'server' context
+
+  vars:
+    ad_user: "{{ test_ad_user | default('AD\\aduser') }}"
+    alt_user: "{{ test_alt_user | default('aduser@ad.ipa.test') }}"
+
+  tasks:
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  - name: Ensure test group is absent.
+    ipagroup:
+      name: extgroup
+      state: absent
+
+  - name: Execute group tests if trust test environment is supported
+    when: trust_test_is_supported | default(false)
+    block:
+      - name: Ensure external group, with AD users, is present.
+        ipagroup:
+          name: extgroup
+          external: true
+          external_member: "{{ ad_user }}"
+        register: result
+        failed_when: result.failed or not result.changed
+
+      - name: Ensure external group, with AD users, is present, again
+        ipagroup:
+          name: extgroup
+          external: true
+          external_member: "{{ ad_user }}"
+        register: result
+        failed_when: result.failed or result.changed
+
+      - name: Ensure external group, with alternate name AD users, is present
+        ipagroup:
+          name: extgroup
+          external: true
+          external_member: "{{ alt_user }}"
+        register: result
+        failed_when: result.failed or result.changed
+
+      - name: Ensure external_member is absent
+        ipagroup:
+          name: extgroup
+          external_member: "{{ ad_user }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.failed or not result.changed
+
+      - name: Ensure external_member is absent, again
+        ipagroup:
+          name: extgroup
+          external_member: "{{ alt_user }}"
+          action: member
+          state: absent
+        register: result
+        failed_when: result.failed or result.changed
+
+    always:
+      - name: Cleanup environment.
+        ipagroup:
+          name: extgroup
+          state: absent

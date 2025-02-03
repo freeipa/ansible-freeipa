@@ -113,13 +113,14 @@ options:
       externalmember:
         description:
         - List of members of a trusted domain in DOM\\name or name@domain form.
+          Requires "server" context.
         required: false
         type: list
         elements: str
         aliases: ["ipaexternalmember", "external_member"]
       idoverrideuser:
         description:
-        - User ID overrides to add
+        - User ID overrides to add. Requires "server" context.
         required: false
         type: list
         elements: str
@@ -188,13 +189,14 @@ options:
   externalmember:
     description:
     - List of members of a trusted domain in DOM\\name or name@domain form.
+      Requires "server" context.
     required: false
     type: list
     elements: str
     aliases: ["ipaexternalmember", "external_member"]
   idoverrideuser:
     description:
-    - User ID overrides to add
+    - User ID overrides to add. Requires "server" context.
     required: false
     type: list
     elements: str
@@ -297,6 +299,7 @@ EXAMPLES = """
     posix: yes
 
 # Create an external group and add members from a trust to it.
+# Module will fail if running under 'client' context.
 - ipagroup:
     ipaadmin_password: SomeADMINpassword
     name: extgroup
@@ -327,7 +330,8 @@ RETURN = """
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
-    gen_add_list, gen_intersection_list, api_check_param
+    gen_add_list, gen_intersection_list, api_check_param, \
+    convert_to_sid
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -562,20 +566,28 @@ def main():
     # The simple solution is to switch to client context for ensuring
     # several groups simply if the user was not explicitly asking for
     # the server context no matter if mixed types are used.
-    context = None
+    context = ansible_module.params_get("ipaapi_context")
     if state == "present" and groups is not None and len(groups) > 1 \
        and not FIX_6741_DEEPCOPY_OBJECTCLASSES:
-        _context = ansible_module.params_get("ipaapi_context")
-        if _context is None:
+        if context is None:
             context = "client"
             ansible_module.debug(
                 "Switching to client context due to an unfixed issue in "
                 "your IPA version: https://pagure.io/freeipa/issue/9349")
-        elif _context == "server":
+        elif context == "server":
             ansible_module.fail_json(
                 msg="Ensuring several groups with server context is not "
                 "supported by your IPA version: "
                 "https://pagure.io/freeipa/issue/9349")
+
+    if (
+        externalmember is not None
+        or idoverrideuser is not None
+        and context == "client"
+    ):
+        ansible_module.fail_json(
+            msg="Cannot use externalmember in client context."
+        )
 
     # Use groups if names is None
     if groups is not None:
@@ -676,6 +688,23 @@ def main():
             # Make sure group exists
             res_find = find_group(ansible_module, name)
 
+            # external members must de handled as SID
+            externalmember = convert_to_sid(externalmember)
+
+            # idoverrides need to be compared through SID
+            idoverrideuser_sid = convert_to_sid(idoverrideuser)
+            res_idoverrideuser_sid = convert_to_sid(
+                (res_find or {}).get("member_idoverrideuser", []))
+            idoverride_set = dict(
+                list(zip(idoverrideuser_sid or [], idoverrideuser or [])) +
+                list(
+                    zip(
+                        res_idoverrideuser_sid or [],
+                        (res_find or {}).get("member_idoverrideuser", [])
+                    )
+                )
+            )
+
             user_add, user_del = [], []
             group_add, group_del = [], []
             service_add, service_del = [], []
@@ -723,11 +752,12 @@ def main():
                         res_find = {}
 
                     # if we just created/modified the group, update res_find
-                    res_find.setdefault("objectclass", [])
+                    classes = list(res_find.setdefault("objectclass", []))
                     if external and not is_external_group(res_find):
-                        res_find["objectclass"].append("ipaexternalgroup")
+                        classes.append("ipaexternalgroup")
                     if posix and not is_posix_group(res_find):
-                        res_find["objectclass"].append("posixgroup")
+                        classes.append("posixgroup")
+                    res_find["objectclass"] = classes
 
                     member_args = gen_member_args(
                         user, group, service, externalmember, idoverrideuser
@@ -752,11 +782,19 @@ def main():
                             )
                         )
 
+                        # There are multiple ways to name an AD User, and any
+                        # can be used in idoverrides, so we create the add/del
+                        # lists based on SID, and then use the given user name
+                        # to the idoverride.
                         (idoverrides_add,
                          idoverrides_del) = gen_add_del_lists(
-                            idoverrideuser,
-                            res_find.get("member_idoverrideuser")
-                        )
+                            idoverrideuser_sid, res_idoverrideuser_sid)
+                        idoverrides_add = [
+                            idoverride_set[sid] for sid in set(idoverrides_add)
+                        ]
+                        idoverrides_del = [
+                            idoverride_set[sid] for sid in set(idoverrides_del)
+                        ]
 
                     membermanager_user_add, membermanager_user_del = \
                         gen_add_del_lists(
@@ -790,7 +828,10 @@ def main():
                         )
                     )
                     idoverrides_add = gen_add_list(
-                        idoverrideuser, res_find.get("member_idoverrideuser"))
+                        idoverrideuser_sid, res_idoverrideuser_sid)
+                    idoverrides_add = [
+                        idoverride_set[sid] for sid in set(idoverrides_add)
+                    ]
 
                     membermanager_user_add = gen_add_list(
                         membermanager_user,
@@ -829,7 +870,10 @@ def main():
                         )
                     )
                     idoverrides_del = gen_intersection_list(
-                        idoverrideuser, res_find.get("member_idoverrideuser"))
+                        idoverrideuser_sid, res_idoverrideuser_sid)
+                    idoverrides_del = [
+                        idoverride_set[sid] for sid in set(idoverrides_del)
+                    ]
 
                     membermanager_user_del = gen_intersection_list(
                         membermanager_user, res_find.get("membermanager_user"))
@@ -872,7 +916,7 @@ def main():
                 if len(externalmember_del) > 0:
                     del_member_args["ipaexternalmember"] = \
                         externalmember_del
-            elif externalmember or external:
+            elif externalmember:
                 ansible_module.fail_json(
                     msg="Cannot add external members to a "
                         "non-external group."

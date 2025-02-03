@@ -589,6 +589,20 @@ def ensure_fqdn(name, domain):
     return name
 
 
+def convert_to_sid(items):
+    """Convert all items to SID, if possible."""
+    def get_sid(data):
+        try:
+            return get_trusted_domain_object_sid(data)
+        except ipalib_errors.NotFound:
+            return data
+    if items is None:
+        return None
+    if not isinstance(items, (list, tuple)):
+        items = [items]
+    return [get_sid(item) for item in items]
+
+
 def api_get_realm():
     return api.env.realm
 
@@ -900,6 +914,13 @@ def get_trusted_domain_sid_from_name(dom_name):
     domain_validator = __get_domain_validator()
     sid = domain_validator.get_sid_from_domain_name(dom_name)
 
+    return unicode(sid) if sid is not None else None
+
+
+def get_trusted_domain_object_sid(object_name):
+    """Given an object name, returns de object SID."""
+    domain_validator = __get_domain_validator()
+    sid = domain_validator.get_trusted_domain_object_sid(object_name)
     return unicode(sid) if sid is not None else None
 
 

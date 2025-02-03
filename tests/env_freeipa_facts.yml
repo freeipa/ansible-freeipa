@@ -7,6 +7,10 @@
 # ipa_api_version: The installed FreeIPA API version.
 #
 ---
+- name: Ensure minimal facts are available
+  ansible.builtin.setup:
+    gather_subset: dns
+
 - name: Retrieving FreeIPA version.
   ansible.builtin.shell:
     cmd: 'ipa --version | sed -n "s/VERSION: \([^,]*\).*API_VERSION: \([^,]*\).*/\1\\n\2/p"'
@@ -15,20 +19,31 @@
 - name: Verify if host is an IPA server or client.
   ansible.builtin.shell:
     cmd: |
-      echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin
-      RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa server-show `hostname` && echo SERVER || echo CLIENT)
-      kdestroy -A -c {{ krb5ccname }}
+      echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin >/dev/null
+      RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa server-show `hostname` >/dev/null && echo SERVER || echo CLIENT)
+      kdestroy -A -c {{ krb5ccname }} >/dev/null
       echo $RESULT
   vars:
     krb5ccname: "__check_ipa_host_is_client_or_server__"
-  register: output
+  register: check_client
+
+- name: Verify if AD tests are possible
+  ansible.builtin.shell:
+    cmd: |
+      echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin > /dev/null
+      RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa server-find --all | grep "Enabled server roles")
+      kdestroy -A -c {{ krb5ccname }} > /dev/null
+      echo $RESULT
+  vars:
+    krb5ccname: "__check_ipa_host_is_client_or_server__"
+  register: check_ad_support
 
 - name: Set FreeIPA facts.
   ansible.builtin.set_fact:
     ipa_version: "{{ ipa_cmd_version.stdout_lines[0] }}"
     ipa_api_version: "{{ ipa_cmd_version.stdout_lines[1] }}"
-    ipa_host_is_client: "{{ (output.stdout_lines[-1] == 'CLIENT') | bool }}"
-    trust_test_is_supported: no
+    ipa_host_is_client: "{{ (check_client.stdout_lines[-1] == 'CLIENT') | bool }}"
+    trust_test_is_supported: "{{ 'AD trust agent' in check_ad_support.stdout }}"
 
 - name: Ensure ipaserver_domain is set
   when: ipaserver_domain is not defined
@@ -42,3 +57,8 @@
     ansible.builtin.set_fact:
       ipaserver_domain: "ipa.test"
     when: "'fqdn' not in ansible_facts"
+
+- name: Ensure ipaserver_realm is set
+  ansible.builtin.set_fact:
+    ipaserver_realm: "{{ ipaserver_domain | upper }}"
+  when: ipaserver_realm is not defined
