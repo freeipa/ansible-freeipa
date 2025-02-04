@@ -581,8 +581,8 @@ def main():
                 "https://pagure.io/freeipa/issue/9349")
 
     if (
-        externalmember is not None
-        or idoverrideuser is not None
+        (externalmember is not None
+         or idoverrideuser is not None)
         and context == "client"
     ):
         ansible_module.fail_json(
