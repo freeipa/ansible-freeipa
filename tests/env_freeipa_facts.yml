@@ -19,10 +19,13 @@
 - name: Verify if host is an IPA server or client.
   ansible.builtin.shell:
     cmd: |
-      echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin >/dev/null
+      kinit -c {{ krb5ccname }} admin >/dev/null
       RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa server-show `hostname` >/dev/null && echo SERVER || echo CLIENT)
       kdestroy -A -c {{ krb5ccname }} >/dev/null
       echo $RESULT
+  args:
+    stdin: |
+      SomeADMINpassword
   vars:
     krb5ccname: "__check_ipa_host_is_client_or_server__"
   register: check_client
@@ -30,10 +33,12 @@
 - name: Verify if AD tests are possible
   ansible.builtin.shell:
     cmd: |
-      echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin > /dev/null
+      kinit -c {{ krb5ccname }} admin > /dev/null
       RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa server-find --all | grep "Enabled server roles")
       kdestroy -A -c {{ krb5ccname }} > /dev/null
       echo $RESULT
+  args:
+    stdin: "{{ ipaadmin_password | default('SomeADMINpassword') }}"
   vars:
     krb5ccname: "__check_ipa_host_is_client_or_server__"
   register: check_ad_support
