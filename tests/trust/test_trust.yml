@@ -49,9 +49,12 @@
 
     - name: Check if 'ipa-ad-trust' trust exists
       ansible.builtin.shell: |
-        echo 'SomeADMINpassword' | kinit admin
-        ipa trust-find
+        kinit -c test_krb5_cache admin
+        KRB5CCNAME=test_krb5_cache ipa trust-find
         kdestroy -c test_krb5_cache -q -A
+      args:
+        stdin: "{{ ipaadmin_password | default('SomeADMINpassword') }}"
+
       register: check_add_trust
       failed_when: "trust_exists not in check_add_trust.stdout"
 
@@ -78,9 +81,11 @@
 
     - name: Check if 'ipa-ad-trust' trust was removed
       ansible.builtin.shell: |
-        kinit -c test_krb5_cache admin <<< SomeADMINpassword
-        ipa trust-find
+        kinit -c test_krb5_cache admin
+        KRB5CCNAME=test_krb5_cache ipa trust-find
         kdestroy -c test_krb5_cache -q -A
+      args:
+        stdin: "{{ ipaadmin_password | default('SomeADMINpassword') }}"
       register: check_add_trust
       failed_when: "trust_exists in check_add_trust.stdout"
 
@@ -114,9 +119,11 @@
 
     - name: Check if 'ipa-ad-trust-posix' trust exists
       ansible.builtin.shell: |
-        kinit -c test_krb5_cache admin <<< SomeADMINpassword
-        ipa trust-find
+        kinit -c test_krb5_cache admin
+        KRB5CCNAME=test_krb5_cache ipa trust-find
         kdestroy -c test_krb5_cache -q -A
+      args:
+        stdin: "{{ ipaadmin_password | default('SomeADMINpassword') }}"
       register: check_add_trust
       failed_when: "trust_exists not in check_add_trust.stdout"
 
@@ -143,9 +150,11 @@
 
     - name: Check if trust 'ipa-ad-trust-posix' was removed
       ansible.builtin.shell: |
-        kinit -c test_krb5_cache admin <<< SomeADMINpassword
-        ipa trust-find
+        kinit -c test_krb5_cache admin
+        KRB5CCNAME=test_krb5_cache ipa trust-find
         kdestroy -c test_krb5_cache -q -A
+      args:
+        stdin: "{{ ipaadmin_password | default('SomeADMINpassword') }}"
       register: check_del_trust
       failed_when: "trust_exists in check_del_trust.stdout"
 
