@@ -8,12 +8,7 @@
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: server  # external_member requires 'server' context
 
-  vars:
-    ad_user: "{{ test_ad_user | default('AD\\aduser') }}"
-    alt_user: "{{ test_alt_user | default('aduser@ad.ipa.test') }}"
-
   tasks:
-
   - name: Include tasks ../env_freeipa_facts.yml
     ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
@@ -27,6 +22,11 @@
   - name: Execute group tests if trust test environment is supported
     when: trust_test_is_supported | default(false)
     block:
+    - name: Ensure AD trust is absent
+      ansible.builtin.include_tasks: ../tasks_remove_trust.yml
+
+    - name: Ensure AD trust is avaiable
+      ansible.builtin.include_tasks: ../tasks_set_trust.yml
 
     - name: Ensure nonposix group is present
       ipagroup:
@@ -49,14 +49,14 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Ensure nonposix group has AD users
+    - name: Ensure nonposix group has AD user "{{ ad_user }}"
       ipagroup:
         name: extgroup
         external_member: "{{ ad_user }}"
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Ensure nonposix group has AD users, again
+    - name: Ensure nonposix group has AD user "{{ ad_user }}", again
       ipagroup:
         name: extgroup
         external_member: "{{ ad_user }}"
@@ -77,7 +77,7 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Ensure external group is present, with AD users.
+    - name: Ensure external group is present, with AD user.
       ipagroup:
         name: extgroup
         external: true
@@ -85,7 +85,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Ensure external group is present, with AD alternate users.
+    - name: Ensure external group is present, with AD alternate user.
       ipagroup:
         name: extgroup
         external: true
@@ -93,7 +93,7 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Ensure external group is present, with AD users, again.
+    - name: Ensure external group is present, with AD user, again.
       ipagroup:
         name: extgroup
         external: true
@@ -122,7 +122,7 @@
       register: result
       failed_when: result.failed or not result.changed
 
-    - name: Ensure group is external, and has AD users.
+    - name: Ensure group is external, and has AD user.
       ipagroup:
         name: extgroup
         external: true
@@ -138,7 +138,7 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Ensure group is external, and has AD users, again.
+    - name: Ensure group is external, and has AD user, again.
       ipagroup:
         name: extgroup
         external: true
@@ -195,6 +195,9 @@
         state: absent
       register: result
       failed_when: result.failed or result.changed
+
+    - name: Ensure AD trust is absent
+      ansible.builtin.include_tasks: ../tasks_remove_trust.yml
 
   - name: Ensure tests groups are absent
     ipagroup:

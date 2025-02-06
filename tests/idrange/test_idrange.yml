@@ -1,44 +1,25 @@
 ---
 - name: Test idrange
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
-  become: no
-  gather_facts: no
-
-  vars:
-    adserver:
-      domain: "{{ winserver_domain | default('windows.local')}}"
-      realm: "{{ winserver_realm | default(winserver_domain) | default('windows.local') | upper }}"
-      password: "{{ winserver_admin_password | default('SomeW1Npassword') }}"
-      ip_address: "{{ winserver_ip | default(omit) }}"
+  become: false
+  gather_facts: false
 
   tasks:
   - name: Retrieve FreeIPA facts
     ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
-  # CLEANUP TEST ITEMS
-  - name: Remove test trust.
-    ansible.builtin.include_tasks: tasks_remove_trust.yml
-    when: trust_test_is_supported | default(false)
-
-  - name: Ensure testing idranges are absent
-    ipaidrange:
-      ipaadmin_password: SomeADMINpassword
-      ipaapi_context: "{{ ipa_context | default(omit) }}"
-      name:
-        - "{{ adserver.realm }}_id_range"
-        - local_id_range
-        - ad_id_range
-        - ad_posix_id_range
-      continue: yes
-      state: absent
-
-  # CREATE TEST ITEMS
-
-  # TESTS
-
   # Test local idrange, only if ipa-adtrust-install was not executed.
   - name: Test local idrange
     block:
+      - name: Ensure testing idranges are absent
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name:
+            - local_id_range
+          continue: yes
+          state: absent
+
       - name: Ensure idrange with minimal attributes is present
         ipaidrange:
           ipaadmin_password: SomeADMINpassword
@@ -125,9 +106,26 @@
   - name: Execute idrange tests if trust test environment is supported
     when: trust_test_is_supported | default(false)
     block:
+      # CLEANUP TEST ITEMS
+      - name: Remove test trust.
+        ansible.builtin.include_tasks: ../tasks_remove_trust.yml
+        when: trust_test_is_supported | default(false)
+
+      - name: Ensure testing idranges are absent
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name:
+            - "{{ adserver.realm | default(omit) }}_id_range"
+            - local_id_range
+            - ad_id_range
+            - ad_posix_id_range
+          continue: yes
+          state: absent
+
       # Create trust with range_type: ipa-ad-trust
       - name: Create trust with range_type 'ipa-ad-trust'
-        ansible.builtin.include_tasks: tasks_set_trust.yml
+        ansible.builtin.include_tasks: ../tasks_set_trust.yml
         vars:
           trust_base_id: 10000000
           trust_range_size: 200000
@@ -224,7 +222,7 @@
 
       # Remove trust and idrange
       - name: Remove test trust.
-        ansible.builtin.include_tasks: tasks_remove_trust.yml
+        ansible.builtin.include_tasks: ../tasks_remove_trust.yml
 
       - name: Ensure AD-trust idrange is absent
         ipaidrange:
@@ -235,7 +233,7 @@
 
       # Create trust with range_type: ipa-ad-trust-posix
       - name: Create trust with range_type 'ipa-ad-trust'
-        ansible.builtin.include_tasks: tasks_set_trust.yml
+        ansible.builtin.include_tasks: ../tasks_set_trust.yml
         vars:
           trust_base_id: 10000000
           trust_range_size: 200000
@@ -257,7 +255,7 @@
 
       # Remove trust and idrange
       - name: Remove test trust.
-        ansible.builtin.include_tasks: tasks_remove_trust.yml
+        ansible.builtin.include_tasks: ../tasks_remove_trust.yml
 
       - name: Ensure AD-trust idrange is absent
         ipaidrange:
@@ -268,7 +266,7 @@
 
       # Remove trust and idrange
       - name: Remove test trust.
-        ansible.builtin.include_tasks: tasks_remove_trust.yml
+        ansible.builtin.include_tasks: ../tasks_remove_trust.yml
 
       - name: Ensure AD-trust idrange is absent
         ipaidrange:
@@ -279,7 +277,7 @@
 
       # Create trust with range_type: ipa-ad-trust-posix
       - name: Create trust with range_type 'ipa-ad-trust-posix'
-        ansible.builtin.include_tasks: tasks_set_trust.yml
+        ansible.builtin.include_tasks: ../tasks_set_trust.yml
         vars:
           trust_base_id: 10000000
           trust_range_size: 2000000
@@ -325,7 +323,7 @@
 
       # Remove trust and idrange
       - name: Remove test trust.
-        ansible.builtin.include_tasks: tasks_remove_trust.yml
+        ansible.builtin.include_tasks: ../tasks_remove_trust.yml
 
       - name: Ensure AD-trust idrange is absent
         ipaidrange:
@@ -336,7 +334,7 @@
 
       # Create trust with range_type: ipa-ad-trust-posix
       - name: Create trust with range_type 'ipa-ad-trust-posix'
-        ansible.builtin.include_tasks: tasks_set_trust.yml
+        ansible.builtin.include_tasks: ../tasks_set_trust.yml
         vars:
           trust_base_id: 10000000
           trust_range_size: 2000000
@@ -358,7 +356,7 @@
     always:
       # CLEANUP TEST ITEMS
       - name: Remove test trust.
-        ansible.builtin.include_tasks: tasks_remove_trust.yml
+        ansible.builtin.include_tasks: ../tasks_remove_trust.yml
 
       - name: Ensure testing idranges are absent
         ipaidrange:
