@@ -1,0 +1,35 @@
+#!/bin/bash -eu
+
+TEST_SCENARIO="ansible-freeipa-scenario"
+
+BASEDIR="$(readlink -f "$(dirname "$0")")"
+TOPDIR="$(readlink -f "${BASEDIR}/../..")"
+LABDIR="${TOPDIR}/${TEST_SCENARIO}"
+
+die() {
+    echo "FATAL: $*" >&2
+    exit 1
+}
+
+if [ -z "$(podman pod ls --filter "name=${TEST_SCENARIO}" --format "{{ .Name }}")" ]
+then
+    echo "No test scenario is running."
+    exit 0
+fi
+
+echo "Found test scenario running."
+
+if ! pushd "${LABDIR}" >/dev/null 2>/dev/null
+then
+    [ "${1:-""}" == "--force" ] || die "Could not change to config directory."
+    echo "Forcing scenario shutdown"
+    (
+        podman pod stop "pod_${TEST_SCENARIO}" ||:
+        podman pod rm "pod_${TEST_SCENARIO}" ||:
+        podman network rm "ipanet-${TEST_SCENARIO}" ||:
+    ) 2>&1 | tee -a /tmp/ansible-freeipa-scenario.log
+    exit 0
+else
+    echo "Shutting down test scenario"
+    podman-compose down >> /tmp/ansible-freeipa-scenario.log
+fi
