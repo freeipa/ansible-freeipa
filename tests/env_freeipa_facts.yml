@@ -67,3 +67,22 @@
   ansible.builtin.set_fact:
     ipaserver_realm: "{{ ipaserver_domain | upper }}"
   when: ipaserver_realm is not defined
+
+- name: Ensure AD variables are set
+  ansible.builtin.set_fact:
+    adserver:
+      domain: "{{ winserver_domain | default('windows.local') }}"
+      realm: "{{ winserver_realm | default(winserver_domain) | default('windows.local') | upper }}"
+      password: "{{ winserver_admin_password | default('SomeW1Npassword') }}"
+      ip_address: "{{ winserver_ip | default(omit) }}"
+  when: trust_test_is_supported | default(false)
+
+- name: Ensure ad_user is set
+  ansible.builtin.set_fact:
+    ad_user: "{{ test_ad_user | default('AD\\aduser') }}"
+  when: trust_test_is_supported | default(false)
+
+- name: Ensure alt_user is set
+  ansible.builtin.set_fact:
+    alt_user: "{{ test_alt_user | default('aduser@ad.ipa.test') }}"
+  when: trust_test_is_supported | default(false)

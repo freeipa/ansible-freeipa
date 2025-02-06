@@ -1,14 +1,10 @@
 ---
 - name: Test ipatrust
   hosts: "{{ ipa_test_host | default('ipaserver') }}"
-  become: true
+  become: false
   gather_facts: false
 
   vars:
-    adserver:
-      domain: "{{ winserver_domain | default('windows.local')}}"
-      realm: "{{ winserver_realm | default(winserver_domain) | default('windows.local') | upper }}"
-      password: "{{ winserver_admin_password | default('SomeW1Npassword') }}"
     ipaserver:
       domain: "{{ ipaserver_domain | default('ipa.test')}}"
       realm: "{{ ipaserver_realm | default(ipaserver_domain) | default('ipa.test') | upper }}"
