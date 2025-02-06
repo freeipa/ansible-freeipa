@@ -27,12 +27,12 @@
         realm: "{{ adserver.domain }}"
         state: absent
 
-    - name: Clear test idranges
-      ansible.builtin.shell: |
-        kinit -c test_krb5_cache admin <<< SomeADMINpassword
-        ipa idrange-del {{ adserver.realm }}_id_range || true
-        ipa idrange-del {{ ipaserver.realm }}_subid_range || true
-        kdestroy -c test_krb5_cache -q -A
+    - name: Ensure trust idrange is absent
+      ipaidrange:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: "{{ adserver.realm }}_id_range"
+        state: absent
 
     - name: Add trust with range_type 'ipa-ad-trust'
       ipatrust:
@@ -98,12 +98,12 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Clear test idranges
-      ansible.builtin.shell: |
-        kinit -c test_krb5_cache admin <<< SomeADMINpassword
-        ipa idrange-del {{ adserver.realm }}_id_range || true
-        ipa idrange-del {{ ipaserver.realm }}_subid_range || true
-        kdestroy -c test_krb5_cache -q -A
+    - name: Ensure trust idrange is absent
+      ipaidrange:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: "{{ adserver.realm }}_id_range"
+        state: absent
 
     - name: Add trust with range_type 'ipa-ad-trust-posix'
       ipatrust:
@@ -167,9 +167,9 @@
       register: result
       failed_when: result.failed or result.changed
 
-    - name: Clear test idranges
-      ansible.builtin.shell: |
-        kinit -c test_krb5_cache admin <<< SomeADMINpassword
-        ipa idrange-del {{ adserver.realm }}_id_range || true
-        ipa idrange-del {{ ipaserver.realm }}_subid_range || true
-        kdestroy -c test_krb5_cache -q -A
+    - name: Ensure trust idrange is absent
+      ipaidrange:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: "{{ adserver.realm }}_id_range"
+        state: absent
