@@ -12,6 +12,9 @@
       ip_address: "{{ winserver_ip | default(omit) }}"
 
   tasks:
+  - name: Retrieve FreeIPA facts
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
   # CLEANUP TEST ITEMS
   - name: Remove test trust.
     ansible.builtin.include_tasks: tasks_remove_trust.yml
