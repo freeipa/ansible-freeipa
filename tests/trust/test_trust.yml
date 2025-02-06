@@ -17,10 +17,13 @@
     ipa_range_exists: 'Range name: {{ ipaserver.realm }}_subid_range'
 
   tasks:
+  - name: Retrieve FreeIPA facts
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
   - name: Run tust tests, if supported by environment
     when: trust_test_is_supported | default(false)
     block:
-    - name: Delete test trust
+    - name: Ensure trust is absent
       ipatrust:
         ipaadmin_password: SomeADMINpassword
         ipaapi_context: "{{ ipa_context | default(omit) }}"
