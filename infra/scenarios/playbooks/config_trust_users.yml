@@ -1,0 +1,17 @@
+---
+- name: Add some users to Samba AD DC
+  hosts: addc
+  become: false
+  gather_facts: false
+
+  tasks:
+  - name: Add users to AD DC
+    ansible.builtin.shell: samba-tool user create {{ item.login }} --given-name {{ item.first }} --surname {{ item.last }}
+    args:
+      stdin: |
+        Secret123
+        Secret123
+    loop:
+      - {login: "jdoe", first: "John", last: "Doe"}
+      - {login: "lanne", first: "Lisa", last: "Anne"}
+      - {login: "zica", first: "Zoe", last: "Ica"}
