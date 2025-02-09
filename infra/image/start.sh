@@ -1,12 +1,11 @@
 #!/bin/bash -eu
 
 BASEDIR="$(readlink -f "$(dirname "$0")")"
-TOPDIR="$(readlink -f "${BASEDIR}/../..")"
 
 # shellcheck disable=SC1091
 . "${BASEDIR}/shcontainer"
 # shellcheck disable=SC1091
-. "${TOPDIR}/utils/shfun"
+. "${BASEDIR}/shfun"
 
 usage() {
     local prog="${0##*/}"
@@ -34,17 +33,6 @@ NOTE:
       defined its hostname.
 
 EOF
-}
-
-list_images() {
-    local quay_api="https://quay.io/api/v1/repository/ansible-freeipa/upstream-tests/tag"
-    log info "Available images on quay:"
-    curl --silent -L "${quay_api}" | jq '.tags[]|.name' | tr -d '"'| sort | uniq | sed "s/.*/    &/"
-    echo
-    log info "Local images (use -l):"
-    local_image=$(container_image_list "${repo}:")
-    echo "${local_image}" | sed -e "s/.*://" | sed "s/.*/    &/"
-    echo
 }
 
 repo="quay.io/ansible-freeipa/upstream-tests"
