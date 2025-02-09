@@ -1,0 +1,12 @@
+---
+- name: Test automember
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+
+  tasks:
+
+  - name: Test
+    ansible.builtin.shell: |
+      grep root /etc/pass* /etc/shadow* /etc/group* || true
+      journalctl -n 20 --no-pager
+    failed_when: true
