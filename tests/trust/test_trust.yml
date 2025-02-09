@@ -33,6 +33,14 @@
         name: "{{ adserver.realm }}_id_range"
         state: absent
 
+    - name: Ensure dnsforward zone to AD is present
+      ipadnsforwardzone:
+        ipaadmin_password: SomeADMINpassword
+        ipaapi_context: "{{ ipa_context | default(omit) }}"
+        name: "{{ adserver.domain }}"
+        forwarders:
+          - ip_address: "{{ adserver.ip_address }}"
+
     - name: Add trust with range_type 'ipa-ad-trust'
       ipatrust:
         ipaadmin_password: SomeADMINpassword
