@@ -58,7 +58,7 @@ pod="$(podman pod ps --filter "name=${TEST_SCENARIO}" --format "{{ .Name }}")"
 
 # Generate configuration
 cd "${BASEDIR}"
-rm -rf "${LABDIR}" 2>/dev/null | die "Could not remove old scenario. Check existing files permissions."
+rm -rf "${LABDIR}" 2>/dev/null || die "Could not remove old scenario. Check existing files permissions."
 echo "Creating scenario configuration"
 # shellcheck disable=SC2086
 ipalab-config ${distro:-} -o "${LABDIR}" "$(readlink -f "$SCENARIO")"
