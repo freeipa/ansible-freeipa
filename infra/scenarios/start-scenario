@@ -71,6 +71,11 @@ cd "${LABDIR}"
 echo Starting compose
 podman-compose up -d > /tmp/ansible-freeipa-scenario.log 2>&1
 
+podman pod ls
+podman network ls
+podman pod ps --all
+ansible-galaxy collection list
+
 # Deploy external nodes
 echo Deploying external nodes
 ansible-playbook -i inventory.yml playbooks/deploy_*.yml
