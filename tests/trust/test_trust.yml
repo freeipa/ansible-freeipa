@@ -26,6 +26,10 @@
         realm: "{{ adserver.domain }}"
         state: absent
 
+    - name: Force test to fail
+      ansible.builtin.fail:
+        msg: Force fail
+
     - name: Ensure trust idrange is absent
       ipaidrange:
         ipaadmin_password: SomeADMINpassword
