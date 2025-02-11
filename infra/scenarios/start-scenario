@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
 die() {
-    echo "FATAL: $*" >&2
+    [ $# -gt 0 ] && echo "FATAL: $*" >&2
     exit 1
 }
 
@@ -69,8 +69,9 @@ cd "${LABDIR}"
 
 # Start compose
 echo Starting compose
-podman-compose up -d > /tmp/ansible-freeipa-scenario.log 2>&1
+podman-compose up -d || die "Could not create compose"
 
+podman --version
 podman pod ls
 podman network ls
 podman ps --all
@@ -78,15 +79,15 @@ ansible-galaxy collection list
 
 # Deploy external nodes
 echo Deploying external nodes
-ansible-playbook -i inventory.yml playbooks/deploy_*.yml
+ansible-playbook -i inventory.yml playbooks/deploy_*.yml || die
 
 # Deploy IPA cluster
 echo Deploying IPA cluster
-ansible-playbook -i inventory.yml playbooks/install-cluster.yml
+ansible-playbook -i inventory.yml playbooks/install-cluster.yml || die
 
 # Initial scenario configuration
 echo Deploying scenario initial configuration
-ansible-playbook -i inventory.yml playbooks/config_*.yml
+ansible-playbook -i inventory.yml playbooks/config_*.yml || die
 
 # Print container names
 echo -e "\n\nScenario containers:"
