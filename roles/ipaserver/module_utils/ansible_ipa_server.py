@@ -354,6 +354,13 @@ options.add_agents = False
 # no_msdcs is deprecated
 options.no_msdcs = False
 
+# Hotfix for https://github.com/freeipa/freeipa/pull/7343
+options.dns_over_tls = False
+options.dns_over_tls_key = None
+options.dns_over_tls_cert = None
+options.dot_forwarders = None
+options.dns_policy = None
+
 # For pylint
 options.external_cert_files = None
 options.dirsrv_cert_files = None

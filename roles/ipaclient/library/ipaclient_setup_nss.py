@@ -279,6 +279,7 @@ def main():
     options.no_sssd = False
     options.sssd = not options.no_sssd
     options.no_ac = False
+    options.dns_over_tls = False
     nosssd_files = module.params.get('nosssd_files')
     selinux_works = module.params.get('selinux_works')
     krb_name = module.params.get('krb_name')
@@ -376,7 +377,12 @@ def main():
             ssh_config_dir = paths.SSH_CONFIG_DIR
         else:
             ssh_config_dir = services.knownservices.sshd.get_config_dir()
-        update_ssh_keys(hostname, ssh_config_dir, options.create_sshfp)
+        argspec_update_ssh_keys = getargspec(update_ssh_keys)
+        # Hotfix for https://github.com/freeipa/freeipa/pull/7343
+        if "options" in argspec_update_ssh_keys.args:
+            update_ssh_keys(hostname, ssh_config_dir, options, cli_server[0])
+        else:
+            update_ssh_keys(hostname, ssh_config_dir, options.create_sshfp)
 
         try:
             os.remove(CCACHE_FILE)

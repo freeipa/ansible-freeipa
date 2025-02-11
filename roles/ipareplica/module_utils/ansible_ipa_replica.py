@@ -331,6 +331,13 @@ options.add_agents = False
 # ServerReplicaInstall
 options.subject_base = None
 options.ca_subject = None
+
+# Hotfix for https://github.com/freeipa/freeipa/pull/7343
+options.dns_over_tls = False
+options.dns_over_tls_key = None
+options.dns_over_tls_cert = None
+options.dot_forwarders = None
+options.dns_policy = None
 # pylint: enable=attribute-defined-outside-init
 
 
