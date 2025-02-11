@@ -24,6 +24,8 @@ external:
     hostname: dc.ad.ipa.test
     role: addc
     ip_address: 192.168.13.250
+    security_opt:
+      - no-new-privileges=false
     options:
       forwarder: 192.168.13.100
 ipa_deployments:
@@ -46,6 +48,8 @@ ipa_deployments:
         - name: server
           capabilities: ["DNS", "AD", "KRA"]
           ip_address: 192.168.13.100
+          security_opt:
+            - no-new-privileges=false
           vars:
             ipaserver_netbios_name: IPA
             ipaserver_idstart: 60000
@@ -55,3 +59,5 @@ ipa_deployments:
       clients:
         - name: cli01
           dns: server
+          security_opt:
+            - no-new-privileges=false
