@@ -58,7 +58,7 @@ jobs:
       utils/build-galaxy-release.sh -i
     retryCountOnTaskFailure: 5
     displayName: Build Galaxy release
-    condition: ${{ parameters.test_galaxy }}
+    # condition: ${{ parameters.test_galaxy }}
 
   - script: |
       echo "PWD: ${PWD}"
