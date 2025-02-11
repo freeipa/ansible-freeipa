@@ -18,7 +18,9 @@ steps:
       versionSpec: '${{ parameters.python_version }}'
 
   - script: |
-      pip install "ansible${{ parameters.ansible_version }}" podman-compose ipalab-config -r requirements-tests.txt
+      pip install "ansible${{ parameters.ansible_version }}" -r requirements-tests.txt
+      pip install podman-compose
+      pip install git+https://github.com/rjeffman/ipalab-config@azure
     retryCountOnTaskFailure: 5
     displayName: Install test dependencies
 
