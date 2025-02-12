@@ -71,8 +71,19 @@ jobs:
       echo "MODULE_UTILS: ${ANSIBLE_MODULE_UTILS}"
       # [ "${{ parameters.test_galaxy }}" == "True"  ] && cd ~/.ansible/collections/ansible_collections/freeipa/ansible_freeipa
       #
-      # We need to run in
-      infra/scenarios/run_test_scenario.sh -D
+      infra/scenarios/start-scenario -D
+      # Give a chance for containers to be up
+      sleep 5
+      # workaround for 'sudo'
+      podman exec addc chmod u+r /etc/shadow
+      podman exec server chmod u+r /etc/shadow
+      podman exec cli01 chmod u+r /etc/shadow
+      # Deploy nodes
+      ansible-playbook -i ansible-freeipa-scenario/inventory.yml ansible-freeipa-scenario/playbooks/deploy_*.yml ||:
+      ansible-playbook -i ansible-freeipa-scenario/inventory.yml ansible-freeipa-scenario/playbooks/install-cluster.yml
+      ansible-playbook -i ansible-freeipa-scenario/inventory.yml ansible-freeipa-scenario/playbooks/config_*.yml ||:
+      # Run tests
+      infra/scenarios/run_test_scenario.sh -k
     displayName: Run playbook tests
     env:
       SKIP_GIT_TEST: ${{ parameters.skip_git_test }}
