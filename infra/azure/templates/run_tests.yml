@@ -60,24 +60,19 @@ jobs:
     displayName: Build Galaxy release
     # condition: ${{ parameters.test_galaxy }}
 
+  - script: cat infra/scenarios/ipa-ad-trust.yml
+    displayName: Debug - Show configuration
+
   - script: |
       echo "PWD: ${PWD}"
       echo "TOPDIR: ${TOPDIR}"
       echo "ROLES: ${ANSIBLE_ROLES_PATH}"
       echo "LIBRARY: ${ANSIBLE_LIBRARY}"
       echo "MODULE_UTILS: ${ANSIBLE_MODULE_UTILS}"
-      # . "${TOPDIR}/infra/azure/scripts/set_test_modules"
       # [ "${{ parameters.test_galaxy }}" == "True"  ] && cd ~/.ansible/collections/ansible_collections/freeipa/ansible_freeipa
-      # pytest \
-      #     -m "${{ parameters.test_type }}" \
-      #     --verbose \
-      #     --color=yes \
-      #     --splits=${{ parameters.number_of_groups }} \
-      #     --group=${{ parameters.group_number }} \
-      #     --randomly-seed=$(date "+%Y%m%d") \
-      #     --suppress-no-test-exit-code \
-      #     --junit-xml=TEST-results-pr-check.xml
-      infra/scenarios/run_test_scenario.sh -k
+      #
+      # We need to run in
+      infra/scenarios/run_test_scenario.sh -D
     displayName: Run playbook tests
     env:
       SKIP_GIT_TEST: ${{ parameters.skip_git_test }}
