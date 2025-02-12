@@ -61,7 +61,7 @@ do
         a) RUN_ALL="Y" ; export SKIP_GIT_TEST="True" ;;
         k) SHUTDOWN="YES" ;;
         m) MODULES+=("${OPTARG}") ;;
-        v) VERBOSITY=$(VERBOSITY + 1) ;;
+        v) VERBOSITY=$((VERBOSITY + 1)) ;;
         *) die "Invalid option: ${option}" ;;
     esac
 done
