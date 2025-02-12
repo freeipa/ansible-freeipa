@@ -173,3 +173,6 @@ then
     echo "Shutting down environment"
     infra/scenarios/stop-scenario
 fi
+
+# Return error code
+[ "${error:-"NO"}" == "YES" ]
