@@ -67,6 +67,8 @@ ipalab-config ${distro:-} -o "${LABDIR}" "$(readlink -f "$SCENARIO")"
 
 cd "${LABDIR}"
 
+echo "Starting compose."
+
 # Start compose
 [ "${COMPOSE:-"Y"}" == "Y" ] || exit 0
 
