@@ -21,7 +21,8 @@ Start an ansible-freeipa testing scenario described by CONFIG.
 Options:
 
     -h       Display this help screen
-    -D       Create configuration but don't start the environment
+    -C       Create configuration, but don't start environment
+    -D       Create compose, but don't deploy nodes
     -d       Select the default distro. One of: fedora-latest (default),
              fedora-rawhide, c10s, c9s, c8s.
 
@@ -29,10 +30,11 @@ EOF
 }
 
 
-while getopts ":hDd:" option
+while getopts ":hCDd:" option
 do
     case "${option}" in
         h) usage && exit 0 ;;
+        C) COMPOSE="N" ;;
         D) DEPLOY="N" ;;
         d) distro="-d ${OPTARG}" ;;
         *) die "Invalid option: ${option}" ;;
@@ -63,11 +65,11 @@ echo "Creating scenario configuration"
 # shellcheck disable=SC2086
 ipalab-config ${distro:-} -o "${LABDIR}" "$(readlink -f "$SCENARIO")"
 
-[ "${DEPLOY:-"Y"}" == "Y" ] || exit 0
-
 cd "${LABDIR}"
 
 # Start compose
+[ "${COMPOSE:-"Y"}" == "Y" ] || exit 0
+
 echo Starting compose
 podman-compose up -d || die "Could not create compose"
 
@@ -75,6 +77,9 @@ podman --version
 podman pod ls
 podman network ls
 podman ps --all
+
+[ "${DEPLOY:-"Y"}" == "Y" ] || exit 0
+
 ansible-galaxy collection list
 
 # Deploy external nodes
