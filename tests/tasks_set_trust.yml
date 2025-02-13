@@ -25,9 +25,11 @@
 - name: Retrieve Domain Security Identifier
   ansible.builtin.shell:
     cmd: |
-      kinit -c test_krb5_cache admin <<< SomeADMINpassword > /dev/null
+      kinit -c test_krb5_cache admin > /dev/null
       KRB5CCNAME=test_krb5_cache ipa trust-show {{ adserver.domain }} | sed -n "/Domain Security Identifier/s/ //gp" | cut -d":" -f2
       kdestroy -c test_krb5_cache -A -q > /dev/null
+  args:
+    stdin: "{{ ipaadmin_password | default('SomeADMINpassword') }}"
   register: getsid
   no_log: yes
 

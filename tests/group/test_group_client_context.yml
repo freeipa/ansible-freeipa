@@ -1,11 +1,8 @@
 ---
 - name: Test group
   hosts: ipaclients, ipaserver
-  become: no
-  gather_facts: no
-
-  vars:
-    ad_user: "{{ test_ad_user | default('AD\\aduser') }}"
+  become: false
+  gather_facts: false
 
   tasks:
   - name: Include FreeIPA facts.
@@ -26,7 +23,7 @@
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: client
       name: ThisShouldNotWork
-      external_member: "{{ ad_user }}"
+      external_member: "SomeUser@AD"
       external: true
     register: result
     failed_when: not (result.failed and result.msg == "Cannot use externalmember in client context.")
