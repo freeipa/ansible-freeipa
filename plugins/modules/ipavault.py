@@ -331,7 +331,8 @@ import os
 from base64 import b64decode
 from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import IPAAnsibleModule, \
-    gen_add_del_lists, compare_args_ipa, exit_raw_json, ipalib_errors
+    gen_add_del_lists, compare_args_ipa, exit_raw_json, ipalib_errors, \
+    gen_add_list, gen_intersection_list
 
 
 def find_vault(module, name, username, service, shared):
@@ -747,6 +748,28 @@ def main():
 
         commands = []
 
+        user_add, user_del = [], []
+        group_add, group_del = [], []
+        service_add, service_del = [], []
+        owner_add, owner_del = [], []
+        ownergroups_add, ownergroups_del = [], []
+        ownerservice_add, ownerservice_del = [], []
+
+        # Ensure service attribute values have realm.
+        api_realm = ansible_module.ipa_get_realm()
+        if service and '@' not in service:
+            service = '%s@%s' % (service, api_realm)
+        if services:
+            services = [
+                svc if '@' in svc else '%s@%s' % (svc, api_realm)
+                for svc in services
+            ]
+        if ownerservices:
+            ownerservices = [
+                svc if '@' in svc else '%s@%s' % (svc, api_realm)
+                for svc in ownerservices
+            ]
+
         for name in names:
             # Make sure vault exists
             res_find = find_vault(
@@ -781,8 +804,11 @@ def main():
                     if res_find is not None:
                         arg_type = args.get("ipavaulttype")
 
+                        cmp_args = {
+                            k: v for k, v in args.items() if v is not None
+                        }
                         modified = not compare_args_ipa(ansible_module,
-                                                        args, res_find)
+                                                        cmp_args, res_find)
 
                         if arg_type != res_type or change_passwd:
                             stargs = data_storage_args(
@@ -831,66 +857,58 @@ def main():
                         res_find = {}
 
                     # Generate adittion and removal lists
-                    user_add, user_del = \
-                        gen_add_del_lists(users,
-                                          res_find.get('member_user', []))
-                    group_add, group_del = \
-                        gen_add_del_lists(groups,
-                                          res_find.get('member_group', []))
-                    service_add, service_del = \
-                        gen_add_del_lists(services,
-                                          res_find.get('member_service', []))
+                    if users:
+                        user_add, user_del = gen_add_del_lists(
+                            users, res_find.get('member_user'))
+                        # only remove 'admin' if explicitly requested.
+                        user_del = [x for x in user_del if x != 'admin']
 
-                    owner_add, owner_del = \
-                        gen_add_del_lists(owners,
-                                          res_find.get('owner_user', []))
+                    if groups:
+                        group_add, group_del = gen_add_del_lists(
+                            groups, res_find.get('member_group'))
 
-                    ownergroups_add, ownergroups_del = \
-                        gen_add_del_lists(ownergroups,
-                                          res_find.get('owner_group', []))
+                    if services:
+                        service_add, service_del = gen_add_del_lists(
+                            services, res_find.get('member_service'))
 
-                    ownerservice_add, ownerservice_del = \
-                        gen_add_del_lists(ownerservices,
-                                          res_find.get('owner_service', []))
+                    if owners:
+                        owner_add, owner_del = gen_add_del_lists(
+                            owners, res_find.get('owner_user'))
+                        # only remove 'admin' if explicitly requested.
+                        owner_del = [x for x in owner_del if x != 'admin']
 
+                    if ownergroups:
+                        ownergroups_add, ownergroups_del = gen_add_del_lists(
+                            ownergroups, res_find.get('owner_group'))
+
+                    if ownerservices:
+                        ownerservice_add, ownerservice_del = gen_add_del_lists(
+                            ownerservices, res_find.get('owner_service'))
+
+                elif action == "member":
+                    if res_find is None:
+                        ansible_module.fail_json(
+                            msg="Vault not found: `%s`" % name)
                     # Add users and groups
-                    user_add_args = gen_member_args(args, user_add,
-                                                    group_add, service_add)
-                    if user_add_args is not None:
-                        commands.append(
-                            [name, 'vault_add_member', user_add_args])
+                    if users:
+                        user_add = gen_add_list(
+                            users, res_find.get('member_user'))
+                    if groups:
+                        group_add = gen_add_list(
+                            groups, res_find.get('member_group'))
+                    if services:
+                        service_add = gen_add_list(
+                            services, res_find.get('member_service'))
+                    if owners:
+                        owner_add = gen_add_list(
+                            owners, res_find.get('owner_user'))
+                    if ownergroups:
+                        ownergroups_add = gen_add_list(
+                            ownergroups, res_find.get('owner_group'))
 
-                    # Remove users and groups
-                    user_del_args = gen_member_args(args, user_del,
-                                                    group_del, service_del)
-                    if user_del_args is not None:
-                        commands.append(
-                            [name, 'vault_remove_member', user_del_args])
-
-                    # Add owner users and groups
-                    owner_add_args = gen_member_args(
-                        args, owner_add, ownergroups_add, ownerservice_add)
-                    if owner_add_args is not None:
-                        commands.append(
-                            [name, 'vault_add_owner', owner_add_args])
-
-                    # Remove owner users and groups
-                    owner_del_args = gen_member_args(
-                        args, owner_del, ownergroups_del, ownerservice_del)
-                    if owner_del_args is not None:
-                        commands.append(
-                            [name, 'vault_remove_owner', owner_del_args])
-
-                elif action in "member":
-                    # Add users and groups
-                    if any([users, groups, services]):
-                        user_args = gen_member_args(args, users, groups,
-                                                    services)
-                        commands.append([name, 'vault_add_member', user_args])
-                    if any([owners, ownergroups, ownerservices]):
-                        owner_args = gen_member_args(args, owners, ownergroups,
-                                                     ownerservices)
-                        commands.append([name, 'vault_add_owner', owner_args])
+                    if ownerservices:
+                        ownerservice_add = gen_add_list(
+                            ownerservices, res_find.get('owner_service'))
 
                 if any([vault_data, datafile_in]):
                     if change_passwd:
@@ -943,24 +961,69 @@ def main():
                         commands.append([name, "vault_del", args])
 
                 elif action == "member":
-                    # remove users and groups
-                    if any([users, groups, services]):
-                        user_args = gen_member_args(
-                            args, users, groups, services)
-                        commands.append(
-                            [name, 'vault_remove_member', user_args])
+                    if res_find is None:
+                        ansible_module.fail_json(
+                            msg="Vault not found: `%s`" % name)
 
-                    if any([owners, ownergroups, ownerservices]):
-                        owner_args = gen_member_args(
-                            args, owners, ownergroups, ownerservices)
-                        commands.append(
-                            [name, 'vault_remove_owner', owner_args])
+                    if users:
+                        user_del = gen_intersection_list(
+                            users, res_find.get('member_user'))
+                    if groups:
+                        group_del = gen_intersection_list(
+                            groups, res_find.get('member_group'))
+                    if services:
+                        service_del = gen_intersection_list(
+                            services, res_find.get('member_service'))
+
+                    if owners:
+                        owner_del = gen_intersection_list(
+                            owners, res_find.get('owner_user'))
+                    if ownergroups:
+                        ownergroups_del = gen_intersection_list(
+                            ownergroups, res_find.get('owner_group'))
+                    if ownerservices:
+                        ownerservice_del = gen_intersection_list(
+                            ownerservices, res_find.get('owner_service'))
                 else:
                     ansible_module.fail_json(
                         msg="Invalid action '%s' for state '%s'" %
                         (action, state))
             else:
                 ansible_module.fail_json(msg="Unknown state '%s'" % state)
+
+            # Manage vault members.
+
+            # Add users and groups
+            if any([user_add, group_add, service_add]):
+                user_add_args = gen_member_args(
+                    args, user_add, group_add, service_add)
+                if user_add_args:
+                    commands.append(
+                        [name, 'vault_add_member', user_add_args])
+
+            # Remove users and groups
+            if any([user_del, group_del, service_del]):
+                user_del_args = gen_member_args(
+                    args, user_del, group_del, service_del)
+                if user_del_args:
+                    commands.append(
+                        [name, 'vault_remove_member', user_del_args])
+
+            # Add owner users and groups
+            if any([owner_add, ownergroups_add, ownerservice_add]):
+                owner_add_args = gen_member_args(
+                    args, owner_add, ownergroups_add, ownerservice_add)
+                if owner_add_args:
+                    commands.append(
+                        [name, 'vault_add_owner', owner_add_args])
+
+                # Remove owner users and groups
+            if any([owner_del, ownergroups_del, ownerservice_del]):
+                owner_del_args = gen_member_args(
+                    args, owner_del, ownergroups_del, ownerservice_del)
+                if owner_del_args is not None:
+                    commands.append(
+                        [name, 'vault_remove_owner', owner_del_args])
 
         # Check mode exit
         if ansible_module.check_mode:
@@ -1007,9 +1070,6 @@ def main():
                     failed_item = result["failed"][item]
                     for member_type in failed_item:
                         for member, failure in failed_item[member_type]:
-                            if "already a member" in failure \
-                               or "not a member" in failure:
-                                continue
                             errors.append("%s: %s %s: %s" % (
                                 command, member_type, member, failure))
         if len(errors) > 0:
