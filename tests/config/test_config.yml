@@ -34,6 +34,16 @@
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           emaildomain: ipa.test
 
+      - name: Ensure the default e-mail domain cannot be set to an invalid email domain.
+        ipaconfig:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          emaildomain: invalid@emaildomain
+        register: invalid_emaildomain
+        failed_when:
+          invalid_emaildomain.changed
+          or not (invalid_emaildomain.failed and "Invalid 'emaildomain' value:" in invalid_emaildomain.msg)
+
       - name: Set default shell to '/bin/sh'
         ipaconfig:
           ipaadmin_password: SomeADMINpassword
