@@ -47,6 +47,8 @@ container_start() {
 
     log info "= Starting ${name} ="
     podman start "${name}"
+    # Ensure /etc/shadow is readable
+    podman exec "${name}" bash -c "chmod u+r /etc/shadow"
     echo
 }
 
