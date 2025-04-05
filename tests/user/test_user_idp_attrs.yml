@@ -27,13 +27,21 @@
       # TODO: Use an ansible-freeipa plugin instead of 'shell'
       ansible.builtin.shell:
         cmd: |
-          kinit -c test_krb5_cache admin <<< SomeADMINpassword
+          kinit -c test_krb5_cache admin
           KRB5CCNAME=test_krb5_cache ipa idp-add keycloak --provider keycloak \
              --org master \
              --base-url https://client.ipademo.local:8443/auth \
              --client-id ipa_oidc_client \
-             --secret  <<< $(echo -e "Secret123\nSecret123")
+             --secret
           kdestroy -c test_krb5_cache -q -A
+      args:
+        stdin: |
+          {{ ipaadminpassord | default('SomeADMINpassword') }}
+          {{ keycloak_pass }}
+          {{ keycloak_pass }}
+      vars:
+        keycloak_pass: "Secret123"
+
       register: addidp
       failed_when:
       - '"Added Identity Provider" not in addidp.stdout'
@@ -97,9 +105,11 @@
       # TODO: Use an ansible-freeipa plugin instead of 'shell'
       ansible.builtin.shell:
         cmd: |
-          kinit -c test_krb5_cache admin <<< SomeADMINpassword
-          ipa idp-del keycloak
+          kinit -c test_krb5_cache admin
+          KRB5CCNAME=test_krb5_cache pa idp-del keycloak
           kdestroy -c test_krb5_cache -q -A
+      args:
+        stdin: "{ ipaadminpassord | default('SomeADMINpassword') }}"
     always:
     - name: Ensure user idpuser is absent
       ipauser:
