@@ -1,0 +1,70 @@
+---
+parameters:
+  - name: scenario
+    type: string
+    default: fedora-latest
+  - name: ansible_version
+    type: string
+    default: ""
+  - name: python_version
+    type: string
+    default: 3.x
+  - name: build_number
+    type: string
+
+jobs:
+- job: Test_Deployment
+  displayName: Run deployment tests ${{ parameters.scenario }}
+  timeoutInMinutes: 240
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '${{ parameters.python_version }}'
+
+  - script: |
+      pip install "ansible${{ parameters.ansible_version }}"
+    retryCountOnTaskFailure: 5
+    displayName: Install Ansible
+
+  - script: ansible-galaxy collection install community.docker ansible.posix
+    retryCountOnTaskFailure: 5
+    displayName: Install Ansible collections
+
+  - script: pip install -r requirements-tests.txt
+    retryCountOnTaskFailure: 5
+    displayName: Install dependencies
+
+  - script: |
+      rm -rf ~/.ansible/plugins ~/.ansible/roles
+      ln -snf "$(realpath plugins)" ~/.ansible/plugins
+      ln -snf "$(realpath roles)" ~/.ansible/roles
+      ls -l ~/.ansible
+      docker pull ${SCENARIO_IMAGE}
+    env:
+      SCENARIO_IMAGE: quay.io/ansible-freeipa/upstream-tests:raw-${{ parameters.scenario }}
+    retryCountOnTaskFailure: 5
+    displayName: Setup test environment
+
+  - script: tests/server_role/inventory.py | tee inventory.yml
+    displayName: Create inventory files
+
+  - script: |
+      # remove stray container
+      docker rm --force ${{ parameters.scenario }} >&2 2>/dev/null
+      # run test
+      docker run -d --privileged --name ${IPA_CONTAINER} --hostname ${IPA_HOSTNAME} ${SCENARIO_IMAGE}
+      ansible-playbook -i inventory.yml tests/server_role/ipv6config.yml
+      ansible-playbook -i inventory.yml playbooks/install-server.yml
+      # Run tests to verify installation
+      ansible-playbook -i inventory.yml tests/user/test_user.yml
+    displayName: Run deployment tests
+    env:
+      SCENARIO_IMAGE: quay.io/ansible-freeipa/upstream-tests:raw-${{ parameters.scenario }}
+      IPA_CONTAINER: ipaserver_test_container
+      IPA_HOSTNAME: ipaserver.test.local
+
+  - task: PublishTestResults@2
+    inputs:
+      mergeTestResults: true
+      testRunTitle: DeploymentTests-Build${{ parameters.build_number }}
+    condition: succeededOrFailed()
