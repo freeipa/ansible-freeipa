@@ -80,6 +80,13 @@ except ImportError:
 try:
     from contextlib import contextmanager as contextlib_contextmanager
     from ipapython.version import NUM_VERSION, VERSION
+    try:
+        from ipapython.version import parse_version
+    except ImportError:
+        # In IPA we either need pkg_resources or packaging Version
+        # class to compare versions with check_remote_version, so
+        # we let an exception to be raised if neither is available.
+        from pkg_resources import parse_version
 
     if NUM_VERSION < 30201:
         # See ipapython/version.py
@@ -98,8 +105,6 @@ try:
         import dns.name as dnsname
         import dns.resolver as dnsresolver
         import dns.reversename as dnsreversename
-
-        from pkg_resources import parse_version
 
         from ipaclient.install.ipachangeconf import IPAChangeConf
         from ipalib.install import certstore, sysrestore
