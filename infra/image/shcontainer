@@ -40,6 +40,7 @@ container_create() {
     podman create \
            --security-opt label=disable \
            --network bridge:interface_name=eth0 \
+           --cap-add DAC_READ_SEARCH \
            --systemd true \
            --name "${name}" \
            --memory-swap -1 \
