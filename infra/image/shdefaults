@@ -1,0 +1,8 @@
+#!/bin/bash -eu
+# This file is meant to be source'd by other scripts
+
+# Set default capabilities options for freeipa containers.
+# Use +CAP to add the capability and -CAP to drop the capability.
+CAP_DEFAULTS=(
+    "+DAC_READ_SEARCH"  # Required for SSSD
+)
