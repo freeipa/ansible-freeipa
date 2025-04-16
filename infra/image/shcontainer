@@ -19,6 +19,7 @@ container_create() {
             cpus=*) extra_opts+=("--${opt}") ;;
             memory=*) extra_opts+=("--${opt}") ;;
             capabilities=*) extra_opts+=("--cap-add=${opt##*=}") ;;
+            volume=*) extra_opts+=("--volume=${opt##*=}") ;;
             *) log error "container_create: Invalid option: ${opt}" ;;
         esac
     done
@@ -195,5 +196,17 @@ container_fetch() {
 
     log info "= Copying ${name}:${source} to ${destination} ="
     podman cp "${name}:${source}" "${destination}"
+    echo
+}
+
+container_tee() {
+    local name=${1}
+    local destination=${2}
+    tmpfile=$(mktemp /tmp/container-temp.XXXXXX)
+
+    log info "= Creating ${name}:${filename} from stdin ="
+    cat - > ${tmpfile}
+    podman cp "${tmpfile}" "${name}:${destination}"
+    rm "${tmpfile}"
     echo
 }
