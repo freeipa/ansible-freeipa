@@ -5,4 +5,5 @@
 # Use +CAP to add the capability and -CAP to drop the capability.
 CAP_DEFAULTS=(
     "+DAC_READ_SEARCH"  # Required for SSSD
+    "+SYS_PTRACE"       # Required for debugging
 )

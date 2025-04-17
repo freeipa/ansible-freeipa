@@ -4,6 +4,7 @@
 SCRIPTDIR="$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")"
 TOPDIR="$(readlink -f "${SCRIPTDIR}/../..")"
 
+# shellcheck disable=SC1091
 . "${SCRIPTDIR}/shdefaults"
 
 # shellcheck disable=SC1091
@@ -15,7 +16,8 @@ container_create() {
     shift 2
     declare -a extra_opts
     readarray -t extra_opts < \
-        <(sed -e "s/-/--cap-drop=/g" -e "s/+/--cap-add=/g" <<< "${CAP_DEFAULTS[@]}")
+        <(sed -e "s/-/--cap-drop=/g" -e "s/+/--cap-add=/g" \
+        <<< "$(printf '%s\n' "${CAP_DEFAULTS[@]}")")
     for opt in "$@"
     do
         [ -z "${opt}" ] && continue
