@@ -4,13 +4,18 @@
 SCRIPTDIR="$(dirname -- "$(readlink -f "${BASH_SOURCE[0]}")")"
 TOPDIR="$(readlink -f "${SCRIPTDIR}/../..")"
 
+. "${SCRIPTDIR}/shdefaults"
+
+# shellcheck disable=SC1091
 . "${TOPDIR}/utils/shfun"
 
 container_create() {
     local name=${1}
     local image=${2}
     shift 2
-    declare -a extra_opts=()
+    declare -a extra_opts
+    readarray -t extra_opts < \
+        <(sed -e "s/-/--cap-drop=/g" -e "s/+/--cap-add=/g" <<< "${CAP_DEFAULTS[@]}")
     for opt in "$@"
     do
         [ -z "${opt}" ] && continue
