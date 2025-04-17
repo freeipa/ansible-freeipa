@@ -204,8 +204,8 @@ container_tee() {
     local destination=${2}
     tmpfile=$(mktemp /tmp/container-temp.XXXXXX)
 
-    log info "= Creating ${name}:${filename} from stdin ="
-    cat - > ${tmpfile}
+    log info "= Creating ${name}:${destination} from stdin ="
+    cat - > "${tmpfile}"
     podman cp "${tmpfile}" "${name}:${destination}"
     rm "${tmpfile}"
     echo
