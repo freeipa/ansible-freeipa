@@ -1,0 +1,63 @@
+# IPA trust to Samba AD DC.
+#
+# Steps to set trust on 'server':
+#   # kinit admin <<< SomeADMINpassword
+#   # ipa dnsforwardzone-add ad.ipa.test. --forwarder=192.168.13.250
+#   # ipa trust-add ad.ipa.test --type ad --range-type ipa-ad-trust --two-way true --admin=Administrator --password <<< Secret123
+#
+# Create samba user on 'addc':
+#   # samba-tool user create jdoe --given-name John --surname Doe
+#
+# Checking user on IPA server:
+#
+#  # getent passwd jdoe@AD.IPA.TEST
+#  # kinit jdoe@AD.IPA.TEST
+#
+---
+lab_name: ansible-freeipa-scenario
+subnet: "192.168.13.0/24"
+extra_data:
+  - playbooks/config_trust_users.yml
+external:
+  hosts:
+  - name: addc
+    hostname: dc.ad.ipa.test
+    role: addc
+    ip_address: 192.168.13.250
+    security_opt:
+      - no-new-privileges=false
+    options:
+      forwarder: 192.168.13.100
+ipa_deployments:
+  - name: ipa
+    domain: linux.ipa.test
+    admin_password: SomeADMINpassword
+    dm_password: SomeDMpassword
+    vars:
+      # Trust variables are needed on both server and client
+      # to run test for both supported contexts
+      # trust test vars
+      winserver_domain: ad.ipa.test
+      winserver_admin_password: Secret123
+      winserver_ip: 192.168.13.250
+      # external users vars
+      test_ad_user: 'jdoe@DC'
+      test_alt_user: 'jdoe@ad.ipa.test'
+    cluster:
+      servers:
+        - name: server
+          capabilities: ["DNS", "AD", "KRA"]
+          ip_address: 192.168.13.100
+          security_opt:
+            - no-new-privileges=false
+          vars:
+            ipaserver_netbios_name: IPA
+            ipaserver_idstart: 60000
+            ipaserver_idmax: 62000
+            ipaserver_rid_base: 63000
+            ipaserver_secondary_rid_base: 70000
+      clients:
+        - name: cli01
+          dns: server
+          security_opt:
+            - no-new-privileges=false

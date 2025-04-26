@@ -8,10 +8,6 @@
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: server  # external_member requires 'server' context
 
-  vars:
-    ad_user: "{{ test_ad_user | default('AD\\aduser') }}"
-    alt_user: "{{ test_alt_user | default('aduser@ad.ipa.test') }}"
-
   tasks:
   - name: Include tasks ../env_freeipa_facts.yml
     ansible.builtin.include_tasks: ../env_freeipa_facts.yml
@@ -24,6 +20,12 @@
   - name: Execute group tests if trust test environment is supported
     when: trust_test_is_supported | default(false)
     block:
+      - name: Ensure trust is absent
+        ansible.builtin.include_tasks: ../tasks_remove_trust.yml
+
+      - name: Ensure trust is present
+        ansible.builtin.include_tasks: ../tasks_set_trust.yml
+
       - name: Ensure external group, with AD users, is present.
         ipagroup:
           name: extgroup
@@ -71,3 +73,6 @@
         ipagroup:
           name: extgroup
           state: absent
+
+      - name: Ensure trust is absent
+        ansible.builtin.include_tasks: ../tasks_remove_trust.yml

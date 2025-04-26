@@ -11,5 +11,9 @@ importer_result.json
 /.tox/
 /.venv/
 
+# ansible-freeipa test environments
+/**/ansible-freeipa-scenario/
+
+# test output files
 tests/logs/
 TEST*.xml
