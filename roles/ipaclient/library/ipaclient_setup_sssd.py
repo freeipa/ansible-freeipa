@@ -174,6 +174,7 @@ def main():
     options.no_krb5_offline_passwords = module.params.get(
         'no_krb5_offline_passwords')
     options.krb5_offline_passwords = not options.no_krb5_offline_passwords
+    options.dns_over_tls = False
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     client_domain = hostname[hostname.find(".") + 1:]
