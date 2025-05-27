@@ -70,8 +70,7 @@
     all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
     on_master: "{{ ipaclient_on_master }}"
     ### sssd ###
-    enable_dns_updates: "{{ ipassd_enable_dns_updates
-                            | default(ipasssd_enable_dns_updates) }}"
+    enable_dns_updates: "{{ ipasssd_enable_dns_updates }}"
   register: result_ipaclient_test
 
 - name: Install - Client deployment
@@ -321,16 +320,11 @@
         no_sshd: "{{ ipaclient_no_sshd }}"
         no_sudo: "{{ ipaclient_no_sudo }}"
         all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
-        fixed_primary: "{{ ipassd_fixed_primary
-                           | default(ipasssd_fixed_primary) }}"
-        permit: "{{ ipassd_permit | default(ipasssd_permit) }}"
-        enable_dns_updates: "{{ ipassd_enable_dns_updates
-                                | default(ipasssd_enable_dns_updates) }}"
-        preserve_sssd: "{{ ipassd_preserve_sssd
-                           | default(ipasssd_preserve_sssd) }}"
-        no_krb5_offline_passwords:
-          "{{ ipassd_no_krb5_offline_passwords
-              | default(ipasssd_no_krb5_offline_passwords) }}"
+        fixed_primary: "{{ ipasssd_fixed_primary }}"
+        permit: "{{ ipasssd_permit }}"
+        enable_dns_updates: "{{ ipasssd_enable_dns_updates }}"
+        preserve_sssd: "{{ ipasssd_preserve_sssd }}"
+        no_krb5_offline_passwords: "{{ ipasssd_no_krb5_offline_passwords }}"
 
     - name: Install - IPA API calls for remaining enrollment parts
       ipaclient_api:
@@ -365,23 +359,18 @@
         ca_enabled: "{{ result_ipaclient_api.ca_enabled }}"
         on_master: "{{ ipaclient_on_master }}"
         dnsok: "{{ result_ipaclient_test.dnsok }}"
-        enable_dns_updates: "{{ ipassd_enable_dns_updates
-                                | default(ipasssd_enable_dns_updates) }}"
+        enable_dns_updates: "{{ ipasssd_enable_dns_updates }}"
         all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
         ip_addresses: "{{ ipaclient_ip_addresses | default(omit) }}"
         request_cert: "{{ ipaclient_request_cert }}"
-        preserve_sssd: "{{ ipassd_preserve_sssd
-                           | default(ipasssd_preserve_sssd) }}"
+        preserve_sssd: "{{ ipasssd_preserve_sssd }}"
         no_ssh: "{{ ipaclient_no_ssh }}"
         no_sshd: "{{ ipaclient_no_sshd }}"
         no_sudo: "{{ ipaclient_no_sudo }}"
         subid: "{{ ipaclient_subid }}"
-        fixed_primary: "{{ ipassd_fixed_primary
-                           | default(ipasssd_fixed_primary) }}"
-        permit: "{{ ipassd_permit | default(ipasssd_permit) }}"
-        no_krb5_offline_passwords:
-          "{{ ipassd_no_krb5_offline_passwords
-              | default(ipasssd_no_krb5_offline_passwords) }}"
+        fixed_primary: "{{ ipasssd_fixed_primary }}"
+        permit: "{{ ipasssd_permit }}"
+        no_krb5_offline_passwords: "{{ ipasssd_no_krb5_offline_passwords }}"
         no_dns_sshfp: "{{ ipaclient_no_dns_sshfp }}"
         nosssd_files: "{{ result_ipaclient_test.nosssd_files }}"
         selinux_works: "{{ result_ipaclient_test.selinux_works }}"
