@@ -55,6 +55,17 @@ container_start() {
 
     log info "= Starting ${name} ="
     podman start "${name}"
+    # Add host entry to /etc/hosts
+    ip=$(podman inspect "${name}" --format "{{.NetworkSettings.IPAddress}}")
+    hostname=$(podman inspect "${name}" --format "{{.Config.Hostname}}")
+    if [ -n "${ip}" ] && [ -n "${hostname}" ]; then
+        cmd=$(cat <<EOF
+sed -i -e "/[ \t]${hostname}/d" /etc/hosts
+echo -e "$ip\t${hostname} ${hostname%%.*}" >> /etc/hosts
+EOF
+           )
+        podman exec "${name}" bash -c "$cmd"
+    fi
     # Ensure /etc/shadow is readable
     podman exec "${name}" bash -c "chmod u+r /etc/shadow"
     echo
