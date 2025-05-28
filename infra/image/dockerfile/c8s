@@ -34,6 +34,8 @@ COPY system-service/fixipaip.sh /root/
 COPY system-service/fixnet.service /etc/systemd/system/
 COPY system-service/fixipaip.service /etc/systemd/system/
 RUN chmod +x /root/fixnet.sh /root/fixipaip.sh
+RUN systemctl enable fixnet.service
+RUN systemctl enable fixipaip.service
 
 STOPSIGNAL RTMIN+3
 

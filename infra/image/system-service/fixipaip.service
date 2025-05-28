@@ -1,6 +1,7 @@
 [Unit]
 Description=Fix IPA server IP in IPA Server
 After=ipa.service
+PartOf=ipa.service
 
 [Service]
 Type=oneshot
@@ -9,4 +10,4 @@ StandardOutput=journal
 StandardError=journal
 
 [Install]
-WantedBy=default.target
+WantedBy=ipa.service

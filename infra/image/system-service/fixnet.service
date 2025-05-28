@@ -1,8 +1,5 @@
 [Unit]
-Description=Fix server IP in IPA Server
-Wants=network.target
-After=network.target
-Before=ipa.service
+Description=Fix /etc/hosts and with local DNS also /etc/resolv.conf
 
 [Service]
 Type=oneshot
@@ -11,4 +8,4 @@ StandardOutput=journal
 StandardError=journal
 
 [Install]
-WantedBy=ipa.service
+WantedBy=container-ipa.target

@@ -119,13 +119,6 @@ then
         deployed=true
     fi
     echo
-
-    if $deployed; then
-        log info "= Enabling services ="
-        container_exec "${name}" systemctl enable fixnet
-        container_exec "${name}" systemctl enable fixipaip
-        echo
-    fi
     
     container_stop "${name}"
 
