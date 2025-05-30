@@ -50,9 +50,9 @@ if [ -z "${FORWARDER}" ] || [ "${FORWARDER}" == "127.0.0.1" ]; then
 fi
 
 echo "Fix IPA:"
-echo "  HOSTNAME: '${HOSTNAME}'"
-echo "  IP: '${IP}'"
-echo "  PTR: '${PTR}'"
+echo "  HOSTNAME:  '${HOSTNAME}'"
+echo "  IP:        '${IP}'"
+echo "  PTR:       '${PTR}'"
 echo "  FORWARDER: '${FORWARDER}'"
 
 ZONES=$(ipa -e in_server=true dnszone-find --name-from-ip="${HOSTNAME}." \

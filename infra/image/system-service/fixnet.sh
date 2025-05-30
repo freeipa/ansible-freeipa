@@ -39,26 +39,35 @@ if [ -z "${IP}" ] || ! valid_ipv4 "${IP}" ; then
     exit 1
 fi
 
+DOMAIN=${HOSTNAME#*.}
+
 echo "Fix NET:"
 echo "  HOSTNAME: '${HOSTNAME}'"
-echo "  IP: '${IP}'"
+echo "  DOMAIN:   '${DOMAIN}'"
+echo "  IP:       '${IP}'"
 echo
 
-if grep -qE "^[^(#\s*)][0-9\.]+\s$HOSTNAME(\s|$)" /etc/hosts
-then
-    sed -i.bak -e "s/.*${HOSTNAME}/${IP}\t${HOSTNAME}/" /etc/hosts
-else
-    echo -e "$IP\t${HOSTNAME} ${HOSTNAME%%.*}" >> /etc/hosts
-fi
+# /etc/hosts
 
-cp -a /etc/resolv.conf /etc/resolv.conf.fixnet
-cat > /etc/resolv.conf <<EOF
-search ${HOSTNAME#*.}
-nameserver 127.0.0.1
-EOF
+sed -i -E "/\s+${HOSTNAME}(\s|$)/d" /etc/hosts
+echo -e "$IP\t${HOSTNAME} ${HOSTNAME%%.*}" >> /etc/hosts
 
 echo "/etc/hosts:"
 cat "/etc/hosts"
+
+# /etc/resolv.conf
+
+# If bind is not installed, exit
+[ -f "/etc/named.conf" ] || exit 0
+# If dyndb is not enabled for bind, exit
+grep -q '^dyndb "ipa"' "/etc/named.conf" || exit 0
+
+cp -a /etc/resolv.conf /etc/resolv.conf.fixnet
+cat > /etc/resolv.conf <<EOF
+search ${DOMAIN}
+nameserver 127.0.0.1
+EOF
+
 echo
 echo "/etc/resolv.conf:"
 cat "/etc/resolv.conf"
