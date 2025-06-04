@@ -281,6 +281,14 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
+        # set required fields
+        required = ["base_id", "range_size"]
+        requires_baserid = (
+            ansible_module.ipa_command_param_exists("config_mod", "enable_sid")
+            and idrange_type in [None, "ipa-local"]
+        )
+        if requires_baserid:
+            required.extend(["rid_base", "secondary_rid_base"])
 
         commands = []
         for name in names:
@@ -321,6 +329,18 @@ def main():
                             del args["iparangetype"]
                         commands.append([name, "idrange_mod", args])
                 else:
+                    # Check if required parameters were given
+                    missing_params = [
+                        pname for pname in required
+                        if ansible_module.params_get(pname) is None
+                    ]
+                    if missing_params:
+                        ansible_module.fail_json(
+                            msg=(
+                                "Missing required parameters: %s"
+                                % (", ".join(missing_params))
+                            )
+                        )
                     commands.append([name, "idrange_add", args])
 
             elif state == "absent":

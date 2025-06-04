@@ -68,23 +68,6 @@ Example playbook to ensure a local domain idrange is present:
       name: local_domain_id_range
       base_id: 150000
       range_size: 200000
-```
-
-Example playbook to ensure a local domain idrange is present, with RID and secondary RID base values:
-
-```yaml
----
-- name: Playbook to manage IPA idrange.
-  hosts: ipaserver
-  become: no
-
-  tasks:
-  - name: Ensure local idrange is present
-    ipaidrange:
-      ipaadmin_password: SomeADMINpassword
-      name: local_domain_id_range
-      base_id: 150000000
-      range_size: 200000
       rid_base: 1000000
       secondary_rid_base: 200000000
 ```
@@ -172,8 +155,8 @@ Variable | Description | Required
 `name` \| `cn` | The list of idrange name strings. | yes
 `base_id` \| `ipabaseid` | First Posix ID of the range. (int) | yes, if `state: present`
 `range_size` \| `ipaidrangesize` | Number of IDs in the range. (int) | yes, if `state: present`
-`rid_base` \| `ipabaserid` | First RID of the corresponding RID range. (int) | no
-`secondary_rid_base` \| `ipasecondarybaserid` | First RID of the secondary RID range. (int) | no
+`rid_base` \| `ipabaserid` | First RID of the corresponding RID range. (int) | yes, if `idrange_type: ipa-local` and `state: present` |
+`secondary_rid_base` \| `ipasecondarybaserid` | First RID of the secondary RID range. (int) | yes, if `idrange_type: ipa-local` and `state: present` |
 `dom_sid` \| `ipanttrusteddomainsid` | Domain SID of the trusted domain. | no
 `idrange_type` \| `iparangetype` | ID range type, one of `ipa-ad-trust`, `ipa-ad-trust-posix`, `ipa-local`. Only valid if idrange does not exist. | no
 `dom_name` \| `ipanttrusteddomainname` | Name of the trusted domain. Can only be used when `ipaapi_context: server`. | no
