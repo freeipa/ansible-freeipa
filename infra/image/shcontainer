@@ -60,7 +60,7 @@ container_start() {
     hostname=$(podman inspect "${name}" --format "{{.Config.Hostname}}")
     if [ -n "${ip}" ] && [ -n "${hostname}" ]; then
         cmd=$(cat <<EOF
-sed -i -e "/[ \t]${hostname}/d" /etc/hosts
+sed -i -E "/\s+${hostname}(\s|$)/d" /etc/hosts
 echo -e "$ip\t${hostname} ${hostname%%.*}" >> /etc/hosts
 EOF
            )
