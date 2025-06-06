@@ -19,6 +19,8 @@ steps:
 
   - script: |
       pip install "ansible${{ parameters.ansible_version }}" -r requirements-tests.txt
+      pip install podman-compose
+      pip install git+https://github.com/rjeffman/ipalab-config@main
     retryCountOnTaskFailure: 5
     displayName: Install test dependencies
 
@@ -26,5 +28,24 @@ steps:
     retryCountOnTaskFailure: 5
     displayName: Install Ansible collections
 
-  - script: infra/image/start.sh ${{ parameters.distro }}-server
-    displayName: Setup target container for ${{ parameters.distro }}
+  # Deployment of IPA servers/clients is done through the collection
+  - script: |
+      git fetch --unshallow
+      utils/build-galaxy-release.sh -i
+    retryCountOnTaskFailure: 5
+    displayName: Build Galaxy release - Temp
+
+  - script: cat infra/scenarios/ipa-ad-trust.yml
+    displayName: Show configuration - Debug
+
+  - script: |
+      infra/scenarios/start-scenario -D infra/scenarios/ipa-ad-trust.yml
+      # workaround for 'sudo'
+      podman exec addc chmod u+r /etc/shadow
+      podman exec server chmod u+r /etc/shadow
+      podman exec cli01 chmod u+r /etc/shadow
+      # Deploy nodes
+      ansible-playbook -i ansible-freeipa-scenario/inventory.yml ansible-freeipa-scenario/playbooks/deploy_*.yml ||:
+      ansible-playbook -i ansible-freeipa-scenario/inventory.yml ansible-freeipa-scenario/playbooks/install-cluster.yml || exit 1
+      ansible-playbook -i ansible-freeipa-scenario/inventory.yml ansible-freeipa-scenario/playbooks/config_*.yml ||:
+    displayName: Prepare testing scenario

@@ -1,0 +1,2 @@
+ipalab-config>=0.10.3
+podman-compose>=1.2.0

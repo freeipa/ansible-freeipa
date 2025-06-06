@@ -1,0 +1,102 @@
+#!/bin/bash -eu
+
+die() {
+    [ $# -gt 0 ] && echo "FATAL: $*" >&2
+    exit 1
+}
+
+check_dependencies() {
+    for dep in "$@"
+    do
+        command -v "$dep" >/dev/null || die "Required dependency missing: ${dep}"
+    done
+}
+
+usage() {
+    cat << EOF
+usage: start-scenario [-h] [-D] CONFIG
+
+Start an ansible-freeipa testing scenario described by CONFIG.
+
+Options:
+
+    -h       Display this help screen
+    -C       Create configuration, but don't start environment
+    -D       Create compose, but don't deploy nodes
+    -d       Select the default distro. One of: fedora-latest (default),
+             fedora-rawhide, c10s, c9s, c8s.
+
+EOF
+}
+
+
+while getopts ":hCDd:" option
+do
+    case "${option}" in
+        h) usage && exit 0 ;;
+        C) COMPOSE="N" ;;
+        D) DEPLOY="N" ;;
+        d) distro="-d ${OPTARG}" ;;
+        *) die "Invalid option: ${option}" ;;
+    esac
+done
+
+shift $((OPTIND - 1))
+[ $# -eq 1 ] || die "A single scenario description must be provided."
+SCENARIO="$(readlink -f "$1")"
+shift 1
+
+check_dependencies "ipalab-config" "podman-compose" "podman" "ansible-playbook"
+
+TEST_SCENARIO="ansible-freeipa-scenario"
+
+BASEDIR="$(readlink -f "$(dirname "$0")")"
+TOPDIR="$(readlink -f "${BASEDIR}/../..")"
+LABDIR="${TOPDIR}/${TEST_SCENARIO}"
+
+# Check if a testing scenario already exists
+pod="$(podman pod ps --filter "name=${TEST_SCENARIO}" --format "{{ .Name }}")"
+[ -z "${pod}" ] || die "Testing scenario is running."
+
+# Generate configuration
+cd "${BASEDIR}"
+rm -rf "${LABDIR}" 2>/dev/null || die "Could not remove old scenario. Check existing files permissions."
+echo "Creating scenario configuration"
+# shellcheck disable=SC2086
+ipalab-config ${distro:-} -o "${LABDIR}" "$(readlink -f "$SCENARIO")"
+
+cd "${LABDIR}"
+
+echo "Starting compose."
+
+# Start compose
+[ "${COMPOSE:-"Y"}" == "Y" ] || exit 0
+
+echo Starting compose
+podman-compose up -d || die "Could not create compose"
+
+podman --version
+podman pod ls
+podman network ls
+podman ps --all
+
+[ "${DEPLOY:-"Y"}" == "Y" ] || exit 0
+
+ansible-galaxy collection list
+
+# Deploy external nodes
+echo Deploying external nodes
+ansible-playbook -i inventory.yml playbooks/deploy_*.yml || die
+
+# Deploy IPA cluster
+echo Deploying IPA cluster
+ansible-playbook -i inventory.yml playbooks/install-cluster.yml || die
+
+# Initial scenario configuration
+echo Deploying scenario initial configuration
+ansible-playbook -i inventory.yml playbooks/config_*.yml || die
+
+# Print container names
+echo -e "\n\nScenario containers:"
+podman pod ps --filter "name=pod_${TEST_SCENARIO}" --format "{{ .ContainerNames }}" \
+  | sed "s/^/\t/;s/,/\n\t/g"

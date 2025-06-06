@@ -9,10 +9,6 @@
     ipaidoverrideuser:
       ipaadmin_password: SomeADMINpassword
 
-  vars:
-    ad_user: "{{ test_ad_user | default('AD\\aduser') }}"
-    alt_user: "{{ test_alt_user | default('aduser@ad.ipa.test') }}"
-
   tasks:
     - name: Include tasks ../env_freeipa_facts.yml
       ansible.builtin.include_tasks: ../env_freeipa_facts.yml
@@ -20,6 +16,12 @@
     - name: Execute tests if ipa_verison >= 4.8.7 and trust test environment is supported
       when: ipa_version is version("4.8.7", ">=") and trust_test_is_supported | default(false)
       block:
+      - name: Ensure AD trust is absent
+        ansible.builtin.include_tasks: ../tasks_remove_trust.yml
+
+      - name: Ensure AD trust is avaiable
+        ansible.builtin.include_tasks: ../tasks_set_trust.yml
+
       - name: Ensure test idoverrideuser is present
         ipaidoverrideuser:
           idview: "Default Trust View"
@@ -104,3 +106,6 @@
           anchor: "{{ ad_user }}"
           continue: true
           state: absent
+
+      - name: Ensure AD trust is absent
+        ansible.builtin.include_tasks: ../tasks_remove_trust.yml
