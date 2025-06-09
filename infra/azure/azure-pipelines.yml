@@ -6,8 +6,8 @@ pool:
   vmImage: 'ubuntu-24.04'
 
 variables:
-  ansible_version: "-core >=2.16,<2.17"
-  ansible_latest: "-core"
+  ansible_version: "-core==2.19.0b5"
+  ansible_latest: "-core==2.19.0b5"
   ansible_minimum: "-core <2.16"
   distros: "fedora-latest,c9s,c10s,fedora-rawhide"
 

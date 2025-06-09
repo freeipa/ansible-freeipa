@@ -7,7 +7,7 @@ pool:
 
 variables:
   distros: "fedora-latest,c10s,c9s,c8s,fedora-rawhide"
-  ansible_version: "-core >=2.15,<2.16"
+  ansible_version: "-core==2.19.0b5"
 
 stages:
 
