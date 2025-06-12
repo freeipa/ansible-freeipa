@@ -48,7 +48,8 @@
   - name: Verify keytab
     ansible.builtin.shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
-    failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
+    changed_when: false
+    failed_when: result.failed or (result.stdout | regex_search(" Keytab. [Tt]rue")) in [None, ""]
 
   - name: Ensure service is disabled
     ipaservice:
@@ -61,7 +62,8 @@
   - name: Verify keytab
     ansible.builtin.shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
-    failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
+    changed_when: false
+    failed_when: result.failed or (result.stdout | regex_search(" Keytab. [Ff]alse")) in [None, ""]
 
   - name: Obtain keytab
     ansible.builtin.shell: ipa-getkeytab -s "{{ ansible_facts['fqdn'] }}" -p "mysvc1/{{ ansible_facts['fqdn'] }}" -k mysvc1.keytab
@@ -69,7 +71,8 @@
   - name: Verify keytab
     ansible.builtin.shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
-    failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
+    changed_when: false
+    failed_when: result.failed or (result.stdout | regex_search(" Keytab. [Tt]rue")) in [None, ""]
 
   - name: Ensure service is disabled
     ipaservice:
@@ -82,7 +85,8 @@
   - name: Verify keytab
     ansible.builtin.shell: ipa service-find "mysvc1/{{ ansible_facts['fqdn'] }}"
     register: result
-    failed_when: result.failed or result.stdout | regex_search(" Keytab. true")
+    changed_when: false
+    failed_when: result.failed or (result.stdout | regex_search(" Keytab. [Ff]alse")) in [None, ""]
 
   - name: Ensure service is disabled, with no keytab.
     ipaservice:

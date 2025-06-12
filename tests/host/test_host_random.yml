@@ -92,11 +92,11 @@
 
   - name: Print generated random password for "{{ host1_fqdn }}"
     ansible.builtin.debug:
-      var: ipahost.host["{{ host1_fqdn }}"].randompassword
+      var: ipahost.host[host1_fqdn].randompassword
 
   - name: Print generated random password for "{{ host2_fqdn }}"
     ansible.builtin.debug:
-      var: ipahost.host["{{ host2_fqdn }}"].randompassword
+      var: ipahost.host[host2_fqdn].randompassword
 
   - name: Enrolled host "{{ server_fqdn }}" fails to set random password with update_password always
     ipahost:

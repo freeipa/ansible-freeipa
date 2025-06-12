@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# Force tests to run: TRUE
+
 # Authors:
 #   Sergio Oliveira Campos <seocam@redhat.com>
 #   Thomas Woerner <twoerner@redhat.com>
