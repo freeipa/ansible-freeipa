@@ -81,8 +81,8 @@
       - name: Test hostgroup presence with multiple hosts and action hostgroup
         vars:
           test_cases:
-            - { id: 1, value: "{{ test_hosts | lower }}", expected: true }
-            - { id: 2, value: "{{ test_hosts | upper }}", expected: false }
+            - { id: 1, value: "{{ test_hosts | map('lower') }}", expected: true }
+            - { id: 2, value: "{{ test_hosts | map('upper') }}", expected: false }
             - { id: 3, value: "{{ test_hosts }}", expected: false }
             - { id: 4, value: "{{ test_hosts[1] }}", expected: true }
             - { id: 5, value: "{{ test_hosts[1] | lower }}", expected: false }
@@ -104,8 +104,8 @@
       - name: Test hostgroup with multiple hosts and action member
         vars:
           test_cases:
-            - { id: 1, value: "{{ test_hosts | lower }}", state: "absent", expected: true }
-            - { id: 2, value: "{{ test_hosts | upper }}", state: "absent", expected: false }
+            - { id: 1, value: "{{ test_hosts | map('lower') }}", state: "absent", expected: true }
+            - { id: 2, value: "{{ test_hosts | map('upper') }}", state: "absent", expected: false }
             - { id: 3, value: "{{ test_hosts }}", state: "present", expected: true }
             - { id: 4, value: "{{ test_hosts[1] }}", state: "absent", expected: true }
             - { id: 5, value: "{{ test_hosts[1] | lower }}", state: "absent", expected: false }
@@ -113,7 +113,7 @@
             - { id: 7, value: "{{ test_hosts[0] | lower }}", state: "present", expected: false }
             - { id: 8, value: "{{ test_hosts[0] }}", state: "present", expected: false }
             - { id: 9, value: "{{ test_hosts[0] | upper }}", state: "present", expected: false }
-            - { id: 10, value: "{{ test_hosts | upper }}", state: "present", expected: true }
+            - { id: 10, value: "{{ test_hosts | map('upper') }}", state: "present", expected: true }
             - { id: 11, value: "{{ test_hosts[1] }}", state: "present", expected: false }
             - { id: 12, value: "{{ test_hosts[0] | lower }}", state: "present", expected: false }
             - { id: 13, value: "{{ test_hosts[0] }}", state: "absent", expected: true }
