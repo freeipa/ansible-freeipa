@@ -86,6 +86,16 @@ options:
     type: bool
     required: no
     default: no
+  dns_over_tls:
+    description: Configure DNS over TLS
+    type: bool
+    default: no
+    required: no
+  no_dnssec_validation:
+    description: Disable DNSSEC validation for DNS over TLS
+    type: bool
+    default: no
+    required: no
   enable_dns_updates:
     description: |
       Configures the machine to attempt dns updates when the ip address
@@ -212,7 +222,9 @@ def main():
             mkhomedir=dict(required=False, type='bool'),
             on_master=dict(required=False, type='bool'),
             dnsok=dict(required=False, type='bool', default=False),
-
+            dns_over_tls=dict(required=False, type='bool', default=False),
+            no_dnssec_validation=dict(required=False, type='bool',
+                                      default=False),
             enable_dns_updates=dict(required=False, type='bool'),
             all_ip_addresses=dict(required=False, type='bool', default=False),
             ip_addresses=dict(required=False, type='list', elements='str',
@@ -249,6 +261,8 @@ def main():
     options.mkhomedir = module.params.get('mkhomedir')
     options.on_master = module.params.get('on_master')
     dnsok = module.params.get('dnsok')
+    options.dns_over_tls = module.params.get('dns_over_tls')
+    options.no_dnssec_validation = module.params.get('no_dnssec_validation')
 
     fstore = sysrestore.FileStore(paths.IPA_CLIENT_SYSRESTORE)
     statestore = sysrestore.StateFile(paths.IPA_CLIENT_SYSRESTORE)
@@ -256,6 +270,7 @@ def main():
     os.environ['KRB5CCNAME'] = paths.IPA_DNS_CCACHE
 
     options.dns_updates = module.params.get('enable_dns_updates')
+    options.dns_over_tls = module.params.get('dns_over_tls')
     options.all_ip_addresses = module.params.get('all_ip_addresses')
     options.ip_addresses = ansible_module_get_parsed_ip_addresses(module)
     options.request_cert = module.params.get('request_cert')
@@ -279,7 +294,7 @@ def main():
     options.no_sssd = False
     options.sssd = not options.no_sssd
     options.no_ac = False
-    options.dns_over_tls = False
+    options.dns_over_tls = module.params.get('dns_over_tls')
     nosssd_files = module.params.get('nosssd_files')
     selinux_works = module.params.get('selinux_works')
     krb_name = module.params.get('krb_name')
