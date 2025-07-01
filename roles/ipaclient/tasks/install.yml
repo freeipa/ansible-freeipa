@@ -1,11 +1,23 @@
 ---
 # tasks file for ipaclient
 
-- name: Install - Ensure that IPA client packages are installed
-  ansible.builtin.package:
-    name: "{{ ipaclient_packages }}"
-    state: present
+- name: Install - Package installation
   when: ipaclient_install_packages | bool
+  block:
+
+  - name: Install - Set packages for installation
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ ipaclient_packages }}"
+
+  - name: Install - Set packages for installlation, add DOT
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ _ipapackages + ipaclient_packages_dot }}"
+    when: ipaclient_dns_over_tls | bool
+
+  - name: Install - Ensure that packages are installed
+    ansible.builtin.package:
+      name: "{{ _ipapackages }}"
+      state: present
 
 - name: Install - Set ipaclient_servers
   ansible.builtin.set_fact:
@@ -38,7 +50,7 @@
       msg: "ipaclient_domain or ipaserver_domain is required for ipaclient_configure_dns_resolver"
     when: ipaserver_domain is not defined and ipaclient_domain is not defined
 
-  - name: Install - Fail on missing ipaclient_servers
+  - name: Install - Fail on missing ipaclient_dns_servers
     ansible.builtin.fail:
       msg: "ipaclient_dns_servers is required for ipaclient_configure_dns_resolver"
     when: ipaclient_dns_servers is not defined
@@ -69,6 +81,8 @@
     ip_addresses: "{{ ipaclient_ip_addresses | default(omit) }}"
     all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
     on_master: "{{ ipaclient_on_master }}"
+    dns_over_tls: "{{ ipaclient_dns_over_tls }}"
+    no_dnssec_validation: "{{ ipaclient_no_dnssec_validation }}"
     ### sssd ###
     enable_dns_updates: "{{ ipasssd_enable_dns_updates }}"
   register: result_ipaclient_test
@@ -323,6 +337,7 @@
         fixed_primary: "{{ ipasssd_fixed_primary }}"
         permit: "{{ ipasssd_permit }}"
         enable_dns_updates: "{{ ipasssd_enable_dns_updates }}"
+        dns_over_tls: "{{ ipaclient_dns_over_tls }}"
         preserve_sssd: "{{ ipasssd_preserve_sssd }}"
         no_krb5_offline_passwords: "{{ ipasssd_no_krb5_offline_passwords }}"
 
@@ -360,6 +375,8 @@
         on_master: "{{ ipaclient_on_master }}"
         dnsok: "{{ result_ipaclient_test.dnsok }}"
         enable_dns_updates: "{{ ipasssd_enable_dns_updates }}"
+        dns_over_tls: "{{ ipaclient_dns_over_tls }}"
+        no_dnssec_validation: "{{ ipaclient_no_dnssec_validation }}"
         all_ip_addresses: "{{ ipaclient_all_ip_addresses }}"
         ip_addresses: "{{ ipaclient_ip_addresses | default(omit) }}"
         request_cert: "{{ ipaclient_request_cert }}"

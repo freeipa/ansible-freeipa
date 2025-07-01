@@ -2,3 +2,4 @@
 # vars/RedHat-8.yml
 ---
 ipaclient_packages: [ "@idm:DL1/client" ]
+ipaclient_packages_dot: [ ]
