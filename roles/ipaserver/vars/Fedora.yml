@@ -3,5 +3,6 @@
 ---
 ipaserver_packages: [ "freeipa-server", "python3-libselinux" ]
 ipaserver_packages_dns: [ "freeipa-server-dns" ]
+ipaserver_packages_dot: [ "freeipa-server-encrypted-dns" ]
 ipaserver_packages_adtrust: [ "freeipa-server-trust-ad" ]
 ipaserver_packages_firewalld: [ "firewalld" ]
