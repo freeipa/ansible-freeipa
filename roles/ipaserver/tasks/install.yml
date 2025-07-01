@@ -1,32 +1,42 @@
 ---
 # tasks file for ipaserver
 
+- name: Install - Set ipaserver__dns_over_lts
+  ansible.builtin.set_fact:
+    ipaserver__dns_over_tls: "{{ ipaserver_dns_over_tls | default(ipaclient_dns_over_tls) | default(False) }}"
+
 - name: Install - Package installation
   when: ipaserver_install_packages | bool
   block:
-  - name: Install - Ensure that IPA server packages are installed
-    ansible.builtin.package:
-      name: "{{ ipaserver_packages }}"
-      state: present
 
-  - name: Install - Ensure that IPA server packages for dns are installed
-    ansible.builtin.package:
-      name: "{{ ipaserver_packages_dns }}"
-      state: present
+  - name: Install - Set packages for installation
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ ipaserver_packages }}"
+
+  - name: Install - Set packages for installlation, add DNS
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ _ipapackages + ipaserver_packages_dns }}"
     when: ipaserver_setup_dns | bool
 
-  - name: Install - Ensure that IPA server packages for adtrust are installed
-    ansible.builtin.package:
-      name: "{{ ipaserver_packages_adtrust }}"
-      state: present
+  - name: Install - Set packages for installlation, add DOT
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ _ipapackages + ipaserver_packages_dot }}"
+    when: ipaserver__dns_over_tls | bool
+
+  - name: Install - Set packages for installlation, add adtrust
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ _ipapackages + ipaserver_packages_adtrust }}"
     when: ipaserver_setup_adtrust | bool
 
-  - name: Install - Ensure that firewall packages installed
-    ansible.builtin.package:
-      name: "{{ ipaserver_packages_firewalld }}"
-      state: present
+  - name: Install - Set packages for installlation, add firewalld
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ _ipapackages + ipaserver_packages_firewalld }}"
     when: ipaserver_setup_firewalld | bool
 
+  - name: Install - Ensure that packages are installed
+    ansible.builtin.package:
+      name: "{{ _ipapackages }}"
+      state: present
 
 - name: Install - Firewall configuration
   when: ipaserver_setup_firewalld | bool
@@ -121,6 +131,11 @@
     auto_forwarders: "{{ ipaserver_auto_forwarders }}"
     forward_policy: "{{ ipaserver_forward_policy | default(omit) }}"
     no_dnssec_validation: "{{ ipaserver_no_dnssec_validation }}"
+    dot_forwarders: "{{ ipaserver_dot_forwarders | default([]) }}"
+    dns_over_tls: "{{ ipaserver__dns_over_tls }}"
+    dns_over_tls_cert: "{{ ipaserver_dns_over_tls_cert | default(omit) }}"
+    dns_over_tls_key: "{{ ipaserver_dns_over_tls_key | default(omit) }}"
+    dns_policy: "{{ ipaserver_dns_policy | default(omit) }}"
     ### ad trust ###
     enable_compat: "{{ ipaserver_enable_compat }}"
     netbios_name: "{{ ipaserver_netbios_name | default(omit) }}"
@@ -192,6 +207,11 @@
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"
       forward_policy: "{{ ipaserver_forward_policy | default(omit) }}"
       no_dnssec_validation: "{{ ipaserver_no_dnssec_validation }}"
+      dot_forwarders: "{{ ipaserver_dot_forwarders | default([]) }}"
+      dns_over_tls: "{{ ipaserver__dns_over_tls }}"
+      dns_over_tls_cert: "{{ ipaserver_dns_over_tls_cert | default(omit) }}"
+      dns_over_tls_key: "{{ ipaserver_dns_over_tls_key | default(omit) }}"
+      dns_policy: "{{ ipaserver_dns_policy | default(omit) }}"
       ### ad trust ###
       enable_compat: "{{ ipaserver_enable_compat }}"
       netbios_name: "{{ ipaserver_netbios_name | default(omit) }}"
@@ -381,6 +401,11 @@
         forward_policy: "{{ result_ipaserver_prepare.forward_policy }}"
         zonemgr: "{{ ipaserver_zonemgr | default(omit) }}"
         no_dnssec_validation: "{{ result_ipaserver_prepare.no_dnssec_validation }}"
+        dot_forwarders: "{{ ipaserver_dot_forwarders | default([]) }}"
+        dns_over_tls: "{{ ipaserver__dns_over_tls }}"
+        dns_over_tls_cert: "{{ ipaserver_dns_over_tls_cert | default(omit) }}"
+        dns_over_tls_key: "{{ ipaserver_dns_over_tls_key | default(omit) }}"
+        dns_policy: "{{ ipaserver_dns_policy | default(omit) }}"
         ### additional ###
         dns_ip_addresses: "{{ result_ipaserver_prepare.dns_ip_addresses }}"
         dns_reverse_zones: "{{ result_ipaserver_prepare.dns_reverse_zones }}"
@@ -432,6 +457,7 @@
         ipaclient_no_ntp:
           "{{ 'true' if result_ipaserver_test.ipa_python_version >= 40690
                else 'false' }}"
+        ipaclient_dns_over_tls: "{{ result_ipaserver_test.client_dns_over_tls }}"
         ipaclient_install_packages: no
 
     - name: Install - Enable IPA
@@ -452,6 +478,8 @@
         {{ "--add-service=freeipa-trust" if ipaserver_setup_adtrust | bool
            else "" }}
         {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
+        {{ "--add-service=dns-over-tls" if ipaserver__dns_over_tls | bool
+           else "" }}
         {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
       when: ipaserver_setup_firewalld | bool
 
@@ -465,6 +493,8 @@
         {{ "--add-service=freeipa-trust" if ipaserver_setup_adtrust | bool
            else "" }}
         {{ "--add-service=dns" if ipaserver_setup_dns | bool else "" }}
+        {{ "--add-service=dns-over-tls" if ipaserver__dns_over_tls | bool
+           else "" }}
         {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
       when: ipaserver_setup_firewalld | bool
 
