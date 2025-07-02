@@ -72,6 +72,32 @@ options:
     type: bool
     default: no
     required: no
+  dot_forwarders:
+    description: List of DNS over TLS forwarders
+    type: list
+    elements: str
+    default: []
+    required: no
+  dns_over_tls:
+    description: Configure DNS over TLS
+    type: bool
+    default: no
+    required: no
+  dns_over_tls_cert:
+    description:
+      Certificate to use for DNS over TLS. If empty, a new
+      certificate will be requested from IPA CA
+    type: str
+    required: no
+  dns_over_tls_key:
+    description: Key for certificate specified in dns_over_tls_cert
+    type: str
+    required: no
+  dns_policy:
+    description: Encrypted DNS policy
+    type: str
+    choices: ['relaxed', 'enforced']
+    default: 'relaxed'
   dns_ip_addresses:
     description: The dns ip_addresses setting
     type: list
@@ -117,6 +143,9 @@ from ansible.module_utils.ansible_ipa_replica import (
     gen_ReplicaConfig, gen_remote_api, api, redirect_stdout, dns,
     ansible_module_get_parsed_ip_addresses
 )
+# pylint: disable=unused-import
+from ansible.module_utils.ansible_ipa_replica import bindinstance  # noqa: F401
+# pylint: enable=unused-import
 
 
 def main():
@@ -135,6 +164,14 @@ def main():
                                 choices=['first', 'only'], default=None),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
+            dot_forwarders=dict(required=False, type='list', elements='str',
+                                default=[]),
+            dns_over_tls=dict(required=False, type='bool', default=False),
+            dns_over_tls_cert=dict(required=False, type='str'),
+            dns_over_tls_key=dict(required=False, type='str'),
+            dns_policy=dict(required=False, type='str',
+                            choices=['relaxed', 'enforced'],
+                            default='relaxed'),
             # additional
             dns_ip_addresses=dict(required=True, type='list', elements='str'),
             dns_reverse_zones=dict(required=True, type='list', elements='str'),
@@ -167,6 +204,11 @@ def main():
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validation')
+    options.dot_forwarders = ansible_module.params.get('dot_forwarders')
+    options.dns_over_tls = ansible_module.params.get('dns_over_tls')
+    options.dns_over_tls_cert = ansible_module.params.get('dns_over_tls_cert')
+    options.dns_over_tls_key = ansible_module.params.get('dns_over_tls_key')
+    options.dns_policy = ansible_module.params.get('dns_policy')
     # additional
     dns.ip_addresses = ansible_module_get_parsed_ip_addresses(
         ansible_module, 'dns_ip_addresses')

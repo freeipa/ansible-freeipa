@@ -270,6 +270,11 @@ Variable | Description | Required
 `ipareplica_auto_forwarders` | Add DNS forwarders configured in /etc/resolv.conf to the list of forwarders used by IPA DNS. (bool, default: false) | no
 `ipareplica_forward_policy` | DNS forwarding policy for global forwarders specified using other options. (choice: first,only) | no
 `ipareplica_no_dnssec_validation` | Disable DNSSEC validation on this server. (bool, default: false) | no
+`ipareplica_dot_forwarders` | List of DNS over TLS forwarders. Required if `ipareplica_dns_over_tls` is enabled. (list of strings) | no
+`ipareplica_dns_over_tls` \| `ipaclient_dns_over_tls` | Configure DNS over TLS. Requires FreeIPA version 4.12.5 or later. (bool, default: false) | no
+`ipareplica_dns_over_tls_cert` | Certificate to use for DNS over TLS. If empty, a new certificate will be requested from IPA CA. (string) | no
+`ipareplica_dns_over_tls_key` | Key for certificate specified in `ipareplica_dns_over_tls_cert`. (string) | no
+`ipareplica_dns_policy` | Encrypted DNS policy. Only usable if `ipareplica_dns_over_tls` is enabled. (choice: relaxed, enforced, default: relaxed) | no
 
 AD trust Variables
 ------------------

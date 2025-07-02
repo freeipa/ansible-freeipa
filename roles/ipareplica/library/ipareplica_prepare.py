@@ -224,6 +224,32 @@ options:
     type: bool
     default: no
     required: no
+  dot_forwarders:
+    description: List of DNS over TLS forwarders
+    type: list
+    elements: str
+    default: []
+    required: no
+  dns_over_tls:
+    description: Configure DNS over TLS
+    type: bool
+    default: no
+    required: no
+  dns_over_tls_cert:
+    description:
+      Certificate to use for DNS over TLS. If empty, a new
+      certificate will be requested from IPA CA
+    type: str
+    required: no
+  dns_over_tls_key:
+    description: Key for certificate specified in dns_over_tls_cert
+    type: str
+    required: no
+  dns_policy:
+    description: Encrypted DNS policy
+    type: str
+    choices: ['relaxed', 'enforced']
+    default: 'relaxed'
   enable_compat:
     description: Enable support for trusted domains for old clients
     type: bool
@@ -354,6 +380,15 @@ def main():
                                 choices=['first', 'only'], default=None),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
+            dot_forwarders=dict(required=False, type='list', elements='str',
+                                default=[]),
+            dns_over_tls=dict(required=False, type='bool',
+                              default=False),
+            dns_over_tls_cert=dict(required=False, type='str'),
+            dns_over_tls_key=dict(required=False, type='str'),
+            dns_policy=dict(required=False, type='str',
+                            choices=['relaxed', 'enforced'],
+                            default='relaxed'),
             # ad trust
             enable_compat=dict(required=False, type='bool', default=False),
             netbios_name=dict(required=False, type='str'),
@@ -430,6 +465,11 @@ def main():
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validation')
+    options.dot_forwarders = ansible_module.params.get('dot_forwarders')
+    options.dns_over_tls = ansible_module.params.get('dns_over_tls')
+    options.dns_over_tls_cert = ansible_module.params.get('dns_over_tls_cert')
+    options.dns_over_tls_key = ansible_module.params.get('dns_over_tls_key')
+    options.dns_policy = ansible_module.params.get('dns_policy')
     # ad trust
     options.enable_compat = ansible_module.params.get('enable_compat')
     options.netbios_name = ansible_module.params.get('netbios_name')

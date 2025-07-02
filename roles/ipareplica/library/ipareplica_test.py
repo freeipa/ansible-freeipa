@@ -181,6 +181,32 @@ options:
     type: bool
     default: no
     required: no
+  dot_forwarders:
+    description: List of DNS over TLS forwarders
+    type: list
+    elements: str
+    default: []
+    required: no
+  dns_over_tls:
+    description: Configure DNS over TLS
+    type: bool
+    default: no
+    required: no
+  dns_over_tls_cert:
+    description:
+      Certificate to use for DNS over TLS. If empty, a new
+      certificate will be requested from IPA CA
+    type: str
+    required: no
+  dns_over_tls_key:
+    description: Key for certificate specified in dns_over_tls_cert
+    type: str
+    required: no
+  dns_policy:
+    description: Encrypted DNS policy
+    type: str
+    choices: ['relaxed', 'enforced']
+    default: 'relaxed'
 author:
     - Thomas Woerner (@t-woerner)
 '''
@@ -199,7 +225,8 @@ from ansible.module_utils.ansible_ipa_replica import (
     paths, sysrestore, ansible_module_get_parsed_ip_addresses, service,
     redirect_stdout, create_ipa_conf, ipautil,
     x509, validate_domain_name, common_check,
-    IPA_PYTHON_VERSION, getargspec, adtrustinstance, install_ca_cert
+    IPA_PYTHON_VERSION, getargspec, adtrustinstance, install_ca_cert,
+    services, CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION
 )
 
 
@@ -250,6 +277,14 @@ def main():
                                 choices=['first', 'only'], default=None),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
+            dot_forwarders=dict(required=False, type='list', elements='str',
+                                default=[]),
+            dns_over_tls=dict(required=False, type='bool', default=False),
+            dns_over_tls_cert=dict(required=False, type='str'),
+            dns_over_tls_key=dict(required=False, type='str'),
+            dns_policy=dict(required=False, type='str',
+                            choices=['relaxed', 'enforced'],
+                            default='relaxed'),
         ),
     )
 
@@ -298,6 +333,11 @@ def main():
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validation')
+    options.dot_forwarders = ansible_module.params.get('dot_forwarders')
+    options.dns_over_tls = ansible_module.params.get('dns_over_tls')
+    options.dns_over_tls_cert = ansible_module.params.get('dns_over_tls_cert')
+    options.dns_over_tls_key = ansible_module.params.get('dns_over_tls_key')
+    options.dns_policy = ansible_module.params.get('dns_policy')
 
     ##########################################################################
     # replica init ###########################################################
@@ -419,6 +459,14 @@ def main():
             ansible_module.fail_json(
                 msg="You cannot specify a --no-dnssec-validation option "
                 "without the --setup-dns option")
+        if installer.dns_over_tls_cert:
+            ansible_module.fail_json(
+                msg="You cannot specify a --dns-over-tls-cert option "
+                "without the --setup-dns option")
+        if installer.dns_over_tls_key:
+            ansible_module.fail_json(
+                msg="You cannot specify a --dns-over-tls-key option "
+                "without the --setup-dns option")
     elif installer.forwarders and installer.no_forwarders:
         ansible_module.fail_json(
             msg="You cannot specify a --forwarder option together with "
@@ -435,6 +483,31 @@ def main():
         ansible_module.fail_json(
             msg="You cannot specify a --auto-reverse option together with "
             "--no-reverse")
+    elif installer.dot_forwarders and not installer.dns_over_tls:
+        ansible_module.fail_json(
+            msg="You cannot specify a --dot-forwarder option "
+            "without the --dns-over-tls option")
+    elif (installer.dns_over_tls
+          and not services.knownservices["unbound"].is_installed()):
+        ansible_module.fail_json(
+            msg="To enable DNS over TLS, package ipa-server-encrypted-dns "
+            "must be installed.")
+    elif installer.dns_policy == "enforced" and not installer.dns_over_tls:
+        ansible_module.fail_json(
+            msg="You cannot specify a --dns-policy option "
+            "without the --dns-over-tls option")
+    elif installer.dns_over_tls_cert and not installer.dns_over_tls:
+        ansible_module.fail_json(
+            msg="You cannot specify a --dns-over-tls-cert option "
+            "without the --dns-over-tls option")
+    elif installer.dns_over_tls_key and not installer.dns_over_tls:
+        ansible_module.fail_json(
+            msg="You cannot specify a --dns-over-tls-key option "
+            "without the --dns-over-tls option")
+    elif bool(installer.dns_over_tls_key) != bool(installer.dns_over_tls_cert):
+        ansible_module.fail_json(
+            msg="You cannot specify a --dns-over-tls-key option "
+            "without the --dns-over-tls-cert option and vice versa")
 
     # replica installers
     if installer.servers and not installer.domain_name:
@@ -449,6 +522,10 @@ def main():
             ansible_module.fail_json(
                 msg="You must specify at least one of --forwarder, "
                 "--auto-forwarders, or --no-forwarders options")
+            if installer.dns_over_tls and not installer.dot_forwarders:
+                ansible_module.fail_json(
+                    msg="You must specify --dot-forwarder "
+                    "when enabling DNS over TLS")
 
     if installer.dirsrv_config_file is not None and \
        not os.path.exists(installer.dirsrv_config_file):
@@ -485,6 +562,11 @@ def main():
 
     if installer.domain_name is not None:
         validate_domain_name(installer.domain_name)
+
+    if installer.dns_over_tls and not CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION:
+        ansible_module.fail_json(
+            msg="Important patches for DNS over TLS are missing in your "
+            "IPA version.")
 
     ##########################################################################
     # replica promote_check excerpts #########################################
