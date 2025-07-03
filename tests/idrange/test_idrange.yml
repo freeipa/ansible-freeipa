@@ -36,6 +36,50 @@
   # Test local idrange, only if ipa-adtrust-install was not executed.
   - name: Test local idrange
     block:
+      - name: Can't add idrange without base_id
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          range_size: 200000
+          rid_base: 1000000
+          secondary_rid_base: 200000000
+        register: result
+        failed_when: "not (result.failed and 'Missing required parameters: base_id' in result.msg)"
+
+      - name: Can't add idrange without range_size
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          base_id: 150000000
+          rid_base: 1000000
+          secondary_rid_base: 200000000
+        register: result
+        failed_when: "not (result.failed and 'Missing required parameters: range_size' in result.msg)"
+
+      - name: Can't add idrange without rid_base
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          base_id: 150000000
+          range_size: 200000
+          secondary_rid_base: 200000000
+        register: result
+        failed_when: "not (result.failed and 'Missing required parameters: rid_base' in result.msg)"
+
+      - name: Can't add idrange without secondary_rid_base
+        ipaidrange:
+          ipaadmin_password: SomeADMINpassword
+          ipaapi_context: "{{ ipa_context | default(omit) }}"
+          name: local_id_range
+          base_id: 150000000
+          range_size: 200000
+          rid_base: 1000000
+        register: result
+        failed_when: "not (result.failed and 'Missing required parameters: secondary_rid_base' in result.msg)"
+
       - name: Ensure idrange with minimal attributes is present
         ipaidrange:
           ipaadmin_password: SomeADMINpassword
@@ -43,6 +87,8 @@
           name: local_id_range
           base_id: 150000000
           range_size: 200000
+          rid_base: 1000000
+          secondary_rid_base: 200000000
         register: result
         failed_when:
           not (result.failed or result.changed) or (result.failed and 'ipa-adtrust-install has already been run' not in result.msg)
@@ -54,6 +100,8 @@
           name: local_id_range
           base_id: 150000000
           range_size: 200000
+          rid_base: 1000000
+          secondary_rid_base: 200000000
         register: result
         failed_when:
           result.changed or (result.failed and 'ipa-adtrust-install has already been run' not in result.msg)
@@ -118,6 +166,7 @@
           ipaadmin_password: SomeADMINpassword
           ipaapi_context: "{{ ipa_context | default(omit) }}"
           name: local_id_range
+          state: absent
 
   - name: Execute idrange tests if trust test environment is supported
     when: trust_test_is_supported | default(false)
