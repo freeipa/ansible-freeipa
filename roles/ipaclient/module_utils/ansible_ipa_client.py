@@ -310,6 +310,15 @@ try:
         except ImportError:
             configure_selinux_for_client = None
 
+        try:
+            CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION = False
+            from ipaclient.install.client import ClientInstallInterface
+        except ImportError:
+            pass
+        else:
+            if hasattr(ClientInstallInterface, "no_dnssec_validation"):
+                CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION = True
+
         logger = logging.getLogger("ipa-client-install")
         root_logger = logger
 
