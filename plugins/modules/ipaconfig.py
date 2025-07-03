@@ -344,7 +344,7 @@ config:
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, ipalib_errors
+    IPAAnsibleModule, compare_args_ipa, ipalib_errors, Email
 
 
 def config_show(module):
@@ -514,6 +514,13 @@ def main():
             ansible_module.fail_json(
                 msg="Argument '%s' must be between %d and %d."
                     % (arg, minimum, maximum))
+
+    # verify email domain
+    emaildomain = params.get("ipadefaultemaildomain", None)
+    if emaildomain:
+        if not Email("test@{0}".format(emaildomain)):
+            ansible_module.fail_json(
+                msg="Invalid 'emaildomain' value: %s" % emaildomain)
 
     changed = False
     exit_args = {}
