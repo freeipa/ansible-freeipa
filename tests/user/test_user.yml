@@ -5,6 +5,9 @@
   gather_facts: false
 
   tasks:
+  - name: Include FreeIPA facts.
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
   - name: Remove test users
     ipauser:
       ipaadmin_password: SomeADMINpassword
@@ -391,6 +394,42 @@
       state: renamed
     register: result
     failed_when: not result.changed or result.failed
+
+  - name: Ensure user pinky with userauthtype passkey exists
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      first: pinky
+      last: user
+      userauthtype: passkey
+    register: result
+    failed_when: not result.changed or result.failed
+    when: passkey_is_supported
+
+  - name: Ensure user pinky with userauthtype passkey exists, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      first: pinky
+      last: user
+      userauthtype: passkey
+    register: result
+    failed_when: result.changed or result.failed
+    when: passkey_is_supported
+
+  - name: Check if correct message is given if passkey is not supported.
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: pinky
+      first: pinky
+      last: user
+      userauthtype: passkey
+    register: result
+    when: not passkey_is_supported
+    failed_when: not result.failed or "'passkey' is not supported" not in result.msg
 
   - name: User pinky absent and preserved for future exclusion.
     ipauser:
