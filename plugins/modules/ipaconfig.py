@@ -161,7 +161,7 @@ options:
         type: list
         elements: str
         choices: ["password", "radius", "otp", "pkinit", "hardened", "idp",
-                  "disabled", ""]
+                  "passkey", "disabled", ""]
         aliases: ["ipauserauthtype"]
     ca_renewal_master_server:
         description: Renewal master for IPA certificate authority.
@@ -426,7 +426,7 @@ def main():
             user_auth_type=dict(type="list", elements="str", required=False,
                                 choices=["password", "radius", "otp",
                                          "pkinit", "hardened", "idp",
-                                         "disabled", ""],
+                                         "passkey", "disabled", ""],
                                 aliases=["ipauserauthtype"]),
             ca_renewal_master_server=dict(type="str", required=False),
             domain_resolution_order=dict(type="list", elements="str",

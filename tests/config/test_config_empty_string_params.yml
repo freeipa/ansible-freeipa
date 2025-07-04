@@ -5,6 +5,8 @@
   gather_facts: no
 
   tasks:
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   # GET CURRENT CONFIG
 
@@ -80,6 +82,36 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure config with user_auth_type passkey
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      user_auth_type:
+      - passkey
+    register: result
+    failed_when: not result.changed or result.failed
+    when: passkey_is_supported
+
+  - name: Ensure config with user_auth_type passkey, again
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      user_auth_type:
+      - passkey
+    register: result
+    failed_when: result.changed or result.failed
+    when: passkey_is_supported
+
+  - name: Check if correct message is given if passkey is not supported.
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      user_auth_type:
+      - passkey
+    register: result
+    failed_when: not result.failed or "'passkey' is not supported" not in result.msg
+    when: not passkey_is_supported
+
   - name: Ensure config with empty user_auth_type
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
@@ -138,6 +170,6 @@
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
       ipaapi_context: "{{ ipa_context | default(omit) }}"
-      pac_type: '{{ previousconfig.config.pac_type }}'
-      user_auth_type: '{{ previousconfig.config.user_auth_type }}'
-      configstring: '{{ previousconfig.config.configstring }}'
+      pac_type: '{{ previousconfig.config.pac_type | default("") }}'
+      user_auth_type: '{{ previousconfig.config.user_auth_type | default("") }}'
+      configstring: '{{ previousconfig.config.configstring | default("") }}'
