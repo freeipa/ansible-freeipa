@@ -184,7 +184,7 @@ options:
         type: list
         elements: str
         aliases: ["krbprincipalauthind"]
-        choices: ["radius", "otp", "pkinit", "hardened", "idp", ""]
+        choices: ["radius", "otp", "pkinit", "hardened", "idp", "passkey", ""]
         required: false
       requires_pre_auth:
         description: Pre-authentication is required for the service
@@ -356,7 +356,7 @@ options:
     type: list
     elements: str
     aliases: ["krbprincipalauthind"]
-    choices: ["radius", "otp", "pkinit", "hardened", "idp", ""]
+    choices: ["radius", "otp", "pkinit", "hardened", "idp", "passkey", ""]
     required: false
   requires_pre_auth:
     description: Pre-authentication is required for the service
@@ -758,7 +758,7 @@ def main():
         auth_ind=dict(type='list', elements="str",
                       aliases=["krbprincipalauthind"], default=None,
                       choices=["radius", "otp", "pkinit", "hardened", "idp",
-                               ""]),
+                               "passkey", ""]),
         requires_pre_auth=dict(type="bool", aliases=["ipakrbrequirespreauth"],
                                default=None),
         ok_as_delegate=dict(type="bool", aliases=["ipakrbokasdelegate"],
