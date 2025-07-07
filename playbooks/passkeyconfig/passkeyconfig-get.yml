@@ -1,0 +1,14 @@
+---
+- name: Passkeyconfig get current example
+  hosts: ipaserver
+  become: no
+
+  tasks:
+  - name: Get current passkeyconfig
+    ipapasskeyconfig:
+      ipaadmin_password: SomeADMINpassword
+    register: result
+
+  - name: Display current passkeyconfig
+    ansible.builtin.debug:
+      var: result.passkeyconfig
