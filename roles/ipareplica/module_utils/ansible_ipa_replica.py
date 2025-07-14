@@ -213,11 +213,13 @@ def setup_logging():
 
 @contextlib_contextmanager
 def redirect_stdout(stream):
+    old_stdout = sys.stdout
+
     sys.stdout = stream
     try:
         yield stream
     finally:
-        sys.stdout = sys.__stdout__
+        sys.stdout = old_stdout
 
 
 class AnsibleModuleLog():
