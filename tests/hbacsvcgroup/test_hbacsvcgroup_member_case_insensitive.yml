@@ -97,7 +97,7 @@
         ipahbacsvcgroup:
           ipaadmin_password: SomeADMINpassword
           name: testgroup
-          hbacsvc: "{{ hbacsvc_list | lower }}"
+          hbacsvc: "{{ hbacsvc_list | map('lower') }}"
         register: result
         failed_when: result.changed or result.failed
 
@@ -105,7 +105,7 @@
         ipahbacsvcgroup:
           ipaadmin_password: SomeADMINpassword
           name: testgroup
-          hbacsvc: "{{ hbacsvc_list | upper }}"
+          hbacsvc: "{{ hbacsvc_list | map('upper') }}"
         register: result
         failed_when: result.changed or result.failed
 
@@ -153,7 +153,7 @@
         ipahbacsvcgroup:
           ipaadmin_password: SomeADMINpassword
           name: testgroup
-          hbacsvc: "{{ hbacsvc_list | lower }}"
+          hbacsvc: "{{ hbacsvc_list | map('lower') }}"
           action: member
         register: result
         failed_when: result.changed or result.failed
@@ -162,7 +162,7 @@
         ipahbacsvcgroup:
           ipaadmin_password: SomeADMINpassword
           name: testgroup
-          hbacsvc: "{{ hbacsvc_list | upper }}"
+          hbacsvc: "{{ hbacsvc_list | map('upper') }}"
           action: member
         register: result
         failed_when: result.changed or result.failed
@@ -171,7 +171,7 @@
         ipahbacsvcgroup:
           ipaadmin_password: SomeADMINpassword
           name: testgroup
-          hbacsvc: "{{ hbacsvc_list | upper }}"
+          hbacsvc: "{{ hbacsvc_list | map('upper') }}"
           action: member
           state: absent
         check_mode: yes
@@ -182,7 +182,7 @@
         ipahbacsvcgroup:
           ipaadmin_password: SomeADMINpassword
           name: testgroup
-          hbacsvc: "{{ hbacsvc_list | upper }}"
+          hbacsvc: "{{ hbacsvc_list | map('upper') }}"
           action: member
           state: absent
         register: result
@@ -192,7 +192,7 @@
         ipahbacsvcgroup:
           ipaadmin_password: SomeADMINpassword
           name: testgroup
-          hbacsvc: "{{ hbacsvc_list | upper }}"
+          hbacsvc: "{{ hbacsvc_list | map('upper') }}"
           action: member
           state: absent
         check_mode: yes
@@ -213,7 +213,7 @@
         ipahbacsvcgroup:
           ipaadmin_password: SomeADMINpassword
           name: testgroup
-          hbacsvc: "{{ hbacsvc_list | lower }}"
+          hbacsvc: "{{ hbacsvc_list | map('lower') }}"
           action: member
           state: absent
         register: result

@@ -140,7 +140,7 @@
       certificate_out: "/root/cert_1.pem"
       state: requested
     register: result
-    failed_when: not result.changed or result.failed or result.certificate
+    failed_when: not result.changed or result.failed or result.certificate != {}
 
   - name: Check requested certificate file
     ansible.builtin.file:
@@ -155,7 +155,7 @@
       certificate_out: "/root/retrieved.pem"
       state: retrieved
     register: result
-    failed_when: result.changed or result.failed or result.certificate
+    failed_when: result.changed or result.failed or result.certificate != {}
 
   - name: Check retrieved certificate file
     ansible.builtin.file:
