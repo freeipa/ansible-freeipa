@@ -124,6 +124,16 @@ options:
     type: bool
     required: no
     default: no
+  dns_over_tls:
+    description: Configure DNS over TLS
+    type: bool
+    default: no
+    required: no
+  no_dnssec_validation:
+    description: Disable DNSSEC validation for DNS over TLS
+    type: bool
+    default: no
+    required: no
   enable_dns_updates:
     description:
       Configures the machine to attempt dns updates when the ip address
@@ -248,7 +258,8 @@ from ansible.module_utils.ansible_ipa_client import (
     CLIENT_INSTALL_ERROR, tasks, check_ldap_conf, timeconf, constants,
     validate_hostname, nssldap_exists, gssapi, remove_file,
     check_ip_addresses, ipadiscovery, print_port_conf_info,
-    IPA_PYTHON_VERSION, getargspec
+    IPA_PYTHON_VERSION, getargspec, services,
+    CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION
 )
 
 
@@ -328,6 +339,9 @@ def main():
                               default=None),
             all_ip_addresses=dict(required=False, type='bool', default=False),
             on_master=dict(required=False, type='bool', default=False),
+            dns_over_tls=dict(required=False, type='bool', default=False),
+            no_dnssec_validation=dict(required=False, type='bool',
+                                      default=False),
             # sssd
             enable_dns_updates=dict(required=False, type='bool',
                                     default=False),
@@ -356,6 +370,8 @@ def main():
     options.ip_addresses = module.params.get('ip_addresses')
     options.all_ip_addresses = module.params.get('all_ip_addresses')
     options.on_master = module.params.get('on_master')
+    options.dns_over_tls = module.params.get('dns_over_tls')
+    options.no_dnssec_validation = module.params.get('no_dnssec_validation')
     options.enable_dns_updates = module.params.get('enable_dns_updates')
 
     # Get domain from first server if domain is not set, but if there are
@@ -364,6 +380,16 @@ def main():
         if len(options.servers) > 0:
             options.domain_name = options.servers[0][
                 options.servers[0].find(".") + 1:]
+
+    if options.dns_over_tls \
+       and not services.knownservices["unbound"].is_installed():
+        module.fail_json(
+            msg="To enable DNS over TLS, package ipa-client-encrypted-dns "
+            "must be installed.")
+    if options.dns_over_tls and not CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION:
+        module.fail_json(
+            msg="Important patches for DNS over TLS are missing in your IPA "
+            "version.")
 
     try:
         self = options

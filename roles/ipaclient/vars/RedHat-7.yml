@@ -2,3 +2,4 @@
 # vars/RedHat-7
 ---
 ipaclient_packages: [ "ipa-client", "libselinux-python" ]
+ipaclient_packages_dot: [ ]

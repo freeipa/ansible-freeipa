@@ -202,6 +202,8 @@ Variable | Description | Required
 `ipaclient_request_cert` | The bool value defines if the certificate for the machine wil be requested. The certificate will be stored in /etc/ipa/nssdb under the nickname "Local IPA host". . `ipaclient_request_cert` defaults to `no`. The option is deprecated and will be removed in a future release. | no
 `ipaclient_keytab` | The string value contains the path on the node of a backup host keytab from a previous enrollment. | no
 `ipaclient_automount_location` | Automount location | no
+`ipaclient_dns_over_tls` | Configure DNS over TLS. Requires FreeIPA version 4.12.5 or later. (bool, default: false) | no
+`ipaclient_no_dnssec_validation` | Disable DNSSEC validation for DNS over TLS. This turns off DNSSEC validation for unbound. Ignored if `ipaserver_dns_over_tls` is not enabled. (bool, default: false) | no
 
 
 Server Variables

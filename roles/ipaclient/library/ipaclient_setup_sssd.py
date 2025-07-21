@@ -91,6 +91,11 @@ options:
       changes
     type: bool
     required: no
+  dns_over_tls:
+    description: Configure DNS over TLS
+    type: bool
+    default: no
+    required: no
   preserve_sssd:
     description: Preserve old SSSD configuration if possible
     type: bool
@@ -140,6 +145,7 @@ def main():
             fixed_primary=dict(required=False, type='bool'),
             permit=dict(required=False, type='bool'),
             enable_dns_updates=dict(required=False, type='bool'),
+            dns_over_tls=dict(required=False, type='bool', default=False),
             preserve_sssd=dict(required=False, type='bool'),
             no_krb5_offline_passwords=dict(required=False, type='bool'),
         ),
@@ -169,6 +175,7 @@ def main():
     options.primary = module.params.get('fixed_primary')
     options.permit = module.params.get('permit')
     options.dns_updates = module.params.get('enable_dns_updates')
+    options.dns_over_tls = module.params.get('dns_over_tls')
     options.preserve_sssd = module.params.get('preserve_sssd')
 
     options.no_krb5_offline_passwords = module.params.get(

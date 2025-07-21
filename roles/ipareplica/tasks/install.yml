@@ -1,32 +1,42 @@
 ---
 # tasks file for ipareplica
 
-- name: Package installation
+- name: Install - Set ipareplica__dns_over_lts
+  ansible.builtin.set_fact:
+    ipareplica__dns_over_tls: "{{ ipareplica_dns_over_tls | default(ipaclient_dns_over_tls) | default(False) }}"
+
+- name: Install - Package installation
   when: ipareplica_install_packages | bool
   block:
 
-  - name: Install - Ensure IPA replica packages are installed
-    ansible.builtin.package:
-      name: "{{ ipareplica_packages }}"
-      state: present
+  - name: Install - Set packages for installation
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ ipareplica_packages }}"
 
-  - name: Install - Ensure IPA replica packages for dns are installed
-    ansible.builtin.package:
-      name: "{{ ipareplica_packages_dns }}"
-      state: present
+  - name: Install - Set packages for installlation, add DNS
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ _ipapackages + ipareplica_packages_dns }}"
     when: ipareplica_setup_dns | bool
 
-  - name: Install - Ensure IPA replica packages for adtrust are installed
-    ansible.builtin.package:
-      name: "{{ ipareplica_packages_adtrust }}"
-      state: present
+  - name: Install - Set packages for installlation, add DOT
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ _ipapackages + ipareplica_packages_dot }}"
+    when: ipareplica__dns_over_tls | bool
+
+  - name: Install - Set packages for installlation, add adtrust
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ _ipapackages + ipareplica_packages_adtrust }}"
     when: ipareplica_setup_adtrust | bool
 
-  - name: Install - Ensure that firewall packages installed
-    ansible.builtin.package:
-      name: "{{ ipareplica_packages_firewalld }}"
-      state: present
+  - name: Install - Set packages for installlation, add firewalld
+    ansible.builtin.set_fact:
+      _ipapackages: "{{ _ipapackages + ipareplica_packages_firewalld }}"
     when: ipareplica_setup_firewalld | bool
+
+  - name: Install - Ensure that packages are installed
+    ansible.builtin.package:
+      name: "{{ _ipapackages }}"
+      state: present
 
 - name: Firewall configuration
   when: ipareplica_setup_firewalld | bool
@@ -104,6 +114,11 @@
     auto_forwarders: "{{ ipareplica_auto_forwarders }}"
     forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
     no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
+    dot_forwarders: "{{ ipareplica_dot_forwarders | default([]) }}"
+    dns_over_tls: "{{ ipareplica__dns_over_tls }}"
+    dns_over_tls_cert: "{{ ipareplica_dns_over_tls_cert | default(omit) }}"
+    dns_over_tls_key: "{{ ipareplica_dns_over_tls_key | default(omit) }}"
+    dns_policy: "{{ ipareplica_dns_policy | default(omit) }}"
   register: result_ipareplica_test
 
 - name: Install - Deploy replica
@@ -127,6 +142,8 @@
       ipaclient_hostname: "{{ result_ipareplica_test.hostname }}"
       ipaclient_ip_addresses: "{{ ipareplica_ip_addresses | default(omit) }}"
       ipaclient_install_packages: "{{ ipareplica_install_packages }}"
+      ipaclient_dns_over_tls: "{{ ipareplica__dns_over_tls }}"
+      ipaclient_no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
     when: not result_ipareplica_test.client_enrolled
 
   - name: Install - Configure firewalld
@@ -140,6 +157,8 @@
       {{ "--add-service=freeipa-trust" if result_ipareplica_test.setup_adtrust
          else "" }}
       {{ "--add-service=dns" if ipareplica_setup_dns | bool else "" }}
+      {{ "--add-service=dns-over-tls" if ipareplica__dns_over_tls | bool
+         else "" }}
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
     when: ipareplica_setup_firewalld | bool
 
@@ -153,6 +172,8 @@
       {{ "--add-service=freeipa-trust" if result_ipareplica_test.setup_adtrust
          else "" }}
       {{ "--add-service=dns" if ipareplica_setup_dns | bool else "" }}
+      {{ "--add-service=dns-over-tls" if ipareplica__dns_over_tls | bool
+         else "" }}
       {{ "--add-service=ntp" if not ipaclient_no_ntp | bool else "" }}
     when: ipareplica_setup_firewalld | bool
 
@@ -201,6 +222,11 @@
       auto_forwarders: "{{ ipareplica_auto_forwarders }}"
       forward_policy: "{{ ipareplica_forward_policy | default(omit) }}"
       no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
+      dot_forwarders: "{{ ipareplica_dot_forwarders | default([]) }}"
+      dns_over_tls: "{{ ipareplica__dns_over_tls }}"
+      dns_over_tls_cert: "{{ ipareplica_dns_over_tls_cert | default(omit) }}"
+      dns_over_tls_key: "{{ ipareplica_dns_over_tls_key | default(omit) }}"
+      dns_policy: "{{ ipareplica_dns_policy | default(omit) }}"
       ### ad trust ###
       enable_compat: "{{ ipareplica_enable_compat }}"
       netbios_name: "{{ ipareplica_netbios_name | default(omit) }}"
@@ -717,6 +743,11 @@
                           result_ipareplica_prepare.forward_policy is
                           not none else omit }}"
       no_dnssec_validation: "{{ ipareplica_no_dnssec_validation }}"
+      dot_forwarders: "{{ ipareplica_dot_forwarders | default([]) }}"
+      dns_over_tls: "{{ ipareplica__dns_over_tls }}"
+      dns_over_tls_cert: "{{ ipareplica_dns_over_tls_cert | default(omit) }}"
+      dns_over_tls_key: "{{ ipareplica_dns_over_tls_key | default(omit) }}"
+      dns_policy: "{{ ipareplica_dns_policy | default(omit) }}"
       ### additional ###
       dns_ip_addresses: "{{ result_ipareplica_prepare.dns_ip_addresses }}"
       dns_reverse_zones: "{{ result_ipareplica_prepare.dns_reverse_zones }}"

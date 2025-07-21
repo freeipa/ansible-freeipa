@@ -216,6 +216,14 @@ try:
         except ImportError:
             SerialNumber = None
 
+        try:
+            CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION = False
+            from ipaclient.install.client import ClientInstallInterface
+        except ImportError:
+            pass
+        else:
+            if hasattr(ClientInstallInterface, "no_dnssec_validation"):
+                CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION = True
     else:
         # IPA version < 4.5
         raise RuntimeError("freeipa version '%s' is too old" % VERSION)
@@ -355,13 +363,6 @@ options.add_agents = False
 # ADTrustInstallInterface
 # no_msdcs is deprecated
 options.no_msdcs = False
-
-# Hotfix for https://github.com/freeipa/freeipa/pull/7343
-options.dns_over_tls = False
-options.dns_over_tls_key = None
-options.dns_over_tls_cert = None
-options.dot_forwarders = None
-options.dns_policy = None
 
 # For pylint
 options.external_cert_files = None

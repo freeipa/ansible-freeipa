@@ -2,6 +2,7 @@
 ---
 ipaserver_packages: [ "freeipa-server" ]
 ipaserver_packages_dns: [ "freeipa-server-dns" ]
+ipaserver_packages_dot: [ ]
 ipaserver_packages_adtrust: [ "freeipa-server-trust-ad" ]
 ipaserver_packages_firewalld: [ "firewalld" ]
 # Ubuntu Bionic Beaver must use python2 as Python interpreter due

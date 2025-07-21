@@ -265,6 +265,32 @@ options:
     type: bool
     default: no
     required: no
+  dot_forwarders:
+    description: List of DNS over TLS forwarders
+    type: list
+    elements: str
+    default: []
+    required: no
+  dns_over_tls:
+    description: Configure DNS over TLS
+    type: bool
+    default: no
+    required: no
+  dns_over_tls_cert:
+    description:
+      Certificate to use for DNS over TLS. If empty, a new
+      certificate will be requested from IPA CA
+    type: str
+    required: no
+  dns_over_tls_key:
+    description: Key for certificate specified in dns_over_tls_cert
+    type: str
+    required: no
+  dns_policy:
+    description: Encrypted DNS policy
+    type: str
+    choices: ['relaxed', 'enforced']
+    default: 'relaxed'
   enable_compat:
     description: Enable support for trusted domains for old clients
     type: bool
@@ -312,7 +338,8 @@ from ansible.module_utils.ansible_ipa_server import (
     check_dirsrv, ScriptError, get_fqdn, verify_fqdn, BadHostError,
     validate_domain_name, load_pkcs12, IPA_PYTHON_VERSION,
     encode_certificate, check_available_memory, getargspec, adtrustinstance,
-    get_min_idstart, SerialNumber
+    get_min_idstart, SerialNumber, services, service,
+    CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION
 )
 from ansible.module_utils import six
 
@@ -396,6 +423,14 @@ def main():
                                 choices=['first', 'only'], default=None),
             no_dnssec_validation=dict(required=False, type='bool',
                                       default=False),
+            dot_forwarders=dict(required=False, type='list', elements='str',
+                                default=[]),
+            dns_over_tls=dict(required=False, type='bool', default=False),
+            dns_over_tls_cert=dict(required=False, type='str'),
+            dns_over_tls_key=dict(required=False, type='str'),
+            dns_policy=dict(required=False, type='str',
+                            choices=['relaxed', 'enforced'],
+                            default='relaxed'),
             # ad trust
             enable_compat=dict(required=False, type='bool', default=False),
             netbios_name=dict(required=False, type='str'),
@@ -482,6 +517,11 @@ def main():
     options.forward_policy = ansible_module.params.get('forward_policy')
     options.no_dnssec_validation = ansible_module.params.get(
         'no_dnssec_validation')
+    options.dot_forwarders = ansible_module.params.get('dot_forwarders')
+    options.dns_over_tls = ansible_module.params.get('dns_over_tls')
+    options.dns_over_tls_cert = ansible_module.params.get('dns_over_tls_cert')
+    options.dns_over_tls_key = ansible_module.params.get('dns_over_tls_key')
+    options.dns_policy = ansible_module.params.get('dns_policy')
     # ad trust
     options.enable_compat = ansible_module.params.get('enable_compat')
     options.netbios_name = ansible_module.params.get('netbios_name')
@@ -603,6 +643,14 @@ def main():
                 raise RuntimeError(
                     "You cannot specify a --no-dnssec-validation option "
                     "without the --setup-dns option")
+            if self.dns_over_tls_cert:
+                raise RuntimeError(
+                    "You cannot specify a --dns-over-tls-cert option "
+                    "without the --setup-dns option")
+            if self.dns_over_tls_key:
+                raise RuntimeError(
+                    "You cannot specify a --dns-over-tls-key option "
+                    "without the --setup-dns option")
         elif self.forwarders and self.no_forwarders:
             raise RuntimeError(
                 "You cannot specify a --forwarder option together with "
@@ -619,7 +667,31 @@ def main():
             raise RuntimeError(
                 "You cannot specify a --auto-reverse option together with "
                 "--no-reverse")
-
+        elif self.dot_forwarders and not self.dns_over_tls:
+            raise RuntimeError(
+                "You cannot specify a --dot-forwarder option "
+                "without the --dns-over-tls option")
+        elif (self.dns_over_tls
+              and not services.knownservices["unbound"].is_installed()):
+            raise RuntimeError(
+                "To enable DNS over TLS, package ipa-server-encrypted-dns "
+                "must be installed.")
+        elif self.dns_policy == "enforced" and not self.dns_over_tls:
+            raise RuntimeError(
+                "You cannot specify a --dns-policy option "
+                "without the --dns-over-tls option")
+        elif self.dns_over_tls_cert and not self.dns_over_tls:
+            raise RuntimeError(
+                "You cannot specify a --dns-over-tls-cert option "
+                "without the --dns-over-tls option")
+        elif self.dns_over_tls_key and not self.dns_over_tls:
+            raise RuntimeError(
+                "You cannot specify a --dns-over-tls-key option "
+                "without the --dns-over-tls option")
+        elif bool(self.dns_over_tls_key) != bool(self.dns_over_tls_cert):
+            raise RuntimeError(
+                "You cannot specify a --dns-over-tls-key option "
+                "without the --dns-over-tls-cert option and vice versa")
         if not self.setup_adtrust:
             if self.add_agents:
                 raise RuntimeError(
@@ -677,6 +749,10 @@ def main():
                         raise RuntimeError(
                             "You must specify at least one of --forwarder, "
                             "--auto-forwarders, or --no-forwarders options")
+                    if self.dns_over_tls and not self.dot_forwarders:
+                        raise RuntimeError(
+                            "You must specify --dot-forwarder "
+                            "when enabling DNS over TLS")
 
             any_ignore_option_true = any(
                 [self.ignore_topology_disconnect, self.ignore_last_of_role])
@@ -716,6 +792,19 @@ def main():
 
     except RuntimeError as e:
         ansible_module.fail_json(msg=to_native(e))
+
+    # #######################################################################
+
+    if options.dns_over_tls and not CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION:
+        ansible_module.fail_json(
+            msg="Important patches for DNS over TLS are missing in your "
+            "IPA version.")
+
+    client_dns_over_tls = self.dns_over_tls
+    if self.dns_over_tls and not self.setup_dns:
+        service.print_msg("Warning: --dns-over-tls option "
+                          "specified without --setup-dns, ignoring")
+        client_dns_over_tls = False
 
     # #######################################################################
 
@@ -1208,6 +1297,7 @@ def main():
         domainlevel=options.domainlevel,
         sid_generation_always=sid_generation_always,
         random_serial_numbers=options._random_serial_numbers,
+        client_dns_over_tls=client_dns_over_tls
     )
 
 
