@@ -83,6 +83,24 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with auth_ind passkey
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      auth_ind:
+        - passkey
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with auth_ind passkey, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      auth_ind:
+        - passkey
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with empty auth_ind
     ipaservice:
       ipaadmin_password: SomeADMINpassword

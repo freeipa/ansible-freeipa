@@ -47,6 +47,24 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure user testuser present with userauthtype passkey
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      userauthtype: passkey
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure user testuser present with userauthtype passkey, again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: testuser
+      userauthtype: passkey
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: Ensure user testuser present with empty userauthtype
     ipauser:
       ipaadmin_password: SomeADMINpassword
