@@ -388,7 +388,11 @@ def main():
         tasks.insert_ca_certs_into_systemwide_ca_store(ca_certs)
 
         if not options.on_master:
-            client_dns(cli_server[0], hostname, options)
+            argspec_client_dns = getargspec(client_dns)
+            if "statestore" in argspec_client_dns.args:
+                client_dns(cli_server[0], hostname, options, statestore)
+            else:
+                client_dns(cli_server[0], hostname, options)
 
         if hasattr(paths, "SSH_CONFIG_DIR"):
             ssh_config_dir = paths.SSH_CONFIG_DIR
