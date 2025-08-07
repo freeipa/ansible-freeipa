@@ -68,10 +68,6 @@ options:
     description: The local ccache
     type: str
     required: yes
-  _ca_file:
-    description: The installer _ca_file setting
-    type: str
-    required: no
   _top_dir:
     description: The installer _top_dir setting
     type: str
@@ -114,7 +110,6 @@ def main():
             # additional
             config_master_host_name=dict(required=True, type='str'),
             ccache=dict(required=True, type='str'),
-            _ca_file=dict(required=False, type='str'),
             _top_dir=dict(required=True, type='str'),
             dirman_password=dict(required=True, type='str', no_log=True),
         ),
