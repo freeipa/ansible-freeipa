@@ -49,8 +49,8 @@
             - { id: 2, value: "{{ user_names[0] | upper }}", expected: false }
             - { id: 3, value: "{{ user_names[0] }}", expected: false }
             - { id: 4, value: "{{ user_names }}", expected: true }
-            - { id: 5, value: "{{ user_names | upper }}", expected: false }
-            - { id: 6, value: "{{ user_names | lower }}", expected: false }
+            - { id: 5, value: "{{ user_names | map('upper') }}", expected: false }
+            - { id: 6, value: "{{ user_names | map('lower') }}", expected: false }
             - { id: 7, value: "{{ user_names[1] }}", expected: true }
             - { id: 8, value: "{{ user_names[1] | upper }}", expected: false }
             - { id: 9, value: "{{ user_names[1] | lower }}", expected: false }
@@ -64,7 +64,7 @@
             failed_when: output.changed != item.expected or output.failed
             loop: "{{ test_cases }}"
             loop_control:
-              label: "Test id: {{ item.id }}"
+              label: "Test id: {{ item.id }} - {{ item.value }}"
 
       - name: Test group presence with group parameter
         vars:
@@ -73,8 +73,8 @@
             - { id: 2, value: "{{ group_names[0] | upper }}", expected: false }
             - { id: 3, value: "{{ group_names[0] }}", expected: false }
             - { id: 4, value: "{{ group_names }}", expected: true }
-            - { id: 5, value: "{{ group_names | upper }}", expected: false }
-            - { id: 6, value: "{{ group_names | lower }}", expected: false }
+            - { id: 5, value: "{{ group_names | map('upper') }}", expected: false }
+            - { id: 6, value: "{{ group_names | map('lower') }}", expected: false }
             - { id: 7, value: "{{ group_names[1] }}", expected: true }
             - { id: 8, value: "{{ group_names[1] | upper }}", expected: false }
             - { id: 9, value: "{{ group_names[1] | lower }}", expected: false }
@@ -159,8 +159,8 @@
             - { id: 2, value: "{{ user_names[0] | upper }}", expected: false }
             - { id: 3, value: "{{ user_names[0] }}", expected: false }
             - { id: 4, value: "{{ user_names }}", expected: true }
-            - { id: 5, value: "{{ user_names | upper }}", expected: false }
-            - { id: 6, value: "{{ user_names | lower }}", expected: false }
+            - { id: 5, value: "{{ user_names | map('upper') }}", expected: false }
+            - { id: 6, value: "{{ user_names | map('lower') }}", expected: false }
             - { id: 7, value: "{{ user_names[1] }}", expected: true }
             - { id: 8, value: "{{ user_names[1] | upper }}", expected: false }
             - { id: 9, value: "{{ user_names[1] | lower }}", expected: false }
@@ -183,8 +183,8 @@
             - { id: 2, value: "{{ group_names[0] | upper }}", expected: false }
             - { id: 3, value: "{{ group_names[0] }}", expected: false }
             - { id: 4, value: "{{ group_names }}", expected: true }
-            - { id: 5, value: "{{ group_names | upper }}", expected: false }
-            - { id: 6, value: "{{ group_names | lower }}", expected: false }
+            - { id: 5, value: "{{ group_names | map('upper') }}", expected: false }
+            - { id: 6, value: "{{ group_names | map('lower') }}", expected: false }
             - { id: 7, value: "{{ group_names[1] }}", expected: true }
             - { id: 8, value: "{{ group_names[1] | upper }}", expected: false }
             - { id: 9, value: "{{ group_names[1] | lower }}", expected: false }
