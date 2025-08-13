@@ -108,7 +108,7 @@
       recurse: no
       file_type: directory
     register: backups
-    failed_when: backups.files
+    failed_when: backups.files | length > 0
 
   - name: Verify backup on controller.
     ansible.builtin.find:
@@ -116,7 +116,7 @@
       pattern: "{{ ansible_facts.fqdn }}*"
       file_type: directory
     register: backups
-    failed_when: not backups.files
+    failed_when: backups.files | length == 0
     delegate_to: localhost
     become: no
 
