@@ -58,6 +58,26 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure host "{{ host1_fqdn }}" present with auth_ind passkey
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      auth_ind:
+      - passkey
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" present with auth_ind passkey, again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      auth_ind:
+      - passkey
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: Ensure host "{{ host1_fqdn }}" present with empty auth_ind
     ipahost:
       ipaadmin_password: SomeADMINpassword

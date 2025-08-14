@@ -80,6 +80,24 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure config with user_auth_type passkey
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      user_auth_type:
+      - passkey
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure config with user_auth_type passkey, again
+    ipaconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      user_auth_type:
+      - passkey
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: Ensure config with empty user_auth_type
     ipaconfig:
       ipaadmin_password: SomeADMINpassword
