@@ -66,7 +66,7 @@
       recurse: no
       file_type: directory
     register: result
-    failed_when: not result.files
+    failed_when: result.files | length == 0
 
   # Test backup and copy to controller, don't keep copy on server
   - name: Remove all backup from server.
@@ -161,7 +161,7 @@
       recurse: no
       file_type: directory
     register: result
-    failed_when: not result.files
+    failed_when: result.files | length == 0
 
   - name: Verify backup on controller.
     ansible.builtin.find:
@@ -169,7 +169,7 @@
       pattern: "{{ ansible_facts.fqdn }}*"
       file_type: directory
     register: backups
-    failed_when: not backups.files
+    failed_when: backups.files | length == 0
     delegate_to: localhost
     become: no
 
@@ -214,7 +214,7 @@
       pattern: "{{ ansible_facts.fqdn }}*"
       file_type: directory
     register: backups
-    failed_when: not backups.files
+    failed_when: backups.files | length == 0
     delegate_to: localhost
     become: no
 
@@ -232,7 +232,7 @@
       pattern: "{{ ansible_facts.fqdn }}*"
       file_type: directory
     register: backups
-    failed_when: not backups.files
+    failed_when: backups.files | length == 0
     delegate_to: localhost
     become: no
 
@@ -252,7 +252,7 @@
       path: /var/lib/ipa/backup
       file_type: directory
     register: backups
-    failed_when: not backups.files
+    failed_when: backups.files | length == 0
 
   # Copy backup from server to controller
   - name: List all existing backups on controller
@@ -280,7 +280,7 @@
       recurse: no
       file_type: directory
     register: server_backups
-    failed_when: not server_backups.files
+    failed_when: server_backups.files | length == 0
 
   - name: Copy backup from server to controller.
     ansible.builtin.include_role:
@@ -300,7 +300,7 @@
       pattern: "{{ ansible_facts.fqdn }}*"
       file_type: directory
     register: backups
-    failed_when: not backups.files
+    failed_when: backups.files | length == 0
     delegate_to: localhost
     become: no
 
@@ -311,7 +311,7 @@
       recurse: no
       file_type: directory
     register: backups
-    failed_when: not backups.files
+    failed_when: backups.files | length == 0
 
   - name: Remov all backup from server.
     ansible.builtin.include_role:
@@ -326,7 +326,7 @@
       recurse: no
       file_type: directory
     register: backups
-    failed_when: backups.files
+    failed_when: backups.files | length > 0
 
   # Remove all backups from server
   - name: Create a backup on the server
@@ -348,7 +348,7 @@
       recurse: no
       file_type: directory
     register: backups
-    failed_when: backups.files
+    failed_when: backups.files | length > 0
 
   # Remove all backup from server
   - name: Remove all backup from server.
@@ -370,7 +370,7 @@
       recurse: no
       file_type: directory
     register: server_backups
-    failed_when: not server_backups.files
+    failed_when: server_backups.files | length == 0
 
   - name: Remove backup from server.
     ansible.builtin.include_role:
@@ -406,7 +406,7 @@
           recurse: no
           file_type: directory
         register: server_backups
-        failed_when: server_backups.files
+        failed_when: server_backups.files | length > 0
 
   # CLEANUP
 
