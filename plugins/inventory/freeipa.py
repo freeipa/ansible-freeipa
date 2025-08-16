@@ -107,7 +107,7 @@ from ansible.plugins.inventory import BaseInventoryPlugin
 from ansible.module_utils.six.moves.urllib.parse import quote
 
 
-class InventoryModule(BaseInventoryPlugin):
+class InventoryModule(BaseInventoryPlugin):  # pylint: disable=R0901
 
     NAME = 'freeipa'
 

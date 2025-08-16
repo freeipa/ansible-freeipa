@@ -181,10 +181,10 @@
 
     - name: Install - Store the previously obtained OTP
       no_log: yes
+      when: result_ipaclient_get_otp.host is defined
       ansible.builtin.set_fact:
         ipaadmin_orig_password: "{{ ipaadmin_password | default(omit) }}"
-        ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword
-                               if result_ipaclient_get_otp.host is defined }}"
+        ipaadmin_password: "{{ result_ipaclient_get_otp.host.randompassword | default(omit) }}"
     rescue:
     - name: Install - Report error for OTP generation
       ansible.builtin.debug:
