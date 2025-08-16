@@ -6,15 +6,17 @@ pool:
   vmImage: 'ubuntu-24.04'
 
 variables:
-  distros: "fedora-latest,c10s,c9s,c8s,fedora-rawhide"
-  ansible_version: "-core >=2.15,<2.16"
+  distros: "fedora-latest,c10s,c9s,fedora-rawhide"
+  older_distros: "fedora-latest,c8s"
+  ansible_version: "-core >=2.18,<2.19"
+  ansible_older_version: "-core <2.17"
 
 stages:
 
-# Test with repository in all distros
+# Test with repository in all "current" distros
 
 - ${{ each distro in split(variables.distros, ',') }}:
-  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_16
+  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_18
     dependsOn: []
     jobs:
     - template: templates/run_tests.yml
@@ -27,7 +29,7 @@ stages:
 
 # Galaxy on Fedora
 
-- stage: galaxy_fedora_latest_ansible_2_16
+- stage: galaxy_fedora_latest_ansible_2_18
   dependsOn: []
   jobs:
   - template: templates/run_tests.yml
@@ -37,3 +39,18 @@ stages:
       ansible_version: ${{ variables.ansible_version }}
       skip_git_test: false
       test_galaxy: true
+
+
+# Test with older version, as supported by CentOS 8 Stream
+
+- ${{ each distro in split(variables.older_distros, ',') }}:
+  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_16
+    dependsOn: []
+    jobs:
+    - template: templates/run_tests.yml
+      parameters:
+        build_number: $(Build.BuildNumber)
+        distro: ${{ distro }}
+        ansible_version: ${{ variables.ansible_older_version }}
+        skip_git_test: false
+        test_galaxy: false
