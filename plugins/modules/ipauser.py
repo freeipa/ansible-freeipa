@@ -208,7 +208,8 @@ options:
           Use empty string to reset userauthtype to the initial value.
         type: list
         elements: str
-        choices: ["password", "radius", "otp", "pkinit", "hardened", "idp", ""]
+        choices: ["password", "radius", "otp", "pkinit", "hardened", "idp",
+                  "passkey", ""]
         required: false
         aliases: ["ipauserauthtype"]
       userclass:
@@ -480,7 +481,8 @@ options:
       Use empty string to reset userauthtype to the initial value.
     type: list
     elements: str
-    choices: ["password", "radius", "otp", "pkinit", "hardened", "idp", ""]
+    choices: ["password", "radius", "otp", "pkinit", "hardened", "idp",
+              "passkey", ""]
     required: false
     aliases: ["ipauserauthtype"]
   userclass:
@@ -1070,7 +1072,7 @@ def main():
         userauthtype=dict(type='list', elements="str",
                           aliases=["ipauserauthtype"], default=None,
                           choices=["password", "radius", "otp", "pkinit",
-                                   "hardened", "idp", ""]),
+                                   "hardened", "idp", "passkey", ""]),
         userclass=dict(type="list", elements="str", aliases=["class"],
                        default=None),
         radius=dict(type="str", aliases=["ipatokenradiusconfiglink"],
