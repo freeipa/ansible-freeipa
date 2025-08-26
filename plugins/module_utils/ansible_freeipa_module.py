@@ -497,7 +497,9 @@ def _afm_convert(value):
     return value
 
 
-def module_params_get(module, name, allow_empty_list_item=False):
+def module_params_get(
+    module, name, allow_empty_list_item=False, ignore_list_check=False
+):
     value = _afm_convert(module.params.get(name))
 
     # Fail on empty strings in the list or if allow_empty_list_item is True
@@ -506,7 +508,7 @@ def module_params_get(module, name, allow_empty_list_item=False):
     # "" for lists with choices, even if the empty list is not part of
     # the choices.
     # Ansible issue https://github.com/ansible/ansible/issues/77108
-    if isinstance(value, list):
+    if not ignore_list_check and isinstance(value, list):
         for val in value:
             if (
                 isinstance(val, (str, unicode))  # pylint: disable=W0012,E0606
@@ -534,6 +536,14 @@ def convert_param_value_to_lowercase(value):
         value = [v.lower() for v in value]
     if isinstance(value, (str, unicode)):
         value = value.lower()
+    return value
+
+
+def convert_param_value_to_uppercase(value):
+    if isinstance(value, list):
+        value = [v.upper() for v in value]
+    if isinstance(value, (str, unicode)):
+        value = value.upper()
     return value
 
 
@@ -1189,7 +1199,9 @@ class IPAAnsibleModule(AnsibleModule):
             finally:
                 temp_kdestroy(ccache_dir, ccache_name)
 
-    def params_get(self, name, allow_empty_list_item=False):
+    def params_get(
+        self, name, allow_empty_list_item=False, ignore_list_check=False
+    ):
         """
         Retrieve value set for module parameter.
 
@@ -1201,7 +1213,8 @@ class IPAAnsibleModule(AnsibleModule):
             The parameter allowes to have empty strings in a list
 
         """
-        return module_params_get(self, name, allow_empty_list_item)
+        return module_params_get(
+            self, name, allow_empty_list_item, ignore_list_check)
 
     def params_get_lowercase(self, name, allow_empty_list_item=False):
         """
@@ -1656,6 +1669,10 @@ class EntryFactory:
             not valid, 'fail_json' should be called. The function must return
             the entry, modified or not. The funcion signature is
             'def fn(module:IPAAnsibleModule, entry: Entry) -> Entry:'
+        unique_key: A string or list of strings representing parameter names
+            that uniquely identify an object. When set, the objects are checked
+            for duplicates and a EntryFactory.DuplicateKeyError is raised, when
+            instantiating the EntryFactory object if any duplicate is found.
         **user_vars: any other keyword argument is passed to the
             validate_entry callback as user data.
 
@@ -1693,6 +1710,13 @@ class EntryFactory:
 
     """
 
+    class DuplicateKeyError(Exception):
+        """An exeption for duplicate keys in EntryFactory."""
+
+        def __init__(self, dups):
+            dups = [k if len(k) > 1 else k[0] for k in dups]
+            super().__init__(", ".join(repr(k) for k in dups))
+
     def __init__(
         self,
         ansible_module,
@@ -1700,6 +1724,7 @@ class EntryFactory:
         multiname,
         params,
         validate_entry=None,
+        unique_key=None,
         **user_vars
     ):
         """Initialize the Entry Factory."""
@@ -1711,9 +1736,37 @@ class EntryFactory:
             param: (config or {}).get("convert", [])
             for param, config in params.items()
         }
+        self.attrs = {
+            param: {
+                _attr: _value
+                for _attr, _value in config.items()
+                if _attr not in {"convert"}
+            }
+            for param, config in params.items()
+        }
         self.validate_entry = validate_entry
         self.user_vars = user_vars
         self.__entries = self._get_entries()
+        _dups = self.get_duplicate_keys(unique_key)
+        if _dups:
+            raise EntryFactory.DuplicateKeyError(_dups)
+
+    def get_duplicate_keys(self, unique_key):
+        """Get a set of duplicate keys based on the given parameter name(s)."""
+        _dups = set()
+        if unique_key is not None:
+            if isinstance(unique_key, (str, unicode)):  # pylint: disable=all
+                unique_key = [unique_key]
+            _keys = set()
+            for _entry in self.__entries:
+                _key_set = tuple(set(_entry[k] for k in unique_key))
+                if _key_set in _keys:
+                    _dups.add(_key_set)
+                _keys.add(_key_set)
+        return _dups
+
+    def __len__(self):
+        return len(self.__entries)
 
     def __iter__(self):
         """Initialize factory iterator."""
@@ -1811,7 +1864,9 @@ class EntryFactory:
             # list of names.
             _entry = self._extract_entry(
                 self.ansible_module,
-                IPAAnsibleModule.params_get
+                lambda s, p: (
+                    IPAAnsibleModule.params_get(s, p, ignore_list_check=True)
+                )
             )
             # copy attribute values if 'name' returns a list
             _entries = [
@@ -1828,8 +1883,32 @@ class EntryFactory:
 
     def _extract_entry(self, data, param_get):
         """Extract an entry from the given data, using the given method."""
-        def get_entry_param_value(parameter, conversions):
-            _value = param_get(data, parameter)
+        def check_empty_list_item(parameter, value, attrs):
+            allow_empty_list_item = (attrs if attrs is not None else {}).get(
+                "allow_empty_list_item",
+                False
+            )
+            if isinstance(value, list):
+                empty = [v for v in value if v == ""]
+                if empty:
+                    if not allow_empty_list_item:
+                        self.ansible_module.fail_json(
+                            msg="Parameter '%s' contains an empty string" &
+                            parameter
+                        )
+                    elif len(value) > 1:
+                        self.ansible_module.fail_json(
+                            msg="Parameter '%s' may not contain another "
+                            "entry together with an empty string" % parameter
+                        )
+            return value
+
+        def get_entry_param_value(parameter, conversions, attrs=None):
+            _value = check_empty_list_item(
+                parameter,
+                param_get(data, parameter),
+                attrs
+            )
             if _value and conversions:
                 for fn in conversions:
                     _value = fn(_value)
@@ -1837,7 +1916,11 @@ class EntryFactory:
 
         # Build 'parameter: value' mapping for all module parameters
         _entry = {
-            parameter: get_entry_param_value(parameter, conversions)
+            parameter: get_entry_param_value(
+                parameter,
+                conversions,
+                self.attrs.get(parameter)
+            )
             for parameter, conversions in self.convert.items()
         }
 
