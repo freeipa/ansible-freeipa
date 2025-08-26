@@ -1545,6 +1545,28 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure host has IP in subnet not managed by IPA, without PTR record
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      zone_name: "{{ testzone }}"
+      name: host01
+      a_rec: "{{ external_ipv4_address }}"
+      a_create_reverse: false
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host has IP in subnet not managed by IPA, without PTR record, again
+    ipadnsrecord:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      zone_name: "{{ testzone }}"
+      name: host01
+      a_rec: "{{ external_ipv4_address }}"
+      a_create_reverse: false
+    register: result
+    failed_when: result.changed or result.failed
+
   # cleanup
   - name: Cleanup test environment.
     ansible.builtin.include_tasks: env_cleanup.yml
