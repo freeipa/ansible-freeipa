@@ -589,6 +589,20 @@ def ensure_fqdn(name, domain):
     return name
 
 
+def convert_param_value_to_unique_fqdn(value):
+    if isinstance(value, (list, tuple)):
+        value = list(
+            set(
+                ensure_fqdn(hostname.lower(), api_get_domain())
+                for hostname in value
+            )
+        )
+    else:
+        value = ensure_fqdn(value.lower(), api_get_domain())
+
+    return value
+
+
 def convert_to_sid(items):
     """Convert all items to SID, if possible."""
     def get_sid(data):
