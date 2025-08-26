@@ -453,7 +453,7 @@ def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
             if len(ipa_arg) != len(arg):
                 module.debug(
                     base_debug_msg
-                    + "List length doesn't match for key %s: %d %d"
+                    + "List length doesn't match (key=%s): %d %d"
                     % (key, len(arg), len(ipa_arg),)
                 )
                 return False
@@ -470,15 +470,15 @@ def compare_args_ipa(module, args, ipa, ignore=None):  # noqa
             if arg != ipa_arg:
                 module.debug(
                     base_debug_msg
-                    + "Different values: %s %s" % (arg, ipa_arg)
+                    + "Different values (key=%s): %s %s" % (key, arg, ipa_arg)
                 )
                 return False
         else:
             if arg_set != ipa_arg_set:
                 module.debug(
                     base_debug_msg
-                    + "Different set content: %s %s"
-                    % (arg_set, ipa_arg_set,)
+                    + "Different set content (key=%s): %s %s"
+                    % (key, arg_set, ipa_arg_set,)
                 )
                 return False
     return True
