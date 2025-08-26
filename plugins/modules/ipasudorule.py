@@ -369,8 +369,9 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, api_get_domain, ensure_fqdn, netaddr, to_text, \
-    ipalib_errors, convert_param_value_to_lowercase, EntryFactory
+    gen_intersection_list, netaddr, to_text, \
+    ipalib_errors, convert_param_value_to_lowercase, EntryFactory, \
+    convert_param_value_to_unique_fqdn
 
 
 def find_sudorule(module, name):
@@ -502,19 +503,6 @@ def convert_list_of_hostmask(hostmasks):
     ]
 
 
-def convert_list_of_hostnames(hostnames):
-    """Ensure all hostnames in hostnames are lowercase FQDN."""
-    return list(
-        set(
-            ensure_fqdn(value.lower(), api_get_domain())
-            for value in (
-                hostnames if isinstance(hostnames, (list, tuple))
-                else [hostnames]
-            )
-        )
-    )
-
-
 def validate_entry(module, entry, state, action):
     """Ensure entry object is valid."""
     if state == "present" and action == "sudorule":
@@ -596,7 +584,7 @@ def main():
         "hostcategory": {},
         "runasusercategory": {},
         "runasgroupcategory": {},
-        "host": {"convert": [convert_list_of_hostnames]},
+        "host": {"convert": [convert_param_value_to_unique_fqdn]},
         "hostgroup": {"convert": [convert_param_value_to_lowercase]},
         "hostmask": {"convert": [convert_list_of_hostmask]},
         "user": {"convert": [convert_param_value_to_lowercase]},
