@@ -6,4 +6,6 @@
 CAP_DEFAULTS=(
     "+DAC_READ_SEARCH"  # Required for SSSD
     "+SYS_PTRACE"       # Required for debugging
+    "+SYS_ADMIN"        # Required to make dbus-brokder for systemd 258 work
+                        # Should be "+AUDIT_WRITE", "+SETUID", "+SETGID"
 )

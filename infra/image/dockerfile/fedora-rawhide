@@ -11,6 +11,7 @@ dnf --assumeyes install \
     bash \
     systemd \
     procps-ng \
+    hostname \
     iproute; \
 dnf clean all; \
 rm -rf /var/cache/dnf/;
