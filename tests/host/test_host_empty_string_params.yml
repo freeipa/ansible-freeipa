@@ -76,6 +76,34 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: Ensure host "{{ host1_fqdn }}" present with auth_ind password idp
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      auth_ind:
+      - idp
+
+  - name: Ensure host "{{ host1_fqdn }}" present with empty auth_ind, using hosts
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      hosts:
+        - name: "{{ host1_fqdn }}"
+          auth_ind: ""
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" present with empty auth_ind, using hosts, again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      hosts:
+        - name: "{{ host1_fqdn }}"
+          auth_ind: ""
+    register: result
+    failed_when: result.changed or result.failed
+
   # CLEANUP TEST ITEMS
 
   - name: Ensure host "{{ host1_fqdn }}" absent
