@@ -38,12 +38,24 @@
     krb5ccname: "__check_ipa_host_is_client_or_server__"
   register: check_ad_support
 
+- name: Verify if passkey tests are possible
+  ansible.builtin.shell:
+    cmd: |
+      echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin > /dev/null
+      RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa command-find passkey | grep "Number of entries returned")
+      kdestroy -A -c {{ krb5ccname }} > /dev/null
+      echo $RESULT
+  vars:
+    krb5ccname: "__check_ipa_host_is_client_or_server__"
+  register: check_passkey_support
+
 - name: Set FreeIPA facts.
   ansible.builtin.set_fact:
     ipa_version: "{{ ipa_cmd_version.stdout_lines[0] }}"
     ipa_api_version: "{{ ipa_cmd_version.stdout_lines[1] }}"
     ipa_host_is_client: "{{ (check_client.stdout_lines[-1] == 'CLIENT') | bool }}"
     trust_test_is_supported: "{{ 'AD trust agent' in check_ad_support.stdout }}"
+    passkey_is_supported: "{{ 'Number of entries returned 0' not in check_passkey_support.stdout }}"
 
 - name: Ensure ipaserver_domain is set
   when: ipaserver_domain is not defined
