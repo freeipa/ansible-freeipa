@@ -123,7 +123,7 @@
       reason: 9
       state: revoked
     register: result
-    failed_when: not (result.failed and ("Request failed with status 404" in result.msg or "Certificate serial number 0x123456789 not found" in result.msg))
+    failed_when: not (result.failed and ("Request failed with status 404" in result.msg or result.msg is regex("Certificate [^0]*0x123456789 not found")))
 
   - name: Try to release revoked certificate
     ipacert:
