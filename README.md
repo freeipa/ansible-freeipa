@@ -50,6 +50,7 @@ Features
 * Modules for sudocmd management
 * Modules for sudocmdgroup management
 * Modules for sudorule management
+* Modules for sysaccount management
 * Modules for topology management
 * Modules for trust management
 * Modules for user management
@@ -465,6 +466,7 @@ Modules in plugin/modules
 * [ipasudocmd](README-sudocmd.md)
 * [ipasudocmdgroup](README-sudocmdgroup.md)
 * [ipasudorule](README-sudorule.md)
+* [ipasysaccount](README-sysaccount.md)
 * [ipatopologysegment](README-topology.md)
 * [ipatopologysuffix](README-topology.md)
 * [ipatrust](README-trust.md)

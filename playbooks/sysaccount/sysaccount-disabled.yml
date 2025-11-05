@@ -1,0 +1,11 @@
+---
+- name: Sysaccount example
+  hosts: ipaserver
+  become: false
+
+  tasks:
+  - name: Ensure sysaccount my-app is disabled
+    ipasysaccount:
+      ipaadmin_password: SomeADMINpassword
+      name: my-app
+      state: disabled
