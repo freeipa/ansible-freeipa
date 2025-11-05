@@ -230,6 +230,8 @@ Example playbook to ensure that different members are not associated with a role
       - User Administrators
       service:
       - service01
+      sysaccount:
+      - my-app
       action: member
       state: absent
 ```
@@ -253,6 +255,7 @@ Variable | Description | Required
 `host` | List of hosts to be assigned or not assigned to the role. | no
 `hostgroup` | List of hostgroups to be assigned or not assigned to the role. | no
 `service` | List of services to be assigned or not assigned to the role. | no
+`sysaccount` | List of sysaccounts to be assigned or not assigned to the role. | no
 `action` | Work on role or member level. It can be on of `member` or `role` and defaults to `role`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, default: `present`. | no
 
@@ -261,3 +264,4 @@ Authors
 =======
 
 Rafael Jeffman
+Thomas Woerner
