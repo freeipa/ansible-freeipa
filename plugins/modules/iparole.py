@@ -85,6 +85,11 @@ options:
     type: list
     elements: str
     required: false
+  sysaccount:
+    description: List of sysaccounts.
+    type: list
+    elements: str
+    required: false
   action:
     description: Work on role or member level.
     type: str
@@ -177,7 +182,7 @@ def check_parameters(module):
             "description",
             "user", "group",
             "host", "hostgroup",
-            "service",
+            "service", "sysaccount",
             "privilege",
         ]
 
@@ -225,7 +230,7 @@ def ensure_absent_state(module, name, action, res_find):
                                  {"privilege": del_list}])
 
         member_args = {}
-        for key in ['user', 'group', 'hostgroup']:
+        for key in ['user', 'group', 'hostgroup', 'sysaccount']:
             _members = module.params_get_lowercase(key)
             if _members:
                 del_list = gen_intersection_list(
@@ -335,7 +340,7 @@ def ensure_role_with_members_is_present(module, name, res_find, action):
     add_members = {}
     del_members = {}
 
-    for key in ["user", "group", "hostgroup"]:
+    for key in ["user", "group", "hostgroup", "sysaccount"]:
         _members = module.params_get_lowercase(key)
         if _members is not None:
             add_list, del_list = gen_add_del_lists(
@@ -437,6 +442,8 @@ def create_module():
                            default=None),
             service=dict(required=False, type='list', elements="str",
                          default=None),
+            sysaccount=dict(required=False, type='list', elements="str",
+                            default=None),
 
             # state
             action=dict(type="str", default="role",
@@ -467,7 +474,14 @@ def main():
         state = ansible_module.params_get("state")
         action = ansible_module.params_get("action")
         names = ansible_module.params_get("name")
+        sysaccount = ansible_module.params_get("sysaccount")
         commands = []
+
+        has_sysaccount_member = ansible_module.ipa_command_param_exists(
+            "role_add_member", "sysaccount")
+        if not has_sysaccount_member and sysaccount is not None:
+            ansible_module.fail_json(
+                msg="sysaccount members are not supported by your IPA version")
 
         for name in names:
             cmds = role_commands_for_name(ansible_module, state, action, name)

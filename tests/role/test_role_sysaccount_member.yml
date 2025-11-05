@@ -1,0 +1,161 @@
+---
+- name: Test sysaccount
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  # It is normally not needed to set "become" to "true" for a module test.
+  # Only set it to true if it is needed to execute commands as root.
+  become: false
+  # Enable "gather_facts" only if "ansible_facts" variable needs to be used.
+  gather_facts: false
+  module_defaults:
+    ipaprivilege:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    iparole:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipasysaccount:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  - name: Verify if role sysaccount member tests are possible
+    ansible.builtin.shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin > /dev/null
+        RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa role-add-member --help)
+        kdestroy -A -c {{ krb5ccname }} > /dev/null
+        echo $RESULT
+    vars:
+      krb5ccname: "__check_ipa_role_add_member__"
+    register: check_role_add_member
+
+  - name: Execute tests
+    when: '"sysaccounts" in check_role_add_member.stdout'
+    block:
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure sysaccount my-app is absent
+      ipasysaccount:
+        name: my-app
+        state: absent
+
+    - name: Ensure role "my-app role" is absent
+      iparole:
+        name: my-app role
+        state: absent
+
+    - name: Ensure privilege "my-app password change privilege" is absent
+      ipaprivilege:
+        name: my-app password change privilege
+        state: absent
+
+    # CREATE TEST ITEMS
+
+    - name: Ensure privilege "my-app password change privilege" is present
+      ipaprivilege:
+        name: my-app password change privilege
+        permission:
+        - "System: Change User password"
+      register: result
+      failed_when: not result.changed or result.failed
+
+    # TESTS
+
+    - name: Ensure sysaccount my-app is present with random password
+      ipasysaccount:
+        name: my-app
+        random: true
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure role "my-app role" is present with sysaccount member my-app
+      iparole:
+        name: my-app role
+        sysaccount: my-app
+        privilege: my-app password change privilege
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure role "my-app role" is present with sysaccount member my-app, again
+      iparole:
+        name: my-app role
+        sysaccount: my-app
+        privilege: my-app password change privilege
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure role my-app role does not have sysaccount member my-app
+      iparole:
+        name: my-app role
+        sysaccount: my-app
+        action: member
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure role my-app role does not have sysaccount member my-app, again
+      iparole:
+        name: my-app role
+        sysaccount: my-app
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure role my-app role has sysaccount member my-app
+      iparole:
+        name: my-app role
+        sysaccount: my-app
+        action: member
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure role my-app role has sysaccount member my-app, again
+      iparole:
+        name: my-app role
+        sysaccount: my-app
+        action: member
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure role my-app role has zero sysaccount members
+      iparole:
+        name: my-app role
+        sysaccount: []
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure role my-app role has zero sysaccount members, again
+      iparole:
+        name: my-app role
+        sysaccount: []
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure role my-app role does not have sysaccount member my-app, again
+      iparole:
+        name: my-app role
+        sysaccount: my-app
+        action: member
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure sysaccount my-app is absent
+      ipasysaccount:
+        name: my-app
+        state: absent
+
+    - name: Ensure role my-app role is absent
+      iparole:
+        name: my-app role
+        state: absent
+
+    - name: Ensure privilege "my-app password change privilege" is absent
+      ipaprivilege:
+        name: my-app password change privilege
+        state: absent
