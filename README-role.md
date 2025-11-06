@@ -256,7 +256,7 @@ Variable | Description | Required
 `hostgroup` | List of hostgroups to be assigned or not assigned to the role. | no
 `service` | List of services to be assigned or not assigned to the role. | no
 `sysaccount` | List of sysaccounts to be assigned or not assigned to the role. | no
-`action` | Work on role or member level. It can be on of `member` or `role` and defaults to `role`. | no
+`action` | Work on role or member level. It can be one of `member` or `role` and defaults to `role`. | no
 `state` | The state to ensure. It can be one of `present`, `absent`, default: `present`. | no
 
 
