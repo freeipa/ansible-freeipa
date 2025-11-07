@@ -317,10 +317,6 @@ from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
     gen_intersection_list, encode_certificate, convert_input_certificates, \
     ipalib_errors
-from ansible.module_utils import six
-
-if six.PY3:
-    unicode = str
 
 
 def find_idoverrideuser(module, idview, anchor):

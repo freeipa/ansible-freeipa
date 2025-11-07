@@ -23,7 +23,7 @@ FreeIPA versions 4.5 and up are supported by this role.
 Supported Distributions
 -----------------------
 
-* RHEL/CentOS 7.6+
+* RHEL 8/9/10
 * CentOS Stream 8+
 * Fedora 40+
 

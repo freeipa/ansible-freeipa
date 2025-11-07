@@ -156,10 +156,6 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, ipalib_errors
-from ansible.module_utils import six
-
-if six.PY3:
-    unicode = str
 
 
 def find_idoverridegroup(module, idview, anchor):
