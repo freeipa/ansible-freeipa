@@ -5,16 +5,27 @@ trigger:
 pool:
   vmImage: 'ubuntu-24.04'
 
+parameters:
+  # Not really a parameter, but variables cannot be arrays or dicts
+  # This maps the distro LATEST version to the avaiable ansible-core
+  # version of the latest released compose.
+  - name: "distro_ansible_map"
+    type: object
+    default:
+    - { distro: "c8s", ansible_version: "2.16" }
+    - { distro: "c9s", ansible_version: "2.14" }
+    - { distro: "c10s", ansible_version: "2.16" }
+
 variables:
-  distros: "fedora-latest,c10s,c9s,c8s,fedora-rawhide"
-  ansible_version: "-core >=2.15,<2.16"
+  distros: "fedora-latest,c10s,c9s,fedora-rawhide"
+  ansible_version: "-core >=2.18,<2.19"
 
 stages:
 
-# Test with repository in all distros
+# Test with repository in all "current" distros
 
 - ${{ each distro in split(variables.distros, ',') }}:
-  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_16
+  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_18
     dependsOn: []
     jobs:
     - template: templates/run_tests.yml
@@ -27,7 +38,7 @@ stages:
 
 # Galaxy on Fedora
 
-- stage: galaxy_fedora_latest_ansible_2_16
+- stage: galaxy_fedora_latest_ansible_2_18
   dependsOn: []
   jobs:
   - template: templates/run_tests.yml
@@ -37,3 +48,18 @@ stages:
       ansible_version: ${{ variables.ansible_version }}
       skip_git_test: false
       test_galaxy: true
+
+
+# Test with pinned ansible version for the distro
+
+- ${{ each config in parameters.distro_ansible_map }}:
+  - stage: ${{ config.distro }}_distro_ansible_${{ replace(config.ansible_version, '.', '_') }}
+    dependsOn: []
+    jobs:
+    - template: templates/run_tests.yml
+      parameters:
+        build_number: $(Build.BuildNumber)
+        distro: ${{ config.distro }}
+        ansible_version: -core==${{ config.ansible_version }}
+        skip_git_test: false
+        test_galaxy: false

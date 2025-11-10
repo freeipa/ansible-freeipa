@@ -6,7 +6,7 @@ pool:
   vmImage: 'ubuntu-24.04'
 
 variables:
-  ansible_version: "-core >=2.16,<2.17"
+  ansible_version: "-core >=2.18,<2.19"
   ansible_latest: "-core"
   ansible_minimum: "-core <2.16"
   distros: "fedora-latest,c9s,c10s,fedora-rawhide"
@@ -36,7 +36,7 @@ stages:
 # Supported distros
 
 - ${{ each distro in split(variables.distros, ',') }}:
-  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_16
+  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_18
     dependsOn: []
     jobs:
     - template: templates/group_tests.yml
@@ -49,7 +49,7 @@ stages:
 
 # Galaxy on Fedora
 
-- stage: galaxy_fedora_latest_ansible_2_16
+- stage: galaxy_fedora_latest_ansible_2_18
   dependsOn: []
   jobs:
   - template: templates/group_tests.yml
