@@ -1,8 +1,8 @@
 -r requirements.txt
-pytest==7.1.3
-pytest-sourceorder==0.6.0
+pytest
+pytest-sourceorder
 pytest-split>=0.8.0
 pytest-custom_exit_code>=0.3.0
-pytest-testinfra==6.8.0
-pytest-randomly==3.12.0
+pytest-testinfra
+pytest-randomly
 pyyaml>=3

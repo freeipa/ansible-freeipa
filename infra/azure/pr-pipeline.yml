@@ -13,7 +13,9 @@ parameters:
     type: object
     default:
     - { distro: "c8s", ansible_version: "2.16" }
-    - { distro: "c9s", ansible_version: "2.14" }
+    # c9s should use 2.14, but this version has an invalid certificate
+    # and so is unsuable against ansible-galaxy.
+    - { distro: "c9s", ansible_version: "2.16" }
     - { distro: "c10s", ansible_version: "2.16" }
 
 variables:
