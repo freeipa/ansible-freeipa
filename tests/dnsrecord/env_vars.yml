@@ -7,14 +7,17 @@
     ipv4_reverse: "{{ ansible_facts['default_ipv4'].address.split('.')[:-1] |
                       reverse |
                       join('.') }}"
+    # The 'external_ipv4_address' represents an IP address that
+    # is not part of the expected CIDR zones managed by the IPA
+    # deployment. It is used to test the cases were the the reverse
+    # DNS zone must not be available in the embedded DNS nameserver.
+    external_ipv4_address: "1.2.3.4"
 
 - name: Set zone prefixes.
   ansible.builtin.set_fact:
     testzone: 'testzone.test'
     safezone: 'safezone.test'
-    zone_ipv6_reverse: "ip6.arpa."
     zone_ipv6_reverse_workaround: "d.f.ip6.arpa."
-    zone_prefix_reverse: "in-addr.arpa."
     zone_prefix_reverse_24: "{{ ipv4_reverse.split('.')[:] | join('.') }}.in-addr.arpa."
     zone_prefix_reverse_16: "{{ ipv4_reverse.split('.')[1:] | join('.') }}.in-addr.arpa."
     zone_prefix_reverse_8: "{{ ipv4_reverse.split('.')[2:] | join('.') }}.in-addr.arpa."
