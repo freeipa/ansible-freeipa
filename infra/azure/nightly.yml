@@ -12,13 +12,24 @@ trigger: none
 pool:
   vmImage: 'ubuntu-24.04'
 
+parameters:
+  # Not really a parameter, but variables cannot be arrays or dicts
+  # This maps the distro LATEST version to the avaiable ansible-core
+  # version of the latest released compose.
+  - name: "distro_ansible_map"
+    type: object
+    default:
+    - { distro: "c8s", ansible_version: "<2.17" }
+    # c9s should use 2.14, but this version has an invalid certificate
+    # and so is unsuable against ansible-galaxy.
+    - { distro: "c9s", ansible_version: "<2.17" }
+    - { distro: "c10s", ansible_version: "<2.17" }
+
 variables:
-  # We need to have two sets, as c8s is not supported by all ansible versions
-  recent_distros: "fedora-latest,fedora-rawhide,c10s,c9s"
-  distros: "fedora-latest,fedora-rawhide,c10s,c9s,c8s"
+  distros: "fedora-latest,c10s,c9s,fedora-rawhide"
+  ansible_version: "-core >=2.18,<2.19"
   ansible_latest: "-core"
   ansible_minimum: "-core <2.16"
-  ansible_version: "-core >=2.18,<2.19"
 
 stages:
 
@@ -38,7 +49,7 @@ stages:
 
 # Latest ansible
 
-- ${{ each distro in split(variables.recent_distros, ',') }}:
+- ${{ each distro in split(variables.distros, ',') }}:
   - stage: ${{ replace(distro, '-', '_') }}_ansible_latest
     dependsOn: []
     jobs:
@@ -50,30 +61,44 @@ stages:
         skip_git_test: true
         test_galaxy: false
 
-# Selected ansible-core version
+# Galaxy with Latest ansible
 
 - ${{ each distro in split(variables.distros, ',') }}:
-  - stage: ${{ replace(distro, '-', '_') }}_ansible_2_16
+  - stage: galaxy_${{ replace(distro, '-', '_') }}_ansible_latest
     dependsOn: []
     jobs:
     - template: templates/group_tests.yml
       parameters:
         build_number: $(Build.BuildNumber)
         distro: ${{ distro }}
-        ansible_version: ${{ variables.ansible_version }}
+        ansible_version: ${{ variables.ansible_latest }}
+        skip_git_test: true
+        test_galaxy: true
+
+# Test with pinned ansible version for the distro
+
+- ${{ each config in parameters.distro_ansible_map }}:
+  - stage: ${{ config.distro }}_distro_ansible_${{ replace(config.ansible_version, '.', '_') }}
+    dependsOn: []
+    jobs:
+    - template: templates/group_tests.yml
+      parameters:
+        build_number: $(Build.BuildNumber)
+        distro: ${{ config.distro }}
+        ansible_version: -core${{ config.ansible_version }}
         skip_git_test: true
         test_galaxy: false
 
-# Galaxy collection with selected ansible-core version
+# Test Galaxy collection with pinned ansible version for the distro
 
-- ${{ each distro in split(variables.distros, ',') }}:
-  - stage: galaxy_${{ replace(distro, '-', '_') }}_asible_2_16
+- ${{ each config in parameters.distro_ansible_map }}:
+  - stage: galaxy_${{ config.distro }}_distro_ansible_${{ replace(config.ansible_version, '.', '_') }}
     dependsOn: []
     jobs:
     - template: templates/group_tests.yml
       parameters:
         build_number: $(Build.BuildNumber)
-        distro: ${{ distro }}
-        ansible_version: ${{ variables.ansible_version }}
+        distro: ${{ config.distro }}
+        ansible_version: -core${{ config.ansible_version }}
         skip_git_test: true
         test_galaxy: true
