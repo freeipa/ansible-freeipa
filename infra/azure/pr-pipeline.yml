@@ -12,11 +12,11 @@ parameters:
   - name: "distro_ansible_map"
     type: object
     default:
-    - { distro: "c8s", ansible_version: "2.16" }
+    - { distro: "c8s", ansible_version: "<2.17" }
     # c9s should use 2.14, but this version has an invalid certificate
     # and so is unsuable against ansible-galaxy.
-    - { distro: "c9s", ansible_version: "2.16" }
-    - { distro: "c10s", ansible_version: "2.16" }
+    - { distro: "c9s", ansible_version: "<2.17" }
+    - { distro: "c10s", ansible_version: "<2.17" }
 
 variables:
   distros: "fedora-latest,c10s,c9s,fedora-rawhide"
@@ -62,6 +62,6 @@ stages:
       parameters:
         build_number: $(Build.BuildNumber)
         distro: ${{ config.distro }}
-        ansible_version: -core==${{ config.ansible_version }}
+        ansible_version: -core${{ config.ansible_version }}
         skip_git_test: false
         test_galaxy: false
