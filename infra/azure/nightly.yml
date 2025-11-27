@@ -19,11 +19,11 @@ parameters:
   - name: "distro_ansible_map"
     type: object
     default:
-    - { distro: "c8s", ansible_version: "<2.17" }
+    - { distro: "c8s", ansible_version: "<2.17", version_name: "2.16" }
     # c9s should use 2.14, but this version has an invalid certificate
     # and so is unsuable against ansible-galaxy.
-    - { distro: "c9s", ansible_version: "<2.17" }
-    - { distro: "c10s", ansible_version: "<2.17" }
+    - { distro: "c9s", ansible_version: "<2.17", version_name: "2.16" }
+    - { distro: "c10s", ansible_version: "<2.17", version_name: "2.16" }
 
 variables:
   distros: "fedora-latest,c10s,c9s,fedora-rawhide"
@@ -78,7 +78,7 @@ stages:
 # Test with pinned ansible version for the distro
 
 - ${{ each config in parameters.distro_ansible_map }}:
-  - stage: ${{ config.distro }}_distro_ansible_${{ replace(config.ansible_version, '.', '_') }}
+  - stage: ${{ config.distro }}_distro_ansible_${{ replace(config.version_name, '.', '_') }}
     dependsOn: []
     jobs:
     - template: templates/group_tests.yml
@@ -92,7 +92,7 @@ stages:
 # Test Galaxy collection with pinned ansible version for the distro
 
 - ${{ each config in parameters.distro_ansible_map }}:
-  - stage: galaxy_${{ config.distro }}_distro_ansible_${{ replace(config.ansible_version, '.', '_') }}
+  - stage: galaxy_${{ config.distro }}_distro_ansible_${{ replace(config.version_name, '.', '_') }}
     dependsOn: []
     jobs:
     - template: templates/group_tests.yml
