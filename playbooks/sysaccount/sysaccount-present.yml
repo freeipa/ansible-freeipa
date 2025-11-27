@@ -1,0 +1,11 @@
+---
+- name: Sysaccount example
+  hosts: ipaserver
+  become: false
+
+  tasks:
+  - name: Ensure sysaccount my-app is present with random password
+    ipasysaccount:
+      ipaadmin_password: SomeADMINpassword
+      name: my-app
+      random: true

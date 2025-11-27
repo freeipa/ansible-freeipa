@@ -1,0 +1,134 @@
+---
+- name: Test sysaccount
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  # It is normally not needed to set "become" to "true" for a module test.
+  # Only set it to true if it is needed to execute commands as root.
+  become: false
+  # Enable "gather_facts" only if "ansible_facts" variable needs to be used.
+  gather_facts: false
+  module_defaults:
+    ipasysaccount:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  - name: Verify sysaccount tests are possible
+    ansible.builtin.shell:
+      cmd: |
+        echo SomeADMINpassword | kinit -c {{ krb5ccname }} admin > /dev/null
+        RESULT=$(KRB5CCNAME={{ krb5ccname }} ipa sysaccount-add --help)
+        kdestroy -A -c {{ krb5ccname }} > /dev/null
+        echo $RESULT
+    vars:
+      krb5ccname: "__check_ipa_sysaccount_add__"
+    register: check_sysaccount_add
+
+  - name: Execute tests
+    when: '"ipa: ERROR: unknown command" not in check_sysaccount_add.stderr'
+    block:
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure sysaccount my-app is absent
+      ipasysaccount:
+        name: my-app
+        state: absent
+
+    # CREATE TEST ITEMS
+
+    # TESTS
+
+    - name: Ensure sysaccount my-app is present with random password
+      ipasysaccount:
+        name: my-app
+        random: true
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sysaccount my-app is present, again
+      ipasysaccount:
+        name: my-app
+      register: result
+      failed_when: result.changed or result.failed
+
+    # more tests here
+
+    - name: Ensure sysaccount my-app is disabled
+      ipasysaccount:
+        name: my-app
+        state: disabled
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sysaccount my-app is disabled, again
+      ipasysaccount:
+        name: my-app
+        state: disabled
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sysaccount my-app is enabled
+      ipasysaccount:
+        name: my-app
+        state: enabled
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sysaccount my-app is enabled, again
+      ipasysaccount:
+        name: my-app
+        state: enabled
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sysaccount my-app is privileged
+      ipasysaccount:
+        name: my-app
+        privileged: true
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sysaccount my-app is privileged, again
+      ipasysaccount:
+        name: my-app
+        privileged: true
+      register: result
+      failed_when: result.changed or result.failed
+
+    # ADDITIONAL TEST HERE?
+
+    - name: Ensure sysaccount my-app is not privileged
+      ipasysaccount:
+        name: my-app
+        privileged: false
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sysaccount my-app is not privileged, again
+      ipasysaccount:
+        name: my-app
+        privileged: false
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Ensure sysaccount my-app is absent
+      ipasysaccount:
+        name: my-app
+        state: absent
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure sysaccount my-app is absent again
+      ipasysaccount:
+        name: my-app
+        state: absent
+      register: result
+      failed_when: result.changed or result.failed
+
+    # CLEANUP TEST ITEMS
+
+    - name: Ensure sysaccount my-app is absent
+      ipasysaccount:
+        name: my-app
+        state: absent
