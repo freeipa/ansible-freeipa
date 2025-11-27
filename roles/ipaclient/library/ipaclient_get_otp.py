@@ -78,8 +78,7 @@ import tempfile
 import shutil
 from contextlib import contextmanager
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils import six
+from ansible.module_utils.common.text.converters import to_text
 
 try:
     from ipalib import api
@@ -100,10 +99,6 @@ except ImportError as _err:
     MODULE_IMPORT_ERROR = str(_err)
 else:
     MODULE_IMPORT_ERROR = None
-
-
-if six.PY3:
-    unicode = str
 
 
 def temp_kinit(principal, password, keytab):

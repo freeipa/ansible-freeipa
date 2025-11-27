@@ -243,14 +243,9 @@ import base64
 import time
 import ssl
 
-from ansible.module_utils import six
-from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import (
-    IPAAnsibleModule, certificate_loader, write_certificate_list,
+    IPAAnsibleModule, certificate_loader, write_certificate_list, to_text,
 )
-
-if six.PY3:
-    unicode = str
 
 # Reasons are defined in RFC 5280 sec. 5.3.1; removeFromCRL is not present in
 # this list; run the module with state=released instead.

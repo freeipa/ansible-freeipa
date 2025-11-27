@@ -303,6 +303,7 @@ import traceback
 from shutil import copyfile
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.common.text.converters import to_text
 from ansible.module_utils.ansible_ipa_replica import (
     check_imports, AnsibleModuleLog, options, installer, DN, paths, sysrestore,
     ansible_module_get_parsed_ip_addresses, Env, ipautil, ipaldap,
@@ -315,10 +316,6 @@ from ansible.module_utils.ansible_ipa_replica import (
     constants, api, redirect_stdout, replica_conn_check, tasks,
     install_ca_cert
 )
-from ansible.module_utils import six
-
-if six.PY3:
-    unicode = str
 
 
 def main():
@@ -722,7 +719,7 @@ def main():
         # Check authorization
         result = remote_api.Command['hostgroup_find'](
             cn=u'ipaservers',
-            host=[unicode(api.env.host)]  # pylint: disable=W0012,E0606
+            host=[to_text(api.env.host)]
         )['result']
         add_to_ipaservers = not result
 
