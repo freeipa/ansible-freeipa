@@ -5,6 +5,8 @@
   gather_facts: yes
 
   tasks:
+  - name: Include tasks ../env_freeipa_facts.yml
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
 
   # CLEANUP TEST ITEMS
 
@@ -82,6 +84,37 @@
         - radius
     register: result
     failed_when: result.changed or result.failed
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with auth_ind passkey
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      auth_ind:
+        - passkey
+    register: result
+    failed_when: not result.changed or result.failed
+    when: passkey_is_supported
+
+  - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with auth_ind passkey, again
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      auth_ind:
+        - passkey
+    register: result
+    failed_when: result.changed or result.failed
+    when: passkey_is_supported
+
+  - name: Check if correct message is given if passkey is not supported.
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "test-service/{{ ansible_facts['fqdn'] }}"
+      auth_ind:
+        - passkey
+    register: result
+    failed_when: not result.failed or "'passkey' is not supported" not in result.msg
+    when: not passkey_is_supported
 
   - name: Ensure service "test-service/{{ ansible_facts['fqdn'] }}" is present with empty auth_ind
     ipaservice:

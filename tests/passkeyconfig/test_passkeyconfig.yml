@@ -1,0 +1,67 @@
+---
+- name: Test passkeyconfig
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  # It is normally not needed to set "become" to "true" for a module test.
+  # Only set it to true if it is needed to execute commands as root.
+  become: false
+  # Enable "gather_facts" only if "ansible_facts" variable needs to be used.
+  gather_facts: false
+  module_defaults:
+    ipapasskeyconfig:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  - name: Include FreeIPA facts.
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
+  - name: Run tests only if passkey is supported
+    when: passkey_is_supported
+    block:
+    # TESTS
+
+    - name: Get current passkeyconfig
+      ipapasskeyconfig:
+      register: result_initial
+      failed_when: result_initial.failed
+
+    - name: Ensure require_user_verification is set to false
+      ipapasskeyconfig:
+        require_user_verification: false
+      register: result
+      failed_when: result.failed
+
+    - name: Ensure require_user_verification is set to false again
+      ipapasskeyconfig:
+        require_user_verification: false
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Verify require_user_verification is false
+      ansible.builtin.assert:
+        that:
+          - result.passkeyconfig.require_user_verification == false
+
+    - name: Ensure require_user_verification is set to true
+      ipapasskeyconfig:
+        require_user_verification: true
+      register: result
+      failed_when: not result.changed or result.failed
+
+    - name: Ensure require_user_verification is set to true again
+      ipapasskeyconfig:
+        require_user_verification: true
+      register: result
+      failed_when: result.changed or result.failed
+
+    - name: Verify require_user_verification is true
+      ansible.builtin.assert:
+        that:
+          - result.passkeyconfig.require_user_verification == true
+
+    # CLEANUP: Restore original configuration
+    - name: Restore original passkeyconfig
+      ipapasskeyconfig:
+        require_user_verification: "{{ result_initial.passkeyconfig.require_user_verification }}"
+      when: result_initial.passkeyconfig is defined and result_initial.passkeyconfig.require_user_verification is defined
