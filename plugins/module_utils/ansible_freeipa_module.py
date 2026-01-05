@@ -59,11 +59,9 @@ import ast
 import time
 from datetime import datetime
 from contextlib import contextmanager
+from collections.abc import Mapping
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_text
-from ansible.module_utils.common.text.converters import jsonify
-from ansible.module_utils import six
-from ansible.module_utils.common._collections_compat import Mapping
+from ansible.module_utils.common.text.converters import jsonify, to_text
 from ansible.module_utils.parsing.convert_bool import boolean
 
 # Import getargspec from inspect or provide own getargspec for
@@ -165,11 +163,7 @@ try:
     except ImportError:
         _dcerpc_bindings_installed = False  # pylint: disable=invalid-name
 
-    try:
-        from urllib.parse import urlparse
-    except ImportError:
-        from ansible.module_utils.six.moves.urllib.parse import urlparse
-
+    from urllib.parse import urlparse
     from ipalib.util import normalize_sshpubkey
 
 except ImportError as _err:
@@ -185,10 +179,6 @@ except ImportError as _err:
     ipaserver = None  # pylint: disable=C0103
 else:
     ANSIBLE_FREEIPA_MODULE_IMPORT_ERROR = None
-
-
-if six.PY3:
-    unicode = str
 
 
 def valid_creds(module, principal):  # noqa
@@ -508,10 +498,7 @@ def module_params_get(module, name, allow_empty_list_item=False):
     # Ansible issue https://github.com/ansible/ansible/issues/77108
     if isinstance(value, list):
         for val in value:
-            if (
-                isinstance(val, (str, unicode))  # pylint: disable=W0012,E0606
-                and not val
-            ):
+            if isinstance(val, str) and not val:
                 if not allow_empty_list_item:
                     module.fail_json(
                         msg="Parameter '%s' contains an empty string" %
@@ -532,7 +519,7 @@ def module_params_get_lowercase(module, name, allow_empty_list_item=False):
 def convert_param_value_to_lowercase(value):
     if isinstance(value, list):
         value = [v.lower() for v in value]
-    if isinstance(value, (str, unicode)):
+    if isinstance(value, str):
         value = value.lower()
     return value
 
@@ -673,12 +660,11 @@ def encode_certificate(cert):
     It also takes FreeIPA and Python versions into account.
     This is used to convert the certificates returned by find and show.
     """
-    if isinstance(cert, (str, unicode, bytes)):
+    if isinstance(cert, (str, bytes)):
         encoded = base64.b64encode(cert)
     else:
         encoded = base64.b64encode(cert.public_bytes(Encoding.DER))
-    if not six.PY2:
-        encoded = encoded.decode('ascii')
+    encoded = encoded.decode('ascii')
     return encoded
 
 
@@ -795,9 +781,9 @@ def servicedelegation_normalize_principals(module, principal,
 
         if len(princ.components) == 1 and \
            not princ.components[0].endswith('$'):
-            nprinc = 'host/' + unicode(princ)
+            nprinc = 'host/' + str(princ)
         else:
-            nprinc = unicode(princ)
+            nprinc = str(princ)
         return nprinc
 
     def _check_exists(module, _type, name):
@@ -829,7 +815,7 @@ def servicedelegation_normalize_principals(module, principal,
             nprinc = _normalize_principal_name(princ, realm)
         except ipalib_errors.ValidationError as err:
             module.fail_json(msg="%s: %s" % (_princ, str(err)))
-        princ = unicode(nprinc)
+        princ = str(nprinc)
 
         # Check that host principal exists
         if princ.startswith("host/"):
@@ -908,20 +894,20 @@ def get_trusted_domain_sid_from_name(dom_name):
     """
     Given a trust domain name, returns the domain SID.
 
-    Returns unicode string representation for a given trusted domain name
+    Returns string representation for a given trusted domain name
     or None if SID for the given trusted domain name could not be found.
     """
     domain_validator = __get_domain_validator()
     sid = domain_validator.get_sid_from_domain_name(dom_name)
 
-    return unicode(sid) if sid is not None else None
+    return str(sid) if sid is not None else None
 
 
 def get_trusted_domain_object_sid(object_name):
     """Given an object name, returns de object SID."""
     domain_validator = __get_domain_validator()
     sid = domain_validator.get_trusted_domain_object_sid(object_name)
-    return unicode(sid) if sid is not None else None
+    return str(sid) if sid is not None else None
 
 
 class IPAParamMapping(Mapping):

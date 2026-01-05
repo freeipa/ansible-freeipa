@@ -23,7 +23,7 @@ FreeIPA versions 4.5 and up are supported by the client role. There is also limi
 Supported Distributions
 -----------------------
 
-* RHEL/CentOS 7.4+
+* RHEL 8/9/10
 * CentOS Stream 8+
 * Fedora 40+
 * Ubuntu

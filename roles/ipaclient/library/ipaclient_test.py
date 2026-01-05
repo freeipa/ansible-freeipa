@@ -244,11 +244,7 @@ selinux_works:
 
 import os
 import socket
-
-try:
-    from ansible.module_utils.six.moves.configparser import RawConfigParser
-except ImportError:
-    from ConfigParser import RawConfigParser
+from configparser import ConfigParser
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
@@ -300,7 +296,7 @@ def get_ipa_conf():
 
     :returns: dict containing key,value
     """
-    parser = RawConfigParser()
+    parser = ConfigParser()
     parser.read(paths.IPA_DEFAULT_CONF)
     result = {}
     for item in ['basedn', 'realm', 'domain', 'server', 'host', 'xmlrpc_uri']:
