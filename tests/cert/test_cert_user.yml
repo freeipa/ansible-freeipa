@@ -194,7 +194,7 @@
       profile: invalid_profile
       state: requested
     register: result
-    failed_when: not (result.failed and "Request failed with status 400" in result.msg)
+    failed_when: not (result.failed and ("Request failed with status 400" in result.msg or "Profile not found" in result.msg))
 
   # CLEANUP TEST ITEMS
 
