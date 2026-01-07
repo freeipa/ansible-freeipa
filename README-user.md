@@ -452,7 +452,7 @@ Variable | Description | Required
 `manager` | List of manager user names. | no
 `carlicense` | List of car licenses. | no
 `sshpubkey` \| `ipasshpubkey` | List of SSH public keys. | no
-`userauthtype` \| `ipauserauthtype` | List of supported user authentication types. Choices: `password`, `radius`, `otp`, `pkinit`, `hardened`, `idp` and `""`. An additional check ensures that only types can be used that are supported by the IPA version. Use empty string to reset userauthtype to the initial value. | no
+`userauthtype` \| `ipauserauthtype` | List of supported user authentication types. Choices: `password`, `radius`, `otp`, `pkinit`, `hardened`, `idp`, `passkey` and `""`. An additional check ensures that only types can be used that are supported by the IPA version. Use empty string to reset userauthtype to the initial value. | no
 `userclass` | User category. (semantics placed on this attribute are for local interpretation). | no
 `radius` | RADIUS proxy configuration  | no
 `radiususer` | RADIUS proxy username | no

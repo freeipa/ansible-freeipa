@@ -38,6 +38,7 @@ Features
 * Modules for idview management
 * Modules for location management
 * Modules for netgroup management
+* Modules for passkeyconfig management
 * Modules for permission management
 * Modules for privilege management
 * Modules for pwpolicy management
@@ -454,6 +455,7 @@ Modules in plugin/modules
 * [idview](README-idview.md)
 * [ipalocation](README-location.md)
 * [ipanetgroup](README-netgroup.md)
+* [ipapasskeyconfig](README-passkeyconfig.md)
 * [ipapermission](README-permission.md)
 * [ipaprivilege](README-privilege.md)
 * [ipapwpolicy](README-pwpolicy.md)

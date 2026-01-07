@@ -5,6 +5,9 @@
   gather_facts: yes
 
   tasks:
+  - name: Include FreeIPA facts.
+    ansible.builtin.include_tasks: ../env_freeipa_facts.yml
+
   - name: Get Domain from server name
     ansible.builtin.set_fact:
       ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join('.') }}"
@@ -57,6 +60,39 @@
       - radius
     register: result
     failed_when: result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" present with auth_ind passkey
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      auth_ind:
+      - passkey
+    register: result
+    when: passkey_is_supported
+    failed_when: not result.changed or result.failed
+
+  - name: Ensure host "{{ host1_fqdn }}" present with auth_ind passkey, again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      auth_ind:
+      - passkey
+    register: result
+    when: passkey_is_supported
+    failed_when: result.changed or result.failed
+
+  - name: Check if correct message is given if passkey is not supported.
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name: "{{ host1_fqdn }}"
+      auth_ind:
+      - passkey
+    register: result
+    when: not passkey_is_supported
+    failed_when: not result.failed or "'passkey' is not supported" not in result.msg
 
   - name: Ensure host "{{ host1_fqdn }}" present with empty auth_ind
     ipahost:

@@ -74,7 +74,7 @@ options:
         type: list
         elements: str
         required: false
-        choices: ["otp", "radius", "pkinit", "hardened", "idp", ""]
+        choices: ["otp", "radius", "pkinit", "hardened", "idp", "passkey", ""]
         aliases: ["krbprincipalauthind"]
       skip_host_check:
         description: Skip checking if host object exists.
@@ -192,7 +192,7 @@ options:
     type: list
     elements: str
     required: false
-    choices: ["otp", "radius", "pkinit", "hardened", "idp", ""]
+    choices: ["otp", "radius", "pkinit", "hardened", "idp", "passkey", ""]
     aliases: ["krbprincipalauthind"]
   skip_host_check:
     description: Skip checking if host object exists.
@@ -560,7 +560,7 @@ def init_ansible_module():
         auth_ind=dict(type="list", elements="str",
                       aliases=["krbprincipalauthind"],
                       choices=["otp", "radius", "pkinit", "hardened", "idp",
-                               ""]),
+                               "passkey", ""]),
         skip_host_check=dict(type="bool"),
         force=dict(type="bool"),
         requires_pre_auth=dict(
