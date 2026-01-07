@@ -63,6 +63,9 @@
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host1_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.201' }}"
+      mac_address: ["A0:b0:00:00:00:00"]
+      description: "A host"
+      location: "A lab"
       update_dns: yes
       reverse: no
     register: result
@@ -74,8 +77,25 @@
       ipaapi_context: "{{ ipa_context | default(omit) }}"
       name: "{{ host1_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.201' }}"
+      description: "A host"
+      location: "A lab"
+      mac_address: ["a0:B0:00:00:00:00"]
       update_dns: yes
       reverse: no
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Host "{{ host1_fqdn }}", using 'hosts', present again
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        ip_address: "{{ ipv4_prefix + '.201' }}"
+        description: "A host"
+        location: "A lab"
+        mac_address: ["A0:b0:00:00:00:00"]
+        update_dns: yes
     register: result
     failed_when: result.changed or result.failed
 
@@ -220,6 +240,17 @@
   #     state: disabled
   #   register: result
   #   failed_when: result.changed or result.failed
+
+  - name: Try to set duplicate host as absent.
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host1_fqdn }}"
+      state: absent
+    register: result
+    failed_when: result.changed or (not result.failed and "used more than once" not in result.msg)
 
   - name: Hosts host1..host6 absent
     ipahost:
