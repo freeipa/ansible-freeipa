@@ -38,6 +38,19 @@
       name: "{{ _ipapackages }}"
       state: present
 
+- name: Check package availability
+  when: not (ipaserver_install_packages | bool)
+  block:
+    - name: Install - Check package installation
+      ansible.builtin.stat:
+        path: /usr/sbin/ipa-server-install
+      register: __ipa_server_install_available
+
+    - name: Install - Abort installation due to missing packages
+      ansible.builtin.fail:
+        msg: "IPA server packages missing or corrupted"
+      when: not __ipa_server_install_available.stat.exists
+
 - name: Install - Firewall configuration
   when: ipaserver_setup_firewalld | bool
   block:

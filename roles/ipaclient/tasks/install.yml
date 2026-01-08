@@ -19,6 +19,19 @@
       name: "{{ _ipapackages }}"
       state: present
 
+- name: Check package availability
+  when: not (ipaclient_install_packages | bool)
+  block:
+    - name: Install - Check package installation
+      ansible.builtin.stat:
+        path: /usr/sbin/ipa-client-install
+      register: __ipa_client_install_available
+
+    - name: Install - Abort installation due to missing packages
+      ansible.builtin.fail:
+        msg: "IPA client packages missing or corrupted"
+      when: not __ipa_client_install_available.stat.exists
+
 - name: Install - Set ipaclient_servers
   ansible.builtin.set_fact:
     ipaclient_servers: "{{ groups['ipaservers'] | list }}"
