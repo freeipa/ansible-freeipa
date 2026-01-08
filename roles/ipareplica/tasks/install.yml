@@ -47,20 +47,21 @@
       enabled: yes
       state: started
 
-  - name: Firewalld - Verify runtime zone "{{ ipareplica_firewalld_zone }}"
-    ansible.builtin.shell: >
-      firewall-cmd
-      --info-zone="{{ ipareplica_firewalld_zone }}"
-      >/dev/null
+  - name: Firewalld - Verify zones
     when: ipareplica_firewalld_zone is defined
+    block:
+    - name: Firewalld - Verify runtime zone from ipareplica_firewalld_zone
+      ansible.builtin.shell: >
+        firewall-cmd
+        --info-zone="{{ ipareplica_firewalld_zone }}"
+        >/dev/null
 
-  - name: Firewalld - Verify permanent zone "{{ ipareplica_firewalld_zone }}"
-    ansible.builtin.shell: >
-      firewall-cmd
-      --permanent
-      --info-zone="{{ ipareplica_firewalld_zone }}"
-      >/dev/null
-    when: ipareplica_firewalld_zone is defined
+    - name: Firewalld - Verify permanent zone from ipareplica_firewalld_zone
+      ansible.builtin.shell: >
+        firewall-cmd
+        --permanent
+        --info-zone="{{ ipareplica_firewalld_zone }}"
+        >/dev/null
 
 - name: Install - Set ipareplica_servers
   ansible.builtin.set_fact:

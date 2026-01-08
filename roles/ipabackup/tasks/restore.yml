@@ -91,20 +91,21 @@
       enabled: yes
       state: started
 
-  - name: Firewalld - Verify runtime zone "{{ ipabackup_firewalld_zone }}"
-    ansible.builtin.shell: >
-      firewall-cmd
-      --info-zone="{{ ipabackup_firewalld_zone }}"
-      >/dev/null
+  - name: Firewalld - Verify zones
     when: ipabackup_firewalld_zone is defined
+    block:
+    - name: Firewalld - Verify runtime zone from ipabackup_firewalld_zone
+      ansible.builtin.shell: >
+        firewall-cmd
+        --info-zone="{{ ipabackup_firewalld_zone }}"
+        >/dev/null
 
-  - name: Firewalld - Verify permanent zone "{{ ipabackup_firewalld_zone }}"
-    ansible.builtin.shell: >
-      firewall-cmd
-      --permanent
-      --info-zone="{{ ipabackup_firewalld_zone }}"
-      >/dev/null
-    when: ipabackup_firewalld_zone is defined
+    - name: Firewalld - Verify permanent zone from ipabackup_firewalld_zone
+      ansible.builtin.shell: >
+        firewall-cmd
+        --permanent
+        --info-zone="{{ ipabackup_firewalld_zone }}"
+        >/dev/null
 
 ### RESTORE
 
