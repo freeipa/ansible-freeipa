@@ -1,7 +1,15 @@
 ---
-- name: Test host
+- name: Test host reverse attribute
   hosts: ipaserver
   become: true
+
+  module_defaults:
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipadnszone:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
 
   tasks:
   - name: Get Domain from server name
@@ -15,7 +23,6 @@
 
   - name: Host absent
     ipahost:
-      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       update_dns: yes
@@ -28,30 +35,24 @@
 
   - name: Set zone prefixes.
     ansible.builtin.set_fact:
-      zone_ipv6_reverse: "ip6.arpa."
       zone_ipv6_reverse_workaround: "d.f.ip6.arpa."
-      zone_prefix_reverse: "in-addr.arpa"
       zone_prefix_reverse_8: "{{ ipv4_prefix.split('.')[2::-1] | join('.') }}.in-addr.arpa"
       zone_prefix_reverse_16: "{{ ipv4_prefix.split('.')[1::-1] | join('.') }}.in-addr.arpa"
       zone_prefix_reverse_24: "{{ ipv4_prefix.split('.')[::-1] | join('.') }}.in-addr.arpa"
 
   - name: Set zone for reverse address.
     ipadnszone:
-      ipaadmin_password: SomeADMINpassword
       name: "{{ item }}"
       skip_nameserver_check: yes
       skip_overlap_check: yes
     with_items:
-      - "{{ zone_ipv6_reverse }}"
       - "{{ zone_ipv6_reverse_workaround }}"
-      - "{{ zone_prefix_reverse }}"
       - "{{ zone_prefix_reverse_8 }}"
       - "{{ zone_prefix_reverse_16 }}"
       - "{{ zone_prefix_reverse_24 }}"
 
   - name: Host "{{ host1_fqdn }}" present
     ipahost:
-      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.201' }}"
       update_dns: yes
@@ -61,7 +62,6 @@
 
   - name: Host "{{ host1_fqdn }}" present, again.
     ipahost:
-      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       ip_address: "{{ ipv4_prefix + '.201' }}"
       update_dns: yes
@@ -71,7 +71,6 @@
 
   - name: Hosts host1 absent
     ipahost:
-      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       update_dns: yes
@@ -81,7 +80,6 @@
 
   - name: Host "{{ host1_fqdn }}" present with IPv6
     ipahost:
-      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       ip_address: "fd00::0001"
       update_dns: yes
@@ -91,7 +89,6 @@
 
   - name: Host "{{ host1_fqdn }}" present with IPv6, again.
     ipahost:
-      ipaadmin_password: SomeADMINpassword
       name: "{{ host1_fqdn }}"
       ip_address: "fd00::0001"
       update_dns: yes
@@ -101,7 +98,6 @@
 
   - name: Hosts host1 absent
     ipahost:
-      ipaadmin_password: SomeADMINpassword
       name:
       - "{{ host1_fqdn }}"
       update_dns: yes
@@ -111,13 +107,10 @@
 
   - name: Delete zone for reverse address.
     ipadnszone:
-      ipaadmin_password: SomeADMINpassword
       name: "{{ item }}"
       state: absent
     with_items:
-      - "{{ zone_ipv6_reverse }}"
       - "{{ zone_ipv6_reverse_workaround }}"
-      - "{{ zone_prefix_reverse }}"
       - "{{ zone_prefix_reverse_8 }}"
       - "{{ zone_prefix_reverse_16 }}"
       - "{{ zone_prefix_reverse_24 }}"

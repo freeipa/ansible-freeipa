@@ -15,13 +15,11 @@
       skip_nameserver_check: yes
       skip_overlap_check: yes
     with_items:
-    - "{{ zone_prefix_reverse }}"
     - "{{ zone_prefix_reverse_24 }}"
     - "{{ zone_prefix_reverse_16 }}"
     - "{{ zone_prefix_reverse_8 }}"
     - "{{ zone_ipv6_reverse_workaround }}"
     - "{{ testzone }}"
-    - "{{ zone_ipv6_reverse }}"
 
   - name: Ensure DNSSEC zone '"{{ safezone }}"' is present.
     ipadnszone:

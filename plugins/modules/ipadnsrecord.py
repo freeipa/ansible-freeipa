@@ -1454,11 +1454,13 @@ def define_commands_for_present_state(module, zone_name, entry, res_find):
         # Create reverse records for existing records
         for ipv in ['a', 'aaaa']:
             record = '%srecord' % ipv
-            if record in args and ('%s_extra_create_reverse' % ipv) in args:
+            if (
+                record in args
+                and args.pop('%s_extra_create_reverse' % ipv, False)
+            ):
                 cmds = create_reverse_ip_record(
                     module, zone_name, name, args[record])
                 _commands.extend(cmds)
-                del args['%s_extra_create_reverse' % ipv]
         for record, fields in _RECORD_PARTS.items():
             part_fields = [f for f in fields if f in args]
             if part_fields:
@@ -1620,7 +1622,6 @@ def main():
                 commands.extend(cmds)
 
         # Execute commands
-
         changed = ansible_module.execute_ipa_commands(
             commands, exception_handler=exception_handler)
 
