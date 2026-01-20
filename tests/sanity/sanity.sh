@@ -19,7 +19,7 @@ pip install galaxy_importer
 rm -f "$ANSIBLE_COLLECTION"-*.tar.gz
 rm -f importer_result.json
 
-utils/build-galaxy-release.sh
+utils/build-collection.sh rpm
 
 sed "s/LOCAL_IMAGE_DOCKER = True/LOCAL_IMAGE_DOCKER = ${use_docker}/" < tests/sanity/galaxy-importer.cfg > ${VENV}/galaxy-importer.cfg
 export GALAXY_IMPORTER_CONFIG=${VENV}/galaxy-importer.cfg

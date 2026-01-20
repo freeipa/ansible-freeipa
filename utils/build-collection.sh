@@ -8,21 +8,28 @@ pwd=$(pwd)
 
 usage() {
     cat <<EOF
-Usage: $prog [options] [<namespace> <name>]
+Usage: $prog [options] rpm|aah|galaxy
 
 Build Anible Collection for ansible-freeipa.
 
-The namespace defaults to freeipa an name defaults to ansible_freeipa,
-if namespace and name are not given. Namespace and name need to be set
-together.
+The namespace and name are defined according to the argument:
+
+  rpm     freeipa.ansible_freeipa   - General use and RPMs
+  galaxy  freeipa.ansible_freeipa   - Ansible Galaxy
+  aah     redhat.rhel_idm           - Ansible AutomationHub
+
+The generated file README-COLLECTION.md is set in galaxy.yml as the
+documentation entry point for the collections generated with aah and galaxy
+as Ansible AutomationHub and also Ansible Galaxy are not able to render the
+documentation README files in the collection properly.
 
 Options:
-  -a          Add all files, no only files known to git repo
+  -a          Add all files, not only files known to git repo
   -k          Keep build directory
   -i          Install the generated collection
   -o <A.B.C>  Build offline without using git, using version A.B.C
               Also enables -a
-  -p <path>   Installation the generated collection in the path, the
+  -p <path>   Install the generated collection in the given path, the
               ansible_collections sub directory will be created and will
               contain the collection: ansible_collections/<namespace>/<name>
               Also enables -i
@@ -36,7 +43,9 @@ keep=0
 install=0
 path=
 offline=
-galaxy_version=
+version=
+namespace="freeipa"
+name="ansible_freeipa"
 while getopts "ahkio:p:" arg; do
     case $arg in
         a)
@@ -53,7 +62,7 @@ while getopts "ahkio:p:" arg; do
             install=1
             ;;
         o)
-            galaxy_version=$OPTARG
+            version=$OPTARG
             offline=1
             all=1
             ;;
@@ -70,60 +79,97 @@ while getopts "ahkio:p:" arg; do
 done
 shift $((OPTIND-1))
 
-if [ $# != 0 ] && [ $# != 2 ]; then
+if [ $# != 1 ]; then
     usage
     exit 1
 fi
-namespace="${1-freeipa}"
-name="${2-ansible_freeipa}"
-if [ -z "$namespace" ]; then
-    echo "Namespace might not be empty"
-    exit 1
-fi
-if [ -z "$name" ]; then
-    echo "Name might not be empty"
-    exit 1
-fi
+
+collection="$1"
+case "$collection" in
+    rpm|galaxy)
+        # namespace and name are already set
+        ;;
+    aah)
+        namespace="redhat"
+        name="rhel_idm"
+        ;;
+    *)
+        echo "Unknown collection '$collection'"
+        usage
+        exit 1
+        ;;
+esac
 collection_prefix="${namespace}.${name}"
+collection_uname="${collection^^}"
 
-[ -z "$galaxy_version" ] && \
-    galaxy_version=$(git describe --tags 2>/dev/null | sed -e "s/^v//")
+[ -z "$version" ] && \
+    version=$(git describe --tags 2>/dev/null | sed -e "s/^v//")
 
-if [ -z "$galaxy_version" ]; then
+if [ -z "$version" ]; then
     echo "Version could not be detected"
     exit 1
 fi
 
-echo "Building collection: ${namespace}-${name}-${galaxy_version}"
+echo "Building collection: ${namespace}-${name}-${version} for ${collection_uname}"
 
-GALAXY_BUILD=".galaxy-build"
+BUILD=".collection-build"
 
-if [ -e "$GALAXY_BUILD" ]; then
-    echo "Removing existing $GALAXY_BUILD ..."
-    rm -rf "$GALAXY_BUILD"
-    echo -e "\033[ARemoving existing $GALAXY_BUILD ... \033[32;1mDONE\033[0m"
+if [ -e "$BUILD" ]; then
+    echo "Removing existing $BUILD ..."
+    rm -rf "$BUILD"
+    echo -e "\033[ARemoving existing $BUILD ... \033[32;1mDONE\033[0m"
 fi
-mkdir "$GALAXY_BUILD"
-echo "Copying files to build dir $GALAXY_BUILD ..."
+mkdir "$BUILD"
+echo "Copying files to build dir $BUILD ..."
 if [ $all == 1 ]; then
-    # Copy all files except galaxy build dir
+    # Copy all files except collection build dir
     for file in .[A-z]* [A-z]*; do
-        [[ "$file" == "${GALAXY_BUILD}" ]] && continue
-        cp -a "$file" "${GALAXY_BUILD}/"
+        [[ "$file" == "${BUILD}" ]] && continue
+        cp -a "$file" "${BUILD}/"
     done
 else
     # git ls-tree is quoting, therefore ignore SC2046: Quote this to prevent
     # word splitting
     # shellcheck disable=SC2046
-    tar -cf - $(git ls-tree HEAD --name-only -r) | (cd "$GALAXY_BUILD/" && tar -xf -)
+    tar -cf - $(git ls-tree HEAD --name-only -r) | (cd "$BUILD/" && tar -xf -)
 fi
-echo -e "\033[ACopying files to build dir $GALAXY_BUILD ... \033[32;1mDONE\033[0m"
-cd "$GALAXY_BUILD" || exit 1
+echo -e "\033[ACopying files to build dir $BUILD ... \033[32;1mDONE\033[0m"
+cd "$BUILD" || exit 1
 
-sed -i -e "s/version: .*/version: \"$galaxy_version\"/" galaxy.yml
+echo "Removing .copr, .git* and .pre* files from build dir $BUILD ..."
+rm -rf .copr .git* .pre*
+echo -e "\033[ARemoving files from build dir $BUILD ... \033[32;1mDONE\033[0m"
+
+if [ "$collection" != "rpm" ]; then
+    cat > README-COLLECTION.md <<EOF
+FreeIPA Ansible collection
+==========================
+
+Important
+---------
+
+For the documentation of this collection, please have a look at the documentation in the collection archive. Starting point: Base collection directory, file \`README.md\`.
+
+${collection_uname} is not providing proper user documentation nor is able to render the documentation part of the collection. Please ignore any modules and plugins in ${collection_uname} documentation section with the prefix \`ipaserver_\`, \`ipareplica_\`, \`ipaclient_\`, \`ipabackup_\` and \`ipasmartcard_\` and also \`module_utils\` and \`doc_fragments\`. These files are used internally only and are not supported to be used otherwise.
+
+There is the [generic ansible-freeipa upstream documentation](https://github.com/freeipa/ansible-freeipa/blob/v${version}/README.md) specific to the version and also the [latest generic ansible-freeipa upstream documentation](https://github.com/freeipa/ansible-freeipa/blob/master/README.md), both without using the collection prefix \`${collection_prefix}\`.
+EOF
+    if [ "$collection" == "aah" ]; then
+        cat >> README-COLLECTION.md <<EOF
+
+Support
+-------
+
+This collection is maintained by Red Hat RHEL team.
+
+As Red Hat Ansible Certified Content, this collection is entitled to support through the Ansible Automation Platform (AAP) using the **Create issue** button on the top right corner.
+EOF
+    fi
+    sed -i -e "s/readme: .*/readme: README-COLLECTION.md/" galaxy.yml
+fi
+sed -i -e "s/version: .*/version: \"$version\"/" galaxy.yml
 sed -i -e "s/namespace: .*/namespace: \"$namespace\"/" galaxy.yml
 sed -i -e "s/name: .*/name: \"$name\"/" galaxy.yml
-
 find . -name "*~" -exec rm {} \;
 find . -name "__py*__" -exec rm -rf {} \;
 
@@ -210,14 +256,14 @@ ansible-galaxy collection build --force --output-path="$pwd"
 cd "$pwd" || exit 1
 
 if [ $keep == 0 ]; then
-    echo "Removing build dir $GALAXY_BUILD ..."
-    rm -rf "$GALAXY_BUILD"
-    echo -e "\033[ARemoving build dir $GALAXY_BUILD ... \033[32;1mDONE\033[0m"
+    echo "Removing build dir $BUILD ..."
+    rm -rf "$BUILD"
+    echo -e "\033[ARemoving build dir $BUILD ... \033[32;1mDONE\033[0m"
 else
-    echo "Keeping build dir $GALAXY_BUILD"
+    echo "Keeping build dir $BUILD"
 fi
 
 if [ $install == 1 ]; then
-    echo "Installing collection ${namespace}-${name}-${galaxy_version}.tar.gz ..."
-    ansible-galaxy collection install ${path:+"-p$path"} "${namespace}-${name}-${galaxy_version}.tar.gz" --force ${offline/1/--offline}
+    echo "Installing collection ${namespace}-${name}-${version}.tar.gz ..."
+    ansible-galaxy collection install ${path:+"-p$path"} "${namespace}-${name}-${version}.tar.gz" --force ${offline/1/--offline}
 fi
