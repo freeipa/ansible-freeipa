@@ -1283,7 +1283,7 @@ def main():
         # Default email domain
 
         result = ansible_module.ipa_command_no_name("config_show", {})
-        default_email_domain = result["result"]["ipadefaultemaildomain"][0]
+        default_email_domain = result["result"]["ipadefaultemaildomain"][0] if "ipadefaultemaildomain" in result["result"] else None
 
         # Extend email addresses
 
