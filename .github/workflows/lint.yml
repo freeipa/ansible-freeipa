@@ -17,8 +17,8 @@ jobs:
       - name: Run ansible-lint
         run: |
           pip install "ansible-core>=2.16,<2.17" 'ansible-lint==6.22'
-          utils/build-galaxy-release.sh -ki
-          cd .galaxy-build
+          utils/build-collection.sh -ki rpm
+          cd .collection-build
           ansible-lint --profile production --exclude tests/integration/ --exclude tests/unit/ --parseable --nocolor
 
   yamllint:
