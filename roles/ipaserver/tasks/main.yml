@@ -1,6 +1,15 @@
 ---
 # tasks file for ipaserver
 
+- name: Ensure distribution facts are available
+  ansible.builtin.setup:
+    gather_subset:
+      - dns
+      - distribution
+      - distribution_version
+      - distribution_major_version
+      - os_family
+
 - name: Import variables specific to distribution
   ansible.builtin.include_vars: "{{ item }}"
   with_first_found:
