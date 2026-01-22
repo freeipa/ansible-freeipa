@@ -82,8 +82,9 @@ versions 4.5 and up, the replica role is currently only working with versions
 
 Supported Distributions
 
-- RHEL/CentOS 7.4+
-- Fedora 26+
+- RHEL 8/9/10
+- CentOS Stream 8+
+- Fedora 40+
 - Ubuntu
 - Debian 10+ (ipaclient only, no server or replica!)
 

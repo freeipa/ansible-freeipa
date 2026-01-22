@@ -145,10 +145,6 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, get_trusted_domain_sid_from_name, \
     ipalib_errors
-from ansible.module_utils import six
-
-if six.PY3:
-    unicode = str
 
 
 def find_idrange(module, name):

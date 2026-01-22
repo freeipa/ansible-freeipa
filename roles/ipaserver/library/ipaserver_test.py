@@ -322,12 +322,11 @@ RETURN = '''
 '''
 
 import os
-import sys
 import random
 from shutil import copyfile
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils._text import to_native
+from ansible.module_utils.common.text.converters import to_native, to_text
 from ansible.module_utils.ansible_ipa_server import (
     check_imports,
     AnsibleModuleLog, setup_logging, options, adtrust_imported, kra_imported,
@@ -341,10 +340,6 @@ from ansible.module_utils.ansible_ipa_server import (
     get_min_idstart, SerialNumber, services, service,
     CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION
 )
-from ansible.module_utils import six
-
-if six.PY3:
-    unicode = str
 
 
 def main():
@@ -1005,31 +1000,8 @@ def main():
 
     # validate zonemgr
     if options.zonemgr:
-        if six.PY3:
-            with redirect_stdout(ansible_log):
-                bindinstance.validate_zonemgr_str(options.zonemgr)
-        else:
-            try:
-                # IDNA support requires unicode
-                encoding = getattr(sys.stdin, 'encoding', None)
-                if encoding is None:
-                    encoding = 'utf-8'
-                value = options.zonemgr
-                if not isinstance(value, unicode):
-                    value = options.zonemgr.decode(encoding)
-                else:
-                    value = options.zonemgr
-                with redirect_stdout(ansible_log):
-                    bindinstance.validate_zonemgr_str(value)
-            except ValueError as e:
-                # FIXME we can do this in better way
-                # https://fedorahosted.org/freeipa/ticket/4804
-                # decode to proper stderr encoding
-                stderr_encoding = getattr(sys.stderr, 'encoding', None)
-                if stderr_encoding is None:
-                    stderr_encoding = 'utf-8'
-                error = unicode(e).encode(stderr_encoding)
-                ansible_module.fail_json(msg=error)
+        with redirect_stdout(ansible_log):
+            bindinstance.validate_zonemgr_str(options.zonemgr)
 
     # external cert file paths are absolute
     if options.external_cert_files:
@@ -1141,7 +1113,7 @@ def main():
             validate_domain_name(domain_name)
         except ValueError as e:
             ansible_module.fail_json(
-                msg="Invalid domain name: %s" % unicode(e))
+                msg="Invalid domain name: %s" % to_text(e))
     else:
         domain_name = options.domain_name
 
@@ -1165,7 +1137,7 @@ def main():
         try:
             validate_domain_name(realm_name, entity="realm")
         except ValueError as e:
-            raise ScriptError("Invalid realm name: {0}".format(unicode(e)))
+            raise ScriptError("Invalid realm name: {0}".format(to_text(e)))
 
     if not options.setup_adtrust:
         # If domain name and realm does not match, IPA server will not be able

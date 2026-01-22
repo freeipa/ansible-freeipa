@@ -327,14 +327,10 @@ EXAMPLES = """
 RETURN = """
 """
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
     gen_add_list, gen_intersection_list, api_check_param, \
-    convert_to_sid
-from ansible.module_utils import six
-if six.PY3:
-    unicode = str
+    convert_to_sid, to_text
 # Ensuring (adding) several groups with mixed types external, nonposix
 # and posix require to have a fix in IPA:
 # FreeIPA issue: https://pagure.io/freeipa/issue/9349
@@ -675,11 +671,7 @@ def main():
 
                 check_parameters(ansible_module, state, action)
 
-            elif (
-                isinstance(
-                    group_name, (str, unicode)  # pylint: disable=W0012,E0606
-                )
-            ):
+            elif isinstance(group_name, str):
                 name = group_name
             else:
                 ansible_module.fail_json(msg="Group '%s' is not valid" %
