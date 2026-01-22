@@ -98,6 +98,7 @@
       - TestLocation_01
       - TestLocation_02
       state: absent
+      continue: no
     register: result
     failed_when: result.failed or not result.changed
 
@@ -111,5 +112,6 @@
       - TestLocation_03
       - TestLocation_04
       state: absent
+      continue: yes
     register: result
     failed_when: result.changed or result.failed
