@@ -1,0 +1,17 @@
+---
+- name: Test if admin user can get TGT on the host
+  hosts: all
+  become: false
+  gather_facts: false
+
+  tasks:
+  - name: Run kinit on host
+    ansible.builtin.shell: "kinit admin <<< {{ ipaadmin_password }}"
+    register: kinit
+    changed_when: not kinit.failed
+
+  - name: Cleanup TGT ticket
+    ansible.builtin.shell: "kdestroy -A"
+    when: not kinit.failed
+    register: cleanup
+    changed_when: not cleanup.failed
