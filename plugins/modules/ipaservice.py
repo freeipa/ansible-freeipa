@@ -423,9 +423,6 @@ from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, encode_certificate, \
     gen_add_del_lists, gen_add_list, gen_intersection_list, ipalib_errors, \
     api_get_realm, to_text, convert_input_certificates
-from ansible.module_utils import six
-if six.PY3:
-    unicode = str
 
 
 def find_service(module, name):
@@ -729,11 +726,7 @@ def main():
 
                 delete_continue = service.get("delete_continue")
 
-            elif (
-                isinstance(
-                    service, (str, unicode)  # pylint: disable=W0012,E0606
-                )
-            ):
+            elif isinstance(service, str):
                 name = service
             else:
                 ansible_module.fail_json(msg="Service '%s' is not valid" %

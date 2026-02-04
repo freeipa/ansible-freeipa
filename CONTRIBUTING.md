@@ -87,8 +87,8 @@ configured trust to an AD domain). For these cases, there are some `facts`
 available that will only enable the tests if the testing environment is
 enabled.
 
-The tests run automatically on every pull request, using Fedora, CentOS 7,
-and CentOS 8 environments.
+The tests run automatically on every pull request, using Fedora, and CentOS
+supported environments.
 
 See the document [Running the tests] and also the section `Preparing the
 development environment`, to prepare your environment.

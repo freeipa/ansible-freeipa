@@ -107,10 +107,6 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, gen_add_del_lists, gen_add_list, gen_intersection_list, \
     servicedelegation_normalize_principals, ipalib_errors
-from ansible.module_utils import six
-
-if six.PY3:
-    unicode = str
 
 
 def find_servicedelegationtarget(module, name):

@@ -964,9 +964,8 @@ RETURN = """
 """
 
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, is_ipv4_addr, is_ipv6_addr, ipalib_errors
+    IPAAnsibleModule, is_ipv4_addr, is_ipv6_addr, ipalib_errors, to_text
 try:
     import dns.reversename
     import dns.resolver
@@ -975,10 +974,6 @@ except ImportError as _err:
 else:
     MODULE_IMPORT_ERROR = None
 
-from ansible.module_utils import six
-
-if six.PY3:
-    unicode = str
 
 _SUPPORTED_RECORD_TYPES = [
     "A", "AAAA", "A6", "AFSDB", "CERT", "CNAME", "DLV", "DNAME", "DS", "KX",

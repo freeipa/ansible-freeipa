@@ -186,13 +186,9 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, template_str, urlparse, \
     ipalib_errors
-from ansible.module_utils import six
 from copy import deepcopy
 import string
 from itertools import chain
-
-if six.PY3:
-    unicode = str
 
 # Copy from FreeIPA ipaserver/plugins/idp.py
 idp_providers = {

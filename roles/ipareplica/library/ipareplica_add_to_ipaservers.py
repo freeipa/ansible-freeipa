@@ -71,16 +71,12 @@ RETURN = '''
 import os
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.common.text.converters import to_text
 from ansible.module_utils.ansible_ipa_replica import (
     check_imports, AnsibleModuleLog, setup_logging, installer, paths,
     gen_env_boostrap_finalize_core, constants, api_bootstrap_finalize,
     gen_remote_api, api
 )
-
-from ansible.module_utils import six
-
-if six.PY3:
-    unicode = str
 
 
 def main():
@@ -139,7 +135,7 @@ def main():
         conn.connect(ccache=installer._ccache)
         remote_api.Command['hostgroup_add_member'](
             u'ipaservers',
-            host=[unicode(api.env.host)],  # pylint: disable=W0012,E0606
+            host=[to_text(api.env.host)],
         )
     finally:
         if conn.isconnected():
