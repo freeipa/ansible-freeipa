@@ -228,3 +228,22 @@ container_tee() {
     rm "${tmpfile}"
     echo
 }
+
+container_save() {
+    local name=${1}
+
+    archive="${name}.tar"
+    log info "= Saving ${name} to ${archive} ="
+    # podman is not able to overwrite the archive
+    [ -f "${archive}" ] && rm "${archive}"
+    podman save -o "${archive}" "${name}"
+    echo
+}
+
+container_load() {
+    local name=${1}
+
+    image_name=$(podman load -q -i "${name}" | sed -e "s/^Loaded image: //")
+    image=$(podman image list -q "${image_name}")
+    echo "$image"
+}
