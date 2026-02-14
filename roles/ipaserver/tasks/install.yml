@@ -223,6 +223,7 @@
       sid_generation_always: "{{ result_ipaserver_test.sid_generation_always }}"
       random_serial_numbers: "{{ result_ipaserver_test.random_serial_numbers }}"
       _hostname_overridden: "{{ result_ipaserver_test._hostname_overridden }}"
+      key_type_size: "{{ ipaserver_key_type_size | default(omit) }}"
     register: result_ipaserver_prepare
 
   - name: Install - Setup NTP

@@ -238,8 +238,16 @@ options:
     type: bool
     default: no
     required: no
+  key_type_size:
+    description:
+        The key type and size for HTTP, LDAP, PKINIT and RA (if CA
+        configured) certificates (Requires IPA 4.13+)
+    type: str
+    default: "rsa:2048"
+    required: no
 author:
     - Thomas Woerner (@t-woerner)
+    - Rafael Jeffman (@rjeffman)
 '''
 
 EXAMPLES = '''
@@ -329,6 +337,7 @@ def main():
                                        default=False),
             _hostname_overridden=dict(required=False, type='bool',
                                       default=False),
+            key_type_size=dict(required=False, type="str", default="rsa:2048"),
         ),
         supports_check_mode=False,
     )
@@ -411,6 +420,7 @@ def main():
         '_hostname_overridden')
     sid_generation_always = ansible_module.params.get('sid_generation_always')
     options.kasp_db_file = None
+    options.key_type_size = ansible_module.params.get('key_type_size')
 
     # init ##################################################################
 
