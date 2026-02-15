@@ -325,6 +325,7 @@
       ca_signing_algorithm: "{{ ipaserver_ca_signing_algorithm |
                                 default(omit) }}"
       _random_serial_numbers: "{{ result_ipaserver_prepare._random_serial_numbers }}"
+      key_type_size: "{{ result_ipaserver_prepare.key_type_size }}"
       reverse_zones: "{{ result_ipaserver_prepare.reverse_zones }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"
