@@ -327,6 +327,7 @@ Variable | Description | Required
 `ipaserver_subject_base` | The certificate subject base (default O=<realm-name>). RDNs are in LDAP order (most specific RDN first). (string) | no
 `ipaserver_ca_subject` | The CA certificate subject DN (default CN=Certificate Authority,O=<realm-name>). RDNs are in LDAP order (most specific RDN first). (string) | no
 `ipaserver_ca_signing_algorithm` | Signing algorithm of the IPA CA certificate. (choice: SHA1withRSA, SHA256withRSA, SHA512withRSA) | no
+`ipaserver_key_type_size` | The key type and size for HTTP, LDAP, PKINIT and RA (if CA configured) certificates. Requires FreeIPA version 4.13 or later. (default:"rsa:2048") | no
 
 DNS Variables
 -------------
