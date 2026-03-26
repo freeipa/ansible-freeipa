@@ -77,7 +77,7 @@ RETURN = """
 """
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa
+    IPAAnsibleModule, compare_args_ipa, IPADiffTracker, gen_args_diff
 
 
 def find_sudocmd(module, name):
@@ -143,6 +143,7 @@ def main():
 
     changed = False
     exit_args = {}
+    diff_tracker = IPADiffTracker()
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
@@ -164,13 +165,18 @@ def main():
                     if not compare_args_ipa(ansible_module, args,
                                             res_find):
                         commands.append([name, "sudocmd_mod", args])
+                        before, after = gen_args_diff(args, res_find)
+                        diff_tracker.add_entry_diff(name, before, after)
                 else:
                     commands.append([name, "sudocmd_add", args])
+                    diff_tracker.add_entry_diff(name, {}, args)
                     # Set res_find to empty dict for next step
                     res_find = {}
             elif state == "absent":
                 if res_find is not None:
                     commands.append([name, "sudocmd_del", {}])
+                    diff_tracker.add_entry_diff(
+                        name, {"state": "present"}, {"state": "absent"})
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
@@ -178,7 +184,8 @@ def main():
 
     # Done
 
-    ansible_module.exit_json(changed=changed, **exit_args)
+    _exit_kwargs = dict(exit_args, **diff_tracker.build_diff())
+    ansible_module.exit_json(changed=changed, **_exit_kwargs)
 
 
 if __name__ == "__main__":

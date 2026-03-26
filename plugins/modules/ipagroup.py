@@ -331,7 +331,8 @@ from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
     gen_add_list, gen_intersection_list, api_check_param, \
-    convert_to_sid
+    convert_to_sid, IPADiffTracker, gen_args_diff, gen_member_diff, \
+    merge_diffs
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -597,6 +598,7 @@ def main():
 
     changed = False
     exit_args = {}
+    diff_tracker = IPADiffTracker()
 
     # If nonposix is used, set posix as not nonposix
     if nonposix is not None:
@@ -687,6 +689,7 @@ def main():
 
             # Make sure group exists
             res_find = find_group(ansible_module, name)
+            res_find_orig = res_find
 
             # external members must de handled as SID
             externalmember = convert_to_sid(externalmember)
@@ -721,6 +724,7 @@ def main():
 
                 # Generate args
                 args = gen_args(description, gid, nomembers)
+                attr_before, attr_after = {}, {}
 
                 if action == "group":
                     # Found the group
@@ -742,12 +746,15 @@ def main():
                             if external:
                                 args['external'] = True
                             commands.append([name, "group_mod", args])
+                            attr_before, attr_after = gen_args_diff(
+                                args, res_find)
                     else:
                         if posix is not None and not posix:
                             args['nonposix'] = True
                         if external:
                             args['external'] = True
                         commands.append([name, "group_add", args])
+                        attr_before, attr_after = {}, args
                         # Set res_find dict for next step
                         res_find = {}
 
@@ -958,13 +965,119 @@ def main():
                          }]
                     )
 
+            # Diff tracking
+            _orig = res_find_orig or {}
+            if state == "present":
+                if action == "group":
+                    before, after = merge_diffs(
+                        (attr_before, attr_after),
+                        gen_member_diff(
+                            "user", user_add, user_del,
+                            _orig.get("member_user")),
+                        gen_member_diff(
+                            "group", group_add, group_del,
+                            _orig.get("member_group")),
+                        gen_member_diff(
+                            "service", service_add, service_del,
+                            _orig.get("member_service")),
+                        gen_member_diff(
+                            "external", externalmember_add,
+                            externalmember_del,
+                            list(_orig.get("member_external", []))
+                            + list(_orig.get("ipaexternalmember", []))),
+                        gen_member_diff(
+                            "idoverrideuser", idoverrides_add,
+                            idoverrides_del,
+                            _orig.get("member_idoverrideuser")),
+                        gen_member_diff(
+                            "membermanager_user",
+                            membermanager_user_add, membermanager_user_del,
+                            _orig.get("membermanager_user")),
+                        gen_member_diff(
+                            "membermanager_group",
+                            membermanager_group_add, membermanager_group_del,
+                            _orig.get("membermanager_group")),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
+                elif action == "member":
+                    before, after = merge_diffs(
+                        gen_member_diff(
+                            "user", user_add, user_del,
+                            _orig.get("member_user")),
+                        gen_member_diff(
+                            "group", group_add, group_del,
+                            _orig.get("member_group")),
+                        gen_member_diff(
+                            "service", service_add, service_del,
+                            _orig.get("member_service")),
+                        gen_member_diff(
+                            "external", externalmember_add,
+                            externalmember_del,
+                            list(_orig.get("member_external", []))
+                            + list(_orig.get("ipaexternalmember", []))),
+                        gen_member_diff(
+                            "idoverrideuser", idoverrides_add,
+                            idoverrides_del,
+                            _orig.get("member_idoverrideuser")),
+                        gen_member_diff(
+                            "membermanager_user",
+                            membermanager_user_add, membermanager_user_del,
+                            _orig.get("membermanager_user")),
+                        gen_member_diff(
+                            "membermanager_group",
+                            membermanager_group_add, membermanager_group_del,
+                            _orig.get("membermanager_group")),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
+            elif state == "renamed":
+                if rename != name and res_find_orig is not None:
+                    diff_tracker.add_entry_diff(
+                        name, {"cn": name}, {"cn": rename})
+            elif state == "absent":
+                if action == "group":
+                    if res_find_orig is not None:
+                        diff_tracker.add_entry_diff(
+                            name,
+                            {"state": "present"}, {"state": "absent"})
+                elif action == "member":
+                    before, after = merge_diffs(
+                        gen_member_diff(
+                            "user", user_add, user_del,
+                            _orig.get("member_user")),
+                        gen_member_diff(
+                            "group", group_add, group_del,
+                            _orig.get("member_group")),
+                        gen_member_diff(
+                            "service", service_add, service_del,
+                            _orig.get("member_service")),
+                        gen_member_diff(
+                            "external", externalmember_add,
+                            externalmember_del,
+                            list(_orig.get("member_external", []))
+                            + list(_orig.get("ipaexternalmember", []))),
+                        gen_member_diff(
+                            "idoverrideuser", idoverrides_add,
+                            idoverrides_del,
+                            _orig.get("member_idoverrideuser")),
+                        gen_member_diff(
+                            "membermanager_user",
+                            membermanager_user_add, membermanager_user_del,
+                            _orig.get("membermanager_user")),
+                        gen_member_diff(
+                            "membermanager_group",
+                            membermanager_group_add, membermanager_group_del,
+                            _orig.get("membermanager_group")),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
+
         # Execute commands
         changed = ansible_module.execute_ipa_commands(
             commands, batch=True, keeponly=[], fail_on_member_errors=True)
 
     # Done
 
-    ansible_module.exit_json(changed=changed, **exit_args)
+    _exit_kwargs = dict(exit_args, **diff_tracker.build_diff())
+    ansible_module.exit_json(changed=changed, **_exit_kwargs)
 
 
 if __name__ == "__main__":

@@ -112,7 +112,8 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
-    gen_add_list, gen_intersection_list, ipalib_errors
+    gen_add_list, gen_intersection_list, ipalib_errors, \
+    IPADiffTracker, gen_args_diff, gen_member_diff, merge_diffs
 
 
 def find_sudocmdgroup(module, name):
@@ -202,6 +203,7 @@ def main():
 
     changed = False
     exit_args = {}
+    diff_tracker = IPADiffTracker()
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
@@ -211,6 +213,7 @@ def main():
         for name in names:
             # Make sure hostgroup exists
             res_find = find_sudocmdgroup(ansible_module, name)
+            res_find_orig = res_find
 
             # Create command
             if state == "present":
@@ -218,6 +221,9 @@ def main():
                 args = gen_args(description, nomembers)
 
                 if action == "sudocmdgroup":
+                    attr_before, attr_after = {}, {}
+                    sudocmd_add, sudocmd_del = [], []
+
                     # Found the hostgroup
                     if res_find is not None:
                         # For all settings is args, check if there are
@@ -226,8 +232,11 @@ def main():
                         if not compare_args_ipa(ansible_module, args,
                                                 res_find):
                             commands.append([name, "sudocmdgroup_mod", args])
+                            attr_before, attr_after = gen_args_diff(
+                                args, res_find)
                     else:
                         commands.append([name, "sudocmdgroup_add", args])
+                        attr_before, attr_after = {}, args
                         # Set res_find to empty dict for next step
                         res_find = {}
 
@@ -255,34 +264,59 @@ def main():
                                                  "sudocmd": sudocmd_del
                                              }
                                              ])
+
+                    # Diff tracking
+                    before, after = merge_diffs(
+                        (attr_before, attr_after),
+                        gen_member_diff(
+                            "sudocmd", sudocmd_add, sudocmd_del,
+                            (res_find_orig or {}).get("member_sudocmd")),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
+
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
                             msg="No sudocmdgroup '%s'" % name)
 
                     # Ensure members are present
-                    sudocmd = gen_add_list(
+                    sudocmd_add = gen_add_list(
                         sudocmd, res_find.get("member_sudocmd") or [])
-                    if sudocmd:
+                    if sudocmd_add:
                         commands.append([name, "sudocmdgroup_add_member",
-                                         {"sudocmd": sudocmd}
+                                         {"sudocmd": sudocmd_add}
                                          ])
+                    before, after = merge_diffs(
+                        gen_member_diff(
+                            "sudocmd", sudocmd_add, [],
+                            res_find.get("member_sudocmd")),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
             elif state == "absent":
                 if action == "sudocmdgroup":
                     if res_find is not None:
                         commands.append([name, "sudocmdgroup_del", {}])
+                        diff_tracker.add_entry_diff(
+                            name,
+                            {"state": "present"}, {"state": "absent"})
 
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
                             msg="No sudocmdgroup '%s'" % name)
 
-                    sudocmd = gen_intersection_list(
+                    sudocmd_del = gen_intersection_list(
                         sudocmd, res_find.get("member_sudocmd") or [])
-                    if sudocmd:
+                    if sudocmd_del:
                         commands.append([name, "sudocmdgroup_remove_member",
-                                         {"sudocmd": sudocmd}
+                                         {"sudocmd": sudocmd_del}
                                          ])
+                    before, after = merge_diffs(
+                        gen_member_diff(
+                            "sudocmd", [], sudocmd_del,
+                            res_find.get("member_sudocmd")),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
 
@@ -291,7 +325,8 @@ def main():
 
     # Done
 
-    ansible_module.exit_json(changed=changed, **exit_args)
+    _exit_kwargs = dict(exit_args, **diff_tracker.build_diff())
+    ansible_module.exit_json(changed=changed, **_exit_kwargs)
 
 
 if __name__ == "__main__":

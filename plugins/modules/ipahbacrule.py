@@ -171,7 +171,8 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, ensure_fqdn
+    gen_intersection_list, ensure_fqdn, \
+    IPADiffTracker, gen_args_diff, gen_member_diff, merge_diffs
 
 
 def find_hbacrule(module, name):
@@ -327,6 +328,7 @@ def main():
 
     changed = False
     exit_args = {}
+    diff_tracker = IPADiffTracker()
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
@@ -344,6 +346,7 @@ def main():
         for name in names:
             # Make sure hbacrule exists
             res_find = find_hbacrule(ansible_module, name)
+            res_find_orig = res_find
 
             host_add, host_del = [], []
             hostgroup_add, hostgroup_del = [], []
@@ -357,6 +360,7 @@ def main():
                 # Generate args
                 args = gen_args(description, usercategory, hostcategory,
                                 servicecategory, nomembers)
+                attr_before, attr_after = {}, {}
 
                 if action == "hbacrule":
                     # Found the hbacrule
@@ -383,8 +387,11 @@ def main():
                         if not compare_args_ipa(ansible_module, args,
                                                 res_find):
                             commands.append([name, "hbacrule_mod", args])
+                            attr_before, attr_after = gen_args_diff(
+                                args, res_find)
                     else:
                         commands.append([name, "hbacrule_add", args])
+                        attr_before, attr_after = {}, args
                         # Set res_find to empty dict for next step
                         res_find = {}
 
@@ -509,6 +516,8 @@ def main():
                 enabled_flag = str(res_find.get("ipaenabledflag", [False])[0])
                 if enabled_flag.upper() != "TRUE":
                     commands.append([name, "hbacrule_enable", {}])
+                    diff_tracker.add_entry_diff(
+                        name, {"enabled": False}, {"enabled": True})
 
             elif state == "disabled":
                 if res_find is None:
@@ -523,6 +532,8 @@ def main():
                 enabled_flag = str(res_find.get("ipaenabledflag", [False])[0])
                 if enabled_flag.upper() != "FALSE":
                     commands.append([name, "hbacrule_disable", {}])
+                    diff_tracker.add_entry_diff(
+                        name, {"enabled": True}, {"enabled": False})
 
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
@@ -574,6 +585,61 @@ def main():
                                      "group": group_del,
                                  }])
 
+            # Diff tracking
+            _orig = res_find_orig or {}
+            if state == "present":
+                before, after = merge_diffs(
+                    (attr_before, attr_after),
+                    gen_member_diff(
+                        "host", host_add, host_del,
+                        _orig.get("memberhost_host")),
+                    gen_member_diff(
+                        "hostgroup", hostgroup_add, hostgroup_del,
+                        _orig.get("memberhost_hostgroup")),
+                    gen_member_diff(
+                        "hbacsvc", hbacsvc_add, hbacsvc_del,
+                        _orig.get("memberservice_hbacsvc")),
+                    gen_member_diff(
+                        "hbacsvcgroup", hbacsvcgroup_add, hbacsvcgroup_del,
+                        _orig.get("memberservice_hbacsvcgroup")),
+                    gen_member_diff(
+                        "user", user_add, user_del,
+                        _orig.get("memberuser_user")),
+                    gen_member_diff(
+                        "group", group_add, group_del,
+                        _orig.get("memberuser_group")),
+                )
+                diff_tracker.add_entry_diff(name, before, after)
+            elif state == "absent":
+                if action == "hbacrule":
+                    if res_find_orig is not None:
+                        diff_tracker.add_entry_diff(
+                            name,
+                            {"state": "present"}, {"state": "absent"})
+                elif action == "member":
+                    before, after = merge_diffs(
+                        gen_member_diff(
+                            "host", host_add, host_del,
+                            _orig.get("memberhost_host")),
+                        gen_member_diff(
+                            "hostgroup", hostgroup_add, hostgroup_del,
+                            _orig.get("memberhost_hostgroup")),
+                        gen_member_diff(
+                            "hbacsvc", hbacsvc_add, hbacsvc_del,
+                            _orig.get("memberservice_hbacsvc")),
+                        gen_member_diff(
+                            "hbacsvcgroup", hbacsvcgroup_add,
+                            hbacsvcgroup_del,
+                            _orig.get("memberservice_hbacsvcgroup")),
+                        gen_member_diff(
+                            "user", user_add, user_del,
+                            _orig.get("memberuser_user")),
+                        gen_member_diff(
+                            "group", group_add, group_del,
+                            _orig.get("memberuser_group")),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
+
         # Execute commands
 
         changed = ansible_module.execute_ipa_commands(
@@ -581,7 +647,8 @@ def main():
 
     # Done
 
-    ansible_module.exit_json(changed=changed, **exit_args)
+    _exit_kwargs = dict(exit_args, **diff_tracker.build_diff())
+    ansible_module.exit_json(changed=changed, **_exit_kwargs)
 
 
 if __name__ == "__main__":
