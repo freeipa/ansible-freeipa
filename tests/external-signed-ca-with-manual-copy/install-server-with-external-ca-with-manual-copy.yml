@@ -33,7 +33,7 @@
   hosts: ipaserver
   become: true
   vars:
-    ipaserver_external_cert_files: "/root/chain.crt"
+    ipaserver_external_cert_files: ["/root/chain.crt"]
     # ipaserver_external_ca_file: "cacert.asc"
 
   pre_tasks:
