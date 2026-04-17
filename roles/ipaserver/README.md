@@ -153,7 +153,7 @@ Server installation step 2: Copy `<ipaserver hostname>-chain.crt` to the IPA ser
   hosts: ipaserver
   become: true
   vars:
-    ipaserver_external_cert_files: "/root/chain.crt"
+    ipaserver_external_cert_files: ["/root/chain.crt"]
 
   pre_tasks:
   - name: Copy "{{ groups.ipaserver[0] + '-chain.crt' }}" to /root/chain.crt on node
