@@ -113,7 +113,7 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
     gen_add_list, gen_intersection_list, ipalib_errors, \
-    IPADiffTracker, gen_args_diff, gen_member_diff, merge_diffs
+    IPADiffTracker, gen_args_diff, gen_members_diff, merge_diffs
 
 
 def find_sudocmdgroup(module, name):
@@ -215,15 +215,15 @@ def main():
             res_find = find_sudocmdgroup(ansible_module, name)
             res_find_orig = res_find
 
+            attr_before, attr_after = {}, {}
+            sudocmd_add, sudocmd_del = [], []
+
             # Create command
             if state == "present":
                 # Generate args
                 args = gen_args(description, nomembers)
 
                 if action == "sudocmdgroup":
-                    attr_before, attr_after = {}, {}
-                    sudocmd_add, sudocmd_del = [], []
-
                     # Found the hostgroup
                     if res_find is not None:
                         # For all settings is args, check if there are
@@ -265,15 +265,6 @@ def main():
                                              }
                                              ])
 
-                    # Diff tracking
-                    before, after = merge_diffs(
-                        (attr_before, attr_after),
-                        gen_member_diff(
-                            "sudocmd", sudocmd_add, sudocmd_del,
-                            (res_find_orig or {}).get("member_sudocmd")),
-                    )
-                    diff_tracker.add_entry_diff(name, before, after)
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
@@ -286,19 +277,10 @@ def main():
                         commands.append([name, "sudocmdgroup_add_member",
                                          {"sudocmd": sudocmd_add}
                                          ])
-                    before, after = merge_diffs(
-                        gen_member_diff(
-                            "sudocmd", sudocmd_add, [],
-                            res_find.get("member_sudocmd")),
-                    )
-                    diff_tracker.add_entry_diff(name, before, after)
             elif state == "absent":
                 if action == "sudocmdgroup":
                     if res_find is not None:
                         commands.append([name, "sudocmdgroup_del", {}])
-                        diff_tracker.add_entry_diff(
-                            name,
-                            {"state": "present"}, {"state": "absent"})
 
                 elif action == "member":
                     if res_find is None:
@@ -311,14 +293,38 @@ def main():
                         commands.append([name, "sudocmdgroup_remove_member",
                                          {"sudocmd": sudocmd_del}
                                          ])
-                    before, after = merge_diffs(
-                        gen_member_diff(
-                            "sudocmd", [], sudocmd_del,
-                            res_find.get("member_sudocmd")),
-                    )
-                    diff_tracker.add_entry_diff(name, before, after)
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+            # Diff tracking. The same set of member specs is reused across
+            # state=present action=sudocmdgroup (with attribute changes
+            # layered on top), state=present action=member, and state=absent
+            # action=member.
+            member_specs = [
+                ("sudocmd", sudocmd_add, sudocmd_del, "member_sudocmd"),
+            ]
+            member_before, member_after = gen_members_diff(
+                res_find_orig, member_specs)
+
+            if state == "present":
+                if action == "sudocmdgroup":
+                    before, after = merge_diffs(
+                        (attr_before, attr_after),
+                        (member_before, member_after),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
+                elif action == "member":
+                    diff_tracker.add_entry_diff(
+                        name, member_before, member_after)
+            elif state == "absent":
+                if action == "sudocmdgroup":
+                    if res_find_orig is not None:
+                        diff_tracker.add_entry_diff(
+                            name,
+                            {"state": "present"}, {"state": "absent"})
+                elif action == "member":
+                    diff_tracker.add_entry_diff(
+                        name, member_before, member_after)
 
         changed = ansible_module.execute_ipa_commands(
             commands, fail_on_member_errors=True)

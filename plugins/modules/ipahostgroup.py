@@ -150,7 +150,7 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
     gen_intersection_list, ensure_fqdn, \
-    IPADiffTracker, gen_args_diff, gen_member_diff, merge_diffs
+    IPADiffTracker, gen_args_diff, gen_members_diff, merge_diffs
 
 
 def find_hostgroup(module, name):
@@ -479,46 +479,33 @@ def main():
                         }
                     ])
 
-            # Diff tracking
-            _orig = res_find_orig or {}
+            # Diff tracking. The same set of member specs is reused for
+            # state=present (action=hostgroup adds attribute changes on top)
+            # and state=absent action=member.
+            member_specs = [
+                ("host", host_add, host_del, "member_host"),
+                ("hostgroup", hostgroup_add, hostgroup_del,
+                 "member_hostgroup"),
+                ("membermanager_user",
+                 membermanager_user_add, membermanager_user_del,
+                 "membermanager_user"),
+                ("membermanager_group",
+                 membermanager_group_add, membermanager_group_del,
+                 "membermanager_group"),
+            ]
+            member_before, member_after = gen_members_diff(
+                res_find_orig, member_specs)
+
             if state == "present":
                 if action == "hostgroup":
                     before, after = merge_diffs(
                         (attr_before, attr_after),
-                        gen_member_diff(
-                            "host", host_add, host_del,
-                            _orig.get("member_host")),
-                        gen_member_diff(
-                            "hostgroup", hostgroup_add, hostgroup_del,
-                            _orig.get("member_hostgroup")),
-                        gen_member_diff(
-                            "membermanager_user",
-                            membermanager_user_add, membermanager_user_del,
-                            _orig.get("membermanager_user")),
-                        gen_member_diff(
-                            "membermanager_group",
-                            membermanager_group_add, membermanager_group_del,
-                            _orig.get("membermanager_group")),
+                        (member_before, member_after),
                     )
                     diff_tracker.add_entry_diff(name, before, after)
                 elif action == "member":
-                    before, after = merge_diffs(
-                        gen_member_diff(
-                            "host", host_add, host_del,
-                            _orig.get("member_host")),
-                        gen_member_diff(
-                            "hostgroup", hostgroup_add, hostgroup_del,
-                            _orig.get("member_hostgroup")),
-                        gen_member_diff(
-                            "membermanager_user",
-                            membermanager_user_add, membermanager_user_del,
-                            _orig.get("membermanager_user")),
-                        gen_member_diff(
-                            "membermanager_group",
-                            membermanager_group_add, membermanager_group_del,
-                            _orig.get("membermanager_group")),
-                    )
-                    diff_tracker.add_entry_diff(name, before, after)
+                    diff_tracker.add_entry_diff(
+                        name, member_before, member_after)
             elif state == "renamed":
                 if rename != name and res_find_orig is not None:
                     diff_tracker.add_entry_diff(
@@ -530,23 +517,8 @@ def main():
                             name,
                             {"state": "present"}, {"state": "absent"})
                 elif action == "member":
-                    before, after = merge_diffs(
-                        gen_member_diff(
-                            "host", host_add, host_del,
-                            _orig.get("member_host")),
-                        gen_member_diff(
-                            "hostgroup", hostgroup_add, hostgroup_del,
-                            _orig.get("member_hostgroup")),
-                        gen_member_diff(
-                            "membermanager_user",
-                            membermanager_user_add, membermanager_user_del,
-                            _orig.get("membermanager_user")),
-                        gen_member_diff(
-                            "membermanager_group",
-                            membermanager_group_add, membermanager_group_del,
-                            _orig.get("membermanager_group")),
-                    )
-                    diff_tracker.add_entry_diff(name, before, after)
+                    diff_tracker.add_entry_diff(
+                        name, member_before, member_after)
 
         # Execute commands
 

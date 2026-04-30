@@ -745,7 +745,7 @@ from ansible.module_utils.ansible_freeipa_module import \
     encode_certificate, load_cert_from_str, DN_x500_text, to_text, \
     ipalib_errors, gen_add_list, gen_intersection_list, \
     convert_input_certificates, date_string, \
-    IPADiffTracker, gen_args_diff, gen_member_diff, merge_diffs
+    IPADiffTracker, gen_args_diff, gen_members_diff, merge_diffs
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -1457,6 +1457,15 @@ def main():
             res_find = find_user(ansible_module, name)
             res_find_orig = res_find
 
+            # Initialise diff inputs so the post-state-branch diff block can
+            # treat state=present action=user, state=present action=member
+            # and state=absent action=member symmetrically: each branch only
+            # fills the lists it actually changes; the others stay at [].
+            attr_before, attr_after = {}, {}
+            manager_add, manager_del = [], []
+            principal_add, principal_del = [], []
+            certificate_add, certificate_del = [], []
+
             # Create command
             if state == "present":
                 # Generate args
@@ -1472,7 +1481,6 @@ def main():
                     smb_home_dir, smb_home_drive, idp, idp_user_id, noprivate,
                     nomembers,
                 )
-                attr_before, attr_after = {}, {}
 
                 if action == "user":
                     # Found the user
@@ -1647,21 +1655,6 @@ def main():
                             commands.append([name, "user_remove_certmapdata",
                                              gen_certmapdata_args(_data)])
 
-                    # Diff tracking
-                    before, after = merge_diffs(
-                        (attr_before, attr_after),
-                        gen_member_diff(
-                            "manager", manager_add, manager_del,
-                            (res_find_orig or {}).get("manager")),
-                        gen_member_diff(
-                            "principal", principal_add, principal_del,
-                            (res_find_orig or {}).get("krbprincipalname")),
-                        gen_member_diff(
-                            "certificate", certificate_add, certificate_del,
-                            (res_find_orig or {}).get("usercertificate")),
-                    )
-                    diff_tracker.add_entry_diff(name, before, after)
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
@@ -1721,20 +1714,6 @@ def main():
                         for _data in certmapdata_add:
                             commands.append([name, "user_add_certmapdata",
                                              gen_certmapdata_args(_data)])
-
-                    # Diff tracking
-                    before, after = merge_diffs(
-                        gen_member_diff(
-                            "manager", manager_add, [],
-                            (res_find or {}).get("manager")),
-                        gen_member_diff(
-                            "principal", principal_add, [],
-                            (res_find or {}).get("krbprincipalname")),
-                        gen_member_diff(
-                            "certificate", certificate_add, [],
-                            (res_find or {}).get("usercertificate")),
-                    )
-                    diff_tracker.add_entry_diff(name, before, after)
 
             elif state == "absent":
                 if action == "user":
@@ -1810,20 +1789,6 @@ def main():
                             commands.append([name, "user_remove_certmapdata",
                                              gen_certmapdata_args(_data)])
 
-                    # Diff tracking
-                    before, after = merge_diffs(
-                        gen_member_diff(
-                            "manager", [], manager_del or [],
-                            (res_find or {}).get("manager")),
-                        gen_member_diff(
-                            "principal", [], principal_del or [],
-                            (res_find or {}).get("krbprincipalname")),
-                        gen_member_diff(
-                            "certificate", [], certificate_del or [],
-                            (res_find or {}).get("usercertificate")),
-                    )
-                    diff_tracker.add_entry_diff(name, before, after)
-
             elif state == "undeleted":
                 if res_find is not None:
                     if res_find.get("preserved", False):
@@ -1865,6 +1830,38 @@ def main():
                             name, {"uid": name}, {"uid": rename})
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+            # Diff tracking for the present/absent member operations.
+            # The same set of member specs is reused for state=present
+            # action=user (with attribute changes layered on top),
+            # state=present action=member (only add lists are populated by
+            # the branch above), and state=absent action=member (only del
+            # lists are populated). Branches that do not touch members
+            # leave the lists at their initial [] values, so this call is
+            # a no-op for them.
+            member_specs = [
+                ("manager", manager_add, manager_del, "manager"),
+                ("principal", principal_add, principal_del,
+                 "krbprincipalname"),
+                ("certificate", certificate_add, certificate_del,
+                 "usercertificate"),
+            ]
+            member_before, member_after = gen_members_diff(
+                res_find_orig, member_specs)
+
+            if state == "present":
+                if action == "user":
+                    before, after = merge_diffs(
+                        (attr_before, attr_after),
+                        (member_before, member_after),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
+                elif action == "member":
+                    diff_tracker.add_entry_diff(
+                        name, member_before, member_after)
+            elif state == "absent" and action == "member":
+                diff_tracker.add_entry_diff(
+                    name, member_before, member_after)
 
         del user_set
 

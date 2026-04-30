@@ -172,7 +172,7 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
     gen_intersection_list, ensure_fqdn, \
-    IPADiffTracker, gen_args_diff, gen_member_diff, merge_diffs
+    IPADiffTracker, gen_args_diff, gen_members_diff, merge_diffs
 
 
 def find_hbacrule(module, name):
@@ -585,29 +585,27 @@ def main():
                                      "group": group_del,
                                  }])
 
-            # Diff tracking
-            _orig = res_find_orig or {}
+            # Diff tracking. The same set of member specs is reused for
+            # state=present (action=hbacrule adds attribute changes on top)
+            # and state=absent action=member.
+            member_specs = [
+                ("host", host_add, host_del, "memberhost_host"),
+                ("hostgroup", hostgroup_add, hostgroup_del,
+                 "memberhost_hostgroup"),
+                ("hbacsvc", hbacsvc_add, hbacsvc_del,
+                 "memberservice_hbacsvc"),
+                ("hbacsvcgroup", hbacsvcgroup_add, hbacsvcgroup_del,
+                 "memberservice_hbacsvcgroup"),
+                ("user", user_add, user_del, "memberuser_user"),
+                ("group", group_add, group_del, "memberuser_group"),
+            ]
+            member_before, member_after = gen_members_diff(
+                res_find_orig, member_specs)
+
             if state == "present":
                 before, after = merge_diffs(
                     (attr_before, attr_after),
-                    gen_member_diff(
-                        "host", host_add, host_del,
-                        _orig.get("memberhost_host")),
-                    gen_member_diff(
-                        "hostgroup", hostgroup_add, hostgroup_del,
-                        _orig.get("memberhost_hostgroup")),
-                    gen_member_diff(
-                        "hbacsvc", hbacsvc_add, hbacsvc_del,
-                        _orig.get("memberservice_hbacsvc")),
-                    gen_member_diff(
-                        "hbacsvcgroup", hbacsvcgroup_add, hbacsvcgroup_del,
-                        _orig.get("memberservice_hbacsvcgroup")),
-                    gen_member_diff(
-                        "user", user_add, user_del,
-                        _orig.get("memberuser_user")),
-                    gen_member_diff(
-                        "group", group_add, group_del,
-                        _orig.get("memberuser_group")),
+                    (member_before, member_after),
                 )
                 diff_tracker.add_entry_diff(name, before, after)
             elif state == "absent":
@@ -617,28 +615,8 @@ def main():
                             name,
                             {"state": "present"}, {"state": "absent"})
                 elif action == "member":
-                    before, after = merge_diffs(
-                        gen_member_diff(
-                            "host", host_add, host_del,
-                            _orig.get("memberhost_host")),
-                        gen_member_diff(
-                            "hostgroup", hostgroup_add, hostgroup_del,
-                            _orig.get("memberhost_hostgroup")),
-                        gen_member_diff(
-                            "hbacsvc", hbacsvc_add, hbacsvc_del,
-                            _orig.get("memberservice_hbacsvc")),
-                        gen_member_diff(
-                            "hbacsvcgroup", hbacsvcgroup_add,
-                            hbacsvcgroup_del,
-                            _orig.get("memberservice_hbacsvcgroup")),
-                        gen_member_diff(
-                            "user", user_add, user_del,
-                            _orig.get("memberuser_user")),
-                        gen_member_diff(
-                            "group", group_add, group_del,
-                            _orig.get("memberuser_group")),
-                    )
-                    diff_tracker.add_entry_diff(name, before, after)
+                    diff_tracker.add_entry_diff(
+                        name, member_before, member_after)
 
         # Execute commands
 

@@ -582,6 +582,50 @@ def merge_diffs(*diff_pairs):
     return merged_before, merged_after
 
 
+def gen_members_diff(res_find, member_specs):
+    """Compute the merged member-list diff for all categories of one IPA
+    object.
+
+    `res_find` is the dict returned by `find_*()` (or None when the object
+    does not yet exist). `member_specs` is an iterable of
+    `(member_key, add_list, del_list, current_source)` tuples, where:
+
+    * `member_key` (str) is the key under which the change is reported in
+      the diff (e.g. `"user"`, `"hostgroup"`).
+    * `add_list` and `del_list` are the (possibly empty) lists of additions
+      and deletions for this category.
+    * `current_source` describes how to read the current member list from
+      `res_find`:
+
+      * a single str: a key name in `res_find`.
+      * a list/tuple of str: several key names whose values are
+        concatenated (used when the IPA API splits one logical list across
+        multiple attributes, e.g. `memberhost_host` + `externalhost`).
+      * any other iterable: used directly as the current list (useful when
+        the caller pre-built it).
+
+    Returns a single `(before, after)` pair, with all per-category diffs
+    merged.
+    """
+    if res_find is None:
+        res_find = {}
+    pairs = []
+    for member_key, add_list, del_list, source in member_specs:
+        if isinstance(source, str):
+            current = res_find.get(source)
+        elif (
+            isinstance(source, (list, tuple))
+            and all(isinstance(x, str) for x in source)
+        ):
+            current = []
+            for key in source:
+                current.extend(res_find.get(key, []) or [])
+        else:
+            current = source
+        pairs.append(gen_member_diff(member_key, add_list, del_list, current))
+    return merge_diffs(*pairs)
+
+
 def _afm_convert(value):
     if value is not None:
         if isinstance(value, list):
