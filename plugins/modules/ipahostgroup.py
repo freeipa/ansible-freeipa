@@ -149,7 +149,8 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, ensure_fqdn
+    gen_intersection_list, ensure_fqdn, \
+    IPADiffTracker, gen_args_diff, gen_members_diff, merge_diffs
 
 
 def find_hostgroup(module, name):
@@ -270,6 +271,7 @@ def main():
 
     changed = False
     exit_args = {}
+    diff_tracker = IPADiffTracker()
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
@@ -308,11 +310,13 @@ def main():
 
             # Make sure hostgroup exists
             res_find = find_hostgroup(ansible_module, name)
+            res_find_orig = res_find
 
             # Create command
             if state == "present":
                 # Generate args
                 args = gen_args(description, nomembers, rename)
+                attr_before, attr_after = {}, {}
 
                 if action == "hostgroup":
                     # Found the hostgroup
@@ -323,8 +327,11 @@ def main():
                         if not compare_args_ipa(ansible_module, args,
                                                 res_find):
                             commands.append([name, "hostgroup_mod", args])
+                            attr_before, attr_after = gen_args_diff(
+                                args, res_find)
                     else:
                         commands.append([name, "hostgroup_add", args])
+                        attr_before, attr_after = {}, args
                         # Set res_find to empty dict for next step
                         res_find = {}
 
@@ -472,6 +479,47 @@ def main():
                         }
                     ])
 
+            # Diff tracking. The same set of member specs is reused for
+            # state=present (action=hostgroup adds attribute changes on top)
+            # and state=absent action=member.
+            member_specs = [
+                ("host", host_add, host_del, "member_host"),
+                ("hostgroup", hostgroup_add, hostgroup_del,
+                 "member_hostgroup"),
+                ("membermanager_user",
+                 membermanager_user_add, membermanager_user_del,
+                 "membermanager_user"),
+                ("membermanager_group",
+                 membermanager_group_add, membermanager_group_del,
+                 "membermanager_group"),
+            ]
+            member_before, member_after = gen_members_diff(
+                res_find_orig, member_specs)
+
+            if state == "present":
+                if action == "hostgroup":
+                    before, after = merge_diffs(
+                        (attr_before, attr_after),
+                        (member_before, member_after),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
+                elif action == "member":
+                    diff_tracker.add_entry_diff(
+                        name, member_before, member_after)
+            elif state == "renamed":
+                if rename != name and res_find_orig is not None:
+                    diff_tracker.add_entry_diff(
+                        name, {"cn": name}, {"cn": rename})
+            elif state == "absent":
+                if action == "hostgroup":
+                    if res_find_orig is not None:
+                        diff_tracker.add_entry_diff(
+                            name,
+                            {"state": "present"}, {"state": "absent"})
+                elif action == "member":
+                    diff_tracker.add_entry_diff(
+                        name, member_before, member_after)
+
         # Execute commands
 
         changed = ansible_module.execute_ipa_commands(
@@ -479,7 +527,8 @@ def main():
 
     # Done
 
-    ansible_module.exit_json(changed=changed, **exit_args)
+    _exit_kwargs = dict(exit_args, **diff_tracker.build_diff())
+    ansible_module.exit_json(changed=changed, **_exit_kwargs)
 
 
 if __name__ == "__main__":

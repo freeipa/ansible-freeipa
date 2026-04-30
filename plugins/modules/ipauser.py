@@ -744,7 +744,8 @@ from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, convert_date, \
     encode_certificate, load_cert_from_str, DN_x500_text, to_text, \
     ipalib_errors, gen_add_list, gen_intersection_list, \
-    convert_input_certificates, date_string
+    convert_input_certificates, date_string, \
+    IPADiffTracker, gen_args_diff, gen_members_diff, merge_diffs
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
@@ -1268,6 +1269,7 @@ def main():
 
     changed = False
     exit_args = {}
+    diff_tracker = IPADiffTracker()
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
@@ -1453,6 +1455,16 @@ def main():
 
             # Make sure user exists
             res_find = find_user(ansible_module, name)
+            res_find_orig = res_find
+
+            # Initialise diff inputs so the post-state-branch diff block can
+            # treat state=present action=user, state=present action=member
+            # and state=absent action=member symmetrically: each branch only
+            # fills the lists it actually changes; the others stay at [].
+            attr_before, attr_after = {}, {}
+            manager_add, manager_del = [], []
+            principal_add, principal_del = [], []
+            certificate_add, certificate_del = [], []
 
             # Create command
             if state == "present":
@@ -1498,6 +1510,14 @@ def main():
                                 ansible_module, args, res_find,
                                 ignore=["no_members"]):
                             commands.append([name, "user_mod", args])
+                            attr_before, attr_after = gen_args_diff(
+                                args, res_find,
+                                ignore=["no_members"])
+                            # Mask password in diff
+                            if "userpassword" in attr_before:
+                                attr_before["userpassword"] = "********"
+                            if "userpassword" in attr_after:
+                                attr_after["userpassword"] = "********"
 
                     else:
                         # Make sure we have a first and last name
@@ -1521,6 +1541,10 @@ def main():
                         for key in smb_attrs.keys():
                             del args[key]
                         commands.append([name, "user_add", args])
+                        _diff_args = dict(args)
+                        if "userpassword" in _diff_args:
+                            _diff_args["userpassword"] = "********"
+                        attr_before, attr_after = {}, _diff_args
                         if smb_attrs:
                             commands.append([name, "user_mod", smb_attrs])
                     # Handle members: principal, manager, certificate and
@@ -1702,6 +1726,9 @@ def main():
                             or not args.get("preserve", False)
                         ):
                             commands.append([name, "user_del", args])
+                            diff_tracker.add_entry_diff(
+                                name,
+                                {"state": "present"}, {"state": "absent"})
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
@@ -1761,6 +1788,7 @@ def main():
                         for _data in certmapdata_del:
                             commands.append([name, "user_remove_certmapdata",
                                              gen_certmapdata_args(_data)])
+
             elif state == "undeleted":
                 if res_find is not None:
                     if res_find.get("preserved", False):
@@ -1772,6 +1800,8 @@ def main():
                 if res_find is not None:
                     if res_find["nsaccountlock"]:
                         commands.append([name, "user_enable", {}])
+                        diff_tracker.add_entry_diff(
+                            name, {"enabled": False}, {"enabled": True})
                 else:
                     raise ValueError("No user '%s'" % name)
 
@@ -1779,6 +1809,8 @@ def main():
                 if res_find is not None:
                     if not res_find["nsaccountlock"]:
                         commands.append([name, "user_disable", {}])
+                        diff_tracker.add_entry_diff(
+                            name, {"enabled": True}, {"enabled": False})
                 else:
                     raise ValueError("No user '%s'" % name)
 
@@ -1794,8 +1826,42 @@ def main():
                 else:
                     if rename != name:
                         commands.append([name, 'user_mod', {"rename": rename}])
+                        diff_tracker.add_entry_diff(
+                            name, {"uid": name}, {"uid": rename})
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+            # Diff tracking for the present/absent member operations.
+            # The same set of member specs is reused for state=present
+            # action=user (with attribute changes layered on top),
+            # state=present action=member (only add lists are populated by
+            # the branch above), and state=absent action=member (only del
+            # lists are populated). Branches that do not touch members
+            # leave the lists at their initial [] values, so this call is
+            # a no-op for them.
+            member_specs = [
+                ("manager", manager_add, manager_del, "manager"),
+                ("principal", principal_add, principal_del,
+                 "krbprincipalname"),
+                ("certificate", certificate_add, certificate_del,
+                 "usercertificate"),
+            ]
+            member_before, member_after = gen_members_diff(
+                res_find_orig, member_specs)
+
+            if state == "present":
+                if action == "user":
+                    before, after = merge_diffs(
+                        (attr_before, attr_after),
+                        (member_before, member_after),
+                    )
+                    diff_tracker.add_entry_diff(name, before, after)
+                elif action == "member":
+                    diff_tracker.add_entry_diff(
+                        name, member_before, member_after)
+            elif state == "absent" and action == "member":
+                diff_tracker.add_entry_diff(
+                    name, member_before, member_after)
 
         del user_set
 
@@ -1806,7 +1872,8 @@ def main():
             exit_args=exit_args, single_user=users is None)
 
     # Done
-    ansible_module.exit_json(changed=changed, user=exit_args)
+    _exit_kwargs = diff_tracker.build_diff()
+    ansible_module.exit_json(changed=changed, user=exit_args, **_exit_kwargs)
 
 
 if __name__ == "__main__":

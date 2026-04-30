@@ -370,7 +370,8 @@ RETURN = """
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
     gen_intersection_list, api_get_domain, ensure_fqdn, netaddr, to_text, \
-    ipalib_errors, convert_param_value_to_lowercase, EntryFactory
+    ipalib_errors, convert_param_value_to_lowercase, EntryFactory, \
+    IPADiffTracker, gen_args_diff, gen_members_diff, merge_diffs
 
 
 def find_sudorule(module, name):
@@ -586,6 +587,7 @@ def main():
     # Init
     changed = False
     exit_args = {}
+    diff_tracker = IPADiffTracker()
 
     # Factory parameters
     params = {
@@ -646,6 +648,7 @@ def main():
 
             # Try to retrieve sudorule
             res_find = find_sudorule(ansible_module, entry.name)
+            res_find_orig = res_find
 
             # Fail if sudorule must exist but is not found
             if (
@@ -658,6 +661,7 @@ def main():
             if state == "present":
                 # Generate args
                 args = gen_args(entry)
+                attr_before, attr_after = {}, {}
                 if action == "sudorule":
                     # Found the sudorule
                     if res_find is not None:
@@ -703,8 +707,11 @@ def main():
                         if not compare_args_ipa(ansible_module, args,
                                                 res_find):
                             commands.append([entry.name, "sudorule_mod", args])
+                            attr_before, attr_after = gen_args_diff(
+                                args, res_find)
                     else:
                         commands.append([entry.name, "sudorule_add", args])
+                        attr_before, attr_after = {}, args
                         # Set res_find to empty dict for next step
                         res_find = {}
 
@@ -970,6 +977,9 @@ def main():
                 enabled_flag = str(res_find.get("ipaenabledflag", [False])[0])
                 if enabled_flag.upper() != "TRUE":
                     commands.append([entry.name, "sudorule_enable", {}])
+                    diff_tracker.add_entry_diff(
+                        entry.name,
+                        {"enabled": False}, {"enabled": True})
 
             elif state == "disabled":
                 # sudorule_disable is not failing on an disabled sudorule
@@ -982,6 +992,9 @@ def main():
                 enabled_flag = str(res_find.get("ipaenabledflag", [False])[0])
                 if enabled_flag.upper() != "FALSE":
                     commands.append([entry.name, "sudorule_disable", {}])
+                    diff_tracker.add_entry_diff(
+                        entry.name,
+                        {"enabled": True}, {"enabled": False})
 
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
@@ -1089,6 +1102,56 @@ def main():
                         {"ipasudoopt": option}
                     ])
 
+            # Diff tracking. The same set of member specs is reused for
+            # state=present (with attribute changes layered on top) and
+            # state=absent action=member.
+            member_specs = [
+                ("host", host_add, host_del,
+                 ["memberhost_host", "externalhost"]),
+                ("hostgroup", hostgroup_add, hostgroup_del,
+                 "memberhost_hostgroup"),
+                ("hostmask", hostmask_add, hostmask_del, "hostmask"),
+                ("user", user_add, user_del,
+                 ["memberuser_user", "externaluser"]),
+                ("group", group_add, group_del, "memberuser_group"),
+                ("allow_sudocmd", allow_cmd_add, allow_cmd_del,
+                 "memberallowcmd_sudocmd"),
+                ("allow_sudocmdgroup",
+                 allow_cmdgroup_add, allow_cmdgroup_del,
+                 "memberallowcmd_sudocmdgroup"),
+                ("deny_sudocmd", deny_cmd_add, deny_cmd_del,
+                 "memberdenycmd_sudocmd"),
+                ("deny_sudocmdgroup",
+                 deny_cmdgroup_add, deny_cmdgroup_del,
+                 "memberdenycmd_sudocmdgroup"),
+                ("sudooption", sudooption_add, sudooption_del, "ipasudoopt"),
+                ("runasuser", runasuser_add, runasuser_del,
+                 ["ipasudorunas_user", "ipasudorunasextuser"]),
+                ("runasuser_group",
+                 runasuser_group_add, runasuser_group_del,
+                 "ipasudorunas_group"),
+                ("runasgroup", runasgroup_add, runasgroup_del,
+                 ["ipasudorunasgroup_group", "ipasudorunasextgroup"]),
+            ]
+            member_before, member_after = gen_members_diff(
+                res_find_orig, member_specs)
+
+            if state == "present":
+                before, after = merge_diffs(
+                    (attr_before, attr_after),
+                    (member_before, member_after),
+                )
+                diff_tracker.add_entry_diff(entry.name, before, after)
+            elif state == "absent":
+                if action == "sudorule":
+                    if res_find_orig is not None:
+                        diff_tracker.add_entry_diff(
+                            entry.name,
+                            {"state": "present"}, {"state": "absent"})
+                elif action == "member":
+                    diff_tracker.add_entry_diff(
+                        entry.name, member_before, member_after)
+
         # Execute commands
 
         changed = ansible_module.execute_ipa_commands(
@@ -1096,7 +1159,8 @@ def main():
 
     # Done
 
-    ansible_module.exit_json(changed=changed, **exit_args)
+    _exit_kwargs = dict(exit_args, **diff_tracker.build_diff())
+    ansible_module.exit_json(changed=changed, **_exit_kwargs)
 
 
 if __name__ == "__main__":
