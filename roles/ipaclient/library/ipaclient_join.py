@@ -116,13 +116,13 @@ EXAMPLES = '''
     kinit_attempts: 5
     krb_name: /tmp/tmpkrb5.conf
 
-# Join IPA to get the keytab using ipadiscovery return values
+# Join IPA to get the keytab using discovery return values
 - name: Join IPA
   ipaclient_join:
-    servers: "{{ ipadiscovery.servers }}"
-    realm: "{{ ipadiscovery.realm }}"
-    basedn: "{{ ipadiscovery.basedn }}"
-    hostname: "{{ ipadiscovery.hostname }}"
+    servers: "{{ discovery.servers }}"
+    realm: "{{ discovery.realm }}"
+    basedn: "{{ discovery.basedn }}"
+    hostname: "{{ discovery.hostname }}"
     principal: admin
     password: MySecretPassword
     krb_name: /tmp/tmpkrb5.conf
@@ -142,8 +142,7 @@ from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
     setup_logging, check_imports,
     SECURE_PATH, sysrestore, paths, options, realm_to_suffix, kinit_keytab,
-    GSSError, kinit_password, NUM_VERSION, get_ca_cert, get_ca_certs, errors,
-    run
+    GSSError, kinit_password, get_ca_certs, errors, run
 )
 
 
@@ -268,10 +267,7 @@ def main():
         # Get the CA certificate
         try:
             os.environ['KRB5_CONFIG'] = env['KRB5_CONFIG']
-            if NUM_VERSION < 40100:
-                get_ca_cert(fstore, options, servers[0], basedn)
-            else:
-                get_ca_certs(fstore, options, servers[0], basedn, realm)
+            get_ca_certs(fstore, options, servers[0], basedn, realm)
             os.environ.pop('KRB5_CONFIG', None)
         except errors.FileError as e:
             module.fail_json(msg='%s' % e)
