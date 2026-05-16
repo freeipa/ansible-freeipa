@@ -76,7 +76,6 @@ except ImportError:
 
 try:
     from contextlib import contextmanager as contextlib_contextmanager
-    from ansible.module_utils import six
     import base64
 
     from ipapython.version import NUM_VERSION, VERSION
@@ -448,8 +447,7 @@ def encode_certificate(cert):
         encoded = base64.b64encode(cert)
     else:
         encoded = base64.b64encode(cert.public_bytes(Encoding.DER))
-    if not six.PY2:
-        encoded = encoded.decode('ascii')
+    encoded = encoded.decode('ascii')
     return encoded
 
 

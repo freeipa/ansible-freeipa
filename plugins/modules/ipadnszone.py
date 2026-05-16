@@ -233,11 +233,6 @@ from ansible.module_utils.ansible_freeipa_module import (
     DNSName,
     netaddr
 )  # noqa: E402
-from ansible.module_utils import six
-
-
-if six.PY3:
-    unicode = str
 
 
 class DNSZoneModule(IPAAnsibleModule):

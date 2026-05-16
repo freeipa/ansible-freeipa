@@ -58,7 +58,7 @@ Example playbook to ensure host presence:
       ip_address: 192.168.0.123
       locality: Lab
       ns_host_location: Lab
-      ns_os_version: CentOS 7
+      ns_os_version: CentOS Stream 10
       ns_hardware_platform: Lenovo T61
       mac_address:
       - "08:00:27:E3:B1:2D"
@@ -89,7 +89,7 @@ Example playbook to ensure host presence with several IP addresses:
       - fe80::20c:29ff:fe02:a1b4
       locality: Lab
       ns_host_location: Lab
-      ns_os_version: CentOS 7
+      ns_os_version: CentOS Stream 10
       ns_hardware_platform: Lenovo T61
       mac_address:
       - "08:00:27:E3:B1:2D"

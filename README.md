@@ -67,7 +67,8 @@ The client role supports versions 4.4 and up, the server role is working with ve
 Supported Distributions
 -----------------------
 
-* RHEL/CentOS 7.4+
+* RHEL 8/9/10
+* CentOS Stream 8+
 * Fedora 40+
 * Ubuntu
 * Debian 10+ (ipaclient only, no server or replica!)

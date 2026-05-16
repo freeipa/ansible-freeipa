@@ -745,9 +745,6 @@ from ansible.module_utils.ansible_freeipa_module import \
     encode_certificate, load_cert_from_str, DN_x500_text, to_text, \
     ipalib_errors, gen_add_list, gen_intersection_list, \
     convert_input_certificates, date_string
-from ansible.module_utils import six
-if six.PY3:
-    unicode = str
 
 
 def find_user(module, name):
@@ -1384,11 +1381,7 @@ def main():
 
                 email = extend_emails(email, default_email_domain)
 
-            elif (
-                isinstance(
-                    user, (str, unicode)  # pylint: disable=W0012,E0606
-                )
-            ):
+            elif isinstance(user, str):
                 name = user
             else:
                 ansible_module.fail_json(msg="User '%s' is not valid" %

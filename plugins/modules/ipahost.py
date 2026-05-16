@@ -427,7 +427,7 @@ EXAMPLES = """
     ip_address: 192.168.0.123
     locality: Lab
     ns_host_location: Lab
-    ns_os_version: CentOS 7
+    ns_os_version: CentOS Stream 10
     ns_hardware_platform: Lenovo T61
     mac_address:
     - "08:00:27:E3:B1:2D"
@@ -511,10 +511,7 @@ from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
     encode_certificate, is_ipv4_addr, is_ipv6_addr, ipalib_errors, \
     gen_add_list, gen_intersection_list, normalize_sshpubkey, \
-    convert_input_certificates
-from ansible.module_utils import six
-if six.PY3:
-    unicode = str
+    convert_input_certificates, to_text
 
 
 def find_host(module, name):
@@ -984,9 +981,7 @@ def main():
                     sshpubkey = [str(normalize_sshpubkey(key)) for
                                  key in sshpubkey]
 
-            elif (
-                isinstance(host, (str, unicode))  # pylint: disable=W0012,E0606
-            ):
+            elif isinstance(host, str):
                 name = host
             else:
                 ansible_module.fail_json(msg="Host '%s' is not valid" %
@@ -1105,10 +1100,8 @@ def main():
                                               res_find.get("managedby_host"))
                         principal_add, principal_del = gen_add_del_lists(
                             principal, res_find.get("krbprincipalname"))
-                        # Principals are not returned as utf8 for IPA using
-                        # python2 using host_show, therefore we need to
-                        # convert the principals that we should remove.
-                        principal_del = [unicode(x) for x in principal_del]
+                        # Convert principals to text for consistency
+                        principal_del = [to_text(x) for x in principal_del]
 
                         (allow_create_keytab_user_add,
                          allow_create_keytab_user_del) = \

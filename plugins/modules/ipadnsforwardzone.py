@@ -131,9 +131,8 @@ RETURN = '''
 '''
 
 
-from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa
+    IPAAnsibleModule, compare_args_ipa, to_text
 
 
 def find_dnsforwardzone(module, name):

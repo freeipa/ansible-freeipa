@@ -329,9 +329,8 @@ vault:
 
 import os
 from base64 import b64decode
-from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import IPAAnsibleModule, \
-    gen_add_del_lists, compare_args_ipa, exit_raw_json, ipalib_errors
+    gen_add_del_lists, compare_args_ipa, exit_raw_json, ipalib_errors, to_text
 
 
 def find_vault(module, name, username, service, shared):

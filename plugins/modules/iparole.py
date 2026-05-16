@@ -131,14 +131,9 @@ EXAMPLES = """
 # pylint: disable=wrong-import-position
 # pylint: disable=import-error
 # pylint: disable=no-name-in-module
-from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, gen_add_del_lists, compare_args_ipa, \
-    gen_intersection_list, ensure_fqdn, ipalib_errors
-from ansible.module_utils import six
-
-if six.PY3:
-    unicode = str
+    gen_intersection_list, ensure_fqdn, ipalib_errors, to_text
 
 
 def find_role(module, name):
@@ -298,7 +293,7 @@ def result_get_value_lowercase(res_find, key, default=None):
     if existing is not None:
         if isinstance(existing, (list, tuple)):
             existing = [to_text(item).lower() for item in existing]
-        if isinstance(existing, (str, unicode)):  # pylint: disable=W0012,E0606
+        if isinstance(existing, str):
             existing = existing.lower()
     else:
         existing = default
