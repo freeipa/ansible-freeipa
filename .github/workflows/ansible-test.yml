@@ -8,7 +8,7 @@ jobs:
     name: Verify ansible-test sanity
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Run ansible-test
