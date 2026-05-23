@@ -1,0 +1,9 @@
+ipa_deployments:
+  - name: ipaserver_test_base
+    domain: ipa.test
+    admin_password: SomeADMINpassword
+    dm_password: SomeDMpassword
+    cluster:
+      servers:
+        - name: server
+          capabilities: ["CA", "DNS", "KRA"]
