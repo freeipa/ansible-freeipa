@@ -107,7 +107,7 @@
     # mkhomedir
     ntp_servers: "{{ ipaclient_ntp_servers | default(omit) }}"
     ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
-    no_ntp: "{{ ipaclient_no_ntp }}"
+    no_ntp: "{{ (ipaclient_ntp_servers is defined or ipaclient_ntp_pool is defined) | ternary(omit, ipaclient_no_ntp) }}"
     # ssh_trust_dns
     # no_ssh
     # no_sshd
