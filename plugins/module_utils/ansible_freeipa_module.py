@@ -666,6 +666,108 @@ def gen_intersection_list(user_list, res_list):
     return list(set(res_list or []).intersection(set(user_list or [])))
 
 
+def gen_member_add_del_lists(param_mapping, params, res_find,
+                             action, state):
+    """
+    Compute member add/del lists for all member params in param_mapping.
+
+    Scans param_mapping for entries with "member": True and computes
+    add and del lists based on action and state:
+
+    - action != "member", state == "present": sync mode using
+      gen_add_del_lists (both additions and removals)
+    - action == "member", state == "present": add-only mode using
+      gen_add_list
+    - action == "member", state == "absent": remove-only mode using
+      gen_intersection_list
+
+    For any other action/state combination an empty dict is returned.
+
+    Parameters
+    ----------
+    param_mapping: dict
+        The module's PARAM_MAPPING dict. Entries with "member": True
+        are processed.
+    params: dict
+        Extracted parameter values keyed by ansible parameter name.
+    res_find: dict
+        The IPA find result for the entity. May be an empty dict for
+        newly created entities.
+    action: str
+        The module's action value ("member" or the entity action name).
+    state: str
+        The module's state value ("present" or "absent").
+
+    Returns
+    -------
+    dict
+        Mapping of ansible parameter names to (add_list, del_list)
+        tuples.
+    """
+    if state == "present" and action != "member":
+        mode = "sync"
+    elif state == "present" and action == "member":
+        mode = "add"
+    elif state == "absent" and action == "member":
+        mode = "remove"
+    else:
+        return {}
+
+    result = {}
+    for ansible_name, entry in param_mapping.items():
+        if not entry.get("member"):
+            continue
+
+        value = params.get(ansible_name)
+        find_key = entry.get("api_name", ansible_name)
+        existing = res_find.get(find_key)
+
+        if mode == "sync":
+            result[ansible_name] = gen_add_del_lists(value, existing)
+        elif mode == "add":
+            result[ansible_name] = (
+                gen_add_list(value, existing), [])
+        else:
+            result[ansible_name] = (
+                [], gen_intersection_list(value, existing))
+
+    return result
+
+
+def gen_member_args_from_mapping(param_mapping, params):
+    """
+    Build a member args dict for compare_args_ipa() from param_mapping.
+
+    Scans param_mapping for entries with "member": True and builds a
+    dict mapping the IPA attribute name (api_name) to the parameter
+    value for all member params where the value is not None.
+
+    This replaces per-module gen_member_args() functions.
+
+    Parameters
+    ----------
+    param_mapping: dict
+        The module's PARAM_MAPPING dict.
+    params: dict
+        Extracted parameter values keyed by ansible parameter name.
+
+    Returns
+    -------
+    dict
+        IPA attribute names as keys, parameter values as values.
+        Suitable for passing to compare_args_ipa().
+    """
+    _args = {}
+    for ansible_name, entry in param_mapping.items():
+        if not entry.get("member"):
+            continue
+        value = params.get(ansible_name)
+        if value is not None:
+            find_key = entry.get("api_name", ansible_name)
+            _args[find_key] = value
+    return _args
+
+
 def encode_certificate(cert):
     """
     Encode a certificate using base64.
@@ -1226,7 +1328,8 @@ class IPAAnsibleModule(AnsibleModule):
         return module_params_get_with_type_cast(
             self, name, datatype, allow_empty)
 
-    def params_fail_used_invalid(self, invalid_params, state, action=None):
+    def params_fail_used_invalid(self, invalid_params, state, action=None,
+                                 params=None, param_mapping=None):
         """
         Fail module execution if one of the invalid parameters is not None.
 
@@ -1238,6 +1341,12 @@ class IPAAnsibleModule(AnsibleModule):
             State being tested.
         action:
             Action being tested (optional).
+        params:
+            Extracted params dict to check (optional, defaults to
+            self.params).
+        param_mapping:
+            Parameter mapping dict (optional). When provided, params
+            marked with "module_param" are checked via self.params.
 
         """
         if action is None:
@@ -1246,8 +1355,15 @@ class IPAAnsibleModule(AnsibleModule):
             msg = "Argument '{0}' can not be used with action "\
                   "'{2}' and state '{1}'"
 
+        _params = params if params is not None else self.params
         for param in invalid_params:
-            if self.params.get(param) is not None:
+            if param_mapping is not None \
+               and param in param_mapping \
+               and param_mapping[param].get("module_param"):
+                value = self.params.get(param)
+            else:
+                value = _params.get(param)
+            if value is not None:
                 self.fail_json(msg=msg.format(param, state, action))
 
     def ipa_command(self, command, name, args):
@@ -1604,6 +1720,301 @@ class IPAAnsibleModule(AnsibleModule):
             self.fail_json(msg=", ".join(_errors))
 
         return changed
+
+    @staticmethod
+    def _parse_mapping_entry(ansible_name, entry):
+        """
+        Return (ansible_name, ipa_name) from a dict-of-dicts mapping entry.
+
+        If entry has "api_name", that is the IPA attribute name.
+        Otherwise, the IPA name equals the ansible name.
+
+        """
+        return ansible_name, entry.get("api_name", ansible_name)
+
+    @staticmethod
+    def gen_args_from_mapping(param_mapping, params):
+        """
+        Generate IPA command args dict from a parameter mapping.
+
+        Parameters
+        ----------
+        param_mapping: dict
+            The module's parameter mapping dict. Keys are ansible param
+            names, values are dicts with optional keys: "api_name",
+            "nonempty_list", "convert_to", "gen_args", "return_only".
+        params: dict
+            Parameter values keyed by ansible name.
+
+        Returns
+        -------
+        dict
+            IPA attribute names as keys, suitable for IPA API commands
+            and compare_args_ipa().
+
+        """
+        _args = {}
+        for ansible_name, entry in param_mapping.items():
+            if entry.get("gen_args") is False \
+               or entry.get("return_only") \
+               or entry.get("module_param"):
+                continue
+
+            ipa_name = entry.get("api_name", ansible_name)
+            value = params.get(ansible_name)
+
+            if value is None:
+                continue
+
+            if entry.get("nonempty_list") and len(value) == 0:
+                continue
+
+            convert = entry.get("convert_to")
+            if convert == "text":
+                value = to_text(str(value))
+
+            _args[ipa_name] = value
+
+        return _args
+
+    @staticmethod
+    def extract_params(module, param_mapping):
+        """Extract parameter values from module params using mapping."""
+        params = {}
+        for ansible_name, entry in param_mapping.items():
+            if entry.get("return_only") or entry.get("module_param"):
+                continue
+            type_cast = entry.get("type_cast")
+            if type_cast is not None:
+                params[ansible_name] = module.params_get_with_type_cast(
+                    ansible_name, type_cast,
+                    allow_empty=entry.get("allow_empty", False))
+            elif entry.get("lowercase"):
+                allow_empty = entry.get("allow_empty_list_item")
+                params[ansible_name] = module.params_get_lowercase(
+                    ansible_name, allow_empty_list_item=bool(allow_empty))
+            elif entry.get("allow_empty_list_item"):
+                params[ansible_name] = module.params_get(
+                    ansible_name, allow_empty_list_item=True)
+            else:
+                params[ansible_name] = module.params_get(ansible_name)
+        return params
+
+    @staticmethod
+    def extract_params_from_entry(entry_dict, param_mapping):
+        """Extract parameter values from a dict using mapping."""
+        params = {}
+        for ansible_name, entry in param_mapping.items():
+            if entry.get("return_only") or entry.get("module_param"):
+                continue
+            value = entry_dict.get(ansible_name)
+            if value is not None and entry.get("lowercase"):
+                value = convert_param_value_to_lowercase(value)
+            params[ansible_name] = value
+        return params
+
+    @staticmethod
+    def build_query_param_settings(param_mapping, query_fields):
+        """
+        Build query_param_settings from a parameter mapping.
+
+        Parameters
+        ----------
+        param_mapping: dict
+            The module's parameter mapping dict.
+        query_fields: list of str
+            Ansible-name fields for the BASE query set.
+
+        Returns
+        -------
+        dict
+            Dict with "ALL", "BASE", "mapping", and "param_mapping"
+            keys, compatible with execute_query().
+
+        """
+        all_fields = []
+        mapping = {}
+        for ansible_name, entry in param_mapping.items():
+            if entry.get("query") is False \
+               or entry.get("module_param"):
+                continue
+            all_fields.append(ansible_name)
+            ipa_name = entry.get("api_name", ansible_name)
+            if ansible_name != ipa_name:
+                mapping[ansible_name] = ipa_name
+        return {
+            "ALL": all_fields,
+            "BASE": query_fields.get("base", []),
+            "PRIMARY_KEY": query_fields.get("primary_key", []),
+            "PREFIX": query_fields.get("prefix"),
+            "mapping": mapping,
+            "param_mapping": param_mapping,
+        }
+
+    def _extract_query_fields(self, result, fields, mapping,
+                              param_mapping=None):
+        """
+        Extract query fields from an IPA result using name mapping.
+
+        Parameters
+        ----------
+        result: dict
+            The IPA result dict (after convert_result if provided).
+        fields: list of str
+            The Ansible-friendly field names to extract.
+        mapping: dict
+            Mapping of ansible_name -> ipa_attribute_name.
+        param_mapping: dict or None
+            The full parameter mapping dict. When provided, entry
+            metadata such as "type" is used for value conversion.
+
+        Returns
+        -------
+        dict
+            Extracted fields with Ansible-friendly names as keys.
+
+        """
+        output = {}
+        for field in fields:
+            ipa_field = mapping.get(field, field)
+            if ipa_field in result:
+                value = result[ipa_field]
+                if param_mapping is not None:
+                    entry = param_mapping.get(field, {})
+                    field_type = entry.get("type")
+                    try:
+                        if field_type == "bool":
+                            if isinstance(
+                                value,
+                                (str, unicode)  # pylint: disable=W0012,E0606
+                            ):
+                                value = value.lower() in ("true", "1", "yes")
+                            else:
+                                value = bool(value)
+                        elif field_type == "int":
+                            value = int(value)
+                    except (ValueError, TypeError) as e:
+                        self.fail_json(
+                            msg="Parameter '%s' could not be converted "
+                            "to %s: %s" % (field, field_type, str(e))
+                        )
+                output[field] = value
+        return output
+
+    def execute_query(self, names, query_param, find_command,
+                      query_param_settings, convert_result=None):
+        """
+        Execute query state.
+
+        Parameters
+        ----------
+        names: list of str or None
+            The item names to query. If None or empty, all items are
+            queried using find_command(module, None).
+        prefix: str
+            The grouping key for name-only results (e.g., "users").
+        name_ipa_param: str
+            The IPA attribute name for the item name (e.g., "uid").
+        query_param: list of str or None
+            The fields to return. ["ALL"] for all fields, ["BASE"] for
+            base fields, a custom list for specific fields, or None to
+            return only item names.
+        find_command: callable
+            Module function: find_command(module, name) returning a dict
+            for a single item or a list of dicts for all items (when
+            name is None). Returns None if not found.
+        query_param_settings: dict
+            Module-defined dict with "ALL" (list of all Ansible field
+            names), "BASE" (list of essential field names), and
+            "mapping" (dict of ansible_name -> ipa_attribute_name for
+            names that differ).
+        convert_result: callable or None
+            Optional function to convert a raw IPA result dict to
+            Ansible-friendly values (e.g., unwrap single-element lists,
+            encode certificates). Applied to each result before field
+            extraction. Default: None.
+
+        Returns
+        -------
+        dict
+            The query results structured for exit_json.
+
+        """
+        if query_param is not None and \
+           set(query_param).intersection(["PKEY_ONLY", "BASE", "ALL"]):
+            if len(query_param) > 1:
+                self.fail_json(
+                    msg="query_params PKEY_ONLY, BASE or ALL can "
+                    "only be used alone"
+                )
+        exit_args = {}
+        mapping = query_param_settings.get("mapping", {})
+        param_mapping = query_param_settings.get("param_mapping")
+
+        prefix = query_param_settings.get("PREFIX")
+        name_ipa_param = query_param_settings.get("PRIMARY_KEY")
+
+        # Resolve query_param to a concrete field list
+        if query_param == ["PKEY_ONLY"]:
+            resolved_fields = None
+        elif query_param == ["BASE"]:
+            # explicit BASE
+            resolved_fields = query_param_settings["BASE"]
+        elif query_param == ["ALL"]:
+            resolved_fields = query_param_settings["ALL"]
+        elif query_param is not None:
+            resolved_fields = query_param
+        else:
+            # Use BASE always if query_param is not set
+            resolved_fields = query_param_settings["BASE"]
+
+        # Validate requested fields
+        if resolved_fields is not None:
+            all_fields = query_param_settings["ALL"]
+            for field in resolved_fields:
+                if field not in all_fields:
+                    self.fail_json(
+                        msg="query_param '%s' is not supported" % field)
+
+        # If no names have been given, use [None] to get all items with the
+        # find command
+        _names = names
+        if _names is None or not isinstance(_names, list):
+            _names = [None]
+        single_item = len(_names) == 1
+
+        # For all names in _names convert results and add the requested
+        # fields to exit_args
+        for name in _names:
+            results = find_command(self, name)
+            if not isinstance(results, list):
+                results = [results]
+            for result in results:
+                if result is None:
+                    continue
+                if convert_result is not None:
+                    result = convert_result(result)
+                if name_ipa_param not in result:
+                    self.fail_json(
+                        msg="execute_query: primary key '%s' missing "
+                        "from result for '%s'" % (name_ipa_param, name)
+                    )
+                item_name = result[name_ipa_param]
+                if query_param == ["PKEY_ONLY"]:
+                    exit_args.setdefault(prefix, []).append(item_name)
+                else:
+                    fields = self._extract_query_fields(
+                        result, resolved_fields, mapping,
+                        param_mapping)
+                    if name is not None:
+                        if single_item:
+                            exit_args = fields
+                        else:
+                            exit_args[name] = fields
+                    else:
+                        exit_args[item_name] = fields
+
+        return exit_args
 
     def tm_warn(self, warning):
         ts = time.time()
