@@ -368,6 +368,100 @@ Example playbook to ensure users are absent:
       state: absent
 ```
 
+
+Example playbook to query a user and print the base fields:
+
+```yaml
+---
+- name: Playbook to query users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query user pinky
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      state: query
+    register: result
+
+  - name: Print user info
+    debug:
+      var: result.user
+```
+
+
+Example playbook to query specific fields of a user:
+
+```yaml
+---
+- name: Playbook to query users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query first and last name of user pinky
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      query_param:
+      - first
+      - last
+      - email
+      state: query
+    register: result
+
+  - name: Print user info
+    debug:
+      var: result.user
+```
+
+
+Example playbook to query all fields of a user:
+
+```yaml
+---
+- name: Playbook to query users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query all fields of user pinky
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      query_param: ALL
+      state: query
+    register: result
+
+  - name: Print user info
+    debug:
+      var: result.user
+```
+
+
+Example playbook to query only the names of all users:
+
+```yaml
+---
+- name: Playbook to query users
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query all user names
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      query_param: PKEY_ONLY
+      state: query
+    register: result
+
+  - name: Print user names
+    debug:
+      var: result.user.users
+```
+
+
 When using FreeIPA 4.8.0+, SMB logon script, profile, home directory and home drive can be set for users.
 
 In the example playbook to set SMB attributes note that `smb_profile_path` and `smb_home_dir` use paths in UNC format, which includes backslashes ('\\`). If the paths are quoted, the backslash needs to be escaped becoming "\\", so the path `\\server\dir` becomes `"\\\\server\\dir"`. If the paths are unquoted the slashes do not have to be escaped.
@@ -416,7 +510,7 @@ Variable | Description | Required
 `update_password` | Set password for a user in present state only on creation or always. It can be one of `always` or `on_create` and defaults to `always`. | no
 `preserve` | Delete a user, keeping the entry available for future use. (bool)  | no
 `action` | Work on user or member level. It can be on of `member` or `user` and defaults to `user`. | no
-`state` | The state to ensure. It can be one of `present`, `absent`, `enabled`, `disabled`, `renamed`, `unlocked` or `undeleted`, default: `present`. Only `names` or `users` with only `name` set are allowed if state is not `present`. | yes
+`state` | The state to ensure. It can be one of `present`, `absent`, `enabled`, `disabled`, `renamed`, `unlocked`, `undeleted` or `query`, default: `present`. Only `names` or `users` with only `name` set are allowed if state is not `present`. | yes
 
 
 

@@ -128,6 +128,22 @@
     register: result
     failed_when: result.changed or result.failed
 
+  - name: User pinky with email "pinky"
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      email: pinky
+    register: result
+    failed_when: not result.changed or result.failed
+
+  - name: User pinky with email "pinky", again
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: pinky
+      email: pinky
+    register: result
+    failed_when: result.changed or result.failed
+
   - name: User pinky present with changed settings
     ipauser:
       ipaadmin_password: SomeADMINpassword
