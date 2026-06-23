@@ -1,7 +1,7 @@
 ---
 repos:
 - repo: https://github.com/ansible/ansible-lint.git
-  rev: v25.9.2
+  rev: v26.4.0
   hooks:
   - id: ansible-lint
     always_run: false
@@ -18,10 +18,9 @@ repos:
           --profile production
           --exclude tests/integration/
           --exclude tests/unit/
-          --parseable
           --nocolor
 - repo: https://github.com/adrienverge/yamllint.git
-  rev: v1.37.1
+  rev: v1.38.0
   hooks:
   - id: yamllint
     files: \.(yaml|yml)$
@@ -30,7 +29,7 @@ repos:
   hooks:
   - id: flake8
 - repo: https://github.com/pycqa/pylint
-  rev: v4.0.2
+  rev: v4.0.6
   hooks:
   - id: pylint
     args:
