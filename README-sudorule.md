@@ -184,7 +184,7 @@ Variable | Description | Required
 `ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
 `name` \| `cn` | The list of sudorule name strings. | no
 `sudorules` | The list of sudorule dicts. Each `sudorule` dict entry can contain sudorule variables.<br>There is one required option in the `sudorule` dict:| no
-&nbsp; | `name` - The sudorule name string of the entry. | yes
+`name` | The sudorule name string of the entry. | yes
 `description` | The sudorule description string. | no
 `usercategory` \| `usercat` | User category the rule applies to. Choices: ["all", ""] | no
 `hostcategory` \| `hostcat` | Host category the rule applies to. Choices: ["all", ""] | no
