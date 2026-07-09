@@ -1,4 +1,6 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+
+set -eu
 
 INFO="\033[37;1m"
 WARN="\033[33;1m"

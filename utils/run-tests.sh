@@ -1,4 +1,6 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+
+set -eu
 
 SCRIPTDIR="$(readlink -f "$(dirname "$0")")"
 TOPDIR="$(readlink -f "${SCRIPTDIR}/..")"
@@ -81,7 +83,7 @@ do
            [ -n "${ANSIBLE_VERSION:-""}" ] && die "Can't use -A with '-a'"
            SKIP_ANSIBLE="YES"
            ;;
-        a) 
+        a)
            [ "${SKIP_ANSIBLE:-"no"}" == "YES" ] && die "Can't use -A with '-a'"
            ANSIBLE_VERSION="${OPTARG}"
            ;;

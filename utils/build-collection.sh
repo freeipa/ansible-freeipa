@@ -1,7 +1,9 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
 #
 # Build Ansible Collection from ansible-freeipa repo
 #
+
+set -eu
 
 prog=$(basename "$0")
 pwd=$(pwd)

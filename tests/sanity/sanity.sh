@@ -1,4 +1,6 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+
+set -eu
 
 TOPDIR=$(readlink -f "$(dirname "$0")/../..")
 pushd "${TOPDIR}" >/dev/null || exit 1

@@ -1,4 +1,6 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+
+set -eu
 
 SCRIPTDIR="$(readlink -f "$(dirname "$0")")"
 
@@ -72,7 +74,7 @@ done
 export IPA_HOSTNAME MEMORY IMAGE_TAG scenario
 
 shift $((OPTIND - 1))
-[ $# == 1 ] || die -u "You must provide the name for a single container." 
+[ $# == 1 ] || die -u "You must provide the name for a single container."
 scenario="${1}"
 shift
 

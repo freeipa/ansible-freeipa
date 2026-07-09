@@ -1,4 +1,6 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
+
+set -eu
 
 BASEDIR="$(readlink -f "$(dirname "$0")")"
 TOPDIR="$(readlink -f "${BASEDIR}/../..")"
@@ -119,7 +121,7 @@ then
         deployed=true
     fi
     echo
-    
+
     container_stop "${name}"
 
     $deployed || die "Deployment failed"

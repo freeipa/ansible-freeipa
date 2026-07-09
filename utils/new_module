@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/usr/bin/env bash
 # -*- coding: utf-8 -*-
 
 # Authors:
@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+set -eu
 
 prog="$(basename "$0")"
 topdir="$(dirname "$0")"
