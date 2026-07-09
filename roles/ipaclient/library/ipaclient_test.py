@@ -332,7 +332,7 @@ def main():
             no_nisdomain=dict(required=False, type='bool', default='no'),
             kinit_attempts=dict(required=False, type='int'),
             ca_cert_files=dict(required=False, type='list', elements='str',
-                               default=None),
+                               default=[]),
             configure_firefox=dict(required=False, type='bool', default=False),
             firefox_dir=dict(required=False, type='str'),
             ip_addresses=dict(required=False, type='list', elements='str',
@@ -459,25 +459,19 @@ def main():
 
         # ClientInstall
 
-        if options.ca_cert_files is not None:
-            for value in options.ca_cert_files:
-                if not isinstance(value, list):
-                    raise ValueError("Expected list, got {0!r}".format(value))
-                # this is what init() does
-                value = value[-1]
-                if not os.path.exists(value):
-                    raise ValueError("'%s' does not exist" % value)
-                if not os.path.isfile(value):
-                    raise ValueError("'%s' is not a file" % value)
-                if not os.path.isabs(value):
-                    raise ValueError("'%s' is not an absolute file path" %
-                                     value)
+        for value in options.ca_cert_files:
+            if not os.path.exists(value):
+                raise ValueError("'%s' does not exist" % value)
+            if not os.path.isfile(value):
+                raise ValueError("'%s' is not a file" % value)
+            if not os.path.isabs(value):
+                raise ValueError("'%s' is not an absolute file path" % value)
 
-                try:
-                    x509.load_certificate_from_file(value)
-                except Exception:
-                    raise ValueError("'%s' is not a valid certificate file" %
-                                     value)
+            try:
+                x509.load_certificate_from_file(value)
+            except Exception:
+                raise ValueError("'%s' is not a valid certificate file" %
+                                 value)
 
         # self.prompt_password = self.interactive
 
