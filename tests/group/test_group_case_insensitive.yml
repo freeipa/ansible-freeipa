@@ -136,7 +136,7 @@
 
       - name: "Ensure test users test_users are absent"
         ipauser:
-          users: "{{ test_users }}"
+          name: "{{ user_names }}"
           state: absent
 
   - name: Test in all IPA versions 8.4.4+

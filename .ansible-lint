@@ -23,7 +23,7 @@ kinds:
   - tasks: '**/tasks_*.yml'
   - tasks: '**/env_*.yml'
 
-parseable: true
+# parseable: true
 
 quiet: false
 

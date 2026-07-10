@@ -608,6 +608,11 @@ options:
     type: str
     choices: ["always", "on_create"]
     required: false
+  query_param:
+    description: The fields to query with state=query
+    required: false
+    type: list
+    elements: str
   action:
     description: Work on user or member level
     type: str
@@ -620,7 +625,7 @@ options:
     choices: ["present", "absent",
               "enabled", "disabled",
               "unlocked", "undeleted",
-              "renamed"]
+              "renamed", "query"]
 author:
   - Thomas Woerner (@t-woerner)
 """
@@ -714,6 +719,39 @@ EXAMPLES = """
     name: someuser
     rename: anotheruser
     state: renamed
+
+# Query base fields of a user
+- ipauser:
+    ipaadmin_password: SomeADMINpassword
+    name: pinky
+    state: query
+  register: result
+
+# Query specific fields of a user
+- ipauser:
+    ipaadmin_password: SomeADMINpassword
+    name: pinky
+    query_param:
+    - first
+    - last
+    - email
+    state: query
+  register: result
+
+# Query all fields of a user
+- ipauser:
+    ipaadmin_password: SomeADMINpassword
+    name: pinky
+    query_param: ALL
+    state: query
+  register: result
+
+# Query only the names of all users
+- ipauser:
+    ipaadmin_password: SomeADMINpassword
+    query_param: PKEY_ONLY
+    state: query
+  register: result
 """
 
 RETURN = """
@@ -741,16 +779,16 @@ user:
 
 
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, convert_date, \
+    IPAAnsibleModule, compare_args_ipa, gen_member_add_del_lists, \
+    convert_date, \
     encode_certificate, load_cert_from_str, DN_x500_text, to_text, \
-    ipalib_errors, gen_add_list, gen_intersection_list, \
-    convert_input_certificates, date_string
+    ipalib_errors, convert_input_certificates, date_string
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
 
 
-def find_user(module, name):
+def user_show(module, name):
     _args = {
         "all": True,
     }
@@ -774,116 +812,56 @@ def find_user(module, name):
     return _result
 
 
-def gen_args(first, last, fullname, displayname, initials, homedir, gecos,
-             shell, email, principalexpiration, passwordexpiration, password,
-             random, uid, gid, street, city, userstate, postalcode, phone,
-             mobile, pager, fax, orgunit, title, carlicense, sshpubkey,
-             userauthtype, userclass, radius, radiususer, departmentnumber,
-             employeenumber, employeetype, preferredlanguage, smb_logon_script,
-             smb_profile_path, smb_home_dir, smb_home_drive, idp, idp_user_id,
-             noprivate, nomembers):
-    # principal, manager, certificate and certmapdata are handled not in here
-    _args = {}
-    if first is not None:
-        _args["givenname"] = first
-    if last is not None:
-        _args["sn"] = last
-    if fullname is not None:
-        _args["cn"] = fullname
-    if displayname is not None:
-        _args["displayname"] = displayname
-    if initials is not None:
-        _args["initials"] = initials
-    if homedir is not None:
-        _args["homedirectory"] = homedir
-    if gecos is not None:
-        _args["gecos"] = gecos
-    if shell is not None:
-        _args["loginshell"] = shell
-    if email is not None and len(email) > 0:
-        _args["mail"] = email
-    if principalexpiration is not None:
-        _args["krbprincipalexpiration"] = principalexpiration
-    if passwordexpiration is not None:
-        _args["krbpasswordexpiration"] = passwordexpiration
-    if password is not None:
-        _args["userpassword"] = password
-    if random is not None:
-        _args["random"] = random
-    if uid is not None:
-        _args["uidnumber"] = to_text(str(uid))
-    if gid is not None:
-        _args["gidnumber"] = to_text(str(gid))
-    if street is not None:
-        _args["street"] = street
-    if city is not None:
-        _args["l"] = city
-    if userstate is not None:
-        _args["st"] = userstate
-    if postalcode is not None:
-        _args["postalcode"] = postalcode
-    if phone is not None and len(phone) > 0:
-        _args["telephonenumber"] = phone
-    if mobile is not None and len(mobile) > 0:
-        _args["mobile"] = mobile
-    if pager is not None and len(pager) > 0:
-        _args["pager"] = pager
-    if fax is not None and len(fax) > 0:
-        _args["facsimiletelephonenumber"] = fax
-    if orgunit is not None:
-        _args["ou"] = orgunit
-    if title is not None:
-        _args["title"] = title
-    if carlicense is not None and len(carlicense) > 0:
-        _args["carlicense"] = carlicense
-    if sshpubkey is not None and len(sshpubkey) > 0:
-        _args["ipasshpubkey"] = sshpubkey
-    if userauthtype is not None and len(userauthtype) > 0:
-        _args["ipauserauthtype"] = userauthtype
-    if userclass is not None:
-        _args["userclass"] = userclass
-    if radius is not None:
-        _args["ipatokenradiusconfiglink"] = radius
-    if radiususer is not None:
-        _args["ipatokenradiususername"] = radiususer
-    if departmentnumber is not None:
-        _args["departmentnumber"] = departmentnumber
-    if employeenumber is not None:
-        _args["employeenumber"] = employeenumber
-    if employeetype is not None:
-        _args["employeetype"] = employeetype
-    if preferredlanguage is not None:
-        _args["preferredlanguage"] = preferredlanguage
-    if idp is not None:
-        _args["ipaidpconfiglink"] = idp
-    if idp_user_id is not None:
-        _args["ipaidpsub"] = idp_user_id
-    if noprivate is not None:
-        _args["noprivate"] = noprivate
-    if nomembers is not None:
-        _args["no_members"] = nomembers
-    if smb_logon_script is not None:
-        _args["ipantlogonscript"] = smb_logon_script
-    if smb_profile_path is not None:
-        _args["ipantprofilepath"] = smb_profile_path
-    if smb_home_dir is not None:
-        _args["ipanthomedirectory"] = smb_home_dir
-    if smb_home_drive is not None:
-        _args["ipanthomedirectorydrive"] = smb_home_drive
-    return _args
+def query_convert_result(module, res):
+    _res = {}
+    try:
+        for key in res:
+            if key in ["manager", "krbprincipalname", "ipacertmapdata"]:
+                _res[key] = [to_text(x) for x in (res.get(key) or [])]
+            elif key == "usercertificate":
+                _res[key] = [
+                    encode_certificate(x) for x in (res.get(key) or [])
+                ]
+            elif isinstance(res[key], (list, tuple)):
+                if len(res[key]) == 1:
+                    # All single value parameters should not be lists
+                    # This does not apply to manager, krbprincipalname,
+                    # usercertificate and ipacertmapdata
+                    _res[key] = to_text(res[key][0])
+                else:
+                    _res[key] = [to_text(x) for x in res[key]]
+            elif key in ["uidnumber", "gidnumber"]:
+                _res[key] = int(res[key])
+            else:
+                _res[key] = to_text(res[key])
+    except (TypeError, ValueError) as e:
+        module.fail_json(
+            msg="Failed to convert query result for '%s': %s"
+            % (key, str(e)))
+    return _res
 
 
-def check_parameters(  # pylint: disable=unused-argument
-        module, state, action, first, last, fullname, displayname, initials,
-        homedir, gecos, shell, email, principal, principalexpiration,
-        passwordexpiration, password, random, uid, gid, street, city, phone,
-        mobile, pager, fax, orgunit, title, manager, carlicense, sshpubkey,
-        userauthtype, userclass, radius, radiususer, departmentnumber,
-        employeenumber, employeetype, preferredlanguage, certificate,
-        certmapdata, noprivate, nomembers, preserve, update_password,
-        smb_logon_script, smb_profile_path, smb_home_dir, smb_home_drive,
-        idp, ipa_user_id, rename
-):
+def user_find(module, name):
+    _args = {"all": True}
+
+    try:
+        if name:
+            _args["uid"] = name
+        _result = module.ipa_command_no_name("user_find", _args).get("result")
+        if _result:
+            if name:
+                _result = _result[0]
+
+    except ipalib_errors.NotFound:
+        return None
+
+    return _result
+
+
+def check_parameters(module, state, action, preserve, user_params):
+    rename = user_params.get("rename")
+    certmapdata = user_params.get("certmapdata")
+
     if state == "present" and action == "user":
         invalid = ["preserve"]
     else:
@@ -906,6 +884,15 @@ def check_parameters(  # pylint: disable=unused-argument
                 invalid.extend(
                     ["principal", "manager", "certificate", "certmapdata"])
 
+        if state == "query":
+            invalid.append("users")
+
+            if action == "member":
+                module.fail_json(
+                    msg="Query is not possible with action=member")
+        else:
+            invalid.append("query_param")
+
         if state != "absent" and preserve is not None:
             module.fail_json(
                 msg="Preserve is only possible for state=absent")
@@ -923,35 +910,36 @@ def check_parameters(  # pylint: disable=unused-argument
             module.fail_json(
                 msg="Action member can not be used with state: renamed.")
 
-    module.params_fail_used_invalid(invalid, state, action)
+    module.params_fail_used_invalid(invalid, state, action, user_params,
+                                    PARAM_MAPPING)
 
     if certmapdata is not None:
         for x in certmapdata:
-            certificate = x.get("certificate")
+            _certificate = x.get("certificate")
             issuer = x.get("issuer")
             subject = x.get("subject")
             data = x.get("data")
 
             if data is not None:
-                if certificate is not None or issuer is not None or \
+                if _certificate is not None or issuer is not None or \
                    subject is not None:
                     module.fail_json(
                         msg="certmapdata: data can not be used with "
                         "certificate, issuer or subject")
                 check_certmapdata(data)
-            if certificate is not None \
+            if _certificate is not None \
                and (issuer is not None or subject is not None):
                 module.fail_json(
                     msg="certmapdata: certificate can not be used with "
                     "issuer or subject")
-            if data is None and certificate is None:
+            if data is None and _certificate is None:
                 if issuer is None:
                     module.fail_json(msg="certmapdata: issuer is missing")
                 if subject is None:
                     module.fail_json(msg="certmapdata: subject is missing")
 
-
-def check_userauthtype(module, userauthtype):
+    # Check if userauthtype is invalid
+    userauthtype = user_params.get("userauthtype")
     _invalid = module.ipa_command_invalid_param_choices(
         "user_add", "ipauserauthtype", userauthtype)
     if _invalid:
@@ -960,37 +948,66 @@ def check_userauthtype(module, userauthtype):
             "by your IPA version" % "','".join(_invalid))
 
 
-def extend_emails(email, default_email_domain):
+def convert_params(ansible_module, user_params, default_email_domain,
+                   server_realm, state):
+    """Convert parameter values in user_params in-place."""
+    # Convert date fields
+    for date_field in ("principalexpiration", "passwordexpiration"):
+        val = user_params.get(date_field)
+        if (
+            val
+            and isinstance(
+                val, (str, unicode)  # pylint: disable=W0012,E0606
+            )
+        ):
+            if val[-1] != "Z":
+                val = val + "Z"
+            user_params[date_field] = convert_date(val)
+
+    # Extend email addresses without "@" with default domain
+    email = user_params.get("email")
     if email is not None:
-        return ["%s@%s" % (_email, default_email_domain)
-                if "@" not in _email else _email
-                for _email in email]
-    return email
+        user_params["email"] = [
+            "%s@%s" % (_email, default_email_domain)
+            if "@" not in _email else _email
+            for _email in email
+        ]
 
+    # Add realm to principals missing "@"
+    principal = user_params.get("principal")
+    if principal is not None:
+        user_params["principal"] = [
+            x if "@" in x else x + "@" + server_realm
+            for x in principal
+        ]
 
-def convert_certmapdata(certmapdata):
-    if certmapdata is None:
-        return None
+    # Convert certmapdata dicts to X509 strings
+    certmapdata = user_params.get("certmapdata")
+    if certmapdata is not None:
+        _result = []
+        for x in certmapdata:
+            certificate = x.get("certificate")
+            issuer = x.get("issuer")
+            subject = x.get("subject")
+            data = x.get("data")
 
-    _result = []
-    for x in certmapdata:
-        certificate = x.get("certificate")
-        issuer = x.get("issuer")
-        subject = x.get("subject")
-        data = x.get("data")
+            if data is None:
+                if issuer is None and subject is None:
+                    cert = load_cert_from_str(certificate)
+                    issuer = cert.issuer
+                    subject = cert.subject
 
-        if data is None:
-            if issuer is None and subject is None:
-                cert = load_cert_from_str(certificate)
-                issuer = cert.issuer
-                subject = cert.subject
+                _result.append("X509:<I>%s<S>%s" % (DN_x500_text(issuer),
+                                                    DN_x500_text(subject)))
+            else:
+                _result.append(data)
 
-            _result.append("X509:<I>%s<S>%s" % (DN_x500_text(issuer),
-                                                DN_x500_text(subject)))
-        else:
-            _result.append(data)
+        user_params["certmapdata"] = _result
 
-    return _result
+    # Normalize base64 certificates
+    certificate = user_params.get("certificate")
+    user_params["certificate"] = convert_input_certificates(
+        ansible_module, certificate, state)
 
 
 def check_certmapdata(data):
@@ -1026,6 +1043,107 @@ def result_handler(module, result, command, name, args, exit_args,
 
     IPAAnsibleModule.member_error_handler(module, result, command, name, args,
                                           errors)
+
+
+# password, randompassword and krbprincipalkey may not be in the returned
+# information even in server context.
+PARAM_MAPPING = {
+    # Read-only system fields
+    "dn": {"return_only": True},
+    "objectclass": {"return_only": True},
+    "ipauniqueid": {"return_only": True},
+    "ipantsecurityidentifier": {"return_only": True},
+
+    # Query-only: name is the primary key, handled separately
+    "name": {"api_name": "uid", "gen_args": False},
+
+    # Writable params
+    "first": {"api_name": "givenname"},
+    "last": {"api_name": "sn"},
+    "fullname": {"api_name": "cn"},
+    "displayname": {},
+    "initials": {},
+    "homedir": {"api_name": "homedirectory"},
+    "shell": {"api_name": "loginshell"},
+    "email": {"api_name": "mail", "nonempty_list": True},
+    "principalexpiration": {"api_name": "krbprincipalexpiration"},
+    "passwordexpiration": {"api_name": "krbpasswordexpiration"},
+    "uid": {"api_name": "uidnumber", "type": "int", "convert_to": "text"},
+    "gid": {"api_name": "gidnumber", "type": "int", "convert_to": "text"},
+    "city": {"api_name": "l"},
+    "userstate": {"api_name": "st"},
+    "postalcode": {},
+    "phone": {"api_name": "telephonenumber", "nonempty_list": True},
+    "mobile": {"nonempty_list": True},
+    "pager": {"nonempty_list": True},
+    "fax": {"api_name": "facsimiletelephonenumber", "nonempty_list": True},
+    "orgunit": {"api_name": "ou"},
+    "title": {},
+    "carlicense": {"nonempty_list": True},
+    "sshpubkey": {"api_name": "ipasshpubkey", "nonempty_list": True,
+                  "allow_empty_list_item": True},
+    "userauthtype": {"api_name": "ipauserauthtype", "nonempty_list": True,
+                     "allow_empty_list_item": True},
+    "userclass": {},
+    "radius": {"api_name": "ipatokenradiusconfiglink"},
+    "radiususer": {"api_name": "ipatokenradiususername"},
+    "departmentnumber": {},
+    "employeenumber": {},
+    "employeetype": {},
+    "preferredlanguage": {},
+
+    # Query-only: handled separately via member commands
+    "manager": {"gen_args": False, "member": True},
+    "principal": {"api_name": "krbprincipalname", "gen_args": False,
+                  "member": True},
+    "certificate": {"api_name": "usercertificate", "gen_args": False,
+                    "member": True},
+    "certmapdata": {"api_name": "ipacertmapdata", "gen_args": False,
+                    "member": True},
+
+    # Writable params not queryable by name
+    "gecos": {},
+    "password": {"api_name": "userpassword"},
+    "random": {"query": False},
+    "street": {},
+    "rename": {"gen_args": False},
+    "noprivate": {"query": False},
+    "nomembers": {"api_name": "no_members", "query": False},
+    "idp": {"api_name": "ipaidpconfiglink"},
+    "idp_user_id": {"api_name": "ipaidpsub"},
+    "smb_logon_script": {"api_name": "ipantlogonscript"},
+    "smb_profile_path": {"api_name": "ipantprofilepath"},
+    "smb_home_dir": {"api_name": "ipanthomedirectory"},
+    "smb_home_drive": {"api_name": "ipanthomedirectorydrive"},
+
+    # Read-only status fields
+    "krblastpwdchange": {"return_only": True},
+    "krblastadminunlock": {"return_only": True},
+    "krbextradata": {"return_only": True},
+    "krbticketflags": {"return_only": True},
+    "krbloginfailedcount": {"return_only": True},
+    "krblastsuccessfulauth": {"return_only": True},
+    "has_password": {"return_only": True},
+    "has_keytab": {"return_only": True},
+    "preserved": {"type": "bool", "return_only": True},
+    "memberof_group": {"return_only": True},
+    "disabled": {"api_name": "nsaccountlock", "type": "bool",
+                 "gen_args": False},
+
+    # Module-level params (not per-item, checked via self.params)
+    "query_param": {"module_param": True},
+    "users": {"module_param": True},
+    "preserve": {"module_param": True},
+    "update_password": {"module_param": True},
+}
+
+QUERY_FIELDS = {
+    "prefix": "users",
+    "primary_key": "uid",
+    "base": [
+        "name", "first", "last", "shell", "principal", "uid", "gid", "disabled"
+    ]
+}
 
 
 def main():
@@ -1115,6 +1233,9 @@ def main():
                     aliases=["new_name"]),
     )
 
+    query_param_settings = IPAAnsibleModule.build_query_param_settings(
+        PARAM_MAPPING, QUERY_FIELDS)
+
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
@@ -1139,18 +1260,28 @@ def main():
             update_password=dict(type='str', default=None, no_log=False,
                                  choices=['always', 'on_create']),
 
+            # query
+            query_param=dict(
+                type="list", elements="str", default=None,
+                choices=["ALL", "BASE", "PKEY_ONLY"]
+                + query_param_settings["ALL"],
+                required=False
+            ),
+
             # general
             action=dict(type="str", default="user",
                         choices=["member", "user"]),
             state=dict(type="str", default="present",
                        choices=["present", "absent", "enabled", "disabled",
-                                "unlocked", "undeleted", "renamed"]),
+                                "unlocked", "undeleted", "renamed",
+                                "query"]),
 
             # Add user specific parameters for simple use case
             **user_spec
         ),
         mutually_exclusive=[["name", "users"]],
-        required_one_of=[["name", "users"]],
+        # Required one of [["name", "users"]] has been removed as there is
+        # an extra test below and it is not working with state=query
         supports_check_mode=True,
     )
 
@@ -1162,80 +1293,24 @@ def main():
     names = ansible_module.params_get("name")
     users = ansible_module.params_get("users")
 
-    # present
-    first = ansible_module.params_get("first")
-    last = ansible_module.params_get("last")
-    fullname = ansible_module.params_get("fullname")
-    displayname = ansible_module.params_get("displayname")
-    initials = ansible_module.params_get("initials")
-    homedir = ansible_module.params_get("homedir")
-    gecos = ansible_module.params_get("gecos")
-    shell = ansible_module.params_get("shell")
-    email = ansible_module.params_get("email")
-    principal = ansible_module.params_get("principal")
-    principalexpiration = ansible_module.params_get(
-        "principalexpiration")
-    if principalexpiration is not None:
-        if principalexpiration[:-1] != "Z":
-            principalexpiration = principalexpiration + "Z"
-        principalexpiration = convert_date(principalexpiration)
-    passwordexpiration = ansible_module.params_get("passwordexpiration")
-    if passwordexpiration is not None:
-        if passwordexpiration[:-1] != "Z":
-            passwordexpiration = passwordexpiration + "Z"
-        passwordexpiration = convert_date(passwordexpiration)
-    password = ansible_module.params_get("password")
-    random = ansible_module.params_get("random")
-    uid = ansible_module.params_get("uid")
-    gid = ansible_module.params_get("gid")
-    street = ansible_module.params_get("street")
-    city = ansible_module.params_get("city")
-    userstate = ansible_module.params_get("userstate")
-    postalcode = ansible_module.params_get("postalcode")
-    phone = ansible_module.params_get("phone")
-    mobile = ansible_module.params_get("mobile")
-    pager = ansible_module.params_get("pager")
-    fax = ansible_module.params_get("fax")
-    orgunit = ansible_module.params_get("orgunit")
-    title = ansible_module.params_get("title")
-    manager = ansible_module.params_get("manager")
-    carlicense = ansible_module.params_get("carlicense")
-    sshpubkey = ansible_module.params_get("sshpubkey",
-                                          allow_empty_list_item=True)
-    userauthtype = ansible_module.params_get("userauthtype",
-                                             allow_empty_list_item=True)
-    userclass = ansible_module.params_get("userclass")
-    radius = ansible_module.params_get("radius")
-    radiususer = ansible_module.params_get("radiususer")
-    departmentnumber = ansible_module.params_get("departmentnumber")
-    employeenumber = ansible_module.params_get("employeenumber")
-    employeetype = ansible_module.params_get("employeetype")
-    preferredlanguage = ansible_module.params_get("preferredlanguage")
-    smb_logon_script = ansible_module.params_get("smb_logon_script")
-    smb_profile_path = ansible_module.params_get("smb_profile_path")
-    smb_home_dir = ansible_module.params_get("smb_home_dir")
-    smb_home_drive = ansible_module.params_get("smb_home_drive")
-    idp = ansible_module.params_get("idp")
-    idp_user_id = ansible_module.params_get("idp_user_id")
-    certificate = ansible_module.params_get("certificate")
-    certmapdata = ansible_module.params_get("certmapdata")
-    noprivate = ansible_module.params_get("noprivate")
-    nomembers = ansible_module.params_get("nomembers")
-    # deleted
     preserve = ansible_module.params_get("preserve")
-    # mod
     update_password = ansible_module.params_get("update_password")
-    # rename
-    rename = ansible_module.params_get("rename")
+
+    # query
+    query_param = ansible_module.params_get("query_param")
     # general
     action = ansible_module.params_get("action")
     state = ansible_module.params_get("state")
 
     # Check parameters
 
-    if (names is None or len(names) < 1) and \
-       (users is None or len(users) < 1):
-        ansible_module.fail_json(msg="One of name and users is required")
+    if state != "query":
+        if (names is None or len(names) < 1) and \
+           (users is None or len(users) < 1):
+            ansible_module.fail_json(msg="One of name and users is required")
+    elif users is not None:
+        ansible_module.fail_json(
+            msg="users can not be used with state=query, use name instead")
 
     if state in ["present", "renamed"]:
         if names is not None and len(names) != 1:
@@ -1246,23 +1321,6 @@ def main():
     # Use users if names is None
     if users is not None:
         names = users
-    else:
-        check_parameters(
-            ansible_module, state, action,
-            first, last, fullname, displayname, initials, homedir, gecos,
-            shell, email,
-            principal, principalexpiration, passwordexpiration, password,
-            random,
-            uid, gid, street, city, phone, mobile, pager, fax, orgunit, title,
-            manager, carlicense, sshpubkey, userauthtype, userclass, radius,
-            radiususer, departmentnumber, employeenumber, employeetype,
-            preferredlanguage, certificate, certmapdata, noprivate, nomembers,
-            preserve, update_password, smb_logon_script, smb_profile_path,
-            smb_home_dir, smb_home_drive, idp, idp_user_id, rename,
-        )
-        certificate = convert_input_certificates(ansible_module, certificate,
-                                                 state)
-        certmapdata = convert_certmapdata(certmapdata)
 
     # Init
 
@@ -1272,22 +1330,19 @@ def main():
     # Connect to IPA API
     with ansible_module.ipa_connect():
 
-        # Check version specific settings
+        if state == "query":
+            exit_args = ansible_module.execute_query(
+                names, query_param, user_find, query_param_settings,
+                convert_result=lambda res: query_convert_result(
+                    ansible_module, res)
+            )
+
+            ansible_module.exit_json(changed=False, user=exit_args)
 
         server_realm = ansible_module.ipa_get_realm()
 
-        # Check API specific parameters
-
-        check_userauthtype(ansible_module, userauthtype)
-
-        # Default email domain
-
         result = ansible_module.ipa_command_no_name("config_show", {})
         default_email_domain = result["result"]["ipadefaultemaildomain"][0]
-
-        # Extend email addresses
-
-        email = extend_emails(email, default_email_domain)
 
         # commands
 
@@ -1301,88 +1356,9 @@ def main():
                     ansible_module.fail_json(
                         msg="user '%s' is used more than once" % name)
                 user_set.add(name)
-                # present
-                first = user.get("first")
-                last = user.get("last")
-                fullname = user.get("fullname")
-                displayname = user.get("displayname")
-                initials = user.get("initials")
-                homedir = user.get("homedir")
-                gecos = user.get("gecos")
-                shell = user.get("shell")
-                email = user.get("email")
-                principal = user.get("principal")
-                principalexpiration = user.get("principalexpiration")
-                if principalexpiration is not None:
-                    if principalexpiration[:-1] != "Z":
-                        principalexpiration = principalexpiration + "Z"
-                    principalexpiration = convert_date(principalexpiration)
-                passwordexpiration = user.get("passwordexpiration")
-                if passwordexpiration is not None:
-                    if passwordexpiration[:-1] != "Z":
-                        passwordexpiration = passwordexpiration + "Z"
-                    passwordexpiration = convert_date(passwordexpiration)
-                password = user.get("password")
-                random = user.get("random")
-                uid = user.get("uid")
-                gid = user.get("gid")
-                street = user.get("street")
-                city = user.get("city")
-                userstate = user.get("userstate")
-                postalcode = user.get("postalcode")
-                phone = user.get("phone")
-                mobile = user.get("mobile")
-                pager = user.get("pager")
-                fax = user.get("fax")
-                orgunit = user.get("orgunit")
-                title = user.get("title")
-                manager = user.get("manager")
-                carlicense = user.get("carlicense")
-                sshpubkey = user.get("sshpubkey")
-                userauthtype = user.get("userauthtype")
-                userclass = user.get("userclass")
-                radius = user.get("radius")
-                radiususer = user.get("radiususer")
-                departmentnumber = user.get("departmentnumber")
-                employeenumber = user.get("employeenumber")
-                employeetype = user.get("employeetype")
-                preferredlanguage = user.get("preferredlanguage")
-                smb_logon_script = user.get("smb_logon_script")
-                smb_profile_path = user.get("smb_profile_path")
-                smb_home_dir = user.get("smb_home_dir")
-                smb_home_drive = user.get("smb_home_drive")
-                idp = user.get("idp")
-                idp_user_id = user.get("idp_user_id")
-                rename = user.get("rename")
-                certificate = user.get("certificate")
-                certmapdata = user.get("certmapdata")
-                noprivate = user.get("noprivate")
-                nomembers = user.get("nomembers")
 
-                check_parameters(
-                    ansible_module, state, action,
-                    first, last, fullname, displayname, initials, homedir,
-                    gecos, shell, email, principal, principalexpiration,
-                    passwordexpiration, password, random, uid, gid, street,
-                    city, phone, mobile, pager, fax, orgunit, title, manager,
-                    carlicense, sshpubkey, userauthtype, userclass, radius,
-                    radiususer, departmentnumber, employeenumber,
-                    employeetype, preferredlanguage, certificate,
-                    certmapdata, noprivate, nomembers, preserve,
-                    update_password, smb_logon_script, smb_profile_path,
-                    smb_home_dir, smb_home_drive, idp, idp_user_id, rename,
-                )
-                certificate = convert_input_certificates(ansible_module,
-                                                         certificate, state)
-                certmapdata = convert_certmapdata(certmapdata)
-
-                # Check API specific parameters
-
-                check_userauthtype(ansible_module, userauthtype)
-
-                # Extend email addresses
-
-                email = extend_emails(email, default_email_domain)
+                user_params = IPAAnsibleModule.extract_params_from_entry(
+                    user, PARAM_MAPPING)
 
             elif (
                 isinstance(
@@ -1390,22 +1366,27 @@ def main():
                 )
             ):
                 name = user
+                user_params = IPAAnsibleModule.extract_params(
+                    ansible_module, PARAM_MAPPING)
             else:
                 ansible_module.fail_json(msg="User '%s' is not valid" %
                                          repr(user))
+                # Never reached, just added to make pylint happy
+                name = None
+                user_params = {}
 
-            # Fix principals: add realm if missing
-            # We need the connected API for the realm, therefore it can not
-            # be part of check_parameters as this is used also before the
-            # connection to the API has been established.
-            if principal is not None:
-                principal = [x if "@" in x else x + "@" + server_realm
-                             for x in principal]
+            # Unpack params used directly in business logic
+            first = user_params.get("first")
+            last = user_params.get("last")
+            passwordexpiration = user_params.get("passwordexpiration")
+            rename = user_params.get("rename")
 
-            # Check passwordexpiration availability.
-            # We need the connected API for this test, therefore it can not
-            # be part of check_parameters as this is used also before the
-            # connection to the API has been established.
+            check_parameters(ansible_module, state, action, preserve,
+                             user_params)
+            convert_params(ansible_module, user_params,
+                           default_email_domain, server_realm, state)
+
+            # Check passwordexpiration availability
             if passwordexpiration is not None and \
                not ansible_module.ipa_command_param_exists(
                    "user_add", "krbpasswordexpiration"):
@@ -1413,11 +1394,8 @@ def main():
                     msg="The use of passwordexpiration is not supported by "
                     "your IPA version")
 
-            # Check certmapdata availability.
-            # We need the connected API for this test, therefore it can not
-            # be part of check_parameters as this is used also before the
-            # connection to the API has been established.
-            if certmapdata is not None and \
+            # Check certmapdata availability
+            if user_params.get("certmapdata") is not None and \
                not ansible_module.ipa_command_exists("user_add_certmapdata"):
                 ansible_module.fail_json(
                     msg="The use of certmapdata is not supported by "
@@ -1426,8 +1404,10 @@ def main():
             # Check if SMB attributes are available
             if (
                 any([
-                    smb_logon_script, smb_profile_path, smb_home_dir,
-                    smb_home_drive
+                    user_params.get("smb_logon_script"),
+                    user_params.get("smb_profile_path"),
+                    user_params.get("smb_home_dir"),
+                    user_params.get("smb_home_drive"),
                 ])
                 and not ansible_module.ipa_command_param_exists(
                     "user_mod", "ipanthomedirectory"
@@ -1440,9 +1420,9 @@ def main():
 
             # Check if IdP support is available
             require_idp = (
-                idp is not None
-                or idp_user_id is not None
-                or userauthtype == "idp"
+                user_params.get("idp") is not None
+                or user_params.get("idp_user_id") is not None
+                or user_params.get("userauthtype") == "idp"
             )
             has_idp_support = ansible_module.ipa_command_param_exists(
                 "user_add", "ipaidpconfiglink"
@@ -1452,23 +1432,13 @@ def main():
                     msg="Your IPA version does not support External IdP.")
 
             # Make sure user exists
-            res_find = find_user(ansible_module, name)
+            res_find = user_show(ansible_module, name)
 
             # Create command
             if state == "present":
                 # Generate args
-                args = gen_args(
-                    first, last, fullname, displayname, initials, homedir,
-                    gecos,
-                    shell, email, principalexpiration, passwordexpiration,
-                    password, random, uid, gid, street, city, userstate,
-                    postalcode, phone, mobile, pager, fax, orgunit, title,
-                    carlicense, sshpubkey, userauthtype, userclass, radius,
-                    radiususer, departmentnumber, employeenumber, employeetype,
-                    preferredlanguage, smb_logon_script, smb_profile_path,
-                    smb_home_dir, smb_home_drive, idp, idp_user_id, noprivate,
-                    nomembers,
-                )
+                args = IPAAnsibleModule.gen_args_from_mapping(
+                    PARAM_MAPPING, user_params)
 
                 if action == "user":
                     # Found the user
@@ -1523,173 +1493,10 @@ def main():
                         commands.append([name, "user_add", args])
                         if smb_attrs:
                             commands.append([name, "user_mod", smb_attrs])
-                    # Handle members: principal, manager, certificate and
-                    # certmapdata
-                    if res_find is not None:
-                        # Generate addition and removal lists
-                        manager_add, manager_del = gen_add_del_lists(
-                            manager, res_find.get("manager"))
-
-                        principal_add, principal_del = gen_add_del_lists(
-                            principal, res_find.get("krbprincipalname"))
-                        # Principals are not returned as utf8 for IPA using
-                        # python2 using user_find, therefore we need to
-                        # convert the principals that we should remove.
-                        principal_del = [to_text(x) for x in principal_del]
-
-                        certificate_add, certificate_del = gen_add_del_lists(
-                            certificate, res_find.get("usercertificate"))
-
-                        certmapdata_add, certmapdata_del = gen_add_del_lists(
-                            certmapdata, res_find.get("ipacertmapdata"))
-
-                    else:
-                        # Use given managers and principals
-                        manager_add = manager or []
-                        manager_del = []
-                        principal_add = principal or []
-                        principal_del = []
-                        certificate_add = certificate or []
-                        certificate_del = []
-                        certmapdata_add = certmapdata or []
-                        certmapdata_del = []
-
-                    # Remove canonical principal from principal_del
-                    canonical_principal = name + "@" + server_realm
-                    if canonical_principal in principal_del:
-                        principal_del.remove(canonical_principal)
-
-                    # Add managers
-                    if len(manager_add) > 0:
-                        commands.append([name, "user_add_manager",
-                                         {
-                                             "user": manager_add,
-                                         }])
-                    # Remove managers
-                    if len(manager_del) > 0:
-                        commands.append([name, "user_remove_manager",
-                                         {
-                                             "user": manager_del,
-                                         }])
-
-                    # Principals need to be added and removed one by one,
-                    # because if entry already exists, the processing of
-                    # the remaining enries is stopped. The same applies to
-                    # the removal of non-existing entries.
-
-                    # Add principals
-                    if len(principal_add) > 0:
-                        for _principal in principal_add:
-                            commands.append([name, "user_add_principal",
-                                             {
-                                                 "krbprincipalname":
-                                                 _principal,
-                                             }])
-                    # Remove principals
-                    if len(principal_del) > 0:
-                        for _principal in principal_del:
-                            commands.append([name, "user_remove_principal",
-                                             {
-                                                 "krbprincipalname":
-                                                 _principal,
-                                             }])
-
-                    # Certificates need to be added and removed one by one,
-                    # because if entry already exists, the processing of
-                    # the remaining enries is stopped. The same applies to
-                    # the removal of non-existing entries.
-
-                    # Add certificates
-                    if len(certificate_add) > 0:
-                        for _certificate in certificate_add:
-                            commands.append([name, "user_add_cert",
-                                             {
-                                                 "usercertificate":
-                                                 _certificate,
-                                             }])
-                    # Remove certificates
-                    if len(certificate_del) > 0:
-                        for _certificate in certificate_del:
-                            commands.append([name, "user_remove_cert",
-                                             {
-                                                 "usercertificate":
-                                                 _certificate,
-                                             }])
-
-                    # certmapdata need to be added and removed one by one,
-                    # because issuer and subject can only be done one by
-                    # one reliably (https://pagure.io/freeipa/issue/8097)
-
-                    # Add certmapdata
-                    if len(certmapdata_add) > 0:
-                        for _data in certmapdata_add:
-                            commands.append([name, "user_add_certmapdata",
-                                             gen_certmapdata_args(_data)])
-                    # Remove certmapdata
-                    if len(certmapdata_del) > 0:
-                        for _data in certmapdata_del:
-                            commands.append([name, "user_remove_certmapdata",
-                                             gen_certmapdata_args(_data)])
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
                             msg="No user '%s'" % name)
-
-                    # Ensure managers are present
-                    manager_add = gen_add_list(
-                        manager, res_find.get("manager"))
-                    if manager_add is not None and len(manager_add) > 0:
-                        commands.append([name, "user_add_manager",
-                                         {
-                                             "user": manager_add,
-                                         }])
-
-                    # Principals need to be added and removed one by one,
-                    # because if entry already exists, the processing of
-                    # the remaining enries is stopped. The same applies to
-                    # the removal of non-existing entries.
-
-                    # Ensure principals are present
-                    principal_add = gen_add_list(
-                        principal, res_find.get("krbprincipalname"))
-                    if principal_add is not None and len(principal_add) > 0:
-                        for _principal in principal_add:
-                            commands.append([name, "user_add_principal",
-                                             {
-                                                 "krbprincipalname":
-                                                 _principal,
-                                             }])
-
-                    # Certificates need to be added and removed one by one,
-                    # because if entry already exists, the processing of
-                    # the remaining enries is stopped. The same applies to
-                    # the removal of non-existing entries.
-
-                    # Ensure certificates are present
-                    certificate_add = gen_add_list(
-                        certificate, res_find.get("usercertificate"))
-                    if certificate_add is not None and \
-                       len(certificate_add) > 0:
-                        for _certificate in certificate_add:
-                            commands.append([name, "user_add_cert",
-                                             {
-                                                 "usercertificate":
-                                                 _certificate,
-                                             }])
-
-                    # certmapdata need to be added and removed one by one,
-                    # because issuer and subject can only be done one by
-                    # one reliably (https://pagure.io/freeipa/issue/8097)
-
-                    # Ensure certmapdata are present
-                    certmapdata_add = gen_add_list(
-                        certmapdata, res_find.get("ipacertmapdata"))
-                    if certmapdata_add is not None and \
-                       len(certmapdata_add) > 0:
-                        for _data in certmapdata_add:
-                            commands.append([name, "user_add_certmapdata",
-                                             gen_certmapdata_args(_data)])
 
             elif state == "absent":
                 if action == "user":
@@ -1707,60 +1514,6 @@ def main():
                         ansible_module.fail_json(
                             msg="No user '%s'" % name)
 
-                    # Ensure managers are absent
-                    manager_del = gen_intersection_list(
-                        manager, res_find.get("manager"))
-                    if manager_del is not None and len(manager_del) > 0:
-                        commands.append([name, "user_remove_manager",
-                                         {
-                                             "user": manager_del,
-                                         }])
-
-                    # Principals need to be added and removed one by one,
-                    # because if entry already exists, the processing of
-                    # the remaining enries is stopped. The same applies to
-                    # the removal of non-existing entries.
-
-                    # Ensure principals are absent
-                    principal_del = gen_intersection_list(
-                        principal, res_find.get("krbprincipalname"))
-                    if principal_del is not None and len(principal_del) > 0:
-                        commands.append([name, "user_remove_principal",
-                                         {
-                                             "krbprincipalname": principal_del,
-                                         }])
-
-                    # Certificates need to be added and removed one by one,
-                    # because if entry already exists, the processing of
-                    # the remaining enries is stopped. The same applies to
-                    # the removal of non-existing entries.
-
-                    # Ensure certificates are absent
-                    certificate_del = gen_intersection_list(
-                        certificate, res_find.get("usercertificate"))
-                    if certificate_del is not None and \
-                       len(certificate_del) > 0:
-                        for _certificate in certificate_del:
-                            commands.append([name, "user_remove_cert",
-                                             {
-                                                 "usercertificate":
-                                                 _certificate,
-                                             }])
-
-                    # certmapdata need to be added and removed one by one,
-                    # because issuer and subject can only be done one by
-                    # one reliably (https://pagure.io/freeipa/issue/8097)
-
-                    # Ensure certmapdata are absent
-                    certmapdata_del = gen_intersection_list(
-                        certmapdata, res_find.get("ipacertmapdata"))
-                    if certmapdata_del is not None and \
-                       len(certmapdata_del) > 0:
-                        # Using issuer and subject can only be done one by
-                        # one reliably (https://pagure.io/freeipa/issue/8097)
-                        for _data in certmapdata_del:
-                            commands.append([name, "user_remove_certmapdata",
-                                             gen_certmapdata_args(_data)])
             elif state == "undeleted":
                 if res_find is not None:
                     if res_find.get("preserved", False):
@@ -1796,6 +1549,107 @@ def main():
                         commands.append([name, 'user_mod', {"rename": rename}])
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+            # Handle members: principal, manager, certificate and
+            # certmapdata
+            member_lists = gen_member_add_del_lists(
+                PARAM_MAPPING, user_params,
+                res_find or {}, action, state)
+            manager_add, manager_del = member_lists.get(
+                "manager", ([], []))
+            principal_add, principal_del = member_lists.get(
+                "principal", ([], []))
+            certificate_add, certificate_del = member_lists.get(
+                "certificate", ([], []))
+            certmapdata_add, certmapdata_del = member_lists.get(
+                "certmapdata", ([], []))
+
+            # Principals are not returned as utf8 for IPA using
+            # python2 using user_show, therefore we need to
+            # convert the principals that we should remove.
+            principal_del = [to_text(x) for x in principal_del]
+
+            # Remove canonical principal from principal_del. This only
+            # applies to state=present, where principal_del is derived
+            # from a full sync of the requested principal list; for
+            # state=absent,action=member the canonical principal is a
+            # removal the caller explicitly asked for.
+            if state == "present":
+                canonical_principal = name + "@" + server_realm
+                if canonical_principal in principal_del:
+                    principal_del.remove(canonical_principal)
+
+            # Add managers
+            if len(manager_add) > 0:
+                commands.append([name, "user_add_manager",
+                                 {
+                                     "user": manager_add,
+                                 }])
+            # Remove managers
+            if len(manager_del) > 0:
+                commands.append([name, "user_remove_manager",
+                                 {
+                                     "user": manager_del,
+                                 }])
+
+            # Principals need to be added and removed one by one,
+            # because if entry already exists, the processing of
+            # the remaining enries is stopped. The same applies to
+            # the removal of non-existing entries.
+
+            # Add principals
+            if len(principal_add) > 0:
+                for _principal in principal_add:
+                    commands.append([name, "user_add_principal",
+                                     {
+                                         "krbprincipalname":
+                                         _principal,
+                                     }])
+            # Remove principals
+            if len(principal_del) > 0:
+                for _principal in principal_del:
+                    commands.append([name, "user_remove_principal",
+                                     {
+                                         "krbprincipalname":
+                                         _principal,
+                                     }])
+
+            # Certificates need to be added and removed one by one,
+            # because if entry already exists, the processing of
+            # the remaining enries is stopped. The same applies to
+            # the removal of non-existing entries.
+
+            # Add certificates
+            if len(certificate_add) > 0:
+                for _certificate in certificate_add:
+                    commands.append([name, "user_add_cert",
+                                     {
+                                         "usercertificate":
+                                         _certificate,
+                                     }])
+            # Remove certificates
+            if len(certificate_del) > 0:
+                for _certificate in certificate_del:
+                    commands.append([name, "user_remove_cert",
+                                     {
+                                         "usercertificate":
+                                         _certificate,
+                                     }])
+
+            # certmapdata need to be added and removed one by one,
+            # because issuer and subject can only be done one by
+            # one reliably (https://pagure.io/freeipa/issue/8097)
+
+            # Add certmapdata
+            if len(certmapdata_add) > 0:
+                for _data in certmapdata_add:
+                    commands.append([name, "user_add_certmapdata",
+                                     gen_certmapdata_args(_data)])
+            # Remove certmapdata
+            if len(certmapdata_del) > 0:
+                for _data in certmapdata_del:
+                    commands.append([name, "user_remove_certmapdata",
+                                     gen_certmapdata_args(_data)])
 
         del user_set
 
