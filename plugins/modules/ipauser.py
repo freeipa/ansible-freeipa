@@ -814,8 +814,8 @@ def user_show(module, name):
 
 def query_convert_result(module, res):
     _res = {}
-    try:
-        for key in res:
+    for key in res:
+        try:
             if key in ["manager", "krbprincipalname", "ipacertmapdata"]:
                 _res[key] = [to_text(x) for x in (res.get(key) or [])]
             elif key == "usercertificate":
@@ -834,10 +834,10 @@ def query_convert_result(module, res):
                 _res[key] = int(res[key])
             else:
                 _res[key] = to_text(res[key])
-    except (TypeError, ValueError) as e:
-        module.fail_json(
-            msg="Failed to convert query result for '%s': %s"
-            % (key, str(e)))
+        except (TypeError, ValueError) as e:
+            module.fail_json(
+                msg="Failed to convert query result for '%s': %s"
+                % (key, str(e)))
     return _res
 
 
@@ -884,6 +884,9 @@ def check_parameters(module, state, action, preserve, user_params):
                 invalid.extend(
                     ["principal", "manager", "certificate", "certmapdata"])
 
+        if state == "query":
+            module.fail_json(
+                msg="check_parameters can not be used with action query.")
         if state == "query":
             invalid.append("users")
 
@@ -1106,7 +1109,7 @@ PARAM_MAPPING = {
     "password": {"api_name": "userpassword"},
     "random": {"query": False},
     "street": {},
-    "rename": {"gen_args": False},
+    "rename": {"gen_args": False, "query": False},
     "noprivate": {"query": False},
     "nomembers": {"api_name": "no_members", "query": False},
     "idp": {"api_name": "ipaidpconfiglink"},
@@ -1308,9 +1311,14 @@ def main():
         if (names is None or len(names) < 1) and \
            (users is None or len(users) < 1):
             ansible_module.fail_json(msg="One of name and users is required")
-    elif users is not None:
-        ansible_module.fail_json(
-            msg="users can not be used with state=query, use name instead")
+    else:
+        if action == "member":
+            ansible_module.fail_json(
+                msg="Query is not possible with action=member")
+        if users is not None:
+            ansible_module.fail_json(
+                msg="users can not be used with state=query, "
+                "use name instead")
 
     if state in ["present", "renamed"]:
         if names is not None and len(names) != 1:
