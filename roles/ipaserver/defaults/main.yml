@@ -34,6 +34,7 @@ ipaserver_enable_compat: no
 ipaserver_setup_ca: yes
 ### packages ###
 ipaserver_install_packages: yes
+ipaserver_install_packages_only: false
 ### firewalld ###
 ipaserver_setup_firewalld: yes
 
