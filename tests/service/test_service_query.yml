@@ -1,0 +1,176 @@
+---
+- name: Test service query
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  # CLEANUP
+
+  - name: Ensure services "testsvcquery1" and "testsvcquery2" are absent
+    ipaservice:
+      name:
+      - HTTP/testsvcquery1.query.test
+      - HTTP/testsvcquery2.query.test
+      - HTTP/non-existing-service.query.test
+      continue: true
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure services "testsvcquery1" and "testsvcquery2" are present
+    ipaservice:
+      services:
+      - name: HTTP/testsvcquery1.query.test
+        skip_host_check: true
+        force: true
+        pac_type: NONE
+      - name: HTTP/testsvcquery2.query.test
+        skip_host_check: true
+        force: true
+        pac_type: NONE
+        principal:
+        - HTTP/testsvcqueryalias2.query.test
+
+  - name: Query service "HTTP/non-existing-service.query.test"
+    ipaservice:
+      name:
+      - HTTP/non-existing-service.query.test
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.service
+
+  - name: Fail on non empty query result
+    ansible.builtin.fail:
+      msg: "{{ result['service'] }} is not empty"
+    when: result['service'] | length > 0
+
+  - name: Query all services
+    ipaservice:
+      state: query
+      query_param: PKEY_ONLY
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.service
+
+  - name: Fail on missing "testsvcquery1" in query result
+    ansible.builtin.fail:
+      msg: "'testsvcquery1' not in query result {{ result.service.services }}"
+    when: >
+      result.service.services
+      | select('search', 'testsvcquery1.query.test')
+      | list | length == 0
+
+  - name: Fail on missing "testsvcquery2" in query result
+    ansible.builtin.fail:
+      msg: "'testsvcquery2' not in query result {{ result.service.services }}"
+    when: >
+      result.service.services
+      | select('search', 'testsvcquery2.query.test')
+      | list | length == 0
+
+  - name: Fail on "non-existing-service" in query result
+    ansible.builtin.fail:
+      msg: "'non-existing-service' in query result {{ result.service.services }}"
+    when: >
+      result.service.services
+      | select('search', 'non-existing-service.query.test')
+      | list | length > 0
+
+  - name: Query services "testsvcquery1" and "testsvcquery2" as PKEY_ONLY
+    ipaservice:
+      name:
+      - HTTP/testsvcquery1.query.test
+      - HTTP/testsvcquery2.query.test
+      state: query
+      query_param: PKEY_ONLY
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.service
+
+  - name: Fail on wrong number of services in query result
+    ansible.builtin.fail:
+      msg: "Query result {{ result.service.services }} is incomplete"
+    when: result.service.services | length != 2
+
+  - name: Query all service parameters for "HTTP/testsvcquery1.query.test"
+    ipaservice:
+      name: HTTP/testsvcquery1.query.test
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.service
+
+  - name: Fail on missing information in query result
+    ansible.builtin.fail:
+      msg: "Query result {{ result['service'] }} is incomplete"
+    when: >
+      ("testsvcquery1.query.test" not in result.service.dn or
+       result.service.ipauniqueid | length != 36 or
+       "testsvcquery1.query.test" not in result.service.name or
+       "objectclass" not in result.service)
+
+  - name: Query "principal" and "name" parameters for services by name
+    ipaservice:
+      name:
+      - HTTP/testsvcquery1.query.test
+      - HTTP/testsvcquery2.query.test
+      query_param:
+      - name
+      - principal
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.service
+
+  - name: Fail on missing "testsvcquery1" information in query result
+    ansible.builtin.fail:
+      msg: "'HTTP/testsvcquery1.query.test' not in query result {{ result.service }}"
+    when: >
+      ("HTTP/testsvcquery1.query.test" not in result.service or
+       "testsvcquery1.query.test" not in
+       result.service["HTTP/testsvcquery1.query.test"].name)
+
+  - name: Fail on missing "testsvcquery2" information in query result
+    ansible.builtin.fail:
+      msg: "'HTTP/testsvcquery2.query.test' not in query result {{ result.service }}"
+    when: >
+      ("HTTP/testsvcquery2.query.test" not in result.service or
+       "testsvcquery2.query.test" not in
+       result.service["HTTP/testsvcquery2.query.test"].name or
+       result.service["HTTP/testsvcquery2.query.test"].principal
+       | select('search', 'testsvcqueryalias2.query.test')
+       | list | length == 0)
+
+  # CLEANUP
+
+  - name: Ensure services "testsvcquery1" and "testsvcquery2" are absent
+    ipaservice:
+      name:
+      - HTTP/testsvcquery1.query.test
+      - HTTP/testsvcquery2.query.test
+      continue: true
+      state: absent
