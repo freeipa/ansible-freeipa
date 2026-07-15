@@ -141,21 +141,26 @@ rm -rf .copr .git* .pre*
 echo -e "\033[ARemoving files from build dir $BUILD ... \033[32;1mDONE\033[0m"
 
 if [ "$collection" != "rpm" ]; then
-    cat > README-COLLECTION.md <<EOF
+    mv README.md README-COLLECTION.md
+    cat > README.md <<EOF
 FreeIPA Ansible collection
 ==========================
+
+This repository contains Ansible roles and playbooks to install and uninstall FreeIPA servers, replicas and clients, also management modules.
 
 Important
 ---------
 
-For the documentation of this collection, please have a look at the documentation in the collection archive. Starting point: Base collection directory, file \`README.md\`.
+For the documentation of this collection, please have a look at the documentation in the collection archive. Starting point: Base collection directory, file **\`README-COLLECTION.md\`**.
 
-${collection_uname} is not providing proper user documentation nor is able to render the documentation part of the collection. Please ignore any modules and plugins in ${collection_uname} documentation section with the prefix \`ipaserver_\`, \`ipareplica_\`, \`ipaclient_\`, \`ipabackup_\` and \`ipasmartcard_\` and also \`module_utils\` and \`doc_fragments\`. These files are used internally only and are not supported to be used otherwise.
+${collection_uname} is not providing proper user documentation nor is able to render the documentation that is part of the collection. Therefore original \`README.md\` had to be renamed to \`README-COLLECTION.md\` to ensure that ${collection_uname} is not trying to render it.
 
-There is the [generic ansible-freeipa upstream documentation](https://github.com/freeipa/ansible-freeipa/blob/v${version}/README.md) specific to the version and also the [latest generic ansible-freeipa upstream documentation](https://github.com/freeipa/ansible-freeipa/blob/master/README.md), both without using the collection prefix \`${collection_prefix}\`.
+Please ignore any modules and plugins in the ${collection_uname} documentation section with the prefix \`ipaserver_\`, \`ipareplica_\`, \`ipaclient_\`, \`ipabackup_\` and \`ipasmartcard_\` and also \`module_utils\` and \`doc_fragments\`. These files are used internally only and are not supported to be used otherwise.
+
+There is also the [generic ansible-freeipa ${version} upstream documentation](https://github.com/freeipa/ansible-freeipa/blob/v${version}/README.md) and also the [latest generic ansible-freeipa upstream documentation](https://github.com/freeipa/ansible-freeipa/blob/master/README.md), both without using the collection prefix \`${collection_prefix}\`.
 EOF
     if [ "$collection" == "aah" ]; then
-        cat >> README-COLLECTION.md <<EOF
+        cat >> README.md <<EOF
 
 Support
 -------
@@ -165,7 +170,8 @@ This collection is maintained by Red Hat RHEL team.
 As Red Hat Ansible Certified Content, this collection is entitled to support through the Ansible Automation Platform (AAP) using the **Create issue** button on the top right corner.
 EOF
     fi
-    sed -i -e "s/readme: .*/readme: README-COLLECTION.md/" galaxy.yml
+    sed -i -e "s/readme: .*/readme: README.md/" galaxy.yml
+    sed -i -e "s/documentation: .*/documentation: README.md/" galaxy.yml
 fi
 sed -i -e "s/version: .*/version: \"$version\"/" galaxy.yml
 sed -i -e "s/namespace: .*/namespace: \"$namespace\"/" galaxy.yml
