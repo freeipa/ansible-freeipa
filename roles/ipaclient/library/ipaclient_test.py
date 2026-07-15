@@ -257,7 +257,7 @@ from ansible.module_utils.ansible_ipa_client import (
     logger, x509, normalize_hostname, installer, version, ScriptError,
     CLIENT_INSTALL_ERROR, tasks, check_ldap_conf, timeconf, constants,
     validate_hostname, nssldap_exists, gssapi, remove_file,
-    check_ip_addresses, ipadiscovery, print_port_conf_info,
+    check_ip_addresses, discovery, print_port_conf_info,
     IPA_PYTHON_VERSION, getargspec, services,
     CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION
 )
@@ -603,7 +603,10 @@ def main():
             hostname = options.hostname
             hostname_source = 'Provided as option'
         else:
-            hostname = socket.getfqdn()
+            if hasattr(constants, "FQDN"):
+                hostname = constants.FQDN
+            else:
+                hostname = socket.getfqdn()
             hostname_source = "Machine's FQDN"
         if hostname != hostname.lower():
             raise ScriptError(
@@ -694,7 +697,7 @@ def main():
 
         # Create the discovery instance
         # pylint: disable=invalid-name
-        ds = ipadiscovery.IPADiscovery()
+        ds = discovery.IPADiscovery()
 
         ret = ds.search(
             domain=options.domain,
@@ -719,24 +722,24 @@ def main():
                               ', '.join(options.server),
                               rval=CLIENT_INSTALL_ERROR)
 
-        if ret == ipadiscovery.BAD_HOST_CONFIG:
+        if ret == discovery.BAD_HOST_CONFIG:
             logger.error("Can't get the fully qualified name of this host")
             logger.info("Check that the client is properly configured")
             raise ScriptError(
                 "Can't get the fully qualified name of this host",
                 rval=CLIENT_INSTALL_ERROR)
-        if ret == ipadiscovery.NOT_FQDN:
+        if ret == discovery.NOT_FQDN:
             raise ScriptError(
                 "{0} is not a fully-qualified hostname".format(hostname),
                 rval=CLIENT_INSTALL_ERROR)
-        if ret in (ipadiscovery.NO_LDAP_SERVER, ipadiscovery.NOT_IPA_SERVER) \
+        if ret in (discovery.NO_LDAP_SERVER, discovery.NOT_IPA_SERVER) \
                 or not ds.domain:
-            if ret == ipadiscovery.NO_LDAP_SERVER:
+            if ret == discovery.NO_LDAP_SERVER:
                 if ds.server:
                     logger.debug("%s is not an LDAP server", ds.server)
                 else:
                     logger.debug("No LDAP server found")
-            elif ret == ipadiscovery.NOT_IPA_SERVER:
+            elif ret == discovery.NOT_IPA_SERVER:
                 if ds.server:
                     logger.debug("%s is not an IPA server", ds.server)
                 else:
@@ -775,7 +778,7 @@ def main():
 
         client_domain = hostname[hostname.find(".") + 1:]
 
-        if ret in (ipadiscovery.NO_LDAP_SERVER, ipadiscovery.NOT_IPA_SERVER) \
+        if ret in (discovery.NO_LDAP_SERVER, discovery.NOT_IPA_SERVER) \
                 or not ds.server:
             logger.debug("IPA Server not found")
             if options.server:
@@ -828,14 +831,14 @@ def main():
                 cli_server_source = ds.server_source
                 logger.debug("will use discovered server: %s", cli_server[0])
 
-        if ret == ipadiscovery.NOT_IPA_SERVER:
+        if ret == discovery.NOT_IPA_SERVER:
             logger.error("%s is not an IPA v2 Server.", cli_server[0])
             print_port_conf_info()
             logger.debug("(%s: %s)", cli_server[0], cli_server_source)
             raise ScriptError("%s is not an IPA v2 Server." % cli_server[0],
                               rval=CLIENT_INSTALL_ERROR)
 
-        if ret == ipadiscovery.NO_ACCESS_TO_LDAP:
+        if ret == discovery.NO_ACCESS_TO_LDAP:
             logger.warning("Anonymous access to the LDAP server is disabled.")
             logger.info("Proceeding without strict verification.")
             logger.info(
@@ -843,7 +846,7 @@ def main():
                 "has been explicitly restricted.")
             ret = 0
 
-        if ret == ipadiscovery.NO_TLS_LDAP:
+        if ret == discovery.NO_TLS_LDAP:
             logger.warning(
                 "The LDAP server requires TLS is but we do not have the CA.")
             logger.info("Proceeding without strict verification.")

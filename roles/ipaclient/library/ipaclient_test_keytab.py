@@ -80,14 +80,14 @@ EXAMPLES = '''
     hostname: client1.example.com
     kinit_attempts: 5
 
-# Test IPA with ipadiscovery return values
+# Test IPA with discovery return values
 - name: Join IPA
   ipaclient_test_keytab:
-    servers: "{{ ipadiscovery.servers }}"
-    domain: "{{ ipadiscovery.domain }}"
-    realm: "{{ ipadiscovery.realm }}"
-    kdc: "{{ ipadiscovery.kdc }}"
-    hostname: "{{ ipadiscovery.hostname }}"
+    servers: "{{ discovery.servers }}"
+    domain: "{{ discovery.domain }}"
+    realm: "{{ discovery.realm }}"
+    kdc: "{{ discovery.kdc }}"
+    hostname: "{{ discovery.hostname }}"
 '''
 
 RETURN = '''

@@ -79,7 +79,7 @@ RETURN = '''
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
     setup_logging, check_imports,
-    options, sysrestore, paths, sync_time, logger, ipadiscovery,
+    options, sysrestore, paths, sync_time, logger, discovery,
     timeconf, getargspec
 )
 
@@ -152,7 +152,7 @@ def main():
             # If that fails, we try to sync directly with IPA server,
             # assuming it runs NTP
             logger.info('Synchronizing time with KDC...')
-            ds = ipadiscovery.IPADiscovery()
+            ds = discovery.IPADiscovery()
             ntp_srv_servers = ds.ipadns_search_srv(cli_domain, '_ntp._udp',
                                                    None, break_on_first=False)
             synced_ntp = False

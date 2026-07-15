@@ -80,8 +80,7 @@ import os
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.ansible_ipa_client import (
     setup_logging, check_imports,
-    SECURE_PATH, paths, sysrestore, options, NUM_VERSION, get_ca_cert,
-    get_ca_certs, errors
+    SECURE_PATH, paths, sysrestore, options, get_ca_certs, errors
 )
 
 
@@ -127,10 +126,7 @@ def main():
         try:
             os.environ['KRB5_CONFIG'] = env['KRB5_CONFIG'] = "/etc/krb5.conf"
             env['KRB5CCNAME'] = os.environ['KRB5CCNAME']
-            if NUM_VERSION < 40100:
-                get_ca_cert(fstore, options, servers[0], basedn)
-            else:
-                get_ca_certs(fstore, options, servers[0], basedn, realm)
+            get_ca_certs(fstore, options, servers[0], basedn, realm)
             changed = True
             os.environ.pop('KRB5_CONFIG', None)
         except errors.FileError as e:
