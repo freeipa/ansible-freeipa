@@ -242,6 +242,7 @@ Variable | Description | Required
 `permission` \| `managedby` | Set per-zone access delegation permission. | no
 `skip_overlap_check`| Force DNS zone creation even if it will overlap with an existing zone | no
 `skip_nameserver_check` | Force DNS zone creation even if nameserver is not resolvable | no
+`delete_continue` \| `continue` | Continuous mode: don't stop on errors. Valid only if `state` is `absent`. Default: `yes` (bool) | no
 
 
 Return Values
