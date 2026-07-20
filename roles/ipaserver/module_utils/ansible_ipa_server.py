@@ -376,10 +376,12 @@ options.ignore_last_of_role = False
 
 
 # pylint: disable=invalid-name
-def api_Backend_ldap2(host_name, setup_ca, connect=False):
+def api_Backend_ldap2(host_name, setup_ca, connect=False, key_type_size=None):
     # we are sure we have the configuration file ready.
     cfg = dict(context='installer', confdir=paths.ETC_IPA, in_server=True,
                host=host_name)
+    if key_type_size:
+        cfg['key_type_size'] = key_type_size
     if setup_ca:
         # we have an IPA-integrated CA
         cfg['ca_host'] = host_name

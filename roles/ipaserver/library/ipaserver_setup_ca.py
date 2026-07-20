@@ -178,6 +178,13 @@ options:
     description: The installer _random_serial_numbers setting
     type: bool
     required: yes
+  key_type_size:
+    description:
+        The key type and size for HTTP, LDAP, PKINIT and RA (if CA
+        configured) certificates (Requires IPA 4.13+)
+    type: str
+    required: no
+    default: None
   reverse_zones:
     description: The reverse DNS zones to use
     type: list
@@ -204,6 +211,7 @@ options:
     required: no
 author:
     - Thomas Woerner (@t-woerner)
+    - Rafael Jeffman (@rjeffman)
 '''
 
 EXAMPLES = '''
@@ -263,6 +271,7 @@ def main():
             _ca_subject=dict(required=False, type='str'),
             ca_signing_algorithm=dict(required=False, type='str'),
             _random_serial_numbers=dict(required=True, type='bool'),
+            key_type_size=dict(required=False, type='str', default=None),
             # dns
             reverse_zones=dict(required=False, type='list', elements='str',
                                default=[]),
@@ -328,6 +337,7 @@ def main():
         'ca_signing_algorithm')
     options._random_serial_numbers = ansible_module.params.get(
         '_random_serial_numbers')
+    options.key_type_size = ansible_module.params.get('key_type_size')
     # dns
     options.reverse_zones = ansible_module.params.get('reverse_zones')
     options.no_reverse = ansible_module.params.get('no_reverse')
@@ -351,7 +361,8 @@ def main():
 
     fstore = sysrestore.FileStore(paths.SYSRESTORE)
 
-    api_Backend_ldap2(options.host_name, options.setup_ca, connect=True)
+    api_Backend_ldap2(options.host_name, options.setup_ca, connect=True,
+                      key_type_size=options.key_type_size)
 
     ds = ds_init_info(ansible_log, fstore,
                       options.domainlevel, options.dirsrv_config_file,

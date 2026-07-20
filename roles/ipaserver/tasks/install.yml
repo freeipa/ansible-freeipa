@@ -223,6 +223,7 @@
       sid_generation_always: "{{ result_ipaserver_test.sid_generation_always }}"
       random_serial_numbers: "{{ result_ipaserver_test.random_serial_numbers }}"
       _hostname_overridden: "{{ result_ipaserver_test._hostname_overridden }}"
+      key_type_size: "{{ ipaserver_key_type_size | default(omit) }}"
     register: result_ipaserver_prepare
 
   - name: Install - Setup NTP
@@ -324,6 +325,7 @@
       ca_signing_algorithm: "{{ ipaserver_ca_signing_algorithm |
                                 default(omit) }}"
       _random_serial_numbers: "{{ result_ipaserver_prepare._random_serial_numbers }}"
+      key_type_size: "{{ result_ipaserver_prepare.key_type_size }}"
       reverse_zones: "{{ result_ipaserver_prepare.reverse_zones }}"
       no_reverse: "{{ ipaserver_no_reverse }}"
       auto_forwarders: "{{ ipaserver_auto_forwarders }}"

@@ -238,8 +238,16 @@ options:
     type: bool
     default: no
     required: no
+  key_type_size:
+    description:
+        The key type and size for HTTP, LDAP, PKINIT and RA (if CA
+        configured) certificates (Requires IPA 4.13+)
+    type: str
+    default: None
+    required: no
 author:
     - Thomas Woerner (@t-woerner)
+    - Rafael Jeffman (@rjeffman)
 '''
 
 EXAMPLES = '''
@@ -329,6 +337,7 @@ def main():
                                        default=False),
             _hostname_overridden=dict(required=False, type='bool',
                                       default=False),
+            key_type_size=dict(required=False, type="str", default=None),
         ),
         supports_check_mode=False,
     )
@@ -411,6 +420,15 @@ def main():
         '_hostname_overridden')
     sid_generation_always = ansible_module.params.get('sid_generation_always')
     options.kasp_db_file = None
+    options.key_type_size = ansible_module.params.get('key_type_size')
+    if hasattr(installutils, "validate_key_type_size"):
+        _err = installutils.validate_key_type_size(options.key_type_size)
+        if _err:
+            ansible_module.fail_json(msg=_err)
+    else:
+        if ansible_module.params.get('key_type_size') is not None:
+            ansible_module.fail_json(
+                msg="IPA version does not support attribute 'key_type_size'")
 
     # init ##################################################################
 
@@ -442,6 +460,8 @@ def main():
             # make sure host name specified by user is used instead of default
             host=options.host_name,
         )
+        if options.key_type_size:
+            cfg['key_type_size'] = options.key_type_size
         if options.setup_ca:
             # we have an IPA-integrated CA
             cfg['ca_host'] = options.host_name
@@ -583,6 +603,7 @@ def main():
         ca_subject=options.ca_subject,
         _ca_subject=options._ca_subject,
         _random_serial_numbers=options._random_serial_numbers,
+        key_type_size=options.key_type_size,
         # dns
         reverse_zones=options.reverse_zones,
         forward_policy=options.forward_policy,
