@@ -281,6 +281,99 @@ Example playbook to ensure groups are absent:
 ```
 
 
+Example playbook to query a group and print the base fields:
+
+```yaml
+---
+- name: Playbook to query groups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query group ops
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      state: query
+    register: result
+
+  - name: Print group info
+    debug:
+      var: result.group
+```
+
+
+Example playbook to query specific fields of a group:
+
+```yaml
+---
+- name: Playbook to query groups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query description and members of group ops
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      query_param:
+      - description
+      - gid
+      - user
+      state: query
+    register: result
+
+  - name: Print group info
+    debug:
+      var: result.group
+```
+
+
+Example playbook to query all fields of a group:
+
+```yaml
+---
+- name: Playbook to query groups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query all fields of group ops
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      name: ops
+      query_param: ALL
+      state: query
+    register: result
+
+  - name: Print group info
+    debug:
+      var: result.group
+```
+
+
+Example playbook to query only the names of all groups:
+
+```yaml
+---
+- name: Playbook to query groups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query all group names
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      query_param: PKEY_ONLY
+      state: query
+    register: result
+
+  - name: Print group names
+    debug:
+      var: result.group.groups
+```
+
+
 Variables
 =========
 
@@ -306,9 +399,10 @@ Variable | Description | Required
 `membermanager_group` | List of member manager groups assigned to this group. Only usable with IPA versions 4.8.4 and up. | no
 `externalmember` \| `ipaexternalmember`  \| `external_member`| List of members of a trusted domain in DOM\\name or name@domain form. Requires "server" context. | no
 `idoverrideuser` | List of user ID overrides to manage. Only usable with IPA versions 4.8.7 and up. Requires "server" context. | no
-`rename` \| `new_name` | Rename the user object to the new name string. Only usable with `state: renamed`. | no
-`action` | Work on group or member level. It can be on of `member` or `group` and defaults to `group`. | no
-`state` | The state to ensure. It can be one of `present`, `absent` or `renamed`, default: `present`. | yes
+`rename` \| `new_name` | Rename the group object to the new name string. Only usable with `state: renamed`. | no
+`action` | Work on group or member level. It can be one of `member` or `group` and defaults to `group`. | no
+`query_param` | The fields to query with `state: query`. Can be `ALL`, `BASE`, `PKEY_ONLY` or a list of specific field names. Only usable with `state: query`. | no
+`state` | The state to ensure. It can be one of `present`, `absent`, `renamed` or `query`, default: `present`. | yes
 
 
 Authors

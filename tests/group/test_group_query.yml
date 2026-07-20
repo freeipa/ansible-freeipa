@@ -1,0 +1,212 @@
+---
+- name: Test group query
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: false
+  module_defaults:
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  # CLEANUP
+
+  - name: Ensure groups "testgroup1" and "testgroup2" are absent
+    ipagroup:
+      name:
+      - testgroup1
+      - testgroup2
+      - non-existing-group
+      state: absent
+
+  - name: Ensure users "testuser1" and "testuser2" are absent
+    ipauser:
+      name:
+      - testuser1
+      - testuser2
+      - testuser3
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure users "testuser1" and "testuser2" are present
+    ipauser:
+      users:
+      - name: testuser1
+        first: first1
+        last: last1
+      - name: testuser2
+        first: first2
+        last: last2
+      - name: testuser3
+        first: first3
+        last: last3
+
+  - name: Ensure groups "testgroup1" and "testgroup2" are present
+    ipagroup:
+      ipaadmin_password: SomeADMINpassword
+      groups:
+      - name: testgroup1
+        gidnumber: 2000
+        user:
+        - testuser1
+      - name: testgroup2
+        gidnumber: 2001
+        user:
+        - testuser2
+        - testuser3
+
+  - name: Query group "non-existing-group"
+    ipagroup:
+      name:
+      - non-existing-group
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.group
+
+  - name: Fail on non empty query result
+    ansible.builtin.fail:
+      msg: "{{ result['group'] }} is not empty"
+    when: result['group'] | length > 0
+
+  - name: Query all groups
+    ipagroup:
+      state: query
+      query_param: PKEY_ONLY
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.group
+
+  - name: Fail on missing "testgroup1" in query result
+    ansible.builtin.fail:
+      msg: "'testgroup1' not in query result {{ result.group.groups }}"
+    when: ("testgroup1" not in result.group.groups)
+
+  - name: Fail on missing "testgroup2" in query result
+    ansible.builtin.fail:
+      msg: "'testgroup2' not in query result {{ result.group.groups }}"
+    when: ("testgroup2" not in result.group.groups)
+
+  - name: Fail on "non-existing-group" in query result
+    ansible.builtin.fail:
+      msg: "'non-existing-group' in query result {{ result.group.groups }}"
+    when: ("non-existing-group" in result.group.groups)
+
+  - name: Query groups "testgroup1" and "testgroup2"
+    ipagroup:
+      name:
+      - testgroup1
+      - testgroup2
+      state: query
+      query_param: PKEY_ONLY
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.group
+
+  - name: Fail on missing "testgroup1" in query result
+    ansible.builtin.fail:
+      msg: "'testgroup1' not in query result {{ result.group.groups }}"
+    when: ("testgroup1" not in result.group.groups)
+
+  - name: Fail on missing "testgroup2" in query result
+    ansible.builtin.fail:
+      msg: "'testgroup2' not in query result {{ result.group.groups }}"
+    when: ("testgroup2" not in result.group.groups)
+
+  - name: Fail on "non-existing-group" in query result
+    ansible.builtin.fail:
+      msg: "'non-existing-group' in query result {{ result.group.groups }}"
+    when: ("non-existing-group" in result.group.groups)
+
+  - name: Query all group parameters for "testgroup1"
+    ipagroup:
+      name:
+      - testgroup1
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.group
+
+  - name: Fail on missing information in query result
+    ansible.builtin.fail:
+      msg: "Query result {{ result['group'] }} is incomplete"
+    when: ("cn=testgroup1,cn=groups,cn=accounts,dc=" not in result.group.dn or
+           result.group.gid < 1 or
+           result.group.ipauniqueid|length != 36 or
+           result.group.name != "testgroup1" or
+           "objectclass" not in result.group)
+
+  - name: Query "gid" and "name" parameters for all groups
+    ipagroup:
+      query_param:
+      - gid
+      - name
+      - user
+      - group
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.group
+
+  - name: Fail on less than 3 groups in result
+    ansible.builtin.fail:
+      msg: "{{ result.group }} is not empty"
+    when: result.group | length < 3
+
+  - name: Fail on missing "testgroup1" information in query result
+    ansible.builtin.fail:
+      msg: "'testgroup1' not in query result {{ result.group }}"
+    when: ("testgroup1" not in result.group or
+           result.group.testgroup1.gid < 1 or
+           result.group.testgroup1.name != "testgroup1" or
+           result.group.testgroup1.user|length != 1 or
+           "testuser1" not in result.group.testgroup1.user)
+
+  - name: Fail on missing "testgroup2" information in query result
+    ansible.builtin.fail:
+      msg: "'testgroup2' not in query result {{ result.group }}"
+    when: ("testgroup2" not in result.group or
+           result.group.testgroup2.gid < 1 or
+           result.group.testgroup2.name != "testgroup2" or
+           result.group.testgroup2.user|length != 2 or
+           "testuser2" not in result.group.testgroup2.user or
+           "testuser3" not in result.group.testgroup2.user)
+
+  # CLEANUP
+
+  - name: Ensure groups "testgroup1" and "testgroup2" are absent
+    ipagroup:
+      name:
+      - testgroup1
+      - testgroup2
+      state: absent
+
+  - name: Ensure users "testuser1" and "testuser2" are absent
+    ipauser:
+      name:
+      - testuser1
+      - testuser2
+      - testuser3
+      state: absent
