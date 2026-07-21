@@ -311,7 +311,7 @@ def main():
             dns_over_tls=dict(required=False, type='bool',
                               default=False),
             dns_over_tls_cert=dict(required=False, type='str'),
-            dns_over_tls_key=dict(required=False, type='str'),
+            dns_over_tls_key=dict(required=False, type='str', no_log=True),
             dns_policy=dict(required=False, type='str',
                             choices=['relaxed', 'enforced'],
                             default='relaxed'),

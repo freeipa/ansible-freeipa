@@ -613,6 +613,20 @@ options:
     required: false
     type: list
     elements: str
+    choices: ["ALL", "BASE", "PKEY_ONLY", "dn", "objectclass", "ipauniqueid",
+      "ipantsecurityidentifier", "name", "first", "last", "fullname",
+      "displayname", "initials", "homedir", "shell", "email",
+      "principalexpiration", "passwordexpiration", "uid", "gid", "city",
+      "userstate", "postalcode", "phone", "mobile", "pager", "fax",
+      "orgunit", "title", "carlicense", "sshpubkey", "userauthtype",
+      "userclass", "radius", "radiususer", "departmentnumber",
+      "employeenumber", "employeetype", "preferredlanguage", "manager",
+      "principal", "certificate", "certmapdata", "gecos", "password",
+      "street", "idp", "idp_user_id", "smb_logon_script", "smb_profile_path",
+      "smb_home_dir", "smb_home_drive", "krblastpwdchange",
+      "krblastadminunlock", "krbextradata", "krbticketflags",
+      "krbloginfailedcount", "krblastsuccessfulauth", "has_password",
+      "has_keytab", "preserved", "memberof_group", "disabled"]
   action:
     description: Work on user or member level
     type: str

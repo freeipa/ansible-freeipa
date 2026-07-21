@@ -23,7 +23,9 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+# pylint: disable=invalid-name
 __metaclass__ = type
+# pylint: enable=invalid-name
 
 __all__ = ["contextlib", "dnsexception", "dnsresolver", "dnsreversename",
            "parse_version", "IPAChangeConf",
@@ -49,7 +51,8 @@ __all__ = ["contextlib", "dnsexception", "dnsresolver", "dnsreversename",
            "dnsname", "kernel_keyring", "krbinstance", "getargspec",
            "adtrustinstance", "paths", "api", "dsinstance", "ipaldap", "Env",
            "ipautil", "installutils", "IPA_PYTHON_VERSION", "NUM_VERSION",
-           "ReplicaConfig", "create_api", "clean_up_hsm_nicknames"]
+           "ReplicaConfig", "create_api", "clean_up_hsm_nicknames",
+           "CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION"]
 
 import sys
 import logging
@@ -77,6 +80,7 @@ except ImportError:
         return ArgSpec(args, varargs, varkw, defaults)
 
 
+ANSIBLE_IPA_REPLICA_MODULE_IMPORT_ERROR = None  # pylint: disable=invalid-name
 try:
     from contextlib import contextmanager as contextlib_contextmanager
     from ipapython.version import NUM_VERSION, VERSION
@@ -188,25 +192,28 @@ try:
             time_service = "ntpd"  # pylint: disable=invalid-name
 
         try:
+            # pylint: disable=invalid-name
             CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION = False
+            # pylint: enable=invalid-name
             from ipaclient.install.client import ClientInstallInterface
         except ImportError:
             pass
         else:
             if hasattr(ClientInstallInterface, "no_dnssec_validation"):
+                # pylint: disable=invalid-name
                 CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION = True
+                # pylint: enable=invalid-name
     else:
         # IPA version < 4.6
         raise RuntimeError("freeipa version '%s' is too old" % VERSION)
 
 except ImportError as _err:
+    # pylint: disable=invalid-name
     ANSIBLE_IPA_REPLICA_MODULE_IMPORT_ERROR = str(_err)
+    # pylint: enable=invalid-name
 
     for attr in __all__:
         setattr(sys.modules[__name__], attr, None)
-
-else:
-    ANSIBLE_IPA_REPLICA_MODULE_IMPORT_ERROR = None
 
 
 logger = logging.getLogger("ipa-server-install")

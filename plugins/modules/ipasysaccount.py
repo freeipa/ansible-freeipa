@@ -176,7 +176,7 @@ def main():
             description=dict(required=False, type='str', default=None),
             random=dict(required=False, type='bool', default=None),
             privileged=dict(required=False, type='bool', default=None),
-            password=dict(required=False, type='str',
+            password=dict(required=False, type='str', no_log=True,
                           aliases=["userpassword"], default=None),
 
             # mod

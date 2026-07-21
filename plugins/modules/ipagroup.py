@@ -207,6 +207,10 @@ options:
     required: false
     type: list
     elements: str
+    choices: ["ALL", "BASE", "PKEY_ONLY", "dn", "objectclass", "ipauniqueid",
+      "ipantsecurityidentifier", "name", "description", "gid", "user",
+      "group", "service", "externalmember", "idoverrideuser",
+      "membermanager_user", "membermanager_group"]
   action:
     description: Work on group or member level
     type: str

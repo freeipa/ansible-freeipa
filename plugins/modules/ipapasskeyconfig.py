@@ -41,7 +41,6 @@ options:
     description: Require user verification for passkey authentication
     required: false
     type: bool
-    default: true
     aliases: ["iparequireuserverification"]
 author:
   - Rafael Guterres Jeffman (@rjeffman)
