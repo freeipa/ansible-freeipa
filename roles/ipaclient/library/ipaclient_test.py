@@ -460,9 +460,10 @@ def main():
         # ClientInstall
 
         if options.ca_cert_files is not None:
+            # ca_cert_files is always a list of strings or None,
+            # therefore no isinstance(options.ca_cert_files, list) test
+            # needed.
             for value in options.ca_cert_files:
-                if not isinstance(value, list):
-                    raise ValueError("Expected list, got {0!r}".format(value))
                 # this is what init() does
                 value = value[-1]
                 if not os.path.exists(value):
