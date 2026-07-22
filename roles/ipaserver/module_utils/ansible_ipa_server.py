@@ -46,7 +46,8 @@ __all__ = ["IPAChangeConf", "certmonger", "sysrestore", "root_logger",
            "check_available_memory", "getargspec", "get_min_idstart",
            "paths", "api", "ipautil", "adtrust_imported", "NUM_VERSION",
            "time_service", "kra_imported", "dsinstance", "IPA_PYTHON_VERSION",
-           "NUM_VERSION", "SerialNumber", "realm_to_ldapi_uri"]
+           "NUM_VERSION", "SerialNumber", "realm_to_ldapi_uri",
+           "CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION"]
 
 import sys
 import logging
@@ -74,6 +75,7 @@ except ImportError:
         return ArgSpec(args, varargs, varkw, defaults)
 
 
+ANSIBLE_IPA_SERVER_MODULE_IMPORT_ERROR = None  # pylint: disable=invalid-name
 try:
     from contextlib import contextmanager as contextlib_contextmanager
     from ansible.module_utils import six
@@ -217,24 +219,28 @@ try:
             SerialNumber = None
 
         try:
+            # pylint: disable=invalid-name
             CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION = False
+            # pylint: enable=invalid-name
             from ipaclient.install.client import ClientInstallInterface
         except ImportError:
             pass
         else:
             if hasattr(ClientInstallInterface, "no_dnssec_validation"):
+                # pylint: disable=invalid-name
                 CLIENT_SUPPORTS_NO_DNSSEC_VALIDATION = True
+                # pylint: enable=invalid-name
     else:
         # IPA version < 4.5
         raise RuntimeError("freeipa version '%s' is too old" % VERSION)
 
 except ImportError as _err:
+    # pylint: disable=invalid-name
     ANSIBLE_IPA_SERVER_MODULE_IMPORT_ERROR = str(_err)
+    # pylint: enable=invalid-name
 
     for attr in __all__:
         setattr(sys.modules[__name__], attr, None)
-else:
-    ANSIBLE_IPA_SERVER_MODULE_IMPORT_ERROR = None
 
 
 logger = logging.getLogger("ipa-server-install")

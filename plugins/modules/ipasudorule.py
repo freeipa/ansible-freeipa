@@ -51,8 +51,7 @@ options:
     suboptions:
       name:
         description: The sudorule name
-        type: list
-        elements: str
+        type: str
         required: true
         aliases: ["cn"]
       description:
@@ -462,7 +461,7 @@ def init_ansible_module():
                       required=False),
             sudorules=dict(
                 type="list",
-                defalut=None,
+                default=None,
                 options=dict(
                     # name of the sudorule
                     name=dict(type="str", required=True, aliases=["cn"]),
