@@ -23,6 +23,7 @@ stages:
     - template: templates/build_container.yml
       parameters:
         distro: ${{ distro }}
+        ansible_core_version: "<2.21"
 
 # Special case for CentOS 8 Stream
 - stage: CentOS_8_Stream
