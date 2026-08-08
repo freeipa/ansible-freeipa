@@ -38,6 +38,19 @@
       name: "{{ _ipapackages }}"
       state: present
 
+- name: Check installer availability
+  when: not (ipareplica_install_packages | bool)
+  block:
+    - name: Install - Check ipareplica installer is avaiable
+      ansible.builtin.stat:
+        path: /usr/sbin/ipa-replica-install
+      register: __ipa_replica_install_available
+
+    - name: Install - Abort installation due to missing installer
+      ansible.builtin.fail:
+        msg: "IPA replica installer not found"
+      when: not __ipa_replica_install_available.stat.exists
+
 - name: Firewall configuration
   when: ipareplica_setup_firewalld | bool
   block:
