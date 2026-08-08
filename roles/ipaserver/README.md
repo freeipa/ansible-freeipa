@@ -366,6 +366,7 @@ Special Variables
 Variable | Description | Required
 -------- | ----------- | --------
 `ipaserver_install_packages` | The bool value defines if the needed packages are installed on the node. (bool, default: true) | no
+`ipaserver_install_packages_only` | The bool value defines if the deployment will continue after the needed packages are installed on the node. (bool, default: true) | no
 `ipaserver_setup_firewalld` | The value defines if the needed services will automatically be opened in the firewall managed by firewalld. (bool, default: true) | no
 `ipaserver_firewalld_zone` | The value defines the firewall zone that will be used. This needs to be an existing runtime and permanent zone. (string) | no
 `ipaserver_external_cert_files_from_controller` | Files containing the IPA CA certificates and the external CA certificate chains on the controller that will be copied to the ipaserver host to `/root` folder. (list of string) | no
