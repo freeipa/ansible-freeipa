@@ -42,6 +42,7 @@ description:
   - Add and delete an IPA DNS Forwarder Zones using IPA API
 extends_documentation_fragment:
   - ipamodule_base_docs
+  - ipamodule_base_docs.delete_continue
 options:
   name:
     description:
@@ -219,6 +220,7 @@ def main():
                        choices=['present', 'absent', 'enabled', 'disabled']),
         ),
         supports_check_mode=True,
+        ipa_module_options=["delete_continue"],
     )
 
     ansible_module._ansible_debug = True
@@ -231,6 +233,7 @@ def main():
     forwardpolicy = ansible_module.params_get("forwardpolicy")
     skip_overlap_check = ansible_module.params_get("skip_overlap_check")
     permission = ansible_module.params_get("permission")
+    delete_continue = ansible_module.params_get("delete_continue")
     state = ansible_module.params_get("state")
 
     if state == 'present' and len(names) != 1:
@@ -345,7 +348,7 @@ def main():
                     # exists but should be absent
                     # set command
                     command = "dnsforwardzone_del"
-                    args = {}
+                    args = {"continue": bool(delete_continue)}
 
                 elif operation == "update":
                     # exists and is updating
