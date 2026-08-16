@@ -55,6 +55,7 @@
         firewall-cmd
         --info-zone="{{ ipaserver_firewalld_zone }}"
         >/dev/null
+      changed_when: False
 
     - name: Firewalld - Verify permanent zone from ipaserver_firewalld_zone
       ansible.builtin.shell: >
@@ -62,6 +63,7 @@
         --permanent
         --info-zone="{{ ipaserver_firewalld_zone }}"
         >/dev/null
+      changed_when: False
 
 - name: Copy external certs
   ansible.builtin.include_tasks: "{{ role_path }}/tasks/copy_external_cert.yml"
