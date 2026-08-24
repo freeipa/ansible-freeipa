@@ -1364,7 +1364,7 @@ def main():
         server_realm = ansible_module.ipa_get_realm()
 
         result = ansible_module.ipa_command_no_name("config_show", {})
-        default_email_domain = result["result"]["ipadefaultemaildomain"][0]
+        default_email_domain = result["result"]["ipadefaultemaildomain"][0] if "ipadefaultemaildomain" in result["result"] else None
 
         # commands
 
