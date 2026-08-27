@@ -1,0 +1,185 @@
+---
+- name: Test smartcard_server role
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: true
+  gather_facts: true
+
+  tasks:
+
+  # STAGE 1: Use role
+
+  - name: Configure IPA server for Smart Card authentication
+    ansible.builtin.include_role:
+      name: ipasmartcard_server
+    vars:
+      state: present
+      ipaadmin_password: SomeADMINpassword
+      ipasmartcard_server_ca_certs: /etc/ipa/ca.crt
+
+  # STAGE 2: Prepare
+
+  - name: Get Domain from server name
+    ansible.builtin.set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] | join ('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Set ipaserver_realm.
+    ansible.builtin.set_fact:
+      ipaserver_realm: "{{ ipaserver_domain | upper }}"
+    when: ipaserver_realm is not defined
+
+  - name: Install packages
+    ansible.builtin.package:
+      name:
+      - sssd
+      - softhsm
+      - opensc
+      - gnutls-utils
+      state: present
+
+  # STAGE 2: Test
+
+  - name: kinit using admin password
+    ansible.builtin.command: kinit admin
+    args:
+      stdin: SomeADMINpassword
+
+  # Create user
+
+  - name: Generate expire date
+    ansible.builtin.command: date --date="1 year" +"%Y%m%d%H%M%S"
+    register: result_date
+
+  - name: Create user ipauser1
+    ipauser:
+      ipaadmin_password: SomeADMINpassword
+      name: ipauser1
+      first: ipa
+      last: user1
+      password: SomeUSERpassword
+      passwordexpiration: "{{ result_date.stdout }}"
+
+  # Setup softhsm for smart card emulation
+
+  - name: Create /etc/sysconfig/sssd
+    ansible.builtin.copy:
+      dest: /etc/sysconfig/sssd
+      content: SOFTHSM2_CONF=/etc/sssd/conf.d/softhsm2_conf
+      mode: 0700
+
+  - name: Create /etc/sssd/conf.d/softhsm2_conf
+    ansible.builtin.copy:
+      dest: /etc/sssd/conf.d/softhsm2_conf
+      mode: 0700
+      content: |
+        directories.tokendir = /var/lib/sss/tokens
+        log.level = DEBUG
+        slots.removable = true
+
+  - name: Create directory /var/lib/sss/tokens
+    ansible.builtin.file:
+      path: /var/lib/sss/tokens
+      state: directory
+      mode: 0700
+
+  - name: Setup softhsm
+    ansible.builtin.command: softhsm2-util --init-token --slot 0 --label "My token 1" --pin mypin --so-pin mypin
+    environment:
+      SOFTHSM2_CONF: /etc/sssd/conf.d/softhsm2_conf
+
+  # Setting up cert for ipauser1
+
+  - name: Create req_ipauser1.cnf
+    ansible.builtin.copy:
+      dest: req_ipauser1.cnf
+      mode: 0700
+      content: |
+        [ req ]
+        distinguished_name = req_distinguished_name
+        prompt = no
+
+        [ req_distinguished_name ]
+        O = Example
+        OU = Example Test
+        CN = ipauser1
+
+        [ req_exts ]
+        basicConstraints = CA:FALSE
+        nsCertType = client, email
+        nsComment = "ipauser1"
+        subjectKeyIdentifier = hash
+        keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
+        extendedKeyUsage = clientAuth, emailProtection, msSmartcardLogin
+        subjectAltName = otherName:msUPN;UTF8:ipauser1@{{ ipaserver_realm }}, email:ipauser1@{{ ipaserver_domain }}
+
+  - name: Generate user key
+    ansible.builtin.command: openssl genrsa -out ipauser1.key 2048
+
+  - name: Generate user csr
+    ansible.builtin.command: openssl req -new -nodes -key ipauser1.key -reqexts req_exts -config req_ipauser1.cnf -out ipauser1.csr
+
+  - name: Submit csr to IPA
+    ansible.builtin.command: ipa cert-request ipauser1.csr --principal=ipauser1 --certificate-out=ipauser1.crt
+
+  - name: Add user key to PKCS #11 security tokens
+    ansible.builtin.command: pkcs11-tool --module libsofthsm2.so --slot-index 0 -w ipauser1.key -y privkey --label ipauser1 -p mypin --set-id 0 -d 0
+    environment:
+      SOFTHSM2_CONF: /etc/sssd/conf.d/softhsm2_conf
+
+  - name: Add user crt to PKCS #11 security tokens
+    ansible.builtin.command: pkcs11-tool --module libsofthsm2.so --slot-index 0 -w ipauser1.crt -y cert --label ipauser1 -p mypin --set-id 0 -d 0
+    environment:
+      SOFTHSM2_CONF: /etc/sssd/conf.d/softhsm2_conf
+
+  # kdestroy
+
+  - name: Destroy all kerberos tickets
+    ansible.builtin.command: kdestroy -A
+
+  # Setup SSSD for Smart Card authentication
+  # Might need to add "p11_child_timeout = 60" to [pam] section
+  # Might need to add "krb5_auth_timeout = 60" to [domain/...] section
+
+  - name: Stat /usr/bin/authselect
+    ansible.builtin.stat:
+      path: /usr/bin/authselect
+    register: result_stat_authselect
+
+  - name: Use authselect to enable Smart Card authentication
+    ansible.builtin.command: authselect select sssd with-smartcard --force
+    when: result_stat_authselect.stat.exists
+
+  - name: Use authconfig to enable Smart Card authentication
+    ansible.builtin.command: authconfig --enablesssd --enablesssdauth --enablesmartcard --smartcardmodule=sssd --smartcardaction=1 --updateall
+    when: not result_stat_authselect.stat.exists
+
+  # Restart sssd, remove /var/lib/sss/{db,mc}/*
+
+  - name: Stop sssd, remove /var/lib/sss/{db,mc}/*, start sssd
+    ansible.builtin.script: restart_sssd_cleanly.sh
+
+  # Enable and start pcscd
+
+  - name: Enable and start pcscd
+    ansible.builtin.service:
+      name: pcscd
+      state: started
+
+  # Test pin with kinit
+
+  - name: Test pin with kinit
+    ansible.builtin.command: kinit -X X509_user_identity=PKCS11:module_name=/usr/lib64/pkcs11/libsofthsm2.so ipauser1
+    args:
+      stdin: mypin
+    environment:
+      SOFTHSM2_CONF: /etc/sssd/conf.d/softhsm2_conf
+
+  # klist
+
+  - name: List all kerberos tickets
+    ansible.builtin.command: klist
+
+  # kdestroy
+
+  - name: Destroy all kerberos tickets
+    ansible.builtin.command: kdestroy -A
