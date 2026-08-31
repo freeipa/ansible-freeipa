@@ -1,0 +1,150 @@
+---
+name: Test collection roles
+on:
+  - push
+  - pull_request
+env:
+  test_path: ".galaxy-build"
+
+jobs:
+  check_roles:
+    name: Verify modified roles
+    runs-on: ubuntu-latest
+    outputs:
+      ipaserver: ${{ steps.mod_files.outputs.ipaserver }}
+      ipareplica: ${{ steps.mod_files.outputs.ipareplica }}
+      ipaclient: ${{ steps.mod_files.outputs.ipaclient }}
+    steps:
+      - uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 1
+
+      - name: Check modified roles
+        id: mod_files
+        shell: bash
+        run: |
+          set -eu
+          git remote add upstream https://github.com/freeipa/ansible-freeipa
+          git fetch --depth 1 upstream master
+          git diff -M --name-only upstream/master \
+            | grep "^roles" \
+            | cut -d/ -f2 \
+            | sort | uniq \
+            | sed "s/\(.*\)/Testing: \1/"
+          git diff -M --name-only upstream/master \
+            | grep "^roles" \
+            | cut -d/ -f2 \
+            | sort | uniq \
+            | sed "s/\(.*\)/\1=true/" >> $GITHUB_OUTPUT
+
+  test_ipaserver:
+    name: Test ipaserver role
+    needs: [check_roles]
+    if: ${{ needs.check_roles.outputs.ipaserver }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro:
+          - fedora-latest
+          - c10s
+        cluster_config:
+          - ipaserver_test_base.yml
+          # - ipaserver_ca_dns_nokra_noad.yml
+          # - ipaserver_ipaclient_ca_only.yml
+    steps:
+      - uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 1
+
+      - name: Build and install collection
+        run: |
+          utils/build-galaxy-release.sh -k \
+                -o "$(curl -L https://api.github.com/repos/freeipa/ansible-freeipa/releases 2>/dev/null \
+                      | jq '.[0].tag_name' | tr -d '"v')-dev$(date +"%Y%m%d%H%M")"
+
+      - name: Test ipaserver
+        uses: rjeffman/FreeIPA-Cluster-Test@v1.1.0
+        with:
+          cluster_configuration: tests/deployment/${{ matrix.cluster_config }}
+          # ansible_vars: test/deployment/ipaserver-vars.yml
+          distro: ${{ matrix.distro }}
+          test_playbooks: >-
+            ${{ env.test_path }}/tests/deployment/test_kinit.yml
+            ${{ env.test_path }}/tests/user/test_user.yml
+            ${{ env.test_path }}/tests/group/test_group.yml
+            ${{ env.test_path }}/tests/host/test_host.yml
+            ${{ env.test_path }}/tests/hbacrule/test_hbacrule.yml
+
+  test_ipareplica:
+    name: Test ipareplica role
+    needs: [check_roles]
+    if: ${{ needs.check_roles.outputs.ipareplica }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro:
+          - fedora-latest
+          - c10s
+        # The ipaserver capabilities are "ca-dns-kra"
+        cluster_config:
+          - ipareplica_ca.yml
+          # - ipareplica_none.yml
+    steps:
+      - uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 1
+
+      - name: Build and install collection
+        run: |
+          utils/build-galaxy-release.sh -k \
+                -o "$(curl -L https://api.github.com/repos/freeipa/ansible-freeipa/releases 2>/dev/null \
+                      | jq '.[0].tag_name' | tr -d '"v')-dev$(date +"%Y%m%d%H%M")"
+
+      - name: Test ipareplica
+        uses: rjeffman/FreeIPA-Cluster-Test@v1.1.0
+        with:
+          cluster_configuration: tests/deployment/${{ matrix.cluster_config }}
+          ansible_vars: test/deployment/ipareplica-vars.yml
+          distro: ${{ matrix.distro }}
+          test_playbooks: >-
+            ${{ env.test_path }}/tests/deployment/test_kinit.yml
+            ${{ env.test_path }}/tests/user/test_user.yml
+            ${{ env.test_path }}/tests/group/test_group.yml
+            ${{ env.test_path }}/tests/host/test_host.yml
+            ${{ env.test_path }}/tests/hbacrule/test_hbacrule.yml
+
+  test_ipaclientt:
+    name: Test ipaclient role
+    needs: [check_roles]
+    if: ${{ needs.check_roles.outputs.ipaclient }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro:
+          - fedora-latest
+        # The ipaserver capabilities are "ca-dns-kra"
+        cluster_config:
+          - ipaserver_1_client.yml
+    steps:
+      - uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 1
+
+      - name: Build and install collection
+        run: |
+          utils/build-galaxy-release.sh -k \
+                -o "$(curl -L https://api.github.com/repos/freeipa/ansible-freeipa/releases 2>/dev/null \
+                      | jq '.[0].tag_name' | tr -d '"v')-dev$(date +"%Y%m%d%H%M")"
+
+      - name: Test ipaclient
+        uses: rjeffman/FreeIPA-Cluster-Test@v1.1.0
+        with:
+          cluster_configuration: tests/deployment/${{ matrix.cluster_config }}
+          # ansible_vars: test/deployment/ipaclient-vars.yml
+          distro: ${{ matrix.distro }}
+          test_playbooks: >-
+            ${{ env.test_path }}/tests/deployment/test_kinit.yml
+            ${{ env.test_path }}/tests/user/test_user_client_context.yml
+            ${{ env.test_path }}/tests/group/test_group_client_context.yml
+            ${{ env.test_path }}/tests/host/test_host_client_context.yml
+            ${{ env.test_path }}/tests/hbacrule/test_hbacrule_client_context.yml

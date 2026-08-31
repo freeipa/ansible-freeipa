@@ -1,0 +1,11 @@
+ipa_deployments:
+  - name: ipareplica_ca
+    domain: ipa.test
+    admin_password: SomeADMINpassword
+    dm_password: SomeDMpassword
+    cluster:
+      servers:
+        - name: server
+          capabilities: ["CA", "DNS", "KRA"]
+        - name: replica
+          capabilities: ["CA"]
