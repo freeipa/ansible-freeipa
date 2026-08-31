@@ -8,10 +8,10 @@ jobs:
     name: Verify ansible-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5.1.0
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
       - name: Run ansible-lint
@@ -25,10 +25,10 @@ jobs:
     name: Verify yamllint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
-      - uses: actions/setup-python@v5.1.0
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.x"
       - name: Run yaml-lint
@@ -38,10 +38,10 @@ jobs:
     name: Verify flake8
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
-      - uses: actions/setup-python@v5.1.0
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.x"
       - name: Run flake8
@@ -53,10 +53,10 @@ jobs:
     name: Verify pylint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
-      - uses: actions/setup-python@v5.1.0
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.x"
       - name: Run pylint
@@ -68,7 +68,7 @@ jobs:
     name: Shellcheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
       - name: Run ShellCheck

@@ -8,10 +8,10 @@ jobs:
     name: Check Ansible Documentation with ansible-core 2.16.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
-      - uses: actions/setup-python@v5.1.0
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.x'
       - name: Install Ansible 2.16
@@ -25,10 +25,10 @@ jobs:
     name: Check Ansible Documentation with ansible-core 2.18.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
-      - uses: actions/setup-python@v5.1.0
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.x'
       - name: Install Ansible 2.18
@@ -42,10 +42,10 @@ jobs:
     name: Check Ansible Documentation with ansible-core 2.19.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
-      - uses: actions/setup-python@v5.1.0
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.x'
       - name: Install Ansible 2.20
@@ -59,10 +59,10 @@ jobs:
     name: Check Ansible Documentation with latest Ansible version.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
-      - uses: actions/setup-python@v5.1.0
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.x'
       - name: Install Ansible-latest
