@@ -104,7 +104,7 @@
     http_cert_files: "{{ ipareplica_http_cert_files | default([]) }}"
     pkinit_cert_files: "{{ ipareplica_pkinit_cert_files | default([]) }}"
     ### client ###
-    no_ntp: "{{ ipaclient_no_ntp }}"
+    no_ntp: "{{ (ipaclient_ntp_servers is defined or ipaclient_ntp_pool is defined) | ternary(omit, ipaclient_no_ntp) }}"
     ntp_servers: "{{ ipaclient_ntp_servers | default([]) }}"
     ntp_pool: "{{ ipaclient_ntp_pool | default(omit) }}"
     ### dns ###
@@ -208,7 +208,7 @@
       keytab: "{{ ipaclient_keytab | default(omit) }}"
       mkhomedir: "{{ ipaclient_mkhomedir | default(omit) }}"
       force_join: "{{ ipaclient_force_join | default(omit) }}"
-      no_ntp: "{{ ipaclient_no_ntp | default(omit) }}"
+      no_ntp: "{{ (ipaclient_ntp_servers is defined or ipaclient_ntp_pool is defined) | ternary(omit, ipaclient_no_ntp) }}"
       ssh_trust_dns: "{{ ipaclient_ssh_trust_dns | default(omit) }}"
       no_ssh: no
       no_sshd: no
