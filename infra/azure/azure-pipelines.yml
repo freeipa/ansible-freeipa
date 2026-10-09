@@ -7,6 +7,7 @@ pool:
 
 variables:
   ansible_version: "-core >=2.18,<2.19"
+  ansible_rawhide_version: "-core >=2.22.0b0,<2.23"
   ansible_latest: "-core"
   ansible_minimum: "-core <2.16"
   distros: "fedora-latest,c9s,c10s,fedora-rawhide"
@@ -46,6 +47,19 @@ stages:
         ansible_version: ${{ variables.ansible_version }}
         skip_git_test: true
         test_galaxy: false
+
+# Fedora Rawhide requires the unreleased Ansible 2.22 series.
+
+- stage: fedora_rawhide_ansible_2_22
+  dependsOn: []
+  jobs:
+  - template: templates/group_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      distro: fedora-rawhide
+      ansible_version: ${{ variables.ansible_rawhide_version }}
+      skip_git_test: true
+      test_galaxy: false
 
 # Galaxy on Fedora
 
