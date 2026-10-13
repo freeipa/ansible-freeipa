@@ -1232,6 +1232,8 @@ class IPAAnsibleModule(AnsibleModule):
         if ANSIBLE_FREEIPA_MODULE_IMPORT_ERROR is not None:
             self.fail_json(msg=ANSIBLE_FREEIPA_MODULE_IMPORT_ERROR)
 
+        self._ipa_api_domain = None
+
     @contextmanager
     def ipa_connect(self, context=None):
         """
@@ -1398,9 +1400,9 @@ class IPAAnsibleModule(AnsibleModule):
 
     def ipa_get_domain(self):
         """Retrieve IPA API domain."""
-        if not hasattr(self, "__ipa_api_domain"):
-            setattr(self, "__ipa_api_domain", api_get_domain())  # noqa: B010
-        return getattr(self, "__ipa_api_domain")  # noqa: B009
+        if self._ipa_api_domain is None:
+            self._ipa_api_domain = api_get_domain()
+        return self._ipa_api_domain
 
     @staticmethod
     def ipa_get_realm():
