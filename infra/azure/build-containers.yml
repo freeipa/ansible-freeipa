@@ -12,7 +12,7 @@ trigger: none
 pool:
   vmImage: 'ubuntu-24.04'
 
-variables: { distros: "fedora-latest,fedora-rawhide,c9s,c10s" }
+variables: { distros: "fedora-latest,c9s,c10s" }
 
 stages:
 
@@ -24,6 +24,15 @@ stages:
       parameters:
         distro: ${{ distro }}
         ansible_core_version: "<2.21"
+
+# Fedora Rawhide requires the unreleased Ansible 2.22 series.
+- stage: build_fedora_rawhide
+  dependsOn: []
+  jobs:
+  - template: templates/build_container.yml
+    parameters:
+      distro: fedora-rawhide
+      ansible_core_version: ">=2.22.0b0,<2.23"
 
 # Special case for CentOS 8 Stream
 - stage: CentOS_8_Stream
