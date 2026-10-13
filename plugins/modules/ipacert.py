@@ -240,7 +240,6 @@ certificate:
 """
 
 import base64
-import time
 import ssl
 
 from ansible.module_utils import six
@@ -307,12 +306,24 @@ def get_revocation_reason(module, reason):
     return reason_int
 
 
+MONTHS = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+]
+
+
 def parse_cert_timestamp(dt):
     """Ensure time is in GeneralizedTime format (YYYYMMDDHHMMSSZ)."""
-    return time.strftime(
-        "%Y%m%d%H%M%SZ",
-        time.strptime(dt, "%a %b %d %H:%M:%S %Y UTC")
-    )
+    # Do not use strptime with %a and %b, as they depend on the locale.
+    try:
+        _wday, month, day, hms, year = dt.split()[:5]
+        hour, minute, second = hms.split(":")
+        return "%04d%02d%02d%02d%02d%02dZ" % (
+            int(year), MONTHS.index(month) + 1, int(day),
+            int(hour), int(minute), int(second)
+        )
+    except ValueError:
+        raise ValueError("Invalid certificate timestamp: '%s'" % dt)
 
 
 def result_handler(_module, result, _command, _name, _args, exit_args, chain):
