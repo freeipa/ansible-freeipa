@@ -522,10 +522,10 @@ def main():
             ansible_module.fail_json(
                 msg="You must specify at least one of --forwarder, "
                 "--auto-forwarders, or --no-forwarders options")
-            if installer.dns_over_tls and not installer.dot_forwarders:
-                ansible_module.fail_json(
-                    msg="You must specify --dot-forwarder "
-                    "when enabling DNS over TLS")
+        if installer.dns_over_tls and not installer.dot_forwarders:
+            ansible_module.fail_json(
+                msg="You must specify --dot-forwarder "
+                "when enabling DNS over TLS")
 
     if installer.dirsrv_config_file is not None and \
        not os.path.exists(installer.dirsrv_config_file):
