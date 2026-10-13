@@ -10,7 +10,7 @@ variables:
   ansible_rawhide_version: "-core >=2.22.0b0,<2.23"
   ansible_latest: "-core"
   ansible_minimum: "-core <2.16"
-  distros: "fedora-latest,c9s,c10s,fedora-rawhide"
+  distros: "fedora-latest,c9s,c10s"
 
 stages:
 
@@ -58,6 +58,7 @@ stages:
       build_number: $(Build.BuildNumber)
       distro: fedora-rawhide
       ansible_version: ${{ variables.ansible_rawhide_version }}
+      python_version: '3.12'
       skip_git_test: true
       test_galaxy: false
 
