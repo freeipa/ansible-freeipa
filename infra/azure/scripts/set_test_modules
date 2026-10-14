@@ -19,6 +19,8 @@ TOPDIR="$(readlink -f "${BASEDIR}/../../..")"
 pushd "${TOPDIR}" >/dev/null 2>&1 || die "Failed to change directory."
 
 SKIP_GIT_TEST=${SKIP_GIT_TEST:-"False"}
+IPA_ENABLED_MODULES=${IPA_ENABLED_MODULES:-}
+IPA_ENABLED_TESTS=${IPA_ENABLED_TESTS:-}
 
 while getopts ":a" opt
 do
@@ -30,11 +32,20 @@ done
 
 files_list=$(mktemp)
 
-enabled_modules="None"
-enabled_tests="None"
+enabled_modules=""
+enabled_tests=""
 
 if [ "${SKIP_GIT_TEST}" != "True" ]
 then
+    if ! command -v git >/dev/null 2>&1; then
+        die "git is required to determine changed test modules."
+        exit 1
+    fi
+    if [ -z "${python}" ]; then
+        die "Python is required to determine changed test modules."
+        exit 1
+    fi
+
     remote="$(basename "$(mktemp -u remote_XXXXXX)")"
     git remote add "${remote}" https://github.com/freeipa/ansible-freeipa
     git fetch --prune --no-tags --quiet "${remote}"
@@ -42,16 +53,24 @@ then
     git remote remove "${remote}"
 
     # shellcheck disable=SC2046
-    enabled_modules="$(${python} "${BASEDIR}/get_test_modules.py" $(cat "${files_list}"))"
-    [ -z "${enabled_modules}" ] && enabled_modules="None"
+    if ! enabled_modules="$(${python} "${BASEDIR}/get_test_modules.py" $(cat "${files_list}"))"; then
+        die "Failed to map changed files to test modules."
+        exit 1
+    fi
 
     # Get individual tests that should be executed
     mapfile -t tests < <(sed -n 's#.*/\(test_[^/]*\).yml#\1#p' "${files_list}" | tr -d " ")
     [ ${#tests[@]} -gt 0 ] && enabled_tests=$(IFS=, ; echo "${tests[*]}")
-    [ -z "${enabled_tests}" ] && enabled_tests="None"
 
-    [ -n "${enabled_tests}" ] && IPA_ENABLED_TESTS="${enabled_tests},${IPA_ENABLED_TESTS}"
-    [ -n "${enabled_modules}" ] && IPA_ENABLED_MODULES="${enabled_modules},${IPA_ENABLED_MODULES}"
+    # No matching module or test means that no tests should run. Keep the
+    # sentinel out of a list that has valid entries, where it is unnecessary.
+    if [ -z "${enabled_modules}" ] && [ -z "${enabled_tests}" ] \
+       && [ -z "${IPA_ENABLED_MODULES}" ] && [ -z "${IPA_ENABLED_TESTS}" ]; then
+        enabled_modules="None"
+    fi
+
+    [ -n "${enabled_tests}" ] && IPA_ENABLED_TESTS="${enabled_tests}${IPA_ENABLED_TESTS:+,${IPA_ENABLED_TESTS}}"
+    [ -n "${enabled_modules}" ] && IPA_ENABLED_MODULES="${enabled_modules}${IPA_ENABLED_MODULES:+,${IPA_ENABLED_MODULES}}"
 
     rm -f "${files_list}"
 fi
