@@ -78,24 +78,18 @@ def get_plugins_from_playbook(playbook):
     return _result
 
 
-def import_mock(name, *args):
+def import_mock(name, *args, **kwargs):
     """Intercept 'import' calls and store module name."""
     if not hasattr(import_mock, "call_list"):
         setattr(import_mock, "call_list", set())  # noqa: B010
     import_mock.call_list.add(name)  # pylint: disable=no-member
     try:
         # print("NAME:", name)
-        return PYTHON_IMPORT(name, *args)
+        return PYTHON_IMPORT(name, *args, **kwargs)
     except ModuleNotFoundError:
         # We're not really interested in loading the module
         # if it can't be imported, it is not something we really care.
         return mock.Mock()
-    except Exception:  # pylint: disable=broad-except
-        print(
-            "An unexpected error occured. Do you have all requirements set?",
-            file=sys.stderr
-        )
-        sys.exit(1)
 
 
 def parse_playbooks(test_module):
@@ -207,7 +201,7 @@ def main():
         ]
     )
     if _test_suits:
-        print(",".join(sorted(_test_suits)))
+        print(",".join(sorted(set(_test_suits))))
 
 
 if __name__ == "__main__":

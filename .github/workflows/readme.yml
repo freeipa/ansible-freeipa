@@ -6,7 +6,7 @@ on:
 jobs:
   ansible_test:
     name: Verify readme
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v4.1.1
         with:
