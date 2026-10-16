@@ -3,7 +3,7 @@ trigger:
 - master
 
 pool:
-  vmImage: 'ubuntu-24.04'
+  vmImage: 'ubuntu-26.04'
 
 variables:
   ansible_version: "-core >=2.18,<2.19"

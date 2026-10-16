@@ -10,7 +10,7 @@ schedules:
 trigger: none
 
 pool:
-  vmImage: 'ubuntu-24.04'
+  vmImage: 'ubuntu-26.04'
 
 parameters:
   # Not really a parameter, but variables cannot be arrays or dicts
