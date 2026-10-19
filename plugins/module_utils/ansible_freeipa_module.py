@@ -47,6 +47,9 @@ DEBUG_COMMAND_BATCH = 0b0100
 import os
 # ansible-freeipa requires locale to be C, IPA requires utf-8.
 os.environ["LANGUAGE"] = "C"
+# Dates returned by IPA use English day and month names, so parsing them must
+# not depend on the locale of the managed host.
+os.environ["LC_TIME"] = "C"
 
 import sys
 import operator
