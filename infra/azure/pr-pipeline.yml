@@ -19,8 +19,9 @@ parameters:
     - { distro: "c10s", ansible_version: "<2.17", version_name: "2.16" }
 
 variables:
-  distros: "fedora-latest,c10s,c9s,fedora-rawhide"
+  distros: "fedora-latest,c10s,c9s"
   ansible_version: "-core >=2.18,<2.19"
+  ansible_rawhide_version: "-core >=2.22.0b0,<2.23"
 
 stages:
 
@@ -37,6 +38,19 @@ stages:
         ansible_version: ${{ variables.ansible_version }}
         skip_git_test: false
         test_galaxy: false
+
+# Fedora Rawhide requires the unreleased Ansible 2.22 series.
+
+- stage: fedora_rawhide_ansible_2_22
+  dependsOn: []
+  jobs:
+  - template: templates/run_tests.yml
+    parameters:
+      build_number: $(Build.BuildNumber)
+      distro: fedora-rawhide
+      ansible_version: ${{ variables.ansible_rawhide_version }}
+      skip_git_test: false
+      test_galaxy: false
 
 # Galaxy on Fedora
 

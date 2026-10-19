@@ -21,6 +21,8 @@
 
 from __future__ import (absolute_import, division, print_function)
 
+# Manage FreeIPA user accounts.
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
