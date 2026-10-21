@@ -291,6 +291,13 @@ options:
     required: false
     type: bool
     aliases: ["continue"]
+  query_param:
+    description:
+    - The fields to query with state=query.
+    - Can be `ALL`, `BASE`, `PKEY_ONLY` or a list of specific field names.
+    required: false
+    type: list
+    elements: str
   action:
     description: Work on service or member level
     type: str
@@ -300,7 +307,7 @@ options:
     description: State to ensure
     type: str
     default: present
-    choices: ["present", "absent", "disabled"]
+    choices: ["present", "absent", "disabled", "query"]
 author:
   - Rafael Guterres Jeffman (@rjeffman)
   - Thomas Woerner (@t-woerner)
@@ -414,6 +421,39 @@ EXAMPLES = """
       - name: HTTP/www2.example.com
         host: host2.example.com
       action: member
+
+  # Query base fields of a service
+  - ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: HTTP/www.example.com
+      state: query
+    register: result
+
+  # Query specific fields of a service
+  - ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: HTTP/www.example.com
+      query_param:
+      - principal
+      - host
+      - certificate
+      state: query
+    register: result
+
+  # Query all fields of a service
+  - ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: HTTP/www.example.com
+      query_param: ALL
+      state: query
+    register: result
+
+  # Query only the names of all services
+  - ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      query_param: PKEY_ONLY
+      state: query
+    register: result
 """
 
 RETURN = """
@@ -421,54 +461,73 @@ RETURN = """
 
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, encode_certificate, \
-    gen_add_del_lists, gen_add_list, gen_intersection_list, ipalib_errors, \
+    gen_member_add_del_lists, ipalib_errors, \
     api_get_realm, to_text, convert_input_certificates
 from ansible.module_utils import six
 if six.PY3:
     unicode = str
 
 
-def find_service(module, name):
+def service_show(module, name):
     _args = {
         "all": True,
     }
 
     try:
-        _result = module.ipa_command("service_show", name, _args)
+        _result = module.ipa_command("service_show", name, _args).get(
+            "result")
     except ipalib_errors.NotFound:
         return None
 
-    if "result" in _result:
-        _res = _result["result"]
-        certs = _res.get("usercertificate")
+    if _result is not None:
+        certs = _result.get("usercertificate")
         if certs is not None:
-            _res["usercertificate"] = [encode_certificate(cert) for
-                                       cert in certs]
-        return _res
-
-    return None
+            _result["usercertificate"] = [
+                encode_certificate(cert) for cert in certs]
+    return _result
 
 
-def gen_args(pac_type, auth_ind, skip_host_check, force, requires_pre_auth,
-             ok_as_delegate, ok_to_auth_as_delegate):
-    _args = {}
+def service_find(module, name):
+    _args = {"all": True}
 
-    if pac_type is not None:
-        _args['ipakrbauthzdata'] = pac_type
-    if auth_ind is not None:
-        _args['krbprincipalauthind'] = auth_ind
-    if skip_host_check is not None:
-        _args['skip_host_check'] = skip_host_check
-    if force is not None:
-        _args['force'] = force
-    if requires_pre_auth is not None:
-        _args['ipakrbrequirespreauth'] = requires_pre_auth
-    if ok_as_delegate is not None:
-        _args['ipakrbokasdelegate'] = ok_as_delegate
-    if ok_to_auth_as_delegate is not None:
-        _args['ipakrboktoauthasdelegate'] = ok_to_auth_as_delegate
+    try:
+        if name:
+            _args["krbcanonicalname"] = name
+        _result = module.ipa_command_no_name(
+            "service_find", _args).get("result")
+        if _result and name:
+            _result = _result[0]
+    except ipalib_errors.NotFound:
+        return None
 
-    return _args
+    return _result
+
+
+def query_convert_result(module, res):
+    _res = {}
+    for key in res:
+        try:
+            if key == "krbprincipalname":
+                _res[key] = [to_text(x) for x in (res.get(key) or [])]
+            elif key == "usercertificate":
+                _res[key] = [
+                    encode_certificate(x) for x in (res.get(key) or [])
+                ]
+            elif key in ["ipakrbrequirespreauth", "ipakrbokasdelegate",
+                         "ipakrboktoauthasdelegate"]:
+                _res[key] = bool(res[key])
+            elif isinstance(res[key], (list, tuple)):
+                if len(res[key]) == 1:
+                    _res[key] = to_text(res[key][0])
+                else:
+                    _res[key] = [to_text(x) for x in res[key]]
+            else:
+                _res[key] = to_text(res[key])
+        except (TypeError, ValueError) as e:
+            module.fail_json(
+                msg="Failed to convert query result for '%s': %s"
+                % (key, str(e)))
+    return _res
 
 
 def gen_args_smb(netbiosname, ok_as_delegate, ok_to_auth_as_delegate):
@@ -484,8 +543,9 @@ def gen_args_smb(netbiosname, ok_as_delegate, ok_to_auth_as_delegate):
     return _args
 
 
-def check_parameters(module, state, action, names):
-    # invalid parameters for everything but state 'present', action 'service'.
+def check_parameters(module, state, action, service_params):
+    # invalid parameters for everything but state 'present', action
+    # 'service'.
     invalid = ['pac_type', 'auth_ind', 'skip_host_check',
                'force', 'requires_pre_auth', 'ok_as_delegate',
                'ok_to_auth_as_delegate', 'smb', 'netbiosname']
@@ -499,16 +559,12 @@ def check_parameters(module, state, action, names):
          'allow_retrieve_keytab_hostgroup']
 
     if state == 'present':
-        if names is not None and len(names) != 1:
-            module.fail_json(msg="Only one service can be added at a time "
-                                 "using 'name'.")
-
         if action == 'service':
             invalid = ['delete_continue']
 
             if (
-                not module.params_get('smb')
-                and module.params_get('netbiosname')
+                not service_params.get('smb')
+                and service_params.get('netbiosname')
             ):
                 module.fail_json(
                     msg="Argument 'netbiosname' can not be used without "
@@ -520,7 +576,7 @@ def check_parameters(module, state, action, names):
         if action == "service":
             invalid.extend(invalid_not_member)
         else:
-            invalid.extend('delete_continue')
+            invalid.append('delete_continue')
 
     elif state == 'disabled':
         invalid.extend(invalid_not_member)
@@ -529,10 +585,17 @@ def check_parameters(module, state, action, names):
             module.fail_json(
                 msg="Invalid action '%s' for state '%s'" % (action, state))
 
+    elif state == 'query':
+        module.fail_json(
+            msg="check_parameters can not be used with action query.")
+
     else:
         module.fail_json(msg="Invalid state '%s'" % (state))
 
-    module.params_fail_used_invalid(invalid, state, action)
+    invalid.append('query_param')
+
+    module.params_fail_used_invalid(invalid, state, action, service_params,
+                                    PARAM_MAPPING)
 
 
 def check_authind(module, auth_ind):
@@ -542,6 +605,88 @@ def check_authind(module, auth_ind):
         module.fail_json(
             msg="The use of krbprincipalauthind '%s' is not supported "
             "by your IPA version" % "','".join(_invalid))
+
+
+# Read-only attributes reported by the FreeIPA API, but not part of the
+# module parameters, and operation-only flags that are never stored as
+# entry attributes.
+PARAM_MAPPING = {
+    # Read-only system fields
+    "dn": {"return_only": True},
+    "objectclass": {"return_only": True},
+    "ipauniqueid": {"return_only": True},
+    "has_keytab": {"return_only": True},
+
+    # Query-only: name is the primary key
+    "name": {"api_name": "krbcanonicalname", "gen_args": False},
+
+    # Writable params (used in gen_args)
+    "pac_type": {"api_name": "ipakrbauthzdata",
+                 "allow_empty_list_item": True},
+    "auth_ind": {"api_name": "krbprincipalauthind",
+                 "allow_empty_list_item": True},
+    "requires_pre_auth": {"api_name": "ipakrbrequirespreauth",
+                          "type": "bool"},
+    "ok_as_delegate": {"api_name": "ipakrbokasdelegate", "type": "bool"},
+    "ok_to_auth_as_delegate": {"api_name": "ipakrboktoauthasdelegate",
+                               "type": "bool"},
+
+    # Operation-only flags, not stored attributes. skip_host_check and
+    # force are real service_add/service_mod command parameters (they
+    # must stay in gen_args so they reach service_add; they are
+    # stripped from args again before service_mod, which doesn't
+    # accept them), while smb and delete_continue are never sent via
+    # the generic args path at all.
+    "skip_host_check": {"query": False},
+    "force": {"query": False},
+    "smb": {"gen_args": False, "query": False},
+    "delete_continue": {"gen_args": False, "query": False},
+
+    # Real attribute, but only ever sent via the dedicated SMB service
+    # creation args (gen_args_smb)
+    "netbiosname": {"api_name": "ipantflatname", "gen_args": False},
+
+    # Query-only: members handled via separate member commands
+    "principal": {"api_name": "krbprincipalname", "gen_args": False,
+                  "member": True},
+    "certificate": {"api_name": "usercertificate", "gen_args": False,
+                    "member": True},
+    "host": {"api_name": "managedby_host", "gen_args": False,
+             "member": True},
+    "allow_create_keytab_user": {
+        "api_name": "ipaallowedtoperform_write_keys_user",
+        "gen_args": False, "member": True},
+    "allow_create_keytab_group": {
+        "api_name": "ipaallowedtoperform_write_keys_group",
+        "gen_args": False, "member": True},
+    "allow_create_keytab_host": {
+        "api_name": "ipaallowedtoperform_write_keys_host",
+        "gen_args": False, "member": True},
+    "allow_create_keytab_hostgroup": {
+        "api_name": "ipaallowedtoperform_write_keys_hostgroup",
+        "gen_args": False, "member": True},
+    "allow_retrieve_keytab_user": {
+        "api_name": "ipaallowedtoperform_read_keys_user",
+        "gen_args": False, "member": True},
+    "allow_retrieve_keytab_group": {
+        "api_name": "ipaallowedtoperform_read_keys_group",
+        "gen_args": False, "member": True},
+    "allow_retrieve_keytab_host": {
+        "api_name": "ipaallowedtoperform_read_keys_host",
+        "gen_args": False, "member": True},
+    "allow_retrieve_keytab_hostgroup": {
+        "api_name": "ipaallowedtoperform_read_keys_hostgroup",
+        "gen_args": False, "member": True},
+
+    # Module-level params (not per-item, checked via self.params)
+    "query_param": {"module_param": True},
+}
+
+QUERY_FIELDS = {
+    "prefix": "services",
+    "primary_key": "krbcanonicalname",
+    "base": ["name", "principal", "pac_type", "auth_ind", "host"]
+}
 
 
 def init_ansible_module():
@@ -597,6 +742,10 @@ def init_ansible_module():
         delete_continue=dict(type="bool", required=False,
                              aliases=['continue']),
     )
+
+    query_param_settings = IPAAnsibleModule.build_query_param_settings(
+        PARAM_MAPPING, QUERY_FIELDS)
+
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
@@ -613,28 +762,36 @@ def init_ansible_module():
                           ),
                           elements='dict',
                           required=False),
+            # query
+            query_param=dict(
+                type="list", elements="str", default=None,
+                choices=["ALL", "BASE", "PKEY_ONLY"]
+                + query_param_settings["ALL"],
+                required=False
+            ),
             # action
             action=dict(type="str", default="service",
                         choices=["member", "service"]),
             # state
             state=dict(type="str", default="present",
-                       choices=["present", "absent", "disabled"]),
+                       choices=["present", "absent", "disabled", "query"]),
 
             # Add service specific parameters for simple use case
             **service_spec
         ),
         mutually_exclusive=[["name", "services"]],
-        required_one_of=[["name", "services"]],
+        # Required one of [["name", "services"]] has been removed as there
+        # is an extra test below and it is not working with state=query
         supports_check_mode=True,
     )
 
     ansible_module._ansible_debug = True
 
-    return ansible_module
+    return ansible_module, query_param_settings
 
 
 def main():
-    ansible_module = init_ansible_module()
+    ansible_module, query_param_settings = init_ansible_module()
 
     # Get parameters
 
@@ -642,26 +799,8 @@ def main():
     names = ansible_module.params_get("name")
     services = ansible_module.params_get("services")
 
-    # service attributes
-    principal = ansible_module.params_get("principal")
-    certificate = ansible_module.params_get("certificate")
-    pac_type = ansible_module.params_get(
-        "pac_type", allow_empty_list_item=True)
-    auth_ind = ansible_module.params_get(
-        "auth_ind", allow_empty_list_item=True)
-    skip_host_check = ansible_module.params_get("skip_host_check")
-    force = ansible_module.params_get("force")
-    requires_pre_auth = ansible_module.params_get("requires_pre_auth")
-    ok_as_delegate = ansible_module.params_get("ok_as_delegate")
-    ok_to_auth_as_delegate = ansible_module.params_get(
-        "ok_to_auth_as_delegate")
-
-    smb = ansible_module.params_get("smb")
-    netbiosname = ansible_module.params_get("netbiosname")
-
-    host = ansible_module.params_get("host")
-
-    delete_continue = ansible_module.params_get("delete_continue")
+    # query
+    query_param = ansible_module.params_get("query_param")
 
     # action
     action = ansible_module.params_get("action")
@@ -669,13 +808,19 @@ def main():
     state = ansible_module.params_get("state")
 
     # check parameters
-    if (names is None or len(names) < 1) and \
-       (services is None or len(services) < 1):
-        ansible_module.fail_json(msg="At least one name or services is "
-                                     "required")
-    check_parameters(ansible_module, state, action, names)
-    certificate = convert_input_certificates(ansible_module, certificate,
-                                             state)
+    if state != "query":
+        if (names is None or len(names) < 1) and \
+           (services is None or len(services) < 1):
+            ansible_module.fail_json(msg="At least one name or services is "
+                                         "required")
+    else:
+        if action == "member":
+            ansible_module.fail_json(
+                msg="Query is not possible with action=member")
+        if services is not None:
+            ansible_module.fail_json(
+                msg="services can not be used with state=query, "
+                "use name instead")
 
     # Use services if names is None
     if services is not None:
@@ -689,12 +834,21 @@ def main():
     # Connect to IPA API
     with ansible_module.ipa_connect():
 
+        ansible_module.tm_warn("state: %s" % repr(state))
+
+        if state == "query":
+            exit_args = ansible_module.execute_query(
+                names, query_param, service_find, query_param_settings,
+                convert_result=lambda res: query_convert_result(
+                    ansible_module, res)
+            )
+
+            ansible_module.exit_json(changed=False, service=exit_args)
+
+        ansible_module.tm_warn("state: %s" % repr(state))
+
         has_skip_host_check = ansible_module.ipa_command_param_exists(
             "service_add", "skip_host_check")
-        if skip_host_check and not has_skip_host_check:
-            ansible_module.fail_json(
-                msg="Skipping host check is not supported by your IPA version")
-        check_authind(ansible_module, auth_ind)
 
         commands = []
         keytab_members = ["user", "group", "host", "hostgroup"]
@@ -707,27 +861,9 @@ def main():
                     ansible_module.fail_json(
                         msg="service '%s' is used more than once" % name)
                 service_set.add(name)
-                principal = service.get("principal")
-                certificate = service.get("certificate")
-                certificate = convert_input_certificates(ansible_module,
-                                                         certificate, state)
-                pac_type = service.get("pac_type")
-                auth_ind = service.get("auth_ind")
-                check_authind(ansible_module, auth_ind)
-                skip_host_check = service.get("skip_host_check")
-                if skip_host_check and not has_skip_host_check:
-                    ansible_module.fail_json(
-                        msg="Skipping host check is not supported by your IPA "
-                            "version")
-                force = service.get("force")
-                requires_pre_auth = service.get("requires_pre_auth")
-                ok_as_delegate = service.get("ok_as_delegate")
-                ok_to_auth_as_delegate = service.get("ok_to_auth_as_delegate")
-                smb = service.get("smb")
-                netbiosname = service.get("netbiosname")
-                host = service.get("host")
 
-                delete_continue = service.get("delete_continue")
+                service_params = IPAAnsibleModule.extract_params_from_entry(
+                    service, PARAM_MAPPING)
 
             elif (
                 isinstance(
@@ -735,11 +871,40 @@ def main():
                 )
             ):
                 name = service
+                service_params = IPAAnsibleModule.extract_params(
+                    ansible_module, PARAM_MAPPING)
             else:
                 ansible_module.fail_json(msg="Service '%s' is not valid" %
                                          repr(service))
-            res_find = find_service(ansible_module, name)
-            res_principals = []
+                # Never reached, just added to make pylint happy
+                name = None
+                service_params = {}
+
+            check_parameters(ansible_module, state, action, service_params)
+
+            service_params["certificate"] = convert_input_certificates(
+                ansible_module, service_params.get("certificate"), state)
+
+            auth_ind = service_params.get("auth_ind")
+            check_authind(ansible_module, auth_ind)
+
+            skip_host_check = service_params.get("skip_host_check")
+            if skip_host_check and not has_skip_host_check:
+                ansible_module.fail_json(
+                    msg="Skipping host check is not supported by your IPA "
+                        "version")
+
+            res_find = service_show(ansible_module, name)
+            principal = service_params.get("principal")
+
+            if principal and res_find:
+                # When comparing principals to the existing ones,
+                # the REALM is needded, and are added here for those
+                # that do not have it.
+                service_params["principal"] = list(set(
+                    p if "@" in p else "%s@%s" % (p, api_get_realm())
+                    for p in principal
+                ))
 
             keytab = {
                 "retrieve": {
@@ -751,50 +916,24 @@ def main():
                     "disallow": {k: [] for k in keytab_members},
                 },
             }
-            certificate_add, certificate_del = [], []
-            host_add, host_del = [], []
-            principal_add, principal_del = [], []
-
-            if principal and res_find:
-                # When comparing principals to the existing ones,
-                # the REALM is needded, and are added here for those
-                # that do not have it.
-                principal = [
-                    p if "@" in p
-                    else "%s@%s" % (p, api_get_realm())
-                    for p in principal
-                ]
-                principal = list(set(principal))
-
-                # Create list of existing principal aliases as strings
-                # to compare with provided ones.
-                canonicalname = {
-                    to_text(p)
-                    for p in res_find.get("krbcanonicalname", [])
-                }
-                res_principals = [
-                    to_text(elem)
-                    for elem in res_find.get("krbprincipalname", [])
-                ]
-                res_principals = list(set(res_principals) - canonicalname)
 
             if state == "present":
                 if action == "service":
-                    args = gen_args(
-                        pac_type, auth_ind, skip_host_check, force,
-                        requires_pre_auth, ok_as_delegate,
-                        ok_to_auth_as_delegate)
+                    args = IPAAnsibleModule.gen_args_from_mapping(
+                        PARAM_MAPPING, service_params)
                     if not has_skip_host_check and 'skip_host_check' in args:
                         del args['skip_host_check']
 
-                    if smb:
+                    if service_params.get("smb"):
                         if res_find is None:
                             _name = "cifs/" + name
-                            res_find = find_service(ansible_module, _name)
+                            res_find = service_show(ansible_module, _name)
                             if res_find is None:
                                 _args = gen_args_smb(
-                                    netbiosname, ok_as_delegate,
-                                    ok_to_auth_as_delegate)
+                                    service_params.get("netbiosname"),
+                                    service_params.get("ok_as_delegate"),
+                                    service_params.get(
+                                        "ok_to_auth_as_delegate"))
                                 commands.append(
                                     [name, 'service_add_smb', _args])
                                 res_find = {}
@@ -835,52 +974,16 @@ def main():
                                                 res_find):
                             commands.append([name, "service_mod", args])
 
-                    # Manage members
-                    certificate_add, certificate_del = gen_add_del_lists(
-                        certificate, res_find.get("usercertificate"))
-
-                    host_add, host_del = gen_add_del_lists(
-                        host, res_find.get('managedby_host'))
-
-                    principal_add, principal_del = gen_add_del_lists(
-                        principal, res_principals)
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(msg="No service '%s'" % name)
-
-                    certificate_add = gen_add_list(
-                        certificate, res_find.get("usercertificate"))
-
-                    host_add = gen_add_list(
-                        host, res_find.get('managedby_host'))
-
-                    principal_add = gen_add_list(principal, res_principals)
-
-                # get keytab management lists for any 'action'.
-                for perm in ["create", "retrieve"]:
-                    oper = "write" if perm == "create" else "read"
-                    for key in ["user", "group", "host", "hostgroup"]:
-                        add_list, del_list = (
-                            gen_add_del_lists(
-                                ansible_module.params_get(
-                                    "allow_%s_keytab_%s" % (perm, key)
-                                ),
-                                res_find.get(
-                                    'ipaallowedtoperform_%s_keys_%s'
-                                    % (oper, key)
-                                )
-                            )
-                        )
-                        keytab[perm]["allow"][key] = add_list
-                        # Only remove members if action is 'service'
-                        if action == "service":
-                            keytab[perm]["disallow"][key] = del_list
 
             elif state == "absent":
                 if action == "service":
                     if res_find is not None:
                         args = {}
+                        delete_continue = service_params.get(
+                            "delete_continue")
                         if delete_continue is not None:
                             args['continue'] = delete_continue
                         commands.append([name, 'service_del', args])
@@ -888,31 +991,6 @@ def main():
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(msg="No service '%s'" % name)
-
-                    principal_del = gen_intersection_list(
-                        principal, res_principals)
-
-                    certificate_del = gen_intersection_list(
-                        certificate, res_find.get("usercertificate"))
-
-                    host_del = gen_intersection_list(
-                        host, res_find.get("managedby_host"))
-
-                    for perm in ["create", "retrieve"]:
-                        oper = "write" if perm == "create" else "read"
-                        for key in ["user", "group", "host", "hostgroup"]:
-                            res_param = (
-                                'ipaallowedtoperform_%s_keys_%s'
-                                % (oper, key)
-                            )
-                            module_params = ansible_module.params_get(
-                                "allow_%s_keytab_%s" % (perm, key)
-                            )
-                            existing = res_find.get(res_param)
-                            del_list = (
-                                gen_intersection_list(module_params, existing)
-                            )
-                            keytab[perm]["disallow"][key] = del_list
 
             elif state == "disabled":
                 if action == "service":
@@ -930,6 +1008,45 @@ def main():
                 continue
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+            # Compute member add/del lists for principal, certificate,
+            # host and the keytab permission members.
+            member_lists = gen_member_add_del_lists(
+                PARAM_MAPPING, service_params, res_find or {}, action, state)
+            principal_add, principal_del = member_lists.get(
+                "principal", ([], []))
+            certificate_add, certificate_del = member_lists.get(
+                "certificate", ([], []))
+            host_add, host_del = member_lists.get("host", ([], []))
+
+            # Principals are not returned as utf8 for IPA using
+            # python2 using service_show, therefore we need to
+            # convert the principals that we should remove.
+            principal_del = [to_text(x) for x in principal_del]
+
+            # Remove the canonical principal from principal_del. It can
+            # never be added or removed via service_add_principal /
+            # service_remove_principal, and a full sync of the requested
+            # principal list against the existing krbprincipalname
+            # aliases (which include the canonical name) would otherwise
+            # flag it for removal whenever it is not repeated in
+            # `principal`.
+            if state == "present" and res_find:
+                canonical_principals = {
+                    to_text(p)
+                    for p in res_find.get("krbcanonicalname", [])
+                }
+                principal_del = [
+                    p for p in principal_del if p not in canonical_principals
+                ]
+
+            # manage keytab permissions.
+            for perm in ["create", "retrieve"]:
+                for key in keytab_members:
+                    add_list, del_list = member_lists.get(
+                        "allow_%s_keytab_%s" % (perm, key), ([], []))
+                    keytab[perm]["allow"][key] = add_list
+                    keytab[perm]["disallow"][key] = del_list
 
             # Manage members
             if principal_add:
@@ -956,7 +1073,7 @@ def main():
             # manage keytab permissions.
             for perm in ["create", "retrieve"]:
                 for mode in ["allow", "disallow"]:
-                    for key in ["user", "group", "host", "hostgroup"]:
+                    for key in keytab_members:
                         if keytab[perm][mode][key]:
                             commands.append([
                                 name,
@@ -965,9 +1082,13 @@ def main():
                             ])
                             break
 
+        del service_set
+
         # Check mode exit
         if ansible_module.check_mode:
             ansible_module.exit_json(changed=len(commands) > 0, **exit_args)
+
+        ansible_module.tm_warn("commands: %s" % repr(commands))
 
         # Execute commands
         changed = ansible_module.execute_ipa_commands(
