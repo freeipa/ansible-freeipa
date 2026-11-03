@@ -607,7 +607,7 @@ def main():
         pass
     else:
         # The NTP configuration can not be touched on pre-installed client:
-        if options.no_ntp or options.ntp_servers or options.ntp_pool:
+        if not options.no_ntp or options.ntp_servers or options.ntp_pool:
             ansible_module.fail_json(
                 msg="NTP configuration cannot be updated during promotion")
 
