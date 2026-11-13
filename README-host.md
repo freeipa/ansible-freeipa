@@ -310,6 +310,99 @@ Example playbook to ensure a host is absent:
 ```
 
 
+Example playbook to query a host and print the base fields:
+
+```yaml
+---
+- name: Playbook to query hosts
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query host host01.example.com
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: host01.example.com
+      state: query
+    register: result
+
+  - name: Print host info
+    debug:
+      var: result.host
+```
+
+
+Example playbook to query specific fields of a host:
+
+```yaml
+---
+- name: Playbook to query hosts
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query description and location of host01.example.com
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: host01.example.com
+      query_param:
+      - description
+      - location
+      - os
+      state: query
+    register: result
+
+  - name: Print host info
+    debug:
+      var: result.host
+```
+
+
+Example playbook to query all fields of a host:
+
+```yaml
+---
+- name: Playbook to query hosts
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query all fields of host01.example.com
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      name: host01.example.com
+      query_param: ALL
+      state: query
+    register: result
+
+  - name: Print host info
+    debug:
+      var: result.host
+```
+
+
+Example playbook to query only the names of all hosts:
+
+```yaml
+---
+- name: Playbook to query hosts
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query all host names
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      query_param: PKEY_ONLY
+      state: query
+    register: result
+
+  - name: Print host names
+    debug:
+      var: result.host.hosts
+```
+
+
 Variables
 =========
 
@@ -325,8 +418,9 @@ Variable | Description | Required
 &nbsp; | `name` \| `fqdn` - The user name string of the entry. | yes
 &nbsp; | **Host variables** | no
 `update_password` |  Set password for a host in present state only on creation or always. It can be one of `always` or `on_create` and defaults to `always`. | no
-`action` | Work on host or member level. It can be on of `member` or `host` and defaults to `host`. | no
-`state` | The state to ensure. It can be one of `present`, `absent` or `disabled`, default: `present`. | yes
+`action` | Work on host or member level. It can be one of `member` or `host` and defaults to `host`. | no
+`query_param` | The fields to query with `state: query`. Can be `ALL`, `BASE`, `PKEY_ONLY` or a list of specific field names. Only usable with `state: query`. | no
+`state` | The state to ensure. It can be one of `present`, `absent`, `disabled` or `query`, default: `present`. | yes
 
 
 **Host Variables:**
