@@ -403,6 +403,22 @@ options:
       Set password for a host in present state only on creation or always
     type: str
     choices: ["always", "on_create"]
+  query_param:
+    description: The fields to query with state=query
+    required: false
+    type: list
+    elements: str
+    choices: ["ALL", "BASE", "PKEY_ONLY",
+              "dn", "objectclass", "ipauniqueid", "ipantsecurityidentifier",
+              "name", "description", "locality", "location", "platform",
+              "os", "mac_address", "sshpubkey", "userclass", "auth_ind",
+              "requires_pre_auth", "ok_as_delegate", "ok_to_auth_as_delegate",
+              "certificate", "managedby_host", "principal",
+              "allow_create_keytab_user", "allow_create_keytab_group",
+              "allow_create_keytab_host", "allow_create_keytab_hostgroup",
+              "allow_retrieve_keytab_user", "allow_retrieve_keytab_group",
+              "allow_retrieve_keytab_host", "allow_retrieve_keytab_hostgroup",
+              "password", "ip_address"]
   action:
     description: Work on host or member level
     type: str
@@ -413,7 +429,7 @@ options:
     type: str
     default: present
     choices: ["present", "absent",
-              "disabled"]
+              "disabled", "query"]
 author:
   - Thomas Woerner (@t-woerner)
 """
@@ -482,6 +498,29 @@ EXAMPLES = """
     ipaadmin_password: SomeADMINpassword
     name: host01.example.com
     state: absent
+
+# Query all hosts (primary keys only)
+- ipahost:
+    ipaadmin_password: SomeADMINpassword
+    state: query
+    query_param: PKEY_ONLY
+  register: result
+
+# Query a specific host with all parameters
+- ipahost:
+    ipaadmin_password: SomeADMINpassword
+    name: host01.example.com
+    state: query
+    query_param: ALL
+  register: result
+
+# Query description for all hosts
+- ipahost:
+    ipaadmin_password: SomeADMINpassword
+    state: query
+    query_param:
+    - description
+  register: result
 """
 
 RETURN = """
@@ -507,6 +546,7 @@ host:
           returned: always
 """
 
+from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
     IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, \
     encode_certificate, is_ipv4_addr, is_ipv6_addr, ipalib_errors, \
@@ -568,52 +608,111 @@ def show_host(module, name):
     return _result["result"]
 
 
-def gen_args(description, locality, location, platform, os, password, random,
-             mac_address, sshpubkey, userclass, auth_ind, requires_pre_auth,
-             ok_as_delegate, ok_to_auth_as_delegate, force, _reverse,
-             ip_address, update_dns):
-    # certificate, managedby_host, principal, create_keytab_* and
-    # allow_retrieve_keytab_* are not handled here
-    _args = {}
-    if description is not None:
-        _args["description"] = description
-    if locality is not None:
-        _args["l"] = locality
-    if location is not None:
-        _args["nshostlocation"] = location
-    if platform is not None:
-        _args["nshardwareplatform"] = platform
-    if os is not None:
-        _args["nsosversion"] = os
-    if password is not None:
-        _args["userpassword"] = password
-    if random is not None:
-        _args["random"] = random
-    if mac_address is not None:
-        _args["macaddress"] = mac_address
-    if sshpubkey is not None:
-        _args["ipasshpubkey"] = sshpubkey
-    if userclass is not None:
-        _args["userclass"] = userclass
-    if auth_ind is not None:
-        _args["krbprincipalauthind"] = auth_ind
-    if requires_pre_auth is not None:
-        _args["ipakrbrequirespreauth"] = requires_pre_auth
-    if ok_as_delegate is not None:
-        _args["ipakrbokasdelegate"] = ok_as_delegate
-    if ok_to_auth_as_delegate is not None:
-        _args["ipakrboktoauthasdelegate"] = ok_to_auth_as_delegate
-    if force is not None:
-        _args["force"] = force
-    if ip_address is not None:
-        # IP addresses are handed extra, therefore it is needed to set
-        # the force option here to make sure that host-add is able to
-        # add a host without IP address.
-        _args["force"] = True
-    if update_dns is not None:
-        _args["updatedns"] = update_dns
+def host_find(module, name):
+    _args = {"all": True}
 
-    return _args
+    try:
+        if name:
+            _args["fqdn"] = name
+        _result = module.ipa_command_no_name(
+            "host_find", _args).get("result")
+        if _result and name:
+            _result = _result[0]
+    except ipalib_errors.NotFound:
+        return None
+
+    return _result
+
+
+def convert_result(res):
+    _res = {}
+    for key in res:
+        if key == "usercertificate":
+            _res[key] = [encode_certificate(cert)
+                         for cert in res[key]]
+        elif key == "krbprincipalname":
+            _res[key] = [to_text(princ) for princ in res[key]]
+        elif isinstance(res[key], list):
+            if len(res[key]) == 1:
+                _res[key] = to_text(res[key][0])
+            else:
+                _res[key] = [to_text(item) for item in res[key]]
+        else:
+            _res[key] = to_text(res[key])
+    return _res
+
+
+PARAM_MAPPING = {
+    "dn": {"return_only": True},
+    "objectclass": {"return_only": True},
+    "ipauniqueid": {"return_only": True},
+    "ipantsecurityidentifier": {"return_only": True},
+
+    "name": {"api_name": "fqdn", "gen_args": False},
+
+    "description": {},
+    "locality": {"api_name": "l"},
+    "location": {"api_name": "nshostlocation"},
+    "platform": {"api_name": "nshardwareplatform"},
+    "os": {"api_name": "nsosversion"},
+    "mac_address": {"api_name": "macaddress"},
+    "sshpubkey": {"api_name": "ipasshpubkey",
+                  "allow_empty_list_item": True},
+    "userclass": {},
+    "auth_ind": {"api_name": "krbprincipalauthind",
+                 "allow_empty_list_item": True},
+    "requires_pre_auth": {"api_name": "ipakrbrequirespreauth"},
+    "ok_as_delegate": {"api_name": "ipakrbokasdelegate"},
+    "ok_to_auth_as_delegate": {"api_name": "ipakrboktoauthasdelegate"},
+
+    "certificate": {"api_name": "usercertificate", "gen_args": False},
+    "managedby_host": {"gen_args": False},
+    "principal": {"api_name": "krbprincipalname", "gen_args": False},
+    "allow_create_keytab_user": {
+        "api_name": "ipaallowedtoperform_write_keys_user",
+        "gen_args": False},
+    "allow_create_keytab_group": {
+        "api_name": "ipaallowedtoperform_write_keys_group",
+        "gen_args": False},
+    "allow_create_keytab_host": {
+        "api_name": "ipaallowedtoperform_write_keys_host",
+        "gen_args": False},
+    "allow_create_keytab_hostgroup": {
+        "api_name": "ipaallowedtoperform_write_keys_hostgroup",
+        "gen_args": False},
+    "allow_retrieve_keytab_user": {
+        "api_name": "ipaallowedtoperform_read_keys_user",
+        "gen_args": False},
+    "allow_retrieve_keytab_group": {
+        "api_name": "ipaallowedtoperform_read_keys_group",
+        "gen_args": False},
+    "allow_retrieve_keytab_host": {
+        "api_name": "ipaallowedtoperform_read_keys_host",
+        "gen_args": False},
+    "allow_retrieve_keytab_hostgroup": {
+        "api_name": "ipaallowedtoperform_read_keys_hostgroup",
+        "gen_args": False},
+
+    "password": {"api_name": "userpassword"},
+    "random": {"query": False},
+    "force": {"query": False},
+    "update_dns": {"api_name": "updatedns", "query": False},
+
+    "reverse": {"gen_args": False, "query": False},
+    "ip_address": {"gen_args": False},
+
+    # Module-level params (not per-item, checked via self.params)
+    "query_param": {"module_param": True},
+}
+
+QUERY_FIELDS = {
+    "prefix": "hosts",
+    "primary_key": "fqdn",
+    "base": [
+        "name", "description", "locality", "location", "platform", "os",
+        "principal"
+    ]
+}
 
 
 def gen_dnsrecord_args(module, ip_address, reverse):
@@ -633,17 +732,7 @@ def gen_dnsrecord_args(module, ip_address, reverse):
     return _args
 
 
-def check_parameters(   # pylint: disable=unused-argument
-        module, state, action,
-        description, locality, location, platform, os, password, random,
-        certificate, managedby_host, principal, allow_create_keytab_user,
-        allow_create_keytab_group, allow_create_keytab_host,
-        allow_create_keytab_hostgroup, allow_retrieve_keytab_user,
-        allow_retrieve_keytab_group, allow_retrieve_keytab_host,
-        allow_retrieve_keytab_hostgroup, mac_address, sshpubkey,
-        userclass, auth_ind, requires_pre_auth, ok_as_delegate,
-        ok_to_auth_as_delegate, force, reverse, ip_address, update_dns,
-        update_password):
+def check_parameters(module, state, action, host_params):
     invalid = []
     if state == "present":
         if action == "member":
@@ -671,7 +760,16 @@ def check_parameters(   # pylint: disable=unused-argument
                 "allow_retrieve_keytab_hostgroup"
             ]
 
-    module.params_fail_used_invalid(invalid, state, action)
+    if state == "query":
+        if action == "member":
+            module.fail_json(
+                msg="Query is not possible with action=member")
+
+    if state != "query":
+        invalid.append("query_param")
+
+    module.params_fail_used_invalid(invalid, state, action, host_params,
+                                    PARAM_MAPPING)
 
 
 def check_authind(module, auth_ind):
@@ -778,6 +876,9 @@ def main():
         # krbprincipalname
     )
 
+    query_param_settings = IPAAnsibleModule.build_query_param_settings(
+        PARAM_MAPPING, QUERY_FIELDS)
+
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
@@ -798,17 +899,23 @@ def main():
             update_password=dict(type='str', default=None, no_log=False,
                                  choices=['always', 'on_create']),
 
+            # query
+            query_param=dict(
+                type="list", elements="str", default=None,
+                choices=["ALL", "BASE", "PKEY_ONLY"]
+                + query_param_settings["ALL"],
+                required=False),
+
             # general
             action=dict(type="str", default="host",
                         choices=["member", "host"]),
             state=dict(type="str", default="present",
-                       choices=["present", "absent", "disabled"]),
+                       choices=["present", "absent", "disabled", "query"]),
 
             # Add host specific parameters for simple use case
             **host_spec
         ),
         mutually_exclusive=[["name", "hosts"]],
-        required_one_of=[["name", "hosts"]],
         supports_check_mode=True,
     )
 
@@ -820,14 +927,18 @@ def main():
     names = ansible_module.params_get("name")
     hosts = ansible_module.params_get("hosts")
 
+    # Extract mapped params
+    host_params = IPAAnsibleModule.extract_params(
+        ansible_module, PARAM_MAPPING)
+    random = host_params.get("random")
+    sshpubkey = host_params.get("sshpubkey")
+    auth_ind = host_params.get("auth_ind")
+    reverse = host_params.get("reverse")
+    ip_address = host_params.get("ip_address")
+    update_dns = host_params.get("update_dns")
+    update_password = ansible_module.params_get("update_password")
+
     # present
-    description = ansible_module.params_get("description")
-    locality = ansible_module.params_get("locality")
-    location = ansible_module.params_get("location")
-    platform = ansible_module.params_get("platform")
-    os = ansible_module.params_get("os")
-    password = ansible_module.params_get("password")
-    random = ansible_module.params_get("random")
     certificate = ansible_module.params_get("certificate")
     managedby_host = ansible_module.params_get("managedby_host")
     principal = ansible_module.params_get("principal")
@@ -847,46 +958,30 @@ def main():
         "allow_retrieve_keytab_host")
     allow_retrieve_keytab_hostgroup = ansible_module.params_get(
         "allow_retrieve_keytab_hostgroup")
-    mac_address = ansible_module.params_get("mac_address")
-    sshpubkey = ansible_module.params_get(
-        "sshpubkey", allow_empty_list_item=True)
-    userclass = ansible_module.params_get("userclass")
-    auth_ind = ansible_module.params_get(
-        "auth_ind", allow_empty_list_item=True)
-    requires_pre_auth = ansible_module.params_get("requires_pre_auth")
-    ok_as_delegate = ansible_module.params_get("ok_as_delegate")
-    ok_to_auth_as_delegate = ansible_module.params_get(
-        "ok_to_auth_as_delegate")
-    force = ansible_module.params_get("force")
-    reverse = ansible_module.params_get("reverse")
-    ip_address = ansible_module.params_get("ip_address")
-    update_dns = ansible_module.params_get("update_dns")
-    update_password = ansible_module.params_get("update_password")
+    # query
+    query_param = ansible_module.params_get("query_param")
     # general
     action = ansible_module.params_get("action")
     state = ansible_module.params_get("state")
 
     # Check parameters
 
-    if (names is None or len(names) < 1) and \
-       (hosts is None or len(hosts) < 1):
-        ansible_module.fail_json(msg="One of name and hosts is required")
+    if state == "query":
+        if hosts is not None:
+            ansible_module.fail_json(
+                msg="hosts can not be used with state=query, "
+                "use name instead")
+    else:
+        if (names is None or len(names) < 1) and \
+           (hosts is None or len(hosts) < 1):
+            ansible_module.fail_json(msg="One of name and hosts is required")
 
     if state == "present":
         if names is not None and len(names) != 1:
             ansible_module.fail_json(
                 msg="Only one host can be added at a time.")
 
-    check_parameters(
-        ansible_module, state, action,
-        description, locality, location, platform, os, password, random,
-        certificate, managedby_host, principal, allow_create_keytab_user,
-        allow_create_keytab_group, allow_create_keytab_host,
-        allow_create_keytab_hostgroup, allow_retrieve_keytab_user,
-        allow_retrieve_keytab_group, allow_retrieve_keytab_host,
-        allow_retrieve_keytab_hostgroup, mac_address, sshpubkey, userclass,
-        auth_ind, requires_pre_auth, ok_as_delegate, ok_to_auth_as_delegate,
-        force, reverse, ip_address, update_dns, update_password)
+    check_parameters(ansible_module, state, action, host_params)
 
     certificate = convert_input_certificates(ansible_module, certificate,
                                              state)
@@ -906,6 +1001,13 @@ def main():
     # Connect to IPA API
     with ansible_module.ipa_connect():
 
+        if state == "query":
+            exit_args = ansible_module.execute_query(
+                names, query_param, host_find, query_param_settings,
+                convert_result=convert_result)
+
+            ansible_module.exit_json(changed=False, host=exit_args)
+
         # Check version specific settings
 
         check_authind(ansible_module, auth_ind)
@@ -922,13 +1024,10 @@ def main():
                     ansible_module.fail_json(
                         msg="host '%s' is used more than once" % name)
                 host_set.add(name)
-                description = host.get("description")
-                locality = host.get("locality")
-                location = host.get("location")
-                platform = host.get("platform")
-                os = host.get("os")
-                password = host.get("password")
-                random = host.get("random")
+
+                host_params = IPAAnsibleModule.extract_params_from_entry(
+                    host, PARAM_MAPPING)
+
                 certificate = host.get("certificate")
                 managedby_host = host.get("managedby_host")
                 principal = host.get("principal")
@@ -948,15 +1047,6 @@ def main():
                     "allow_retrieve_keytab_host")
                 allow_retrieve_keytab_hostgroup = host.get(
                     "allow_retrieve_keytab_hostgroup")
-                mac_address = host.get("mac_address")
-                sshpubkey = host.get("sshpubkey")
-                userclass = host.get("userclass")
-                auth_ind = host.get("auth_ind")
-                check_authind(ansible_module, auth_ind)
-                requires_pre_auth = host.get("requires_pre_auth")
-                ok_as_delegate = host.get("ok_as_delegate")
-                ok_to_auth_as_delegate = host.get("ok_to_auth_as_delegate")
-                force = host.get("force")
                 reverse = host.get("reverse")
                 ip_address = host.get("ip_address")
                 update_dns = host.get("update_dns")
@@ -964,18 +1054,10 @@ def main():
                 # action is not part of hosts structure
                 # state is not part of hosts structure
 
+                check_authind(ansible_module, auth_ind)
+
                 check_parameters(
-                    ansible_module, state, action,
-                    description, locality, location, platform, os, password,
-                    random, certificate, managedby_host, principal,
-                    allow_create_keytab_user, allow_create_keytab_group,
-                    allow_create_keytab_host, allow_create_keytab_hostgroup,
-                    allow_retrieve_keytab_user, allow_retrieve_keytab_group,
-                    allow_retrieve_keytab_host,
-                    allow_retrieve_keytab_hostgroup, mac_address, sshpubkey,
-                    userclass, auth_ind, requires_pre_auth, ok_as_delegate,
-                    ok_to_auth_as_delegate, force, reverse, ip_address,
-                    update_dns, update_password)
+                    ansible_module, state, action, host_params)
 
                 certificate = convert_input_certificates(ansible_module,
                                                          certificate, state)
@@ -1017,11 +1099,10 @@ def main():
             # Create command
             if state == "present":
                 # Generate args
-                args = gen_args(
-                    description, locality, location, platform, os, password,
-                    random, mac_address, sshpubkey, userclass, auth_ind,
-                    requires_pre_auth, ok_as_delegate, ok_to_auth_as_delegate,
-                    force, reverse, ip_address, update_dns)
+                args = IPAAnsibleModule.gen_args_from_mapping(
+                    PARAM_MAPPING, host_params)
+                if ip_address is not None:
+                    args["force"] = True
                 dnsrecord_args = gen_dnsrecord_args(
                     ansible_module, ip_address, reverse)
 
