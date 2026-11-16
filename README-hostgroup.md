@@ -140,6 +140,99 @@ Example playbook to make sure host-group databases is absent:
       state: absent
 ```
 
+Example playbook to query a hostgroup and print the base fields:
+
+```yaml
+---
+- name: Playbook to query hostgroups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query hostgroup databases
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: databases
+      state: query
+    register: result
+
+  - name: Print hostgroup info
+    debug:
+      var: result.hostgroup
+```
+
+
+Example playbook to query specific fields of a hostgroup:
+
+```yaml
+---
+- name: Playbook to query hostgroups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query description and members of hostgroup databases
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: databases
+      query_param:
+      - description
+      - host
+      - hostgroup
+      state: query
+    register: result
+
+  - name: Print hostgroup info
+    debug:
+      var: result.hostgroup
+```
+
+
+Example playbook to query all fields of a hostgroup:
+
+```yaml
+---
+- name: Playbook to query hostgroups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query all fields of hostgroup databases
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      name: databases
+      query_param: ALL
+      state: query
+    register: result
+
+  - name: Print hostgroup info
+    debug:
+      var: result.hostgroup
+```
+
+
+Example playbook to query only the names of all hostgroups:
+
+```yaml
+---
+- name: Playbook to query hostgroups
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query all hostgroup names
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      query_param: PKEY_ONLY
+      state: query
+    register: result
+
+  - name: Print hostgroup names
+    debug:
+      var: result.hostgroup.hostgroups
+```
+
+
 Variables
 =========
 
@@ -157,8 +250,9 @@ Variable | Description | Required
 `membermanager_user` | List of member manager users assigned to this hostgroup. Only usable with IPA versions 4.8.4 and up. | no
 `membermanager_group` | List of member manager groups assigned to this hostgroup. Only usable with IPA versions 4.8.4 and up. | no
 `rename` \| `new_name` | Rename hostgroup to the provided name. Only usable with IPA versions 4.8.7 and up. | no
-`action` | Work on hostgroup or member level. It can be on of `member` or `hostgroup` and defaults to `hostgroup`. | no
-`state` | The state to ensure. It can be one of `present`, `absent` or `renamed`, default: `present`. | no
+`action` | Work on hostgroup or member level. It can be one of `member` or `hostgroup` and defaults to `hostgroup`. | no
+`query_param` | The fields to query with `state: query`. Can be `ALL`, `BASE`, `PKEY_ONLY` or a list of specific field names. Only usable with `state: query`. | no
+`state` | The state to ensure. It can be one of `present`, `absent`, `renamed` or `query`, default: `present`. | no
 
 
 Authors
