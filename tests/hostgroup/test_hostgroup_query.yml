@@ -1,0 +1,197 @@
+---
+- name: Test hostgroup query
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: true
+  module_defaults:
+    ipahostgroup:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  # CLEANUP
+
+  - name: Get Domain from server name
+    ansible.builtin.set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] |
+                            join('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Set host1 fqdn
+    ansible.builtin.set_fact:
+      host1_fqdn: "{{ 'testhost1.' + ipaserver_domain }}"
+
+  - name: Ensure hostgroups are absent
+    ipahostgroup:
+      name:
+      - testhostgroup1
+      - testhostgroup2
+      - non-existing-hostgroup
+      state: absent
+
+  - name: Ensure test host is absent
+    ipahost:
+      name:
+      - "{{ host1_fqdn }}"
+      update_dns: no
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure test host is present
+    ipahost:
+      name: "{{ host1_fqdn }}"
+      force: yes
+
+  - name: Ensure hostgroups are present
+    ipahostgroup:
+      name: testhostgroup1
+      description: "Test hostgroup 1"
+      host:
+      - "{{ host1_fqdn }}"
+
+  - name: Ensure hostgroup2 is present
+    ipahostgroup:
+      name: testhostgroup2
+      description: "Test hostgroup 2"
+
+  # TESTS
+
+  - name: Query hostgroup "non-existing-hostgroup"
+    ipahostgroup:
+      name:
+      - non-existing-hostgroup
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.hostgroup
+
+  - name: Fail on non empty query result
+    ansible.builtin.fail:
+      msg: "{{ result['hostgroup'] }} is not empty"
+    when: result['hostgroup'] | length > 0
+
+  - name: Query all hostgroups
+    ipahostgroup:
+      state: query
+      query_param: PKEY_ONLY
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.hostgroup
+
+  - name: Fail on missing testhostgroup1 in query result
+    ansible.builtin.fail:
+      msg: "'testhostgroup1' not in query result {{ result.hostgroup.hostgroups }}"
+    when: ("testhostgroup1" not in result.hostgroup.hostgroups)
+
+  - name: Fail on missing testhostgroup2 in query result
+    ansible.builtin.fail:
+      msg: "'testhostgroup2' not in query result {{ result.hostgroup.hostgroups }}"
+    when: ("testhostgroup2" not in result.hostgroup.hostgroups)
+
+  - name: Fail on non-existing-hostgroup in query result
+    ansible.builtin.fail:
+      msg: "'non-existing-hostgroup' in query result {{ result.hostgroup.hostgroups }}"
+    when: ("non-existing-hostgroup" in result.hostgroup.hostgroups)
+
+  - name: Query hostgroups testhostgroup1 and testhostgroup2
+    ipahostgroup:
+      name:
+      - testhostgroup1
+      - testhostgroup2
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.hostgroup
+
+  - name: Fail on missing testhostgroup1 in query result
+    ansible.builtin.fail:
+      msg: "'testhostgroup1' not in query result {{ result.hostgroup }}"
+    when: ("testhostgroup1" not in result.hostgroup)
+
+  - name: Fail on missing testhostgroup2 in query result
+    ansible.builtin.fail:
+      msg: "'testhostgroup2' not in query result {{ result.hostgroup }}"
+    when: ("testhostgroup2" not in result.hostgroup)
+
+  - name: Fail on non-existing-hostgroup in query result
+    ansible.builtin.fail:
+      msg: "'non-existing-hostgroup' in query result {{ result.hostgroup }}"
+    when: ("non-existing-hostgroup" in result.hostgroup)
+
+  - name: Query all hostgroup parameters for testhostgroup1
+    ipahostgroup:
+      name:
+      - testhostgroup1
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.hostgroup
+
+  - name: Fail on missing information in query result
+    ansible.builtin.fail:
+      msg: "Query result {{ result.hostgroup }} is incomplete"
+    when: (result.hostgroup.description != "Test hostgroup 1" or
+           result.hostgroup.name != "testhostgroup1" or
+           "objectclass" not in result.hostgroup or
+           "dn" in result.hostgroup and "cn=testhostgroup1" not in result.hostgroup.dn)
+
+  - name: Query "description" parameter for all hostgroups
+    ipahostgroup:
+      query_param:
+      - description
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.hostgroup
+
+  - name: Fail on missing testhostgroup1 information in query result
+    ansible.builtin.fail:
+      msg: "'testhostgroup1' not in query result {{ result.hostgroup }}"
+    when: ("testhostgroup1" not in result.hostgroup or
+           result.hostgroup.testhostgroup1.description != "Test hostgroup 1" or
+           result.hostgroup.testhostgroup1 | length != 1)
+
+  - name: Fail on missing testhostgroup2 information in query result
+    ansible.builtin.fail:
+      msg: "'testhostgroup2' not in query result {{ result.hostgroup }}"
+    when: ("testhostgroup2" not in result.hostgroup or
+           result.hostgroup.testhostgroup2.description != "Test hostgroup 2" or
+           result.hostgroup.testhostgroup2 | length != 1)
+
+  # CLEANUP
+
+  - name: Ensure hostgroups are absent
+    ipahostgroup:
+      name:
+      - testhostgroup1
+      - testhostgroup2
+      state: absent
+
+  - name: Ensure test host is absent
+    ipahost:
+      name:
+      - "{{ host1_fqdn }}"
+      update_dns: no
+      state: absent

@@ -42,7 +42,7 @@ options:
     description: The hostgroup name
     type: list
     elements: str
-    required: true
+    required: false
     aliases: ["cn"]
   description:
     description: The hostgroup description
@@ -83,6 +83,16 @@ options:
     type: str
     required: false
     aliases: ["new_name"]
+  query_param:
+    description: The fields to query with state=query
+    required: false
+    type: list
+    elements: str
+    choices: ["ALL", "BASE", "PKEY_ONLY",
+              "dn", "objectclass", "ipauniqueid",
+              "name", "description",
+              "host", "hostgroup",
+              "membermanager_user", "membermanager_group"]
   action:
     description: Work on hostgroup or member level
     type: str
@@ -92,7 +102,8 @@ options:
     description: State to ensure
     type: str
     default: present
-    choices: ["present", "absent", "renamed"]
+    choices: ["present", "absent", "renamed",
+              "query"]
 author:
   - Thomas Woerner (@t-woerner)
 """
@@ -142,14 +153,38 @@ EXAMPLES = """
     ipaadmin_password: SomeADMINpassword
     name: databases
     state: absent
+
+# Query all hostgroups (primary keys only)
+- ipahostgroup:
+    ipaadmin_password: SomeADMINpassword
+    state: query
+    query_param: PKEY_ONLY
+  register: result
+
+# Query a specific hostgroup with all parameters
+- ipahostgroup:
+    ipaadmin_password: SomeADMINpassword
+    name: databases
+    state: query
+    query_param: ALL
+  register: result
+
+# Query description for all hostgroups
+- ipahostgroup:
+    ipaadmin_password: SomeADMINpassword
+    state: query
+    query_param:
+    - description
+  register: result
 """
 
 RETURN = """
 """
 
+from ansible.module_utils._text import to_text
 from ansible.module_utils.ansible_freeipa_module import \
-    IPAAnsibleModule, compare_args_ipa, gen_add_del_lists, gen_add_list, \
-    gen_intersection_list, ensure_fqdn
+    IPAAnsibleModule, compare_args_ipa, gen_member_add_del_lists, \
+    ensure_fqdn, ipalib_errors
 
 
 def find_hostgroup(module, name):
@@ -169,24 +204,76 @@ def find_hostgroup(module, name):
     return None
 
 
-def gen_args(description, nomembers, rename):
-    _args = {}
-    if description is not None:
-        _args["description"] = description
-    if nomembers is not None:
-        _args["nomembers"] = nomembers
-    if rename is not None:
-        _args["rename"] = rename
+def hostgroup_find_query(module, name):
+    _args = {"all": True}
 
-    return _args
+    try:
+        if name:
+            _args["cn"] = name
+        _result = module.ipa_command_no_name(
+            "hostgroup_find", _args).get("result")
+        if _result and name:
+            _result = _result[0]
+    except ipalib_errors.NotFound:
+        return None
+
+    return _result
+
+
+def convert_result(res):
+    _res = {}
+    for key in res:
+        if isinstance(res[key], list):
+            if len(res[key]) == 1:
+                _res[key] = to_text(res[key][0])
+            else:
+                _res[key] = [to_text(item) for item in res[key]]
+        else:
+            _res[key] = to_text(res[key])
+    return _res
+
+
+PARAM_MAPPING = {
+    "dn": {"return_only": True},
+    "objectclass": {"return_only": True},
+    "ipauniqueid": {"return_only": True},
+
+    "name": {"api_name": "cn", "gen_args": False},
+
+    "description": {},
+    "nomembers": {"query": False},
+
+    "host": {"api_name": "member_host", "gen_args": False,
+             "lowercase": True, "member": True},
+    "hostgroup": {"api_name": "member_hostgroup", "gen_args": False,
+                  "lowercase": True, "member": True},
+    "membermanager_user": {"gen_args": False, "lowercase": True,
+                           "member": True},
+    "membermanager_group": {"gen_args": False, "lowercase": True,
+                            "member": True},
+
+    "rename": {"gen_args": False, "query": False},
+
+    # Module-level params (not per-item, checked via self.params)
+    "query_param": {"module_param": True},
+}
+
+QUERY_FIELDS = {
+    "prefix": "hostgroups",
+    "primary_key": "cn",
+    "base": ["name", "description"]
+}
 
 
 def main():
+    query_param_settings = IPAAnsibleModule.build_query_param_settings(
+        PARAM_MAPPING, QUERY_FIELDS)
+
     ansible_module = IPAAnsibleModule(
         argument_spec=dict(
             # general
             name=dict(type="list", elements="str", aliases=["cn"],
-                      required=True),
+                      default=None, required=False),
             # present
             description=dict(type="str", default=None),
             nomembers=dict(required=False, type='bool', default=None),
@@ -200,11 +287,17 @@ def main():
                                      elements="str", default=None),
             rename=dict(required=False, type='str', default=None,
                         aliases=["new_name"]),
+            # query
+            query_param=dict(
+                type="list", elements="str", default=None,
+                choices=["ALL", "BASE", "PKEY_ONLY"]
+                + query_param_settings["ALL"],
+                required=False),
             action=dict(type="str", default="hostgroup",
                         choices=["member", "hostgroup"]),
             # state
             state=dict(type="str", default="present",
-                       choices=["present", "absent", "renamed"]),
+                       choices=["present", "absent", "renamed", "query"]),
         ),
         supports_check_mode=True,
     )
@@ -216,9 +309,12 @@ def main():
     # general
     names = ansible_module.params_get_lowercase("name")
 
+    # Extract mapped params
+    hostgroup_params = IPAAnsibleModule.extract_params(
+        ansible_module, PARAM_MAPPING)
+    rename = hostgroup_params.get("rename")
+
     # present
-    description = ansible_module.params_get("description")
-    nomembers = ansible_module.params_get("nomembers")
     host = ansible_module.params_get("host")
     hostgroup = ansible_module.params_get_lowercase("hostgroup")
     membermanager_user = ansible_module.params_get_lowercase(
@@ -227,12 +323,18 @@ def main():
     membermanager_group = ansible_module.params_get_lowercase(
         "membermanager_group"
     )
-    rename = ansible_module.params_get_lowercase("rename")
+    # query
+    query_param = ansible_module.params_get("query_param")
     action = ansible_module.params_get("action")
     # state
     state = ansible_module.params_get("state")
 
     # Check parameters
+
+    if state != "query":
+        if names is None or len(names) < 1:
+            ansible_module.fail_json(
+                msg="No name given.")
 
     invalid = []
     if state == "present":
@@ -264,7 +366,16 @@ def main():
         if action == "hostgroup":
             invalid.extend(["host", "hostgroup"])
 
-    ansible_module.params_fail_used_invalid(invalid, state, action)
+    if state == "query":
+        if action == "member":
+            ansible_module.fail_json(
+                msg="Query is not possible with action=member")
+
+    if state != "query":
+        invalid.append("query_param")
+
+    ansible_module.params_fail_used_invalid(invalid, state, action,
+                                            hostgroup_params, PARAM_MAPPING)
 
     # Init
 
@@ -273,6 +384,13 @@ def main():
 
     # Connect to IPA API
     with ansible_module.ipa_connect():
+
+        if state == "query":
+            exit_args = ansible_module.execute_query(
+                names, query_param, hostgroup_find_query,
+                query_param_settings, convert_result=convert_result)
+
+            ansible_module.exit_json(changed=False, hostgroup=exit_args)
 
         has_add_membermanager = ansible_module.ipa_command_exists(
             "hostgroup_add_member_manager")
@@ -300,19 +418,14 @@ def main():
         commands = []
 
         for name in names:
-            # clean add/del lists
-            host_add, host_del = [], []
-            hostgroup_add, hostgroup_del = [], []
-            membermanager_user_add, membermanager_user_del = [], []
-            membermanager_group_add, membermanager_group_del = [], []
-
             # Make sure hostgroup exists
             res_find = find_hostgroup(ansible_module, name)
 
             # Create command
             if state == "present":
                 # Generate args
-                args = gen_args(description, nomembers, rename)
+                args = IPAAnsibleModule.gen_args_from_mapping(
+                    PARAM_MAPPING, hostgroup_params)
 
                 if action == "hostgroup":
                     # Found the hostgroup
@@ -328,54 +441,10 @@ def main():
                         # Set res_find to empty dict for next step
                         res_find = {}
 
-                    # Generate addition and removal lists
-                    host_add, host_del = gen_add_del_lists(
-                        host, res_find.get("member_host")
-                    )
-
-                    hostgroup_add, hostgroup_del = gen_add_del_lists(
-                        hostgroup, res_find.get("member_hostgroup")
-                    )
-
-                    if has_add_membermanager:
-                        membermanager_user_add, membermanager_user_del = \
-                            gen_add_del_lists(
-                                membermanager_user,
-                                res_find.get("membermanager_user")
-                            )
-
-                        membermanager_group_add, membermanager_group_del = \
-                            gen_add_del_lists(
-                                membermanager_group,
-                                res_find.get("membermanager_group")
-                            )
-
                 elif action == "member":
                     if res_find is None:
                         ansible_module.fail_json(
                             msg="No hostgroup '%s'" % name)
-
-                    # Reduce add lists for member_host and member_hostgroup,
-                    # to new entries only that are not in res_find.
-                    host_add = gen_add_list(
-                        host, res_find.get("member_host")
-                    )
-                    hostgroup_add = gen_add_list(
-                        hostgroup, res_find.get("member_hostgroup")
-                    )
-
-                    if has_add_membermanager:
-                        # Reduce add list for membermanager_user and
-                        # membermanager_group to new entries only that are
-                        # not in res_find.
-                        membermanager_user_add = gen_add_list(
-                            membermanager_user,
-                            res_find.get("membermanager_user")
-                        )
-                        membermanager_group_add = gen_add_list(
-                            membermanager_group,
-                            res_find.get("membermanager_group")
-                        )
 
             elif state == "renamed":
                 if res_find is not None:
@@ -403,31 +472,29 @@ def main():
                         ansible_module.fail_json(
                             msg="No hostgroup '%s'" % name)
 
-                    # Reduce del lists of member_host and member_hostgroup,
-                    # to the entries only that are in res_find.
-                    if host is not None:
-                        host_del = gen_intersection_list(
-                            host, res_find.get("member_host")
-                        )
-                    if hostgroup is not None:
-                        hostgroup_del = gen_intersection_list(
-                            hostgroup, res_find.get("member_hostgroup")
-                        )
-
-                    if has_add_membermanager:
-                        # Get lists of membermanager users that exist
-                        # in IPA and should be removed.
-                        membermanager_user_del = gen_intersection_list(
-                            membermanager_user,
-                            res_find.get("membermanager_user")
-                        )
-                        membermanager_group_del = gen_intersection_list(
-                            membermanager_group,
-                            res_find.get("membermanager_group")
-                        )
-
             else:
                 ansible_module.fail_json(msg="Unkown state '%s'" % state)
+
+            # Compute member add/del lists
+            member_params = {
+                "host": host,
+                "hostgroup": hostgroup,
+                "membermanager_user":
+                    membermanager_user if has_add_membermanager else None,
+                "membermanager_group":
+                    membermanager_group if has_add_membermanager else None,
+            }
+            member_lists = gen_member_add_del_lists(
+                PARAM_MAPPING, member_params,
+                res_find or {}, action, state)
+            host_add, host_del = member_lists.get(
+                "host", ([], []))
+            hostgroup_add, hostgroup_del = member_lists.get(
+                "hostgroup", ([], []))
+            membermanager_user_add, membermanager_user_del = member_lists.get(
+                "membermanager_user", ([], []))
+            membermanager_group_add, membermanager_group_del = \
+                member_lists.get("membermanager_group", ([], []))
 
             # Manage members
 
