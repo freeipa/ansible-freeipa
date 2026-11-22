@@ -39,7 +39,8 @@
       state: present
 
 - name: Install - Firewall configuration
-  when: ipaserver_setup_firewalld | bool
+  when: ipaserver_setup_firewalld | bool and
+        not ipaserver_install_packages_only
   block:
   - name: Firewalld service - Ensure that firewalld is running
     ansible.builtin.systemd:
@@ -66,7 +67,8 @@
 - name: Copy external certs
   ansible.builtin.include_tasks: "{{ role_path }}/tasks/copy_external_cert.yml"
   with_items: "{{ ipaserver_external_cert_files_from_controller }}"
-  when: ipaserver_external_cert_files_from_controller is defined and
+  when: not ipaserver_install_packages_only | bool and
+        ipaserver_external_cert_files_from_controller is defined and
         ipaserver_external_cert_files_from_controller|length > 0 and
         not ipaserver_external_cert_files is defined
 
@@ -144,10 +146,12 @@
     secondary_rid_base: "{{ ipaserver_secondary_rid_base | default(omit) }}"
 
     ### additional ###
+  when: not ipaserver_install_packages_only | bool
   register: result_ipaserver_test
 
 - name: Install - Deploy server
-  when: not ansible_check_mode and not
+  when: not ansible_check_mode and
+        not ipaserver_install_packages_only | bool and not
         (not result_ipaserver_test.changed and
          (result_ipaserver_test.client_already_configured is defined or
           result_ipaserver_test.server_already_configured is defined))
