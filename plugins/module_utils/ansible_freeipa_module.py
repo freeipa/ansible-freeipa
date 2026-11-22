@@ -33,7 +33,7 @@ __all__ = ["DEBUG_COMMAND_ALL", "DEBUG_COMMAND_LIST",
            "paths", "tasks", "get_credentials_if_valid", "Encoding",
            "DNSName", "getargspec", "certificate_loader",
            "write_certificate_list", "boolean", "template_str",
-           "urlparse", "normalize_sshpubkey"]
+           "urlparse", "normalize_sshpubkey", "Email"]
 
 DEBUG_COMMAND_ALL = 0b1111
 # Print the while command list:
@@ -116,6 +116,7 @@ try:
     from ipalib.krb_utils import get_credentials_if_valid
     from ipapython.dnsutil import DNSName
     from ipapython import kerberos
+    from ipapython.ipavalidate import Email
 
     try:
         from ipalib.x509 import Encoding
