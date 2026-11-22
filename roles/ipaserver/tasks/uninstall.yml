@@ -42,6 +42,11 @@
     when: ipaserver_remove_on_server is defined or
           result_get_connected_server.server is defined
 
+- name: Uninstall - Check if ipa-server-install is present
+  ansible.builtin.stat:
+    path: /usr/sbin/ipa-server-install
+  register: __ipa_server_install_available
+
 - name: Uninstall - Uninstall IPA server
   ansible.builtin.command: >
     /usr/sbin/ipa-server-install
@@ -54,3 +59,4 @@
   # 1 means that uninstall failed because IPA server was not configured
   failed_when: uninstall.rc != 0 and uninstall.rc != 1
   changed_when: uninstall.rc == 0
+  when: __ipa_server_install_available.stat.exists
