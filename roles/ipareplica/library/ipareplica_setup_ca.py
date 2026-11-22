@@ -68,10 +68,6 @@ options:
     description: The installer _ca_enabled setting
     type: bool
     required: no
-  _ca_file:
-    description: The installer _ca_file setting
-    type: str
-    required: no
   _kra_enabled:
     description: The installer _kra_enabled setting
     type: bool
@@ -164,7 +160,6 @@ def main():
             # additional
             ccache=dict(required=True, type='str'),
             _ca_enabled=dict(required=False, type='bool'),
-            _ca_file=dict(required=False, type='str'),
             _kra_enabled=dict(required=False, type='bool'),
             _kra_host_name=dict(required=False, type='str'),
             _dirsrv_pkcs12_info=dict(required=False, type='list',
