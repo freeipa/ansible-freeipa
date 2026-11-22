@@ -94,19 +94,31 @@ try:
     import netaddr
     import gssapi
 
+    from ipapython.version import NUM_VERSION, VERSION
+
+    if NUM_VERSION < 30201:
+        # See ipapython/version.py
+        IPA_MAJOR, IPA_MINOR, IPA_RELEASE = [int(x) for x in
+                                             VERSION.split(".", 2)]
+        IPA_PYTHON_VERSION = IPA_MAJOR * 10000 + IPA_MINOR * 100 + IPA_RELEASE
+    else:
+        IPA_PYTHON_VERSION = NUM_VERSION
+
+    # Minimal IPA version check
+    if NUM_VERSION < 40608:
+        raise RuntimeError("freeipa version '%s' is too old" % VERSION)
+
     from ipalib import api
     from ipalib import errors as ipalib_errors  # noqa
     from ipalib.config import Env
     from ipalib.constants import DEFAULT_CONFIG, LDAP_GENERALIZED_TIME_FORMAT
 
     try:
+        # IPA >= 4.12.0
         from ipalib.kinit import kinit_password, kinit_keytab
     except ImportError:
-        try:
-            from ipalib.install.kinit import kinit_password, kinit_keytab
-        except ImportError:
-            # pre 4.5.0
-            from ipapython.ipautil import kinit_password, kinit_keytab
+        # IPA >= 4.5.0
+        from ipalib.install.kinit import kinit_password, kinit_keytab
     from ipapython.ipautil import run
     from ipapython.ipautil import template_str
     from ipapython.dn import DN
@@ -117,48 +129,20 @@ try:
     from ipapython.dnsutil import DNSName
     from ipapython import kerberos
 
-    try:
-        from ipalib.x509 import Encoding
-    except ImportError:
-        from cryptography.hazmat.primitives.serialization import Encoding
+    from ipalib.x509 import Encoding  # IPA >= 4.6.0
 
-    try:
-        from ipalib.x509 import load_pem_x509_certificate
-        certificate_loader = load_pem_x509_certificate
-    except ImportError:
-        from ipalib.x509 import load_certificate
-        certificate_loader = load_certificate
+    from ipalib.x509 import load_pem_x509_certificate  # IPA >= 4.6.0
+    certificate_loader = load_pem_x509_certificate
     from ipalib.x509 import write_certificate_list
 
-    # Try to import is_ipa_configured or use a fallback implementation.
     try:
+        # IPA >= 4.8.9
         from ipalib.facts import is_ipa_configured
     except ImportError:
-        try:
-            from ipaserver.install.installutils import is_ipa_configured
-        except ImportError:
-            from ipalib.install import sysrestore
+        # IPA >= 3.0.0
+        from ipaserver.install.installutils import is_ipa_configured
 
-            def is_ipa_configured():
-                sstore = sysrestore.StateFile(paths.SYSRESTORE)
-
-                if sstore.has_state('installation'):
-                    return sstore.get_state('installation', 'complete')
-
-                fstore = sysrestore.FileStore(paths.SYSRESTORE)
-
-                IPA_MODULES = [  # pylint: disable=invalid-name
-                    'httpd', 'kadmin', 'dirsrv', 'pki-tomcatd', 'install',
-                    'krb5kdc', 'ntpd', 'named'
-                ]
-
-                for module in IPA_MODULES:
-                    if sstore.has_state(module):
-                        return True
-
-                return fstore.has_files()
-
-    # Try to import dcerpc
+    # Try to import dcerpc (Samba 4 support installed)
     try:
         import ipaserver.dcerpc  # pylint: disable=no-member
         _dcerpc_bindings_installed = True  # pylint: disable=invalid-name
