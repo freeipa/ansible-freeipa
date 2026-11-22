@@ -11,4 +11,5 @@
       - 2.0.192.in-addr.arpa.
       - 0.0.0.0.0.0.0.0.0.0.0.0.0.0.d.f.ip6.arpa.
       - 1.0.0.0.e.f.a.c.8.b.d.0.1.0.0.2.ip6.arpa.
+    continue: no
     state: absent
