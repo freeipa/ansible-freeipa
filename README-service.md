@@ -341,6 +341,99 @@ Example playbook to ensure presence of serveral services in a single task with `
 ```
 
 
+Example playbook to query base fields of a service:
+
+```yaml
+---
+- name: Playbook to query services
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query service HTTP/www.example.com
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: HTTP/www.example.com
+      state: query
+    register: result
+
+  - name: Print service info
+    debug:
+      var: result.service
+```
+
+
+Example playbook to query specific fields of a service:
+
+```yaml
+---
+- name: Playbook to query services
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query principal and host of service HTTP/www.example.com
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: HTTP/www.example.com
+      query_param:
+      - principal
+      - host
+      - certificate
+      state: query
+    register: result
+
+  - name: Print service info
+    debug:
+      var: result.service
+```
+
+
+Example playbook to query all fields of a service:
+
+```yaml
+---
+- name: Playbook to query services
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query all fields of service HTTP/www.example.com
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      name: HTTP/www.example.com
+      query_param: ALL
+      state: query
+    register: result
+
+  - name: Print service info
+    debug:
+      var: result.service
+```
+
+
+Example playbook to query only the names of all services:
+
+```yaml
+---
+- name: Playbook to query services
+  hosts: ipaserver
+  become: true
+
+  tasks:
+  - name: Query all service names
+    ipaservice:
+      ipaadmin_password: SomeADMINpassword
+      query_param: PKEY_ONLY
+      state: query
+    register: result
+
+  - name: Print service names
+    debug:
+      var: result.service.services
+```
+
+
 Variables
 ---------
 
@@ -352,7 +445,8 @@ Variable | Description | Required
 `ipaapi_ldap_cache` | Use LDAP cache for IPA connection. The bool setting defaults to yes. (bool) | no
 `name` \| `service` | The list of service name strings. `name` with *service variables* or `services` containing *service variables* need to be used. | no
 `action` | Work on service or member level. It can be on of `member` or `service` and defaults to `service`. | no
-`state` | The state to ensure. It can be one of `present`, `absent`, or `disabled`, default: `present`. | no
+`query_param` | The fields to query with `state: query`. Can be `ALL`, `BASE`, `PKEY_ONLY` or a list of specific field names. Only usable with `state: query`. | no
+`state` | The state to ensure. It can be one of `present`, `absent`, `disabled` or `query`, default: `present`. | no
 
 
 **Service Variables:**
