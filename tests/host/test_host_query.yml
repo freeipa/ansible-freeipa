@@ -1,0 +1,201 @@
+---
+- name: Test host query
+  hosts: "{{ ipa_test_host | default('ipaserver') }}"
+  become: false
+  gather_facts: true
+  module_defaults:
+    ipahost:
+      ipaadmin_password: SomeADMINpassword
+      ipaapi_context: "{{ ipa_context | default(omit) }}"
+
+  tasks:
+
+  # CLEANUP
+
+  - name: Get Domain from server name
+    ansible.builtin.set_fact:
+      ipaserver_domain: "{{ ansible_facts['fqdn'].split('.')[1:] |
+                            join('.') }}"
+    when: ipaserver_domain is not defined
+
+  - name: Set host1 and host2 fqdn
+    ansible.builtin.set_fact:
+      host1_fqdn: "{{ 'testhost1.' + ipaserver_domain }}"
+      host2_fqdn: "{{ 'testhost2.' + ipaserver_domain }}"
+      nonexisting_fqdn: "{{ 'nonexisting.' + ipaserver_domain }}"
+
+  - name: Ensure hosts are absent
+    ipahost:
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      update_dns: no
+      state: absent
+
+  # CREATE TEST ITEMS
+
+  - name: Ensure hosts are present
+    ipahost:
+      hosts:
+      - name: "{{ host1_fqdn }}"
+        description: "Test host 1"
+        force: yes
+      - name: "{{ host2_fqdn }}"
+        description: "Test host 2"
+        force: yes
+
+  # TESTS
+
+  - name: Query host "non-existing"
+    ipahost:
+      name:
+      - "{{ nonexisting_fqdn }}"
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.host
+
+  - name: Query all hosts
+    ipahost:
+      state: query
+      query_param: PKEY_ONLY
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.host
+
+  - name: Fail on missing host1 in query result
+    ansible.builtin.fail:
+      msg: "'{{ host1_fqdn }}' not in query result {{ result.host.hosts }}"
+    when: (host1_fqdn not in result.host.hosts)
+
+  - name: Fail on missing host2 in query result
+    ansible.builtin.fail:
+      msg: "'{{ host2_fqdn }}' not in query result {{ result.host.hosts }}"
+    when: (host2_fqdn not in result.host.hosts)
+
+  - name: Fail on non-existing host in query result
+    ansible.builtin.fail:
+      msg: "'{{ nonexisting_fqdn }}' in query result {{ result.host.hosts }}"
+    when: (nonexisting_fqdn in result.host.hosts)
+
+  - name: Query hosts host1 and host2
+    ipahost:
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.host
+
+  - name: Fail on missing host1 in query result
+    ansible.builtin.fail:
+      msg: "'{{ host1_fqdn }}' not in query result {{ result.host }}"
+    when: (host1_fqdn not in result.host)
+
+  - name: Fail on missing host2 in query result
+    ansible.builtin.fail:
+      msg: "'{{ host2_fqdn }}' not in query result {{ result.host }}"
+    when: (host2_fqdn not in result.host)
+
+  - name: Fail on non-existing host in query result
+    ansible.builtin.fail:
+      msg: "'{{ nonexisting_fqdn }}' in query result {{ result.host }}"
+    when: (nonexisting_fqdn in result.host)
+
+  - name: Query all host parameters for host1
+    ipahost:
+      name:
+      - "{{ host1_fqdn }}"
+      query_param: ALL
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.host
+
+  - name: Fail on missing information in query result
+    ansible.builtin.fail:
+      msg: "Query result {{ result.host }} is incomplete"
+    when: (result.host.description != "Test host 1" or
+           result.host.name != host1_fqdn or
+           "objectclass" not in result.host or
+           "dn" in result.host and "fqdn=" + host1_fqdn not in result.host.dn)
+
+  - name: Query "description" parameter for all hosts
+    ipahost:
+      query_param:
+      - description
+      state: query
+    register: result
+    failed_when: result.changed or result.failed
+
+  - name: Print query information
+    ansible.builtin.debug:
+      var: result.host
+
+  - name: Fail on missing host1 information in query result
+    ansible.builtin.fail:
+      msg: "'{{ host1_fqdn }}' not in query result {{ result.host }}"
+    when: (host1_fqdn not in result.host or
+           result.host[host1_fqdn].description != "Test host 1" or
+           result.host[host1_fqdn] | length != 1)
+
+  - name: Fail on missing host2 information in query result
+    ansible.builtin.fail:
+      msg: "'{{ host2_fqdn }}' not in query result {{ result.host }}"
+    when: (host2_fqdn not in result.host or
+           result.host[host2_fqdn].description != "Test host 2" or
+           result.host[host2_fqdn] | length != 1)
+
+  - name: Query "password" parameter for host1, expect failure
+    ipahost:
+      name:
+      - "{{ host1_fqdn }}"
+      query_param:
+      - password
+      state: query
+    register: result
+    failed_when: result.changed or not result.failed or
+                 "value of query_param must be one or more of" not in result.msg
+
+  - name: Query host1 with description, expect failure
+    ipahost:
+      name:
+      - "{{ host1_fqdn }}"
+      description: "Test host 1"
+      state: query
+    register: result
+    failed_when: result.changed or not result.failed or
+                 "Argument 'description' can not be used with" not in result.msg
+
+  - name: Query host1 with update_password, expect failure
+    ipahost:
+      name:
+      - "{{ host1_fqdn }}"
+      update_password: always
+      state: query
+    register: result
+    failed_when: result.changed or not result.failed or
+                 "Argument 'update_password' can not be used with" not in result.msg
+
+  # CLEANUP
+
+  - name: Ensure hosts are absent
+    ipahost:
+      name:
+      - "{{ host1_fqdn }}"
+      - "{{ host2_fqdn }}"
+      update_dns: no
+      state: absent
