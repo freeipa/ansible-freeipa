@@ -419,7 +419,7 @@ def main():
 
     else:
         if default_group is not None:
-            for param in ["name", "exclusive", "inclusive", "users", "hosts"
+            for param in ["name", "exclusive", "inclusive", "users", "hosts",
                           "no_wait"]:
                 if ansible_module.params.get(param) is not None:
                     msg = "Cannot use {0} together with default_group"
